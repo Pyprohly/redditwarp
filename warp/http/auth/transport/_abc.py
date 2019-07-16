@@ -4,11 +4,9 @@ Interfaces used by transport adapters to support various HTTP libraries
 
 import abc
 
-
 class Request(abc.ABC):
-	"""An ABC that stores info about an outgoing request.
-
-	If applicable, calling the isntance produces a transport-specific Request instance.
+	"""An ABC that stores info about an outgoing request, and
+	knows how to create transport-specific request objects.
 	"""
 
 	def __init__(self, url, method='GET', body=None, headers=None, **kwargs):
@@ -43,39 +41,29 @@ class Request(abc.ABC):
 		return '%s(%s%s)' % (
 				type(self).__name__,
 				', '.join('%s=%r' % t for t in attrs),
-				', **%r' if self.kwargs else '')
-
-	def __call__(self):
-		"""Optional[T]: Returns a trasport specific request object,
-		or ``None`` if not applicable for the transport being used.
-		"""
-		return None
-
-class Requestor(abc.ABC):
-	"""Interface for a callable that makes HTTP requests."""
+				f', **{self.kwargs}' if self.kwargs else '')
 
 	@abc.abstractmethod
-	def __call__(self, url, method='GET', body=None, headers=None,
-			timeout=None, **kwargs):
+	def __call__(self):
+		"""Optional[T]: Returns a trasport-specific request object,
+		or ``None`` if not applicable for the transport being used.
+		"""
+		raise NotImplementedError
+
+class Requestor(abc.ABC):
+	"""A wrapper for a callable that makes HTTP requests."""
+
+	@abc.abstractmethod
+	def __call__(self, request, timeout=None):
 		r"""Make an HTTP request.
 
 		Parameters
 		----------
-		url: str
+		request: :class:`Request`
 			The URL to be requested.
-		method: str
-			The HTTP method to use for the request. Defaults to 'GET'.
-		body: bytes
-			The payload/body in HTTP request.
-		headers: Mapping[str, str]
-			Request headers.
-		timeout: Optional[int]
+		timeout: Optional[:class:`int`]
 			The number of seconds to wait for a response from the server.
-			If not specified or if None, the requests default timeout will
-			be used.
-		\*\*kwargs
-			Additional arguments passed on to the underlying
-			transport's request method.
+			If ``None``, the transport default timeout will be used.
 
 		Returns
 		-------
@@ -90,19 +78,28 @@ class Requestor(abc.ABC):
 		raise NotImplementedError
 
 class Response(abc.ABC):
-	"""HTTP Response data."""
+	"""An ABC that wraps a transport-specific HTTP response object."""
+
+	def __init__(self, response):
+		"""
+		Parameters
+		----------
+		response: T
+			The response object to wrap.
+		"""
+		self.response = response
 
 	@abc.abstractproperty
 	def status(self):
-		"""int: The HTTP status code."""
+		""":class:`int`: The HTTP status code."""
 		raise NotImplementedError
 
 	@abc.abstractproperty
 	def headers(self):
-		"""Mapping[str, str]: The HTTP response headers."""
+		"""Mapping[:class:`str`, :class:`str`]: The HTTP response headers."""
 		raise NotImplementedError
 
 	@abc.abstractproperty
 	def data(self):
-		"""bytes: The response body."""
+		""":class:`bytes`: The response body."""
 		raise NotImplementedError

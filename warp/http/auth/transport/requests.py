@@ -10,35 +10,13 @@ from .. import exceptions
 
 TIMEOUT = 16
 
-
 class Request(_abc.Request):
-	"""Stores information about an outgoing request, and produces
-	:class:`~requests.models.Request` instances.
+	"""Stores info about an outgoing request, and produces
+	:class:`~requests.models.Request` instances on demand.
 	"""
 
-	def __init__(self, url, method='GET', body=None, headers=None, **kwargs):
-		r"""
-		Parameters
-		----------
-		url: :class:`str`
-			The URL to be requested.
-		method: :class:`str`
-			The HTTP method to use for the request. Defaults to 'GET'.
-		body: Optional[:class:`bytes`]
-			The payload/body in HTTP request.
-		headers: Mapping[:class:`str`, :class:`str`]
-			Request headers.
-		\*\*kwargs
-			Additional keyword arguments passed through to the underlying
-			requests :meth:`~requests.Session.request` method.
-		"""
-		self.url = url
-		self.method = method
-		self.body = body
-		self.headers = headers
-		self.kwargs = kwargs
-
-	def 
+	def __call__(self):
+		...
 
 class Requestor(_abc.Requestor):
 	def __init__(self, session=None):
