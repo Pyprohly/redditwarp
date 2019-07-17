@@ -22,6 +22,10 @@ class BadRequest(ClientError):
 	"""A 400 HTTP error occurred."""
 
 
+class HTTPResponseErrorFactory:
+	def __new__(self, response):
+		...
+
 
 class ServerError(ResponseError):
 	"""HTTP 5XX family of errors.
@@ -31,11 +35,11 @@ class ServerError(ResponseError):
 
 
 
-class AuthError(HTTPException):
+class OAuthException(HTTPException):
 	"""Error class for authentication-related errors."""
 
-class InvalidToken(AuthError):
+class InvalidToken(OAuthException):
 	pass
 
-class RefreshError(AuthError):
+class RefreshError(OAuthException):
 	"""Refreshing the credential's access token failed."""
