@@ -9,14 +9,14 @@ class Request(abc.ABC):
 	knows how to create transport-specific request objects.
 	"""
 
-	def __init__(self, url, method='GET', body=None, headers=None, **kwargs):
+	def __init__(self, method, url, body=None, headers=None, **kwargs):
 		r"""
 		Parameters
 		----------
 		url: :class:`str`
 			The URL to be requested.
 		method: :class:`str`
-			The HTTP method to use for the request. Defaults to 'GET'.
+			The HTTP method to use for the request.
 		body: Optional[:class:`bytes`]
 			The payload/body in HTTP request.
 		headers: Mapping[:class:`str`, :class:`str`]
@@ -25,8 +25,8 @@ class Request(abc.ABC):
 			Additional keyword arguments passed through to the transport
 			specific requests method.
 		"""
-		self.url = url
 		self.method = method
+		self.url = url
 		self.body = body
 		self.headers = headers
 		self.kwargs = kwargs

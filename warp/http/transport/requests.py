@@ -59,15 +59,15 @@ class Response(_abc.Response):
 
 	@property
 	def status(self):
-		return self._response.status_code
+		return self.response.status_code
 
 	@property
 	def headers(self):
-		return self._response.headers
+		return self.response.headers
 
 	@property
 	def data(self):
-		return self._response.content
+		return self.response.content
 
 	def __init__(self, response):
 		""""
@@ -76,7 +76,8 @@ class Response(_abc.Response):
 		response: :class:`requests.Response`
 			The Requests response.
 		"""
-		self._response = response
+		self.response = response
+		self.request = None
 
 
 class AuthorizedSession:
