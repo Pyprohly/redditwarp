@@ -3,7 +3,13 @@ import abc
 
 class BaseAuthorizer(abc.ABC):
 	@abc.abstractmethod
-	def prepare_request(self):
+	def prepare_request(self, request):
+		"""
+		Parameters
+		----------
+		request: 
+			
+		"""
 		...
 
 class NoAuthAuthorizer(BaseAuthorizer):
