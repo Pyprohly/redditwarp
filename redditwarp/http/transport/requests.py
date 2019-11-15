@@ -8,15 +8,43 @@ import requests
 from . import _abc
 from .. import exceptions
 
-TIMEOUT = 16
+
+TIMEOUT = 8
 
 class Request(_abc.Request):
-	"""Stores info about an outgoing request, and produces
-	:class:`~requests.models.Request` instances on demand.
+	"""Stores info about an outgoing request.
 	"""
 
-	def __call__(self):
-		...
+	def __init__(self, verb, url):
+		self.verb = verb
+		self.url = url
+
+class Response(_abc.Response):
+	# https://docs.aiohttp.org/en/stable/web_reference.html#aiohttp.web.Response.body
+	"""Requests response adapter."""
+
+	@property
+	def status(self):
+		return self.response.status_code
+
+	@property
+	def headers(self):
+		return self.response.headers
+
+	@property
+	def data(self):
+		return self.response.content
+
+	def __init__(self, response):
+		""""
+		Parameters
+		----------
+		response: :class:`requests.Response`
+			The Requests response.
+		"""
+		self.response = response
+		self.request = None
+
 
 class Requestor(_abc.Requestor):
 	def __init__(self, session=None):
@@ -46,39 +74,16 @@ class Requestor(_abc.Requestor):
 		:class:`warp.http.auth.exceptions.TransportError`
 			If any exception occurred.
 		"""
+
+	def request(self, verb, url, *, data=None, headers=None, files=None, **kwargs):
 		try:
 			resp = self.session.request(
-					method, url, data=body, headers=headers,
+					verb, url, data=data, headers=headers,
 					timeout=timeout, **kwargs)
-			return Response(resp)
 		except requests.exceptions.RequestException as exc:
 			raise exceptions.TransportError(exc) from exc
-
-class Response(_abc.Response):
-	"""Requests response adapter."""
-
-	@property
-	def status(self):
-		return self.response.status_code
-
-	@property
-	def headers(self):
-		return self.response.headers
-
-	@property
-	def data(self):
-		return self.response.content
-
-	def __init__(self, response):
-		""""
-		Parameters
-		----------
-		response: :class:`requests.Response`
-			The Requests response.
-		"""
-		self.response = response
-		self.request = None
-
+		else:
+			return Response(resp)
 
 class AuthorizedSession:
 	"""A Requests Session wrapper class that holds credentials.
@@ -112,7 +117,7 @@ class AuthorizedSession:
 		self._requestor = requestor or get_requestor()
 		self._token_requestor = token_requestor or get_requestor()
 
-	def request(self, method, url, data=None, headers=None, **kwargs):
+	def request(self, verb, url, data=None, headers=None, **kwargs):
 		"""Implementation of Requests' request."""
 
 		if not self.credentials.valid():
@@ -121,7 +126,7 @@ class AuthorizedSession:
 		# !!!
 		self.credentials.prepare_requestor(self._requestor)
 		request = partial(self.credentials.prepare_requestor(self._requestor),
-				url=url, method=method, data=data, headers=headers, **kwargs)
+				url=url, verb=verb, data=data, headers=headers, **kwargs)
 
 		response = request()
 		if response.status == 401:

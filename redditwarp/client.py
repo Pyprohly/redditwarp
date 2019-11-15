@@ -6,7 +6,5 @@ class Client:
 	def __init__(self):
 		self.http = HTTPClient()
 
-	def request(self, method, url, *args):
-		return self.http.request(method, url, *args)
-
-
+	def request(self, verb, path, *args):
+		return self.http.request(verb, path, *args)
