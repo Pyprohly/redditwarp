@@ -15,9 +15,10 @@ class Request(_abc.Request):
 	"""Stores info about an outgoing request.
 	"""
 
-	def __init__(self, verb, url):
+	def __init__(self, verb, url, *, headers=None):
 		self.verb = verb
 		self.url = url
+		self.headers = headers
 
 class Response(_abc.Response):
 	# https://docs.aiohttp.org/en/stable/web_reference.html#aiohttp.web.Response.body
@@ -35,19 +36,20 @@ class Response(_abc.Response):
 	def data(self):
 		return self.response.content
 
-	def __init__(self, response):
+	def __init__(self, response, request=None):
 		""""
 		Parameters
 		----------
 		response: :class:`requests.Response`
-			The Requests response.
+			The transport specific (Requests) response.
+		request: :class:`Request`
+			The request adaptor as context for this response.
 		"""
 		self.response = response
-		self.request = None
-
+		self.request = request
 
 class Requestor(_abc.Requestor):
-	def __init__(self, session=None):
+	def __init__(self, session=None, user_agent=None):
 		"""
 		Parameters
 		----------
@@ -57,7 +59,11 @@ class Requestor(_abc.Requestor):
 		"""
 		if session is None:
 			session = requests.Session()
+			retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
+			session.mount('https://', retry_adapter)
 		self.session = session
+
+		self.user_agent = user_agent
 
 	def __call__(self, request, timeout=TIMEOUT):
 		r"""Make an HTTP request using requests.
@@ -74,18 +80,32 @@ class Requestor(_abc.Requestor):
 		:class:`warp.http.auth.exceptions.TransportError`
 			If any exception occurred.
 		"""
+		r = request
+		response = self.request(
+			r.verb,
+			r.url,
+			params=r.params,
+			data=r.data,
+			json=r.json,
+			headers=r.headers,
+			files=r.files,
+			timeout,
+		)
+		response.request = r
+		return response
 
-	def request(self, verb, url, *, data=None, headers=None, files=None, **kwargs):
-		try:
-			resp = self.session.request(
-					verb, url, data=data, headers=headers,
-					timeout=timeout, **kwargs)
-		except requests.exceptions.RequestException as exc:
-			raise exceptions.TransportError(exc) from exc
-		else:
-			return Response(resp)
+	def request(self, verb, url, *, params=None, data=None, json=None,
+			headers=None, files=None, timeout=TIMEOUT):
+		#try:
+		#except requests.exceptions.RequestException as exc:
+		#	raise exceptions.TransportError(exc) from exc
+		#else:
+		resp = self.session.request(verb, url, params=params, data=data, json=None,
+				headers=headers, files=None, timeout=timeout)
+		return Response(resp)
 
-class AuthorizedSession:
+
+class AuthorizedSession(Requestor):
 	"""A Requests Session wrapper class that holds credentials.
 
 	This class is used to perform requests to API endpoints that require
@@ -102,22 +122,19 @@ class AuthorizedSession:
 		The requestor used for refreshing credentials.
 	"""
 
-	def __init__(self,
-			credentials,
-			requestor=None,
-			token_requestor=None):
+	#def __init__(self, credentials, requestor=None, token_requestor=None):
+	def __init__(self, session=None, credentials=None):
+		super().__init__(session)
+
 		self.credentials = credentials
 
-		def get_requestor():
-			session = requests.Session()
-			retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
-			session.mount('https://', retry_adapter)
-			return Requestor(session)
-
-		self._requestor = requestor or get_requestor()
-		self._token_requestor = token_requestor or get_requestor()
-
 	def request(self, verb, url, data=None, headers=None, **kwargs):
+		self.session.request(verb, url, )
+
+
+
+
+		return
 		"""Implementation of Requests' request."""
 
 		if not self.credentials.valid():
@@ -138,8 +155,12 @@ class AuthorizedSession:
 			'''
 			# Even though we check the credentials before making the request,
 			# the token could have expired in the time between the check and
-			# the request, so make sure the response code is not 401.
+			# the request. Check that the response code is not 401.
 			self.credentials.refresh(self._token_requestor)
 			response = request()
 
 		return response
+
+	def prepare_request(self, request):
+		...
+

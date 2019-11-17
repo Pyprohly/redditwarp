@@ -79,8 +79,9 @@ class Response(abc.ABC):
 
 
 class Requestor(abc.ABC):
-	"""Encapsulate the thing that is the requestor. This is often known
-	as the 'Session' object.
+	"""A Requestor is something that can make requests.
+
+	This typically will encapsulate one or more of the thing that is known as the 'Session' object.
 	"""
 
 	###!!- """A wrapper for a callable that makes HTTP requests."""

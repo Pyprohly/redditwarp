@@ -13,7 +13,7 @@ class BaseCredentials(abc.ABC):
 		authenticated requests.
 	expiry: Optional[:class:`datetime`]
 		When the token expires and is no longer valid.
-		If None, the token is assumed to never expire.
+		If ``None``, the token is assumed to never expire.
 	"""
 
 	def __init__(self, *, token=None, expiry=None):

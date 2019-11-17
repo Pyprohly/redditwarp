@@ -20,14 +20,6 @@ class Credentials(credentials.Credentials):
 
 
 
-
-
-
-
-
-
-
-
     def __init__(self, token, refresh_token=None, id_token=None,
                  token_uri=None, client_id=None, client_secret=None,
                  scopes=None):
