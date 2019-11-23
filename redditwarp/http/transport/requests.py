@@ -11,15 +11,6 @@ from .. import exceptions
 
 TIMEOUT = 8
 
-class Request(_abc.Request):
-	"""Stores info about an outgoing request.
-	"""
-
-	def __init__(self, verb, url, *, headers=None):
-		self.verb = verb
-		self.url = url
-		self.headers = headers
-
 class Response(_abc.Response):
 	# https://docs.aiohttp.org/en/stable/web_reference.html#aiohttp.web.Response.body
 	"""Requests response adapter."""
@@ -41,13 +32,13 @@ class Response(_abc.Response):
 		Parameters
 		----------
 		response: :class:`requests.Response`
-			The transport specific (Requests) response.
+			The Requests response object.
 		request: :class:`Request`
 			The request adaptor as context for this response.
 		"""
-		self.response = response
-		self.request = request
+		super().__init__(response, request)
 
+'''
 class Requestor(_abc.Requestor):
 	def __init__(self, session=None, user_agent=None):
 		"""
@@ -103,9 +94,27 @@ class Requestor(_abc.Requestor):
 		resp = self.session.request(verb, url, params=params, data=data, json=None,
 				headers=headers, files=None, timeout=timeout)
 		return Response(resp)
+'''#'''
 
 
-class AuthorizedSession(Requestor):
+
+class RequestorDecorator(Requestor):
+	"""
+	Parameters
+	----------
+	requestor: :class:`Requestor`
+		The requestor to wrap.
+	"""
+	def __init__(self, requestor):
+		self.requestor = requestor
+
+	def request(self, request, **kwargs):
+		return self.requestor.request(request, **kwargs)
+
+
+# Make this a decorator, not a proxy. Consider switching from auth to no auth:
+# No Session destruction should occur, as a proxy would.
+class AuthorizedSession(RequestorDecorator):
 	"""A Requests Session wrapper class that holds credentials.
 
 	This class is used to perform requests to API endpoints that require
@@ -122,16 +131,15 @@ class AuthorizedSession(Requestor):
 		The requestor used for refreshing credentials.
 	"""
 
-	#def __init__(self, credentials, requestor=None, token_requestor=None):
-	def __init__(self, session=None, credentials=None):
-		super().__init__(session)
-
+	def __init__(self, credentials=None):
+		super().__init__()
 		self.credentials = credentials
+		self._token_requestor = requests.Session()
 
-	def request(self, verb, url, data=None, headers=None, **kwargs):
-		self.session.request(verb, url, )
-
-
+	def request(self, request, timeout=TIMEOUT):
+		self.prepare_request(request)
+		resp = super().request(request)
+		return resp
 
 
 		return
@@ -163,4 +171,25 @@ class AuthorizedSession(Requestor):
 
 	def prepare_request(self, request):
 		...
+
+
+
+
+class Session(Requestor):
+	"""
+	Parameters
+	----------
+	session: :class:`requests.Session`
+		The session to wrap.
+	"""
+	def __init__(self):
+		self.session = requests.Session()
+
+	def request(self, request, timeout=TIMEOUT):
+		r = request
+		resp = self.session.request(
+			r.verb,
+			r.url,
+		)
+		return resp
 

@@ -9,25 +9,25 @@ class Request(abc.ABC):
 	knows how to create transport-specific request objects.
 	"""
 
-	def __init__(self, verb, url, body=None, headers=None, **kwargs):
+	def __init__(self, verb, url, data=None, headers=None, **kwargs):
 		r"""
 		Parameters
 		----------
-		url: :class:`str`
+		url: str
 			The URL to be requested.
-		verb: :class:`str`
+		verb: str
 			The HTTP method to use for the request.
-		body: Optional[:class:`bytes`]
+		data: Optional[bytes]
 			The payload/body in HTTP request.
-		headers: Mapping[:class:`str`, :class:`str`]
+		headers: Mapping[str, str]
 			Request headers.
 		\*\*kwargs
-			Additional keyword arguments passed through to the transport
-			specific requests method.
+			Additional keyword arguments are passed to the transport
+			specific request method.
 		"""
 		self.verb = verb
 		self.url = url
-		self.body = body
+		self.data = data
 		self.headers = headers
 		self.kwargs = kwargs
 
@@ -35,32 +35,24 @@ class Request(abc.ABC):
 		attrs = (
 			('url', self.url),
 			('verb', self.verb),
-			('body', self.body),
+			('data', self.data),
 			('headers', self.headers)
 		)
 		return '%s(%s%s)' % (
 				type(self).__name__,
 				', '.join('%s=%r' % t for t in attrs),
 				f', **{self.kwargs}' if self.kwargs else '')
-
+	'''
 	@abc.abstractmethod
 	def __call__(self):
 		"""Optional[T]: Returns a trasport-specific request object,
 		or ``None`` if not applicable for the transport being used.
 		"""
 		raise NotImplementedError
+	'''
 
 class Response(abc.ABC):
 	"""An ABC that wraps a transport-specific HTTP response object."""
-
-	def __init__(self, response):
-		"""
-		Parameters
-		----------
-		response: T
-			The response object to wrap.
-		"""
-		self.response = response
 
 	@abc.abstractproperty
 	def status(self):
@@ -77,18 +69,24 @@ class Response(abc.ABC):
 		""":class:`bytes`: The response body."""
 		raise NotImplementedError
 
+	def __init__(self, response, request=None):
+		"""
+		Attributes
+		----------
+		response: object
+			The transport specific response object to wrap.
+		request: Optional[:class:`Request`]
+			The request adaptor as context for this response.
+		"""
+		self.response = response
+		self.request = request
+
 
 class Requestor(abc.ABC):
-	"""A Requestor is something that can make requests.
-
-	This typically will encapsulate one or more of the thing that is known as the 'Session' object.
-	"""
-
-	###!!- """A wrapper for a callable that makes HTTP requests."""
-
+	"""Interface. A Requestor is a thing that makes requests."""
 
 	@abc.abstractmethod
-	def request(self, verb, url, timeout=None):
+	def request(self, request, timeout=None):
 		r"""Make an HTTP request.
 
 		Parameters
@@ -106,8 +104,6 @@ class Requestor(abc.ABC):
 			If any exception occurred.
 		"""
 		raise NotImplementedError
-
-
 
 	##-
 	'''
