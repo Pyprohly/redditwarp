@@ -9,10 +9,17 @@ class HTTPClient:
 	RESOURCE_URL = 'https://oauth.reddit.com'
 
 	def __init__(self):
-		self.session: 'Requestor' = AuthorizedSession()
-		self.base_url = self.RESOURCE_URL
+		"""
+		Attributes
+		----------
+		session: :class:`~.Requestor`
+		"""
+		self.session = Ratelimited(Retryable(Session()))
+		self.auth_session = Authorized(self.session)
+
+		self.url_base = self.RESOURCE_URL
 
 	def request(self, verb, path):
-		url = self.base_url + path
+		url = self.url_base + path
 		req = Request(verb, url)
 		return self.session.request(req)

@@ -111,10 +111,7 @@ class RequestorDecorator(Requestor):
 	def request(self, request, **kwargs):
 		return self.requestor.request(request, **kwargs)
 
-
-# Make this a decorator, not a proxy. Consider switching from auth to no auth:
-# No Session destruction should occur, as a proxy would.
-class AuthorizedSession(RequestorDecorator):
+class Authorized(RequestorDecorator):
 	"""A Requests Session wrapper class that holds credentials.
 
 	This class is used to perform requests to API endpoints that require
@@ -131,24 +128,22 @@ class AuthorizedSession(RequestorDecorator):
 		The requestor used for refreshing credentials.
 	"""
 
-	def __init__(self, credentials=None):
-		super().__init__()
+	def __init__(self, requestor, credentials=None):
+		super().__init__(requestor)
 		self.credentials = credentials
-		self._token_requestor = requests.Session()
+		self.authorizer = ...
+		self._token_requestor = Session()
 
 	def request(self, request, timeout=TIMEOUT):
 		self.prepare_request(request)
-		resp = super().request(request)
+		resp = self.requestor.request(request)
 		return resp
 
 
 		return
-		"""Implementation of Requests' request."""
-
 		if not self.credentials.valid():
 			self.credentials.refresh(self._token_requestor)
 
-		# !!!
 		self.credentials.prepare_requestor(self._requestor)
 		request = partial(self.credentials.prepare_requestor(self._requestor),
 				url=url, verb=verb, data=data, headers=headers, **kwargs)
@@ -173,23 +168,35 @@ class AuthorizedSession(RequestorDecorator):
 		...
 
 
-
-
 class Session(Requestor):
-	"""
-	Parameters
-	----------
-	session: :class:`requests.Session`
-		The session to wrap.
-	"""
 	def __init__(self):
-		self.session = requests.Session()
+		self.session = self._get_session()
+
+		ua = 'RedditWarp/{0} Python/{1[0]}.{1[1]} aiohttp/{2}'
+		self.user_agent = ua.format(__version__, sys.version_info, aiohttp.__version__)
+
+	def _get_session(self):
+		retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
+		session = requests.Session()
+		session.mount('https://', retry_adapter)
+		self.session = session
+		return session
 
 	def request(self, request, timeout=TIMEOUT):
 		r = request
-		resp = self.session.request(
+
+		#try:
+		#except requests.exceptions.RequestException as exc:
+		#	raise exceptions.TransportError(exc) from exc
+		#else:
+		response = self.session.request(
 			r.verb,
 			r.url,
+			params=r.params,
+			data=r.data,
+			json=r.json,
+			headers=r.headers,
+			files=r.files,
+			timeout=timeout,
 		)
-		return resp
-
+		return Response(response, request)

@@ -22,7 +22,7 @@ class Request(abc.ABC):
 		headers: Mapping[str, str]
 			Request headers.
 		\*\*kwargs
-			Additional keyword arguments are passed to the transport
+			Additional keyword arguments are passed to the transport-
 			specific request method.
 		"""
 		self.verb = verb
@@ -42,14 +42,6 @@ class Request(abc.ABC):
 				type(self).__name__,
 				', '.join('%s=%r' % t for t in attrs),
 				f', **{self.kwargs}' if self.kwargs else '')
-	'''
-	@abc.abstractmethod
-	def __call__(self):
-		"""Optional[T]: Returns a trasport-specific request object,
-		or ``None`` if not applicable for the transport being used.
-		"""
-		raise NotImplementedError
-	'''
 
 class Response(abc.ABC):
 	"""An ABC that wraps a transport-specific HTTP response object."""
@@ -73,42 +65,19 @@ class Response(abc.ABC):
 		"""
 		Attributes
 		----------
-		response: object
-			The transport specific response object to wrap.
+		response: Optional[object]
+			The transport-specific response object to wrap, if applicable.
 		request: Optional[:class:`Request`]
 			The request adaptor as context for this response.
 		"""
 		self.response = response
 		self.request = request
 
-
 class Requestor(abc.ABC):
 	"""Interface. A Requestor is a thing that makes requests."""
 
 	@abc.abstractmethod
 	def request(self, request, timeout=None):
-		r"""Make an HTTP request.
-
-		Parameters
-		----------
-		...
-
-		Returns
-		-------
-		:class:`Response`
-			The HTTP response.
-
-		Raises
-		------
-		:class:`warp.http.auth.exceptions.TransportError`
-			If any exception occurred.
-		"""
-		raise NotImplementedError
-
-	##-
-	'''
-	@abc.abstractmethod
-	def __call__(self, request, timeout=None):
 		r"""Make an HTTP request.
 
 		Parameters
@@ -130,4 +99,3 @@ class Requestor(abc.ABC):
 			If any exception occurred.
 		"""
 		raise NotImplementedError
-	'''
