@@ -20,8 +20,9 @@ class Authorizer(BaseAuthorizer):
 		self.access_token = access_token
 
 class OAuth2Authorizer(Authorizer):
-	authorization_url = 'https://www.reddit.com'
-	resource_url = 'https://oauth.reddit.com'
+	auth_endpoint = 'https://www.reddit.com'
+	token_endpoint = '...'
+	resource_base_url = 'https://oauth.reddit.com'
 
 	def __init__(self, client_id, client_secret, access_token=None):
 		super().__init__(access_token=access_token)
