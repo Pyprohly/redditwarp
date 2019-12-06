@@ -12,5 +12,9 @@ class TokenResponse:
 	state: Optional[str]
 	extra_params: Dict[str, str]
 
+@dataclass
 class Token:
-	...
+	token_type: ClassVar[str] = 'bearer'
+	access_token: str
+	refresh_token: Optional[str]
+	expires_in: int

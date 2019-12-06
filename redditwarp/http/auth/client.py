@@ -1,5 +1,9 @@
 
+from base64 import b64encode
+
+from .token import TokenResponse
 from ..transport import Request
+
 
 class TokenClient:
 	"""The token client will exchange an authorisation grant
@@ -11,13 +15,12 @@ class TokenClient:
 		self.client_credentials = client_credentials
 		self.grant = grant
 
-	def retrieve_token():
+	def retrieve_token() -> TokenResponse:
 		raise NotImplementedError
 
 class AuthorizationCodeClient(TokenClient):
 	def retrieve_token():
 		...
-
 
 class ImplicitClient(TokenClient):
 	def retrieve_token():
@@ -28,6 +31,15 @@ class ResourceOwnerPasswordCredentialsClient(TokenClient):
 		...
 
 class ClientCredentialsClient(TokenClient):
-	def retrieve_token():
+	def retrieve_token() -> TokenResponse:
+		headers = basic_auth_header(self.client_credentials)
+		r = Request('POST', self.provider.token_endpoint, headers=headers)
+		resp = self.requestor.request(r)
+		resp = 
 
-		req = Request('POST', self.provider.token_endpoint, )
+
+def basic_auth_header(client_credentials):
+	client_id = client_credentials.client_id
+	client_secret = client_credentials.client_secret
+	basic_auth = 'basic ' + b64encode(f'{client_id}:{client_secret}'.encode()).decode()
+	return {'Authorization': basic_auth}

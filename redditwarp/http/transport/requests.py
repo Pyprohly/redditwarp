@@ -14,12 +14,6 @@ TIMEOUT = 8
 
 
 class RequestorDecorator(Requestor):
-	"""
-	Parameters
-	----------
-	requestor: :class:`Requestor`
-		The requestor to wrap.
-	"""
 	def __init__(self, requestor):
 		self.requestor = requestor
 
@@ -45,9 +39,7 @@ class Authorized(RequestorDecorator):
 
 	def __init__(self, requestor, token_client):
 		super().__init__(requestor)
-		self.credentials = credentials
-		self._token_requestor = Session()
-		self.authorizer = ClientCredentialsClient(self._token_requestor, token_client)
+		self.token_client = token_client
 
 	def request(self, request, timeout=TIMEOUT):
 		self.prepare_request(request)
@@ -80,7 +72,7 @@ class Authorized(RequestorDecorator):
 		return response
 
 	def prepare_request(self, request):
-		...
+		
 
 
 class Session(Requestor):
