@@ -7,95 +7,10 @@ import requests
 
 from . import _abc
 from .. import exceptions
+from .. import payload
 
 
 TIMEOUT = 8
-
-class Response(_abc.Response):
-	# https://docs.aiohttp.org/en/stable/web_reference.html#aiohttp.web.Response.body
-	"""Requests response adapter."""
-
-	@property
-	def status(self):
-		return self.response.status_code
-
-	@property
-	def headers(self):
-		return self.response.headers
-
-	@property
-	def data(self):
-		return self.response.content
-
-	def __init__(self, response, request=None):
-		""""
-		Parameters
-		----------
-		response: :class:`requests.Response`
-			The Requests response object.
-		request: :class:`Request`
-			The request adaptor as context for this response.
-		"""
-		super().__init__(response, request)
-
-'''
-class Requestor(_abc.Requestor):
-	def __init__(self, session=None, user_agent=None):
-		"""
-		Parameters
-		----------
-		session: Optional[:class:`requests.Session`]
-			A :class:`requests.Session` instance used to make HTTP requests.
-			If not specified, a new session instance will be used.
-		"""
-		if session is None:
-			session = requests.Session()
-			retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
-			session.mount('https://', retry_adapter)
-		self.session = session
-
-		self.user_agent = user_agent
-
-	def __call__(self, request, timeout=TIMEOUT):
-		r"""Make an HTTP request using requests.
-
-		...
-
-		Returns
-		-------
-		:class:`warp.http.auth.transport.Response`
-			The HTTP response.
-
-		Raises
-		------
-		:class:`warp.http.auth.exceptions.TransportError`
-			If any exception occurred.
-		"""
-		r = request
-		response = self.request(
-			r.verb,
-			r.url,
-			params=r.params,
-			data=r.data,
-			json=r.json,
-			headers=r.headers,
-			files=r.files,
-			timeout,
-		)
-		response.request = r
-		return response
-
-	def request(self, verb, url, *, params=None, data=None, json=None,
-			headers=None, files=None, timeout=TIMEOUT):
-		#try:
-		#except requests.exceptions.RequestException as exc:
-		#	raise exceptions.TransportError(exc) from exc
-		#else:
-		resp = self.session.request(verb, url, params=params, data=data, json=None,
-				headers=headers, files=None, timeout=timeout)
-		return Response(resp)
-'''#'''
-
 
 
 class RequestorDecorator(Requestor):
@@ -128,11 +43,11 @@ class Authorized(RequestorDecorator):
 		The requestor used for refreshing credentials.
 	"""
 
-	def __init__(self, requestor, credentials=None):
+	def __init__(self, requestor, token_client):
 		super().__init__(requestor)
 		self.credentials = credentials
-		self.authorizer = ...
 		self._token_requestor = Session()
+		self.authorizer = ClientCredentialsClient(self._token_requestor, token_client)
 
 	def request(self, request, timeout=TIMEOUT):
 		self.prepare_request(request)
@@ -172,8 +87,8 @@ class Session(Requestor):
 	def __init__(self):
 		self.session = self._get_session()
 
-		ua = 'RedditWarp/{0} Python/{1[0]}.{1[1]} aiohttp/{2}'
-		self.user_agent = ua.format(__version__, sys.version_info, aiohttp.__version__)
+		ua = 'RedditWarp/{0} Python/{1[0]}.{1[1]} request/{2}'
+		self.user_agent = ua.format(__version__, sys.version_info, requests.__version__)
 
 	def _get_session(self):
 		retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
@@ -185,18 +100,29 @@ class Session(Requestor):
 	def request(self, request, timeout=TIMEOUT):
 		r = request
 
+		request_partial = partial(
+			self.session.request,
+			method=r.verb,
+			url=r.url,
+			params=r.params,
+			headers=r.headers,
+			timeout=timeout,
+		)
+		d = r.data
+		request_func = PAYLOAD_DISPATCH_TABLE[type(d)]
+		resp = request_func(request_partial, d)
+		return Response(resp, r)
+
 		#try:
 		#except requests.exceptions.RequestException as exc:
 		#	raise exceptions.TransportError(exc) from exc
 		#else:
-		response = self.session.request(
-			r.verb,
-			r.url,
-			params=r.params,
-			data=r.data,
-			json=r.json,
-			headers=r.headers,
-			files=r.files,
-			timeout=timeout,
-		)
-		return Response(response, request)
+
+
+PAYLOAD_DISPATCH_TABLE = {
+	payload.Raw: lambda func, data: func(data=data),
+	payload.FormData: lambda func, data: func(data=data),
+	payload.MultiPart: lambda func, data: func(files=data),
+	payload.Text: lambda func, data: func(data=data),
+	payload.JSON: lambda func, data: func(json=data),
+}

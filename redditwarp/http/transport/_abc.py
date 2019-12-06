@@ -4,45 +4,6 @@ Interfaces used by transport adapters to support various HTTP libraries
 
 import abc
 
-class Request(abc.ABC):
-	"""An ABC that stores info about an outgoing request, and
-	knows how to create transport-specific request objects.
-	"""
-
-	def __init__(self, verb, url, data=None, headers=None, **kwargs):
-		r"""
-		Parameters
-		----------
-		url: str
-			The URL to be requested.
-		verb: str
-			The HTTP method to use for the request.
-		data: Optional[bytes]
-			The payload/body in HTTP request.
-		headers: Mapping[str, str]
-			Request headers.
-		\*\*kwargs
-			Additional keyword arguments are passed to the transport-
-			specific request method.
-		"""
-		self.verb = verb
-		self.url = url
-		self.data = data
-		self.headers = headers
-		self.kwargs = kwargs
-
-	def __repr__(self):
-		attrs = (
-			('url', self.url),
-			('verb', self.verb),
-			('data', self.data),
-			('headers', self.headers)
-		)
-		return '%s(%s%s)' % (
-				type(self).__name__,
-				', '.join('%s=%r' % t for t in attrs),
-				f', **{self.kwargs}' if self.kwargs else '')
-
 class Response(abc.ABC):
 	"""An ABC that wraps a transport-specific HTTP response object."""
 

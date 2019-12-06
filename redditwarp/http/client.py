@@ -14,8 +14,9 @@ class HTTPClient:
 		----------
 		session: :class:`~.Requestor`
 		"""
-		self.session = Ratelimited(Retryable(Session()))
-		self.auth_session = Authorized(self.session)
+		#self.session = Ratelimited(Retryable(Session()))
+		self.session = Session()
+		self.auth_session = Authorized(self.session, ClientCredentialsClient())
 
 		self.url_base = self.RESOURCE_URL
 
