@@ -5,11 +5,13 @@ from .token import TokenResponse
 from ..transport import Request
 
 
-class TokenClient:
+T = TypeVar('T', bound=AuthorizationGrant)
+
+class TokenClient(Generic[T]):
 	"""The token client will exchange an authorisation grant
 	for an OAuth2 token.
 	"""
-	def __init__(self, requestor, provider, client_credentials, grant):
+	def __init__(self, requestor, provider, client_credentials, grant: T):
 		self.requestor = requestor
 		self.provider = provider
 		self.client_credentials = client_credentials
@@ -30,7 +32,7 @@ class ResourceOwnerPasswordCredentialsClient(TokenClient):
 	def retrieve_token():
 		...
 
-class ClientCredentialsClient(TokenClient):
+class ClientCredentialsClient(TokenClient[ClientCredentialsGrant]):
 	def retrieve_token() -> TokenResponse:
 		headers = basic_auth_header(self.client_credentials)
 		r = Request('POST', self.provider.token_endpoint, headers=headers)

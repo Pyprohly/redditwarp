@@ -2,12 +2,12 @@
 import abc
 
 class Response:
-	def __init__(self, status, headers, data: bytes):
+	def __init__(self, status, headers, data: bytes, response=None, request=None):
 		self.status = status
 		self.headers = headers
 		self.data = data
-		self.response = None
-		self.request = None
+		self.response = response
+		self.request = request
 
 class ResponseAdaptor(abc.ABC):
 	"""An ABC that wraps a transport-specific HTTP response object."""
@@ -38,30 +38,3 @@ class ResponseAdaptor(abc.ABC):
 		"""
 		self.response = response
 		self.request = request
-
-class Requestor(abc.ABC):
-	"""Interface. A Requestor is a thing that makes requests."""
-
-	@abc.abstractmethod
-	def request(self, request, timeout=None):
-		r"""Make an HTTP request.
-
-		Parameters
-		----------
-		request: :class:`Request`
-			The URL to be requested.
-		timeout: Optional[:class:`int`]
-			The number of seconds to wait for a response from the server.
-			If ``None``, the transport default timeout will be used.
-
-		Returns
-		-------
-		:class:`Response`
-			The HTTP response.
-
-		Raises
-		------
-		:class:`warp.http.auth.exceptions.TransportError`
-			If any exception occurred.
-		"""
-		raise NotImplementedError

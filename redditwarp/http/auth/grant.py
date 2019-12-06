@@ -38,7 +38,7 @@ class RefreshTokenGrant(AuthorizationGrant):
 
 @dataclass
 class InstalledClientGrant(AuthorizationGrant):
-	"""This is a reddit-specific extension."""
+	# A reddit-specific extension grant.
 	grant_type = 'https://oauth.reddit.com/grants/installed_client'
 	device_id: str
 
