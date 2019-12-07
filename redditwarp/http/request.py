@@ -21,7 +21,7 @@ class Request:
 		self.url = url
 		self.params = params
 		self.data = data
-		self.headers = headers
+		self.headers = {} if headers is None else headers
 
 	def __repr__(self):
 		attrs = (

@@ -2,7 +2,8 @@
 import abc
 
 class Response:
-	def __init__(self, status, headers, data: bytes, response=None, request=None):
+	def __init__(self, status: int, headers: Dict[str, str], data: bytes,
+			response: Optional[Any] = None, request: Optional[Request] = None):
 		self.status = status
 		self.headers = headers
 		self.data = data

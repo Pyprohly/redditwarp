@@ -5,43 +5,56 @@ from .token import TokenResponse
 from ..transport import Request
 
 
-T = TypeVar('T', bound=AuthorizationGrant)
-
-class TokenClient(Generic[T]):
+class TokenClient:
 	"""The token client will exchange an authorisation grant
 	for an OAuth2 token.
 	"""
-	def __init__(self, requestor, provider, client_credentials, grant: T):
+
+	@property
+	def grant(self) -> AuthorizationGrant:
+		return self._grant
+
+	def __init__(self, requestor: Requestor, provider: Provider,
+			client_credentials: ClientCredentials, grant: AuthorizationGrant):
 		self.requestor = requestor
 		self.provider = provider
 		self.client_credentials = client_credentials
-		self.grant = grant
+		self._grant = grant
 
-	def retrieve_token() -> TokenResponse:
+	def fetch_token() -> TokenResponse:
 		raise NotImplementedError
 
 class AuthorizationCodeClient(TokenClient):
-	def retrieve_token():
-		...
+	grant: AuthorizationCodeGrant
 
-class ImplicitClient(TokenClient):
-	def retrieve_token():
+	def fetch_token() -> TokenResponse:
 		...
 
 class ResourceOwnerPasswordCredentialsClient(TokenClient):
-	def retrieve_token():
+	grant: ResourceOwnerPasswordCredentialsGrant
+
+	def fetch_token() -> TokenResponse:
 		...
 
-class ClientCredentialsClient(TokenClient[ClientCredentialsGrant]):
-	def retrieve_token() -> TokenResponse:
-		headers = basic_auth_header(self.client_credentials)
+class ClientCredentialsClient(TokenClient):
+	grant: ClientCredentialsGrant
+
+	def fetch_token() -> TokenResponse:
 		r = Request('POST', self.provider.token_endpoint, headers=headers)
+		apply_client_credentials_basic_auth(r, self.client_credentials)
 		resp = self.requestor.request(r)
-		resp = 
+		json_dict = json_from_response(resp)
+		return TokenResponse(json_dict)
+
+class RefreshTokenClient(TokenClient):
+	grant: RefreshTokenGrant
+
+	def fetch_token() -> TokenResponse:
+		...
 
 
-def basic_auth_header(client_credentials):
+def apply_client_credentials_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
 	client_id = client_credentials.client_id
 	client_secret = client_credentials.client_secret
-	basic_auth = 'basic ' + b64encode(f'{client_id}:{client_secret}'.encode()).decode()
-	return {'Authorization': basic_auth}
+	auth_string = 'basic ' + b64encode(f'{client_id}:{client_secret}'.encode()).decode()
+	request.headers['Authorization'] = auth_string
