@@ -2,7 +2,7 @@
 class Request:
 	"""An ABC that stores info about an outgoing request."""
 
-	def __init__(self, verb, url, params, data=None, headers=None):
+	def __init__(self, verb, url, params=None, data=None, headers=None):
 		r"""
 		Parameters
 		----------
@@ -19,7 +19,7 @@ class Request:
 		"""
 		self.verb = verb
 		self.url = url
-		self.params = params
+		self.params = {} if params is None else params
 		self.data = data
 		self.headers = {} if headers is None else headers
 

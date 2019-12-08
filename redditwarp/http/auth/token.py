@@ -15,5 +15,16 @@ class TokenResponse(_BaseBearerTokenDataclass):
 	state: Optional[str]
 	extra_params: Dict[str, str]
 
+	@classmethod
+	def from_json_dict(cls, json_dict):
+		return cls(
+			access_token=json_dict.pop('access_token'),
+			refresh_token=json_dict.pop('refresh_token', None),
+			expires_in=json_dict.pop('expires_in'),
+			scope=json_dict.pop('scope', None),
+			state=json_dict.pop('state', None),
+			extra_params=json_dict,
+		)
+
 class Token(_BaseBearerTokenDataclass):
 	pass

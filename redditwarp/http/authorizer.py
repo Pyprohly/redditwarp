@@ -1,8 +1,15 @@
 
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from .auth.client import TokenClient
+
 import time
 
 from .requestor import RequestorDecorator
+from .auth.token import Token
 
+TIMEOUT = 8
 
 class Authorizer:
 	"""Knows how to authorize requests."""
@@ -34,7 +41,7 @@ class Authorizer:
 		)
 		return token
 
-	def prepare_request(request: Request) -> None:
+	def prepare_request(self, request: Request) -> None:
 		if self.token_expired():
 			self.renew_token()
 		request.headers['Authorization'] = '{0.token_type} {0.access_token}'.format(self.token)
@@ -57,13 +64,13 @@ class Authorized(RequestorDecorator):
 		The requestor used for refreshing credentials.
 	"""
 
-	def __init__(self, requestor: Requestor, authorizer: Optional[Authorizer] = None):
+	def __init__(self, requestor: Requestor, authorizer: Optional[Authorizer] = None) -> None:
 		super().__init__(requestor)
 		self.authorizer = Authorizer() if authorizer is None else authorizer
 
-	def request(self, request, timeout=TIMEOUT):
+	def request(self, request: Request, timeout: int = TIMEOUT) -> Response:
 		self.prepare_request(request)
-		response = self.requestor.request(request)
+		response = self.requestor.request(request, timeout=timeout)
 
 		if response.status == 401:
 			raise AssertionError('401 response')
@@ -72,5 +79,5 @@ class Authorized(RequestorDecorator):
 
 		return response
 
-	def prepare_request(self, request) -> None:
+	def prepare_request(self, request: Request) -> None:
 		self.authorizer.prepare_request(request)

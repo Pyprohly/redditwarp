@@ -1,5 +1,5 @@
 
-from typing import ClassVar
+from typing import ClassVar, Optional
 from dataclasses import dataclass
 
 @dataclass
@@ -63,8 +63,8 @@ class _AuthorizationGrantRequest:
 	scope: Optional[str]
 	state: Optional[str]
 
-class AuthorizationCodeGrantRequest(AuthorizationGrantRequest):
+class AuthorizationCodeGrantRequest(_AuthorizationGrantRequest):
 	response_type = 'code'
 
-class ImplicitGrantRequest(AuthorizationGrantRequest):
+class ImplicitGrantRequest(_AuthorizationGrantRequest):
 	response_type = 'token'

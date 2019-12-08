@@ -1,4 +1,11 @@
 
+
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from typing import Dict, Optional
+	from .request import Request
+
 import abc
 
 class Response:
