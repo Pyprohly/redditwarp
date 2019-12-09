@@ -35,6 +35,6 @@ class TokenResponse:
 class Token:
 	token_type: ClassVar[str] = 'bearer'
 	access_token: str
-	expires_in: Optional[int]
-	refresh_token: Optional[str]
-	scope: Optional[str]
+	expires_in: Optional[int] = None
+	refresh_token: Optional[str] = None
+	scope: Optional[str] = None

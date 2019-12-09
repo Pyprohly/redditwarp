@@ -14,7 +14,7 @@ TIMEOUT = 8
 class Authorizer:
 	"""Knows how to authorize requests."""
 
-	def __init__(self, token_client: TokenClient, expiry_skew: int = 60) -> None:
+	def __init__(self, token_client: TokenClient, token: Optional[Token] = None, expiry_skew: int = 30) -> None:
 		self.token_client = token_client
 		self.expiry_skew = expiry_skew
 		self.expiry_time = 0
@@ -35,6 +35,7 @@ class Authorizer:
 			access_token=tr.access_token,
 			refresh_token=tr.refresh_token,
 			expires_in=expires_in,
+			scope=tr.scope,
 		)
 		return token
 
@@ -44,7 +45,7 @@ class Authorizer:
 		request.headers['Authorization'] = '{0.token_type} {0.access_token}'.format(self.token)
 
 	def remaining_time(self) -> int:
-		return int(time.monotonic()) - self.expiry_time
+		return self.expiry_time - int(time.monotonic())
 
 
 class Authorized(RequestorDecorator):
