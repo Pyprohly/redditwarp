@@ -31,10 +31,9 @@ class Request:
 			('data', self.data),
 			('headers', self.headers)
 		)
-		return '%s(%s%s)' % (
+		return '%s(%s)' % (
 				type(self).__name__,
-				', '.join('%s=%r' % t for t in attrs),
-				f', **{self.kwargs}' if self.kwargs else '')
+				', '.join('%s=%r' % t for t in attrs))
 
 	def __member_keys(self):
 		return ('verb', 'url', 'params', 'data', 'headers')

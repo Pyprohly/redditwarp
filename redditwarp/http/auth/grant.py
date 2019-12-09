@@ -35,12 +35,14 @@ class ClientCredentialsGrant(AuthorizationGrant):
 class RefreshTokenGrant(AuthorizationGrant):
 	grant_type = 'refresh_token'
 	refresh_token: str
+	scope: Optional[str] = None
 
 @dataclass
 class InstalledClientGrant(AuthorizationGrant):
 	# A reddit-specific extension grant.
 	grant_type = 'https://oauth.reddit.com/grants/installed_client'
 	device_id: str
+	scope: Optional[str] = None
 
 
 ###

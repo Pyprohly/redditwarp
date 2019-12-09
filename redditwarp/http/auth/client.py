@@ -8,10 +8,11 @@ if TYPE_CHECKING:
 	from ..requestor import Requestor
 
 from base64 import b64encode
+from dataclasses import asdict
 
 from .token import TokenResponse
 from ..request import Request
-from ..util import json_from_response
+from ..util import response_json
 
 
 class TokenClient:
@@ -31,40 +32,29 @@ class TokenClient:
 		self._grant = grant
 
 	def fetch_token(self) -> TokenResponse:
-		raise NotImplementedError
+		params = {k: v for k, v in asdict(self.grant).items() if v}
+		r = Request('POST', self.provider.token_endpoint, params=params)
+		apply_basic_auth(self.client_credentials, r)
+		resp = self.requestor.request(r)
+		json_dict = response_json(resp)
+		return TokenResponse(**json_dict)
+
 
 class AuthorizationCodeClient(TokenClient):
 	grant: AuthorizationCodeGrant
 
-	def fetch_token(self) -> TokenResponse:
-		...
-
 class ResourceOwnerPasswordCredentialsClient(TokenClient):
 	grant: ResourceOwnerPasswordCredentialsGrant
-
-	def fetch_token(self) -> TokenResponse:
-		...
 
 class ClientCredentialsClient(TokenClient):
 	grant: ClientCredentialsGrant
 
-	def fetch_token(self) -> TokenResponse:
-		params = {'grant_type': self.grant.grant_type}
-		r = Request('POST', self.provider.token_endpoint, params=params)
-		apply_client_credentials_basic_auth(r, self.client_credentials)
-		resp = self.requestor.request(r)
-		json_dict = json_from_response(resp)
-		return TokenResponse.from_json_dict(json_dict)
-
 class RefreshTokenClient(TokenClient):
 	grant: RefreshTokenGrant
 
-	def fetch_token(self) -> TokenResponse:
-		...
 
-
-def apply_client_credentials_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
-	client_id = client_credentials.client_id
-	client_secret = client_credentials.client_secret
-	auth_string = 'basic ' + b64encode(f'{client_id}:{client_secret}'.encode()).decode()
+def apply_basic_auth(client_credentials: ClientCredentials, request: Request) -> None:
+	ci = client_credentials.client_id
+	cs = client_credentials.client_secret
+	auth_string = 'basic ' + b64encode(f'{ci}:{cs}'.encode()).decode()
 	request.headers['Authorization'] = auth_string

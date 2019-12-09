@@ -6,8 +6,8 @@ if TYPE_CHECKING:
 
 import json
 
-def json_from_response(response: Response) -> Dict[str, Any]:
-	if 'application/json' not in response.headers['Content-Type']:
+def response_json(response: Response) -> Dict[str, Any]:
+	if not response.headers['Content-Type'].startswith('application/json'):
 		raise ValueError
 	text = response.data.decode()
 	json_dict = json.loads(text)
