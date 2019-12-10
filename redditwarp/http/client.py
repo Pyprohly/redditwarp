@@ -9,7 +9,6 @@ from .transport.requests import Session
 
 from .auth.provider import Provider
 from .auth.credentials import ClientCredentials
-from .auth.grant import ClientCredentialsGrant, auto_grant_factory
 from .auth.client import ClientCredentialsClient
 from .authorizer import Authorized, Authorizer
 
@@ -19,32 +18,15 @@ RESOURCE_BASE_URL = 'https://oauth.reddit.com'
 DEFAULT_PROVIDER = Provider(AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, RESOURCE_BASE_URL)
 
 class HTTPClient:
-	@property
-	def authorizer(self):
-		return self._authorizer
-
 	def __init__(self, session: Session, authorizer: Authorizer) -> None:
-		"""
-		Attributes
-		----------
-		session: :class:`~.Requestor`
-		"""
-		#self.session = Ratelimited(Retryable(Session()))
+		# Ratelimited(Retryable(Session()))
+		self.session = session
+		self.authorizer = authorizer
+		self.resource_base_url = RESOURCE_BASE_URL
+		self.requestor = Authorized(session, authorizer)
 
-		self.url_base = RESOURCE_BASE_URL
-
-		self._token_requestor = Session()
-		self.session = Session()
-
-		provider = Provider(self.AUTHORIZATION_ENDPOINT, self.TOKEN_ENDPOINT, self.RESOURCE_BASE_URL)
-		client_credentials = ClientCredentials('GdfdxbF8ea73oQ', 'sOkVUjcTWNMZY11vWzlMAy4J7UE')
-		grant = ClientCredentialsGrant()
-		token_client = ClientCredentialsClient(self._token_requestor, provider, client_credentials, grant)
-		self._authorizer = Authorizer(token_client)
-		authorized_session = Authorized(self.session, self._authorizer)
-		self.requestor = authorized_session
-
-	def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None, data: Any, headers: Dict[str, str] = None) -> Response:
-		url = self.url_base + path
+	def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None,
+			data: Any, headers: Dict[str, str] = None, timeout: int = 8) -> Response:
+		url = self.resource_base_url + path
 		req = Request(verb, url, params=params, data=data, headers=headers)
 		return self.requestor.request(req)
