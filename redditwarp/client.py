@@ -44,11 +44,26 @@ class Client:
 		access_token: Optional[str]
 		username: Optional[str]
 		password: Optional[str]
+
+
+		'''
 		authorizer: Optional[:class`Authorizer`]
 			Explicit authorization configuration.
 			For instance if you want to limit scopes.
 		session: Optional[:class:`Session`]
 			Use this if you need to intercept HTTP requests.
+
+		'''
+		grant: Optional[:class`AuthorizationGrant`]
+			Configure the authorization grant explicitly. You'd use this parameter if you need
+			control over authorization scopes, or if you need to use the Installed Client grant type.
+		token_interceptor: Optional[:class`RequestorDecorator`]
+			Wrap the underlying session object with this object.
+			The final opportunity to modify outgoing requests, or capturing incoming server responses
+			The 'final call' to intercept and potentially modify requests. You can also use this to capture incoming server responses
+		interceptor: Optional[:class`RequestorDecorator`]
+			Similar to :param:`token_interceptor` but for requests that are made to the resource server.
+			There should be no need to use this (RedditWarp already does logging).
 
 		Raises
 		------
@@ -64,9 +79,12 @@ class Client:
 			if grant is None:
 				raise ValueError('could not automatically make an authorization grant from the provided credentials.')
 
+			if session is None:
+				session = Session()
+
 			authorizer = Authorizer(
 				TokenClient(
-					Session(),
+					session,
 					_DEFAULT_PROVIDER,
 					ClientCredentials(client_id, client_secret),
 					grant,

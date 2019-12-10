@@ -22,9 +22,6 @@ class Session(Requestor):
 	def __init__(self) -> None:
 		self.session = self._new_session()
 
-		ua = 'RedditWarp/{0} Python/{1[0]}.{1[1]} requests/{2}'
-		self.user_agent = ua.format('0.1', sys.version_info, requests.__version__)
-
 	def _new_session(self) -> requests.Session:
 		retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
 		session = requests.Session()
@@ -34,9 +31,6 @@ class Session(Requestor):
 
 	def request(self, request: Request, timeout: int = TIMEOUT) -> Response:
 		r = request
-
-		r.headers['User-Agent'] = self.user_agent
-
 		request_partial = partial(
 			self.session.request,
 			method=r.verb,
@@ -46,7 +40,7 @@ class Session(Requestor):
 			timeout=timeout,
 		)
 		d = r.data
-		request_func = PAYLOAD_DISPATCH_TABLE[type(d)]
+		request_func = _PAYLOAD_DISPATCH_TABLE[type(d)]
 		resp = request_func(request_partial, d)
 		response = Response(
 			status=resp.status_code,
@@ -55,7 +49,7 @@ class Session(Requestor):
 			response=resp,
 			request=r,
 		)
-		import builtins; builtins.r = response
+		0/0
 		return response
 
 		#try:
@@ -64,7 +58,7 @@ class Session(Requestor):
 		#else:
 
 
-PAYLOAD_DISPATCH_TABLE = {
+_PAYLOAD_DISPATCH_TABLE = {
 	type(None): lambda func, data: func(),
 	payload.Raw: lambda func, data: func(data=data),
 	payload.FormData: lambda func, data: func(data=data),
