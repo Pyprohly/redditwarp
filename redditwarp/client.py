@@ -32,7 +32,7 @@ class Client:
 	def __init__(self,
 			client_id=None, client_secret=None, refresh_token=None,
 			access_token=None, *, username=None, password=None,
-			authorizer=None, session=None):
+			grant=None, token_interceptor=None, interceptor=None):
 		"""
 		Parameters
 		----------
@@ -44,16 +44,6 @@ class Client:
 		access_token: Optional[str]
 		username: Optional[str]
 		password: Optional[str]
-
-
-		'''
-		authorizer: Optional[:class`Authorizer`]
-			Explicit authorization configuration.
-			For instance if you want to limit scopes.
-		session: Optional[:class:`Session`]
-			Use this if you need to intercept HTTP requests.
-
-		'''
 		grant: Optional[:class`AuthorizationGrant`]
 			Configure the authorization grant explicitly. You'd use this parameter if you need
 			control over authorization scopes, or if you need to use the Installed Client grant type.
@@ -63,39 +53,26 @@ class Client:
 			The 'final call' to intercept and potentially modify requests. You can also use this to capture incoming server responses
 		interceptor: Optional[:class`RequestorDecorator`]
 			Similar to :param:`token_interceptor` but for requests that are made to the resource server.
-			There should be no need to use this (RedditWarp already does logging).
 
 		Raises
 		------
 		TypeError
-			If direct credentials were provided but 
+			If bare credentials were provided but parameter `grant` was specified.
+		ValueError
+			An authorization grant could not automatically be made from the bare credentials provided.
 		"""
 		creds = (client_id, client_secret, refresh_token, username, password)
-		if authorizer:
+		if grant:
 			if any(creds):
-				raise TypeError("you should not pass direct credentials if `authorizer` is used")
+				raise TypeError('if you provide a grant you should not pass bare credentials')
 		else:
 			grant = auto_grant_factory(*creds)
 			if grant is None:
-				raise ValueError('could not automatically make an authorization grant from the provided credentials.')
+				raise ValueError('could not automatically make authorization grant from the provided credentials')
 
-			if session is None:
-				session = Session()
-
-			authorizer = Authorizer(
-				TokenClient(
-					session,
-					_DEFAULT_PROVIDER,
-					ClientCredentials(client_id, client_secret),
-					grant,
-				),
-				Token(access_token) if access_token else None,
-			)
-
-		if session is None:
-			session = Session()
-
-		self._init(HTTPClient(session, authorizer))
+		client_credentials = ClientCredentials(client_id, client_secret)
+		token = Token(access_token) if access_token else None
+		self._init(HTTPClient(client_credentials, grant, token, token_interceptor, interceptor))
 
 	def _init(self, http):
 		self.http = http

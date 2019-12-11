@@ -56,13 +56,7 @@ class Authorized(RequestorDecorator):
 		self.authorizer = Authorizer() if authorizer is None else authorizer
 
 	def request(self, request: Request, timeout: int = TIMEOUT) -> Response:
-		print('**********')
-		print(request.headers)
-		print('**********')
 		self.prepare_request(request)
-		print('**********')
-		print(request.headers)
-		print('**********')
 		response = self.requestor.request(request, timeout=timeout)
 
 		if response.status == 401:
