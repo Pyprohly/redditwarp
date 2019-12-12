@@ -27,10 +27,12 @@ class TokenClient:
 		self.grant = grant
 
 	def fetch_token(self) -> TokenResponse:
-		params = {k: v for k, v in self.grant.__dict__.items() if v}
+		params = {k: v for k, v in vars(self.grant).items() if v}
 		params['grant_type'] = self.grant.grant_type
+
 		r = Request('POST', self.provider.token_endpoint, params=params)
 		apply_basic_auth(self.client_credentials, r)
+
 		resp = self.requestor.request(r)
 		json_dict = response_json(resp)
 		import builtins; builtins.resp = resp

@@ -2,12 +2,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-	from .auth.client import TokenClient
+	from ..auth.client import TokenClient
 
 import time
 
 from .requestor import RequestorDecorator
-from .auth.token import Token
+from ..auth.token import Token
 
 TIMEOUT = 8
 

@@ -16,7 +16,7 @@ class AuthorizationGrant:
 class AuthorizationCodeGrant(AuthorizationGrant):
 	grant_type = 'authorization_code'
 	code: str
-	redirect_uri: Optional[str] = None
+	redirect_uri: Optional[str]
 	client_id: Optional[str] = None
 
 @dataclass
@@ -46,24 +46,20 @@ class InstalledClientGrant(AuthorizationGrant):
 
 
 def auto_grant_factory(
-	client_id: str,
-	client_secret: str,
 	refresh_token: str,
 	username: str,
 	password: str,
-) -> AuthorizationGrant:
-	"""Produce a non-expiring grant from the given credentials.
+) -> Optional[AuthorizationGrant]:
+	"""Produce a simple non-expiring grant from the given credentials.
 
 	This function will not produce the (Reddit-specific) Installed Client
-	grant type.
+	grant type. That grant type should be explicitly created if needed.
 	"""
-	if client_id and client_secret:
-		if refresh_token:
-			return RefreshTokenGrant(refresh_token)
-		if username and password:
-			return ResourceOwnerPasswordCredentialsGrant(username, password)
-		return ClientCredentialsGrant()
-	return None
+	if refresh_token:
+		return RefreshTokenGrant(refresh_token)
+	if username and password:
+		return ResourceOwnerPasswordCredentialsGrant(username, password)
+	return ClientCredentialsGrant()
 
 
 ###

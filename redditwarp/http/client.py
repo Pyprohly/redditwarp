@@ -11,15 +11,15 @@ import requests
 from .request import Request
 from .transport.requests import Session
 
-from .auth.provider import Provider
-from .auth.credentials import ClientCredentials
-from .authorizer import Authorized, Authorizer
-from .auth.provider import Provider
-from .auth.credentials import ClientCredentials
-from .auth.grant import auto_grant_factory
-from .auth.client import TokenClient
-from .auth.token import Token
-from .authorizer import Authorized, Authorizer
+from ..auth.provider import Provider
+from ..auth.credentials import ClientCredentials
+from ..authorizer import Authorized, Authorizer
+from ..auth.provider import Provider
+from ..auth.credentials import ClientCredentials
+from ..auth.grant import auto_grant_factory
+from ..auth.client import TokenClient
+from ..auth.token import Token
+from ..authorizer import Authorized, Authorizer
 
 AUTHORIZATION_ENDPOINT = 'https://www.reddit.com/api/v1/authorize'
 TOKEN_ENDPOINT = 'https://www.reddit.com/api/v1/access_token'
@@ -35,6 +35,10 @@ class HTTPClient:
 	def user_agent(self, value):
 		self.session.headers['User-Agent'] = value
 		self._token_session.headers['User-Agent'] = value
+
+	@property
+	def token_interceptor(self):
+		return self._token_interceptor
 
 	def __init__(self,
 		client_credentials: ClientCredentials,
@@ -57,6 +61,7 @@ class HTTPClient:
 			token,
 		)
 
+		#self._requestor_stack_bottom = 
 		# Ratelimited(Retryable(Session()))
 		self.requestor = Authorized(session, authorizer)
 		self.resource_base_url = RESOURCE_BASE_URL
@@ -64,8 +69,7 @@ class HTTPClient:
 				.format('alpha', sys.version_info, requests.__version__)
 
 	def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None,
-			data: Any, headers: Dict[str, str] = None, timeout: int = 8) -> Response:
+			data: Any = None, headers: Dict[str, str] = None, timeout: int = 8) -> Response:
 		url = self.resource_base_url + path
 		r = Request(verb, url, params=params, data=data, headers=headers)
-		r.headers['User-Agent'] = self.user_agent
 		return self.requestor.request(r)
