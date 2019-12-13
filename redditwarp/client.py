@@ -1,10 +1,8 @@
 
 from .http import HTTPClient
-from .http.client import DEFAULT_PROVIDER as _DEFAULT_PROVIDER
 from .http.authorizer import Authorizer
 from .http.transport.requests import Session
 
-from .auth.provider import Provider
 from .auth.credentials import ClientCredentials
 from .auth.grant import auto_grant_factory
 from .auth.client import TokenClient
@@ -17,12 +15,11 @@ class Client:
 
 	@classmethod
 	def from_http(cls, http):
-		"""Alternative constructor for testing purposes, or advanced use.
+		"""Alternative constructor. For testing purposes. For advanced uses.
 
 		Parameters
 		----------
-		http: Optional[:class:`BaseHTTPClient`]
-			Use a custom HTTPClient.
+		http: Optional[:class:`HTTPClient`]
 		"""
 		self = cls.__new__(cls)
 		self._init(http)
@@ -36,9 +33,9 @@ class Client:
 		Parameters
 		----------
 		client_id: str
-			Client ID.
 		client_secret: str
-			Client secret.
+			Required for all grant types except for the (Reddit-specific) Installed Client grant type.
+			If you're using an Installed Client grant you may set this to an empty string.
 		refresh_token: Optional[str]
 		access_token: Optional[str]
 		username: Optional[str]
@@ -56,20 +53,20 @@ class Client:
 		Raises
 		------
 		TypeError
-			If bare credentials were provided but parameter `grant` was specified.
+			If bare credentials were provided and the `grant` parameter was used.
 		"""
 		auto_grant = (refresh_token, username, password)
-		if grant:
-			if any(auto_grant):
+		if any(auto_grant):
+			if grant:
 				raise TypeError('you should not pass grant credentials if you explicitly provide a grant')
-		else:
 			grant = auto_grant_factory(*auto_grant)
 			if grant is None:
+				assert False
 				raise ValueError('could not automatically create an authorization grant from the provided grant credentials')
 
-		client_credentials = ClientCredentials(client_id, client_secret)
+		cc = ClientCredentials(client_id, client_secret)
 		token = Token(access_token) if access_token else None
-		self._init(HTTPClient(client_credentials, grant, token, token_interceptor, interceptor))
+		self._init(HTTPClient(cc, grant, token, token_interceptor, interceptor))
 
 	def _init(self, http):
 		self.http = http

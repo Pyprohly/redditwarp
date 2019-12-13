@@ -13,18 +13,13 @@ from .transport.requests import Session
 
 from ..auth.provider import Provider
 from ..auth.credentials import ClientCredentials
-from ..authorizer import Authorized, Authorizer
 from ..auth.provider import Provider
 from ..auth.credentials import ClientCredentials
 from ..auth.grant import auto_grant_factory
 from ..auth.client import TokenClient
 from ..auth.token import Token
-from ..authorizer import Authorized, Authorizer
-
-AUTHORIZATION_ENDPOINT = 'https://www.reddit.com/api/v1/authorize'
-TOKEN_ENDPOINT = 'https://www.reddit.com/api/v1/access_token'
-RESOURCE_BASE_URL = 'https://oauth.reddit.com'
-DEFAULT_PROVIDER = Provider(AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, RESOURCE_BASE_URL)
+from ..auth.helper import TOKEN_ENDPOINT, RESOURCE_BASE_URL
+from .authorizer import Authorized, Authorizer
 
 class HTTPClient:
 	@property
@@ -48,13 +43,13 @@ class HTTPClient:
 		interceptor: Optional[RequestorDecorator] = None,
 	) -> None:
 		self.session = session = Session()
-		session.headers['raw_json'] = '1'
+		session.params['raw_json'] = '1'
 
 		self._token_session = Session()
 		self.authorizer = authorizer = Authorizer(
 			TokenClient(
 				self._token_session,
-				DEFAULT_PROVIDER,
+				TOKEN_ENDPOINT,
 				client_credentials,
 				grant,
 			),

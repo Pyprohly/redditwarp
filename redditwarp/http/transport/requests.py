@@ -43,7 +43,7 @@ class Session(BaseSession):
 		self._prepare_request(request)
 
 		r = request
-		request_partial = partial(
+		request_func_partial = partial(
 			self.session.request,
 			method=r.verb,
 			url=r.url,
@@ -54,7 +54,7 @@ class Session(BaseSession):
 
 		d = r.data
 		request_func = _PAYLOAD_DISPATCH_TABLE[type(d)]
-		resp = request_func(request_partial, d)
+		resp = request_func(request_func_partial, d)
 		response = Response(
 			status=resp.status_code,
 			headers=resp.headers,

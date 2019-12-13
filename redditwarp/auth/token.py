@@ -16,6 +16,7 @@ class TokenResponse:
 		self.refresh_token = refresh_token
 		self.scope = scope
 		self.extra_params = kwargs
+		del kwargs['token_type']
 
 	def _members(self):
 		return {
