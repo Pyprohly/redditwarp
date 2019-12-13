@@ -17,7 +17,7 @@ class BaseSession(Requestor):
 	params: Dict[str, Union[str, bytes]]
 		Dictionary of querystring data to attach to each Request.
 	"""
-	def __init__(self):
+	def __init__(self) -> None:
 		self.headers = {}
 		self.params = {}
 
