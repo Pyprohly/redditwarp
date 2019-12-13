@@ -6,20 +6,18 @@ if TYPE_CHECKING:
 
 from urllib.parse import urlencode
 
-from .provider import Provider
+__all__ = (
+	'AUTHORIZATION_ENDPOINT',
+	'AUTHORIZATION_ENDPOINT_MOBILE',
+	'TOKEN_ENDPOINT',
+	'RESOURCE_BASE_URL',
+	'authorization_url',
+)
 
-
-AUTHORIZATION_ENDPOINT = 'https://www.reddit.com/api/v1/authorize'
-AUTHORIZATION_ENDPOINT_MOBILE = AUTHORIZATION_ENDPOINT + '.compact'
-TOKEN_ENDPOINT = 'https://www.reddit.com/api/v1/access_token'
-RESOURCE_BASE_URL = 'https://oauth.reddit.com'
-
-DEFAULT_PROVIDER = Provider(AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, RESOURCE_BASE_URL)
-MOBILE_PROVIDER = Provider(AUTHORIZATION_ENDPOINT_MOBILE, TOKEN_ENDPOINT, RESOURCE_BASE_URL)
-
-
-class AuthorizationCodeGrantFlowRequestHelper:
-	...
+AUTHORIZATION_ENDPOINT = "https://www.reddit.com/api/v1/authorize"
+AUTHORIZATION_ENDPOINT_MOBILE = AUTHORIZATION_ENDPOINT + ".compact"
+TOKEN_ENDPOINT = "https://www.reddit.com/api/v1/access_token"
+RESOURCE_BASE_URL = "https://oauth.reddit.com"
 
 def authorization_url(
 	url: str,

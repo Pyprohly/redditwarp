@@ -34,7 +34,7 @@ url = authorization_url(
 	redirect_uri,
 	scope,
 	state,
-	extra_params={'duration': 'permanent'},
+	dict(duration='permanent'),
 )
 print(url)
 print()

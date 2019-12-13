@@ -17,8 +17,6 @@ from .. import payload
 from ..requestor import Requestor
 from ..response import Response
 
-TIMEOUT = 8
-
 _PAYLOAD_DISPATCH_TABLE = {
 	type(None): lambda func, data: func(),
 	payload.Raw: lambda func, data: func(data=data),
@@ -39,7 +37,7 @@ class Session(BaseSession):
 		se.mount('https://', retry_adapter)
 		return se
 
-	def request(self, request: Request, timeout: int = TIMEOUT) -> Response:
+	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		self._prepare_request(request)
 
 		r = request
@@ -69,5 +67,5 @@ class Session(BaseSession):
 		#	raise exceptions.TransportError(exc) from exc
 		#else:
 
-	def close(self):
+	def close(self) -> None:
 		...

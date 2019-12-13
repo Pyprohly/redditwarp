@@ -3,10 +3,13 @@ from .http import HTTPClient
 from .http.authorizer import Authorizer
 from .http.transport.requests import Session
 
-from .auth.credentials import ClientCredentials
-from .auth.grant import auto_grant_factory
-from .auth.client import TokenClient
-from .auth.token import Token
+from .auth import (
+	ClientCredentials,
+	TokenClient,
+	Token,
+	auto_grant_factory,
+)
+
 from .http.authorizer import Authorized, Authorizer
 
 
@@ -55,14 +58,15 @@ class Client:
 		TypeError
 			If bare credentials were provided and the `grant` parameter was used.
 		"""
-		auto_grant = (refresh_token, username, password)
-		if any(auto_grant):
-			if grant:
-				raise TypeError('you should not pass grant credentials if you explicitly provide a grant')
-			grant = auto_grant_factory(*auto_grant)
+		auto_grant_creds = (refresh_token, username, password)
+		if grant is None:
+			grant = auto_grant_factory(*auto_grant_creds)
 			if grant is None:
 				assert False
 				raise ValueError('could not automatically create an authorization grant from the provided grant credentials')
+		else:
+			if any(auto_grant_creds):
+				raise TypeError('you should not pass grant credentials if you explicitly provide a grant')
 
 		cc = ClientCredentials(client_id, client_secret)
 		token = Token(access_token) if access_token else None

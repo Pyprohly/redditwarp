@@ -6,8 +6,6 @@ if TYPE_CHECKING:
 
 from ..requestor import Requestor
 
-TIMEOUT = 8
-
 class BaseSession(Requestor):
 	"""
 	Attributes
@@ -28,7 +26,7 @@ class BaseSession(Requestor):
 		p = request.params
 		p.update({**self.params, **p})
 
-	def request(self, request: Request, timeout: int = TIMEOUT) -> Response:
+	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		raise NotImplementedError
 
 	def close(self) -> None:

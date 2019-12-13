@@ -1,6 +1,8 @@
 
-from typing import ClassVar, Optional, Dict, Any
+from typing import ClassVar, Optional, Any
 from dataclasses import dataclass
+
+__all__ = ('TokenResponse', 'Token')
 
 class TokenResponse:
 	token_type: ClassVar[str] = 'bearer'

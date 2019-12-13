@@ -1,11 +1,26 @@
 
-from typing import ClassVar, Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+	from typing import Optional
+
+from typing import ClassVar
 from dataclasses import dataclass
+
+__all__ = (
+	'AuthorizationGrant',
+	'AuthorizationCodeGrant',
+	'ResourceOwnerPasswordCredentialsGrant',
+	'ClientCredentialsGrant',
+	'RefreshTokenGrant',
+	'InstalledClientGrant',
+	'auto_grant_factory',
+)
 
 @dataclass
 class AuthorizationGrant:
 	"""An authorization grant is a credential representing the resource
-	owner's authorization that's used to exchange for an access token.
+	owner's authorization that's used to exchange for a bearer token.
 
 	An empty string should be treated the same as `None` in all fields that
 	are annotated as `Optional`.
@@ -39,8 +54,7 @@ class RefreshTokenGrant(AuthorizationGrant):
 
 @dataclass
 class InstalledClientGrant(AuthorizationGrant):
-	# A reddit-specific extension grant.
-	grant_type = 'https://oauth.reddit.com/grants/installed_client'
+	grant_type = "https://oauth.reddit.com/grants/installed_client"
 	device_id: str
 	scope: Optional[str] = None
 
@@ -50,40 +64,19 @@ def auto_grant_factory(
 	username: str,
 	password: str,
 ) -> Optional[AuthorizationGrant]:
-	"""Produce a simple non-expiring grant from the given credentials.
+	"""Produce a simple, non-expiring grant from the given credentials.
 
-	This function will not produce the (Reddit-specific) Installed Client
-	grant type. That grant type should be explicitly created if needed.
+	Possible outputs:
+
+		* Refresh Token
+		* Resource Owner Password Credentials
+		* Client Credentials
+
+	Note this function won't return the (Reddit-specific) Installed Client
+	grant type. This grant should be explicitly created if needed.
 	"""
 	if refresh_token:
 		return RefreshTokenGrant(refresh_token)
 	if username and password:
 		return ResourceOwnerPasswordCredentialsGrant(username, password)
 	return ClientCredentialsGrant()
-
-
-###
-
-
-@dataclass
-class _AuthorizationGrantRequest:
-	"""Used in the initital request part of the Authorization Code
-	and Implicit flows.
-
-	Authorization Code flow: a request must be made before the
-	authorization grant can be constructed.
-
-	Implicit flow: the initial request immediately returns an
-	access token.
-	"""
-	response_type: ClassVar[str] = ''
-	client_id: str
-	redirect_uri: Optional[str]
-	scope: Optional[str]
-	state: Optional[str]
-
-class AuthorizationCodeGrantRequest(_AuthorizationGrantRequest):
-	response_type = 'code'
-
-class ImplicitGrantRequest(_AuthorizationGrantRequest):
-	response_type = 'token'

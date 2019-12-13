@@ -1,13 +1,15 @@
 
-import abc
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
+if TYPE_CHECKING:
+	from .request import Request
+	from .response import Response
+	from .requestor import Requestor
 
-TIMEOUT = 8
-
-class Requestor(abc.ABC):
+class Requestor:
 	"""Interface. A Requestor is a thing that makes requests."""
 
-	@abc.abstractmethod
-	def request(self, request, timeout=None):
+	def request(self, request: Request, timeout: Optional[int]) -> Response:
 		r"""Make an HTTP request.
 
 		Parameters
@@ -31,8 +33,8 @@ class Requestor(abc.ABC):
 		raise NotImplementedError
 
 class RequestorDecorator(Requestor):
-	def __init__(self, requestor):
+	def __init__(self, requestor: Requestor) -> None:
 		self.requestor = requestor
 
-	def request(self, request, **kwargs):
-		return self.requestor.request(request, **kwargs)
+	def request(self, request: Request, timeout: Optional[int]) -> Response:
+		return self.requestor.request(request, timeout)

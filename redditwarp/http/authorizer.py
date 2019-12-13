@@ -7,9 +7,7 @@ if TYPE_CHECKING:
 import time
 
 from .requestor import RequestorDecorator
-from ..auth.token import Token
-
-TIMEOUT = 8
+from ..auth import Token
 
 class Authorizer:
 	"""Knows how to authorize requests."""
@@ -53,16 +51,16 @@ class Authorized(RequestorDecorator):
 
 	def __init__(self, requestor: Requestor, authorizer: Optional[Authorizer] = None) -> None:
 		super().__init__(requestor)
-		self.authorizer = Authorizer() if authorizer is None else authorizer
+		self.authorizer = authorizer or Authorizer()
 
-	def request(self, request: Request, timeout: int = TIMEOUT) -> Response:
+	def request(self, request: Request, timeout: Optional[int]) -> Response:
 		self.prepare_request(request)
-		response = self.requestor.request(request, timeout=timeout)
+		response = self.requestor.request(request, timeout)
 
 		if response.status == 401:
 			raise AssertionError('401 response')
-			self.prepare_request(request)
-			response = self.requestor.request(request, timeout=timeout)
+			self.authorizer.renew_token()
+			response = self.requestor.request(request, timeout)
 
 		return response
 

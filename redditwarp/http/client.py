@@ -1,25 +1,19 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Dict
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+	from typing import Optional, Dict
+	from ..auth import ClientCredentials, Token
 	from .response import Response
 	from .requestor import RequestorDecorator
 
 import sys
 import requests
 
+from ..auth import TokenClient, TOKEN_ENDPOINT, RESOURCE_BASE_URL
 from .request import Request
 from .transport.requests import Session
-
-from ..auth.provider import Provider
-from ..auth.credentials import ClientCredentials
-from ..auth.provider import Provider
-from ..auth.credentials import ClientCredentials
-from ..auth.grant import auto_grant_factory
-from ..auth.client import TokenClient
-from ..auth.token import Token
-from ..auth.helper import TOKEN_ENDPOINT, RESOURCE_BASE_URL
-from .authorizer import Authorized, Authorizer
+from .authorizer import Authorizer, Authorized
 
 class HTTPClient:
 	@property
@@ -67,4 +61,4 @@ class HTTPClient:
 			data: Any = None, headers: Dict[str, str] = None, timeout: int = 8) -> Response:
 		url = self.resource_base_url + path
 		r = Request(verb, url, params=params, data=data, headers=headers)
-		return self.requestor.request(r)
+		return self.requestor.request(r, timeout)
