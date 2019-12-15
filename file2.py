@@ -13,9 +13,8 @@ from redditwarp.auth.helper import (
 )
 
 from redditwarp.auth.grant import AuthorizationCodeGrant
-from redditwarp.auth.credentials import ClientCredentials
+from redditwarp.auth.client import TokenClient, ClientCredentials
 from redditwarp.http.transport.requests import Session
-from redditwarp.auth.client import TokenClient
 
 #client = redditwarp.Client('GdfdxbF8ea73oQ', 'sOkVUjcTWNMZY11vWzlMAy4J7UE', username='Pyprohly', password='A2CVdajf2')
 
@@ -27,6 +26,7 @@ scope = '*'
 state = '136134345'
 redirect_uri = 'http://localhost:8080'
 
+'''
 url = authorization_url(
 	AUTHORIZATION_ENDPOINT,
 	'code',
@@ -59,8 +59,11 @@ response_dict = urllib.parse.parse_qs(query)
 response_dict = {k: v[0] for k, v in response_dict.items()}
 
 assert response_dict['state'] == state
+'''#'''
 
-grant = AuthorizationCodeGrant(response_dict['code'], redirect_uri)
+#code = response_dict['code']
+code = 'G_5AY8pGFy-VyJVWvWvDeZT26Cs'
+grant = AuthorizationCodeGrant(code, redirect_uri)
 client_credentials = ClientCredentials(client_id, client_secret)
 session = Session()
 session.headers['User-Agent'] = 'RedditWarp authorization code flow script'
@@ -70,6 +73,5 @@ print('Fetching token...')
 print()
 token = token_client.fetch_token()
 
-if token.refresh_token:
-	print(f"Refresh Token: {token.refresh_token}")
-print(f"Access Token:  {token.access_token}")
+print(f" Access Token: {token.access_token}")
+print(f"Refresh Token: {token.refresh_token}")

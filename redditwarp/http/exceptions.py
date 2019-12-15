@@ -9,15 +9,17 @@ class TransmissionError(HTTPException):
 	The request failed to complete.
 	"""
 
-
-
 class ResponseError(HTTPException):
 	"""The request completed but the response indicated an error."""
 	def __init__(self, response):
 		self.response = response
 
 class ClientError(ResponseError):
-	"""HTTP 4XX family of errors."""
+	"""HTTP 4XX family of errors.
+
+	The request was badly formed or could not be fulfilled.
+	"""
+
 class BadRequest(ClientError):
 	"""A 400 HTTP error occurred."""
 
@@ -33,13 +35,9 @@ class ServerError(ResponseError):
 	The server failed to fulfill an apparently valid request.
 	"""
 
+class NetworkError: pass
+class BadRequest: pass
+class TimeoutError: pass
 
+class ContentCreationCooldown: pass
 
-class OAuthException(HTTPException):
-	"""Error class for authentication-related errors."""
-
-class InvalidToken(OAuthException):
-	pass
-
-class RefreshError(OAuthException):
-	"""Refreshing the credential's access token failed."""
