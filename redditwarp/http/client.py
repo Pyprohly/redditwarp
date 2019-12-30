@@ -14,6 +14,7 @@ from ..auth import TokenClient, TOKEN_ENDPOINT, RESOURCE_BASE_URL
 from .request import Request
 from .transport.requests import Session
 from .authorizer import Authorizer, Authorized
+from .ratelimiter import RateLimited
 
 class HTTPClient:
 	@property
@@ -51,8 +52,9 @@ class HTTPClient:
 		)
 
 		#self._requestor_stack_bottom = 
-		# Ratelimited(Retryable(Session()))
-		self.requestor = Authorized(session, authorizer)
+		# RateLimited(Retryable(Session()))
+		self.requestor = RateLimited(Authorized(session, authorizer))
+
 		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = 'RedditWarp/{0} Python/{1[0]}.{1[1]} requests/{2}' \
 				.format('alpha', sys.version_info, requests.__version__)

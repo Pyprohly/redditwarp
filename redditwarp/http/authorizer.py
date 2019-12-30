@@ -3,6 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from ..auth.client import TokenClient
+	from .requestor import Requestor
+	from .request import Request
+	from .response import Response
 
 import time
 
@@ -58,9 +61,11 @@ class Authorized(RequestorDecorator):
 		response = self.requestor.request(request, timeout)
 
 		if response.status == 401:
-			raise AssertionError('401 response')
 			self.authorizer.renew_token()
 			response = self.requestor.request(request, timeout)
+			if response.status == 401:
+				# ! Raise an HTTP level exception
+				raise AssertionError('401 response')
 
 		return response
 

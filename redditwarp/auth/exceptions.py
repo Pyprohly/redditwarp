@@ -18,6 +18,7 @@ class AuthResponseError(AuthError):
 		super().__init__()
 		self.response = response
 
+# ! Inherit from HTTP level Unauthorized later
 class Unauthorized(AuthResponseError):
 	pass
 
