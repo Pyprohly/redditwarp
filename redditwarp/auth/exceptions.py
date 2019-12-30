@@ -28,7 +28,7 @@ class OAuth2ErrorResponse(AuthResponseError):
 	@classmethod
 	def from_response(cls, response: Response):
 		json_dict = response_json(response)
-		return cls.from_json_dict(from_json_dict)
+		return cls.from_response_and_json(response, json_dict)
 
 	@classmethod
 	def from_response_and_json(cls, response: Response, json: Dict[str, Any]):
@@ -76,6 +76,5 @@ oauth_error_response_classes = {
 }
 
 
-# ! Inherit from HTTP level Unauthorized later
 class Unauthorized(AuthResponseError):
 	pass

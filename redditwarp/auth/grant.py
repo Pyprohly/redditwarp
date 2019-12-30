@@ -66,8 +66,6 @@ def auto_grant_factory(
 ) -> Optional[AuthorizationGrant]:
 	"""Produce a simple, non-expiring grant from the given credentials.
 
-	Possible outputs:
-
 		* Refresh Token
 		* Resource Owner Password Credentials
 		* Client Credentials

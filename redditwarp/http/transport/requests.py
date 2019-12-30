@@ -27,15 +27,15 @@ _PAYLOAD_DISPATCH_TABLE = {
 }
 
 class Session(BaseSession):
-	def __init__(self) -> None:
-		super().__init__()
-		self.session = self._new_session()
-
 	def _new_session(self) -> requests.Session:
 		retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
 		se = requests.Session()
 		se.mount('https://', retry_adapter)
 		return se
+
+	def __init__(self) -> None:
+		super().__init__()
+		self.session = self._new_session()
 
 	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		self._prepare_request(request)
@@ -52,20 +52,16 @@ class Session(BaseSession):
 
 		d = r.data
 		request_func = _PAYLOAD_DISPATCH_TABLE[type(d)]
-		resp = request_func(request_func_partial, d)
-		response = Response(
+
+		try:
+			resp = request_func(request_func_partial, d)
+		except requests.exceptions.RequestException as exc:
+			raise exceptions.TransportError(exc) from exc
+
+		return Response(
 			status=resp.status_code,
 			headers=resp.headers,
 			data=resp.content,
 			response=resp,
 			request=r,
 		)
-		return response
-
-		#try:
-		#except requests.exceptions.RequestException as exc:
-		#	raise exceptions.TransportError(exc) from exc
-		#else:
-
-	def close(self) -> None:
-		...

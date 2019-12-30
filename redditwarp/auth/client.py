@@ -60,11 +60,11 @@ class TokenClient:
 				raise AuthResponseError(resp)
 
 			try:
-				cls = oauth_error_response_classes[error]
+				clss = oauth_error_response_classes[error]
 			except KeyError:
 				assert False
 				raise AuthResponseError(resp)
-			raise cls.from_response_and_json(resp, resp_json)
+			raise clss.from_response_and_json(resp, resp_json)
 
 		return TokenResponse(**resp_json)
 

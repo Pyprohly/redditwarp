@@ -24,26 +24,20 @@ class HTTPClient:
 	@user_agent.setter
 	def user_agent(self, value):
 		self.session.headers['User-Agent'] = value
-		self._token_session.headers['User-Agent'] = value
-
-	@property
-	def token_interceptor(self):
-		return self._token_interceptor
+		self.token_session.headers['User-Agent'] = value
 
 	def __init__(self,
 		client_credentials: ClientCredentials,
 		grant: AuthorizationGrant,
 		token: Optional[Token],
-		token_interceptor: Optional[RequestorDecorator] = None,
-		interceptor: Optional[RequestorDecorator] = None,
 	) -> None:
 		self.session = session = Session()
 		session.params['raw_json'] = '1'
 
-		self._token_session = Session()
+		self.token_session = Session()
 		self.authorizer = authorizer = Authorizer(
 			TokenClient(
-				self._token_session,
+				self.token_session,
 				TOKEN_ENDPOINT,
 				client_credentials,
 				grant,
@@ -52,7 +46,7 @@ class HTTPClient:
 		)
 
 		#self._requestor_stack_bottom = 
-		# RateLimited(Retryable(Session()))
+		# RateLimited(Authorized(Retryable(Session())))
 		self.requestor = RateLimited(Authorized(session, authorizer))
 
 		self.resource_base_url = RESOURCE_BASE_URL

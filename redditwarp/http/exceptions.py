@@ -5,12 +5,8 @@ if TYPE_CHECKING:
 	from .http import Response
 
 
-class TransmissionError:
-	"""An error occurred during an HTTP transmission.
-
-	The request failed to complete.
-	"""
-
+class TransportError(Exception):
+	pass
 
 
 class HTTPError(Exception):
@@ -18,7 +14,7 @@ class HTTPError(Exception):
 
 class HTTPResponseError(HTTPError):
 	"""The request completed but the response indicated an error."""
-	STATUS_CODE = None
+	STATUS_CODE = -1
 
 	def __init__(self, response: Response):
 		self.response = response

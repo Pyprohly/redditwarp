@@ -31,7 +31,7 @@ class Client:
 	def __init__(self,
 			client_id, client_secret, refresh_token=None,
 			access_token=None, *, username=None, password=None,
-			grant=None, token_interceptor=None, interceptor=None):
+			grant=None):
 		"""
 		Parameters
 		----------
@@ -46,12 +46,6 @@ class Client:
 		grant: Optional[:class`AuthorizationGrant`]
 			Configure the authorization grant explicitly. You'd use this parameter if you need
 			control over authorization scopes, or if you need to use the Installed Client grant type.
-		token_interceptor: Optional[:class`RequestorDecorator`]
-			Wrap the underlying session object with this object.
-			The final opportunity to modify outgoing requests, or capturing incoming server responses
-			The 'final call' to intercept and potentially modify requests. You can also use this to capture incoming server responses
-		interceptor: Optional[:class`RequestorDecorator`]
-			Similar to :param:`token_interceptor` but for requests that are made to the resource server.
 
 		Raises
 		------
@@ -70,7 +64,7 @@ class Client:
 
 		cc = ClientCredentials(client_id, client_secret)
 		token = Token(access_token) if access_token else None
-		self._init(HTTPClient(cc, grant, token, token_interceptor, interceptor))
+		self._init(HTTPClient(cc, grant, token))
 
 	def _init(self, http):
 		self.http = http
