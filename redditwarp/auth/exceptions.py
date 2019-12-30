@@ -18,11 +18,6 @@ class AuthResponseError(AuthError):
 		super().__init__()
 		self.response = response
 
-# ! Inherit from HTTP level Unauthorized later
-class Unauthorized(AuthResponseError):
-	pass
-
-
 class OAuth2ErrorResponse(AuthResponseError):
 	"""
 	As detailed in the OAuth2 spec. For more information see
@@ -79,3 +74,8 @@ oauth_error_response_classes = {
 		InvalidScope,
 	]
 }
+
+
+# ! Inherit from HTTP level Unauthorized later
+class Unauthorized(AuthResponseError):
+	pass

@@ -68,19 +68,9 @@ class RateLimited(RequestorDecorator):
 		if self.remaining:
 			s = self.reset / self.remaining
 
-		#print(self.token_bucket.get_value())
-		consumed = self.token_bucket.hard_consume(1)
-		if s < 1:
-			if consumed:
-				s = 0
-		'''
-				print('A', end=' ')
-			else:
-				print('B', end=' ')
-		else:
-				print('C', end=' ')
-		print(s)
-		'''#'''
+		cons = self.token_bucket.hard_consume(1)
+		if cons and s < 1:
+			s = 0
 
 		time.sleep(s)
 
