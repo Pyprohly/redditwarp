@@ -62,6 +62,7 @@ class Authorized(RequestorDecorator):
 
 		if response.status == 401:
 			self.authorizer.renew_token()
+
 			response = self.requestor.request(request, timeout)
 			if response.status == 401:
 				# ! Raise an HTTP level exception
@@ -70,4 +71,5 @@ class Authorized(RequestorDecorator):
 		return response
 
 	def prepare_request(self, request: Request) -> None:
-		self.authorizer.prepare_request(request)
+		if 'Authorization' not in request.headers:
+			self.authorizer.prepare_request(request)

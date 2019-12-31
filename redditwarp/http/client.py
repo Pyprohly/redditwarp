@@ -15,6 +15,7 @@ from .request import Request
 from .transport.requests import Session
 from .authorizer import Authorizer, Authorized
 from .ratelimiter import RateLimited
+from .exceptions import HTTPResponseError, http_error_response_classes
 
 class HTTPClient:
 	@property
@@ -31,11 +32,11 @@ class HTTPClient:
 		grant: AuthorizationGrant,
 		token: Optional[Token],
 	) -> None:
-		self.session = session = Session()
-		session.params['raw_json'] = '1'
+		self.session = Session()
+		self.session.params['raw_json'] = '1'
 
 		self.token_session = Session()
-		self.authorizer = authorizer = Authorizer(
+		self.authorizer = Authorizer(
 			TokenClient(
 				self.token_session,
 				TOKEN_ENDPOINT,
@@ -45,9 +46,7 @@ class HTTPClient:
 			token,
 		)
 
-		#self._requestor_stack_bottom = 
-		# RateLimited(Authorized(Retryable(Session())))
-		self.requestor = RateLimited(Authorized(session, authorizer))
+		self.requestor = RateLimited(Authorized(self.session, self.authorizer))
 
 		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = 'RedditWarp/{0} Python/{1[0]}.{1[1]} requests/{2}' \
@@ -57,4 +56,29 @@ class HTTPClient:
 			data: Any = None, headers: Dict[str, str] = None, timeout: int = 8) -> Response:
 		url = self.resource_base_url + path
 		r = Request(verb, url, params=params, data=data, headers=headers)
-		return self.requestor.request(r, timeout)
+
+		response = None
+		status = None
+		for i in range(5):
+			response = self.requestor.request(r, timeout)
+			status = response.status
+
+			if 200 <= status < 300:
+				return response
+
+			if status == 429:
+				assert False
+				raise AssertionError('429 response')
+
+			if status in (500, 502):
+				time.sleep(2**i + 1)
+				continue
+
+			break
+
+		clss = http_error_response_classes.get(status, HTTPResponseError)
+		raise clss(response)
+
+	def request_json(self, *args, **kwargs):
+		self.request(*args, **kwargs)
+		...
