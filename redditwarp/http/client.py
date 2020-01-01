@@ -25,7 +25,7 @@ class HTTPClient:
 	@user_agent.setter
 	def user_agent(self, value):
 		self.session.headers['User-Agent'] = value
-		self.token_session.headers['User-Agent'] = value
+		self._token_session.headers['User-Agent'] = value
 
 	def __init__(self,
 		client_credentials: ClientCredentials,
@@ -35,10 +35,10 @@ class HTTPClient:
 		self.session = Session()
 		self.session.params['raw_json'] = '1'
 
-		self.token_session = Session()
+		self._token_session = Session()
 		self.authorizer = Authorizer(
 			TokenClient(
-				self.token_session,
+				self._token_session,
 				TOKEN_ENDPOINT,
 				client_credentials,
 				grant,
@@ -58,7 +58,7 @@ class HTTPClient:
 		r = Request(verb, url, params=params, data=data, headers=headers)
 
 		response = None
-		status = None
+		status = -1
 		for i in range(5):
 			response = self.requestor.request(r, timeout)
 			status = response.status
@@ -78,7 +78,3 @@ class HTTPClient:
 
 		clss = http_error_response_classes.get(status, HTTPResponseError)
 		raise clss(response)
-
-	def request_json(self, *args, **kwargs):
-		self.request(*args, **kwargs)
-		...

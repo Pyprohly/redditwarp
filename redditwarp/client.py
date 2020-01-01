@@ -11,6 +11,7 @@ from .auth import (
 )
 
 from .http.authorizer import Authorized, Authorizer
+from .http.util import response_json
 
 
 class Client:
@@ -60,7 +61,7 @@ class Client:
 				raise ValueError('could not automatically create an authorization grant from the provided grant credentials')
 		else:
 			if any(auto_grant_creds):
-				raise TypeError('you should not pass grant credentials if you explicitly provide a grant')
+				raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
 		cc = ClientCredentials(client_id, client_secret)
 		token = Token(access_token) if access_token else None
@@ -71,3 +72,7 @@ class Client:
 
 	def request(self, verb, path, *, params=None, data=None, headers=None):
 		return self.http.request(verb, path, params=params, data=data, headers=headers)
+
+	def request_json(self, *args, **kwargs):
+		resp = self.request(*args, **kwargs)
+		return response_json(resp)
