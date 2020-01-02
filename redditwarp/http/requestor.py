@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from .request import Request
 	from .response import Response
-	from .requestor import Requestor
 
 class Requestor:
 	"""A Requestor is a thing that makes requests."""

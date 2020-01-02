@@ -1,20 +1,17 @@
 """Transport adapter for Requests."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from .request import Request
 
-import sys
 from functools import partial
-from http import HTTPStatus
 
 import requests
 
-from ._ import BaseSession
+from .__ import BaseSession
 from .. import exceptions
 from .. import payload
-from ..requestor import Requestor
 from ..response import Response
 
 _PAYLOAD_DISPATCH_TABLE = {

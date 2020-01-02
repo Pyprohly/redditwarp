@@ -1,16 +1,12 @@
 
 from .http import HTTPClient
-from .http.authorizer import Authorizer
-from .http.transport.requests import Session
 
 from .auth import (
 	ClientCredentials,
-	TokenClient,
 	Token,
 	auto_grant_factory,
 )
 
-from .http.authorizer import Authorized, Authorizer
 from .http.util import response_json
 
 

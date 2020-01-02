@@ -2,12 +2,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-	from typing import Optional, Dict
-	from ..auth import ClientCredentials, Token
+	from typing import Any, Optional, Dict
+	from ..auth import ClientCredentials, Token, AuthorizationGrant
 	from .response import Response
-	from .requestor import RequestorDecorator
 
 import sys
+import time
+
 import requests
 
 from ..auth import TokenClient, TOKEN_ENDPOINT, RESOURCE_BASE_URL

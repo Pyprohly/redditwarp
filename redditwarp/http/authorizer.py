@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 	from .requestor import Requestor
 	from .request import Request
 	from .response import Response
+	from .token import TokenResponse
 
 import time
 
