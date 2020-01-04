@@ -24,15 +24,9 @@ _PAYLOAD_DISPATCH_TABLE = {
 }
 
 class Session(BaseSession):
-	def _new_session(self) -> requests.Session:
-		retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
-		se = requests.Session()
-		se.mount('https://', retry_adapter)
-		return se
-
-	def __init__(self) -> None:
+	def __init__(self, session: requests.Session) -> None:
 		super().__init__()
-		self.session = self._new_session()
+		self.session = session
 
 	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		self._prepare_request(request)
@@ -63,3 +57,9 @@ class Session(BaseSession):
 
 	def close(self):
 		self.session.close()
+
+def new_session() -> Session:
+	retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
+	se = requests.Session()
+	se.mount('https://', retry_adapter)
+	return Session(se)

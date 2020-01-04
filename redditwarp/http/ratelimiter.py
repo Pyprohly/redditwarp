@@ -1,18 +1,22 @@
 
+from typing import Callable
 import time
 
 class TokenBucket:
-	def __init__(self, capacity: float, rate: float) -> None:
+	def __init__(self, capacity: float, rate: float,
+			time_func: Callable[[], float] = time.monotonic) -> None:
 		self.capacity = capacity
 		self.rate = rate
-		self.last_update = time.time()
+		self.time_func = time_func
+		self.last_update = time_func()
 		self._value = capacity
 
 	def _replenish(self) -> None:
 		if self._value < self.capacity:
-			now = time.time()
+			now = self.time_func()
 			time_delta = now - self.last_update
-			self._value = min(self.capacity, self._value + self.rate * time_delta)
+			new_tokens = self.rate * time_delta
+			self._value = min(self.capacity, self._value + new_tokens)
 			self.last_update = now
 
 	def get_value(self) -> float:

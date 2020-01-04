@@ -23,10 +23,11 @@ class RateLimited(RequestorDecorator):
 		if self.remaining:
 			s = self.reset / self.remaining
 
-		cons = self.token_bucket.hard_consume(1)
-		if cons and s < 1:
+		consume = self.token_bucket.hard_consume(1)
+		if consume and s < 1:
 			s = 0
 
+		print(s)
 		await sleep(s)
 
 		response = await self.requestor.request(request, timeout)

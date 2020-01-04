@@ -14,12 +14,12 @@ import requests
 from ..auth.client_sync import TokenClient
 from ..auth import TOKEN_ENDPOINT, RESOURCE_BASE_URL
 from .request import Request
-from .transport.requests import Session
+from .transport.requests import new_session
 from .authorizer_sync import Authorizer, Authorized
 from .ratelimiter_sync import RateLimited
 from .exceptions import HTTPResponseError, http_error_response_classes
 
-class HTTPClient:
+class RedditHTTPClient:
 	@property
 	def user_agent(self):
 		return self.session.headers['User-Agent']
@@ -34,10 +34,10 @@ class HTTPClient:
 		grant: AuthorizationGrant,
 		token: Optional[Token],
 	) -> None:
-		self.session = Session()
+		self.session = new_session()
 		self.session.params['raw_json'] = '1'
 
-		self._token_session = Session()
+		self._token_session = new_session()
 		self.authorizer = Authorizer(
 			TokenClient(
 				self._token_session,
@@ -84,3 +84,5 @@ class HTTPClient:
 	def close(self):
 		self.session.close()
 		self._token_session.close()
+
+HTTPClient = RedditHTTPClient

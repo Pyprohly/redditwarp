@@ -24,15 +24,9 @@ _PAYLOAD_DISPATCH_TABLE = {
 }
 
 class Session(BaseSession):
-	def _new_session(self) -> requests.Session:
-		retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
-		se = requests.Session()
-		se.mount('https://', retry_adapter)
-		return se
-
-	def __init__(self) -> None:
+	def __init__(self, session: aiohttp.ClientSession) -> None:
 		super().__init__()
-		self.session = aiohttp.ClientSession()
+		self.session = session
 
 	async def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		self._prepare_request(request)
@@ -64,3 +58,8 @@ class Session(BaseSession):
 
 	async def close(self):
 		await self.session.close()
+
+def new_session() -> Session:
+	connector = aiohttp.TCPConnector(limit=20)
+	se = aiohttp.ClientSession(connector=connector)
+	return Session(se)
