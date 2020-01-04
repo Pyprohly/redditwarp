@@ -30,6 +30,3 @@ class BaseSession(Requestor):
 
 	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		raise NotImplementedError
-
-	def close(self) -> None:
-		raise NotImplementedError

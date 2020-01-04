@@ -1,4 +1,4 @@
-"""Transport adapter for Requests."""
+"""Transport adapter for aiohttp."""
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
@@ -7,9 +7,9 @@ if TYPE_CHECKING:
 
 from functools import partial
 
-import requests
+import aiohttp
 
-from ._base_session_sync import BaseSession
+from ._base_session_async import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
@@ -32,9 +32,9 @@ class Session(BaseSession):
 
 	def __init__(self) -> None:
 		super().__init__()
-		self.session = self._new_session()
+		self.session = aiohttp.ClientSession()
 
-	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
+	async def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		self._prepare_request(request)
 
 		r = request
@@ -49,17 +49,18 @@ class Session(BaseSession):
 		kwargs.update(kwargs_x)
 
 		try:
-			resp = self.session.request(**kwargs)
+			async with self.session.request(**kwargs) as resp:
+				content = await resp.content.read()
 		except Exception as exc:
 			raise exceptions.TransportError(exc) from exc
 
 		return Response(
-			status=resp.status_code,
+			status=resp.status,
 			headers=resp.headers,
-			data=resp.content,
+			data=content,
 			response=resp,
 			request=r,
 		)
 
-	def close(self):
-		self.session.close()
+	async def close(self):
+		await self.session.close()
