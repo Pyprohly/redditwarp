@@ -45,8 +45,13 @@ class TokenBucket:
 	def cooldown(self, n: float) -> float:
 		"""Return the duration the client should wait before `self.comsume()`
 		becomes `True` again.
+
+			async with lock:
+				if not tb.consume(1):
+					await asyncio.sleep(tb.cooldown(1))
+					tb.consume(1)
 		"""
-		return max(0, (n - self.get_value())/self.rate)
+		return max(0, (n - self._value)/self.rate)
 
 
 from .ratelimiter_sync import RateLimited as RateLimitedSync, RateLimited
