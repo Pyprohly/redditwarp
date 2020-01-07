@@ -23,6 +23,11 @@ _PAYLOAD_DISPATCH_TABLE = {
 	payload.JSON: lambda data: dict(json=data),
 }
 
+
+name = 'aiohttp'
+version_string = aiohttp.__version__
+
+
 class Session(BaseSession):
 	def __init__(self, session: aiohttp.ClientSession) -> None:
 		super().__init__()

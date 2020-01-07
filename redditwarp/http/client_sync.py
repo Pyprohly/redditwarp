@@ -13,11 +13,12 @@ import requests
 
 from ..auth.client_sync import TokenClient
 from ..auth import TOKEN_ENDPOINT, RESOURCE_BASE_URL
+from .transport import requests as t_requests
 from .request import Request
-from .transport.requests import new_session
 from .authorizer_sync import Authorizer, Authorized
 from .ratelimiter_sync import RateLimited
 from .exceptions import HTTPResponseError, http_error_response_classes
+from .. import __about__
 
 class RedditHTTPClient:
 	@property
@@ -34,10 +35,10 @@ class RedditHTTPClient:
 		grant: AuthorizationGrant,
 		token: Optional[Token],
 	) -> None:
-		self.session = new_session()
+		self.session = t_requests.new_session()
 		self.session.params['raw_json'] = '1'
 
-		self._token_session = new_session()
+		self._token_session = t_requests.new_session()
 		self.authorizer = Authorizer(
 			TokenClient(
 				self._token_session,
@@ -51,8 +52,13 @@ class RedditHTTPClient:
 		self.requestor = RateLimited(Authorized(self.session, self.authorizer))
 
 		self.resource_base_url = RESOURCE_BASE_URL
-		self.user_agent = 'RedditWarp/{0} Python/{1[0]}.{1[1]} requests/{2}' \
-				.format('alpha', sys.version_info, requests.__version__)
+
+		u = [
+			(__about__.__title__, __about__.__version__),
+			('Python', '.'.join(map(str, sys.version_info[:2]))),
+			(t_requests.name, t_requests.version_string),
+		]
+		self.user_agent = ' '.join('/'.join(i) for i in u)
 
 	def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None,
 			data: Any = None, headers: Dict[str, str] = None, timeout: int = 8) -> Response:

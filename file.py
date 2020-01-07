@@ -9,6 +9,7 @@ def main():
 	response = client.request('GET', '/api/v1/me')
 	pprint(response.data)
 	client.close()
+	globals().update(locals())
 
 if __name__ == '__main__':
 	main()

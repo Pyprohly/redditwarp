@@ -23,6 +23,11 @@ _PAYLOAD_DISPATCH_TABLE = {
 	payload.JSON: lambda data: dict(json=data),
 }
 
+
+name = 'requests'
+version_string = requests.__version__
+
+
 class Session(BaseSession):
 	def __init__(self, session: requests.Session) -> None:
 		super().__init__()

@@ -11,6 +11,7 @@ async def main():
 	response = await client.request('GET', '/api/v1/me')
 	pprint(response.data)
 	await client.close()
+	globals().update(locals())
 
 if __name__ == '__main__':
 	asyncio.run(main())
