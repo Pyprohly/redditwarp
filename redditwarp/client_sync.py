@@ -66,6 +66,12 @@ class Client:
 	def _init(self, http):
 		self.http = http
 
+	def __enter__(self):
+		return self
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.close()
+
 	def request(self, verb, path, *, params=None, data=None, headers=None):
 		return self.http.request(verb, path, params=params, data=data, headers=headers)
 

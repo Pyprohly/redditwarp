@@ -50,15 +50,3 @@ http_error_response_classes = {
 		GatewayTimeout,
 	]
 }
-
-
-
-class NetworkError: pass
-class TimeoutError: pass
-
-
-
-
-
-class ContentCreationCooldown: pass
-

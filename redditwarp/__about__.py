@@ -12,9 +12,10 @@ version_info = namedtuple('VersionInfo', 'major minor micro releaselevel serial'
 
 __title__ = 'RedditWarp'
 __summary__ = 'Reddit API wrapper'
-__uri__ = 'https://github.com/Pyprohly/RedditWarp'
+__uri__ = "https://github.com/Pyprohly/RedditWarp"
 
-__version__ = '.'.join(map(str, version_info[:3]))
+#__version__ = '.'.join(map(str, version_info[:3]))
+__version__ = 'alpha'
 
 __author__ = 'Pyprohly'
 __email__ = 'pyprohly@outlook.com'

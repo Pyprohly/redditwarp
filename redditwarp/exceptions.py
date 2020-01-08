@@ -1,5 +1,3 @@
 
-from .http.exceptions import *
-
-class WarpException(Exception):
-	""""""
+class ContentCreationCooldown(Exception):
+	pass
