@@ -14,7 +14,7 @@ from redditwarp.auth.helper import (
 
 from redditwarp.auth.grant import AuthorizationCodeGrant
 from redditwarp.auth.client import TokenClient, ClientCredentials
-from redditwarp.http.transport.requests import Session
+from redditwarp.http.transport.requests import new_session
 
 #client = redditwarp.Client('GdfdxbF8ea73oQ', 'sOkVUjcTWNMZY11vWzlMAy4J7UE', username='Pyprohly', password='A2CVdajf2')
 
@@ -26,7 +26,7 @@ scope = '*'
 state = '136134345'
 redirect_uri = 'http://localhost:8080'
 
-'''
+#'''
 url = authorization_url(
 	AUTHORIZATION_ENDPOINT,
 	'code',
@@ -61,11 +61,11 @@ response_dict = {k: v[0] for k, v in response_dict.items()}
 assert response_dict['state'] == state
 '''#'''
 
-#code = response_dict['code']
-code = 'G_5AY8pGFy-VyJVWvWvDeZT26Cs'
+code = response_dict['code']
+
 grant = AuthorizationCodeGrant(code, redirect_uri)
 client_credentials = ClientCredentials(client_id, client_secret)
-session = Session()
+session = new_session()
 session.headers['User-Agent'] = 'RedditWarp authorization code flow script'
 token_client = TokenClient(session, TOKEN_ENDPOINT, client_credentials, grant)
 

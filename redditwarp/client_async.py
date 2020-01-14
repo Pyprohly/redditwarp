@@ -44,8 +44,8 @@ class Client:
 	async def __aexit__(self, exc_type, exc_value, traceback):
 		await self.close()
 
-	async def request(self, verb, path, *, params=None, data=None, headers=None):
-		return await self.http.request(verb, path, params=params, data=data, headers=headers)
+	async def request(self, verb, path, *, params=None, data=None, headers=None, timeout=8):
+		return await self.http.request(verb, path, params=params, data=data, headers=headers, timeout=timeout)
 
 	async def request_json(self, *args, **kwargs):
 		resp = await self.request(*args, **kwargs)
@@ -53,3 +53,11 @@ class Client:
 
 	async def close(self):
 		await self.http.close()
+
+ClientCore = Client
+
+
+class Client(ClientCore):
+	def _init(self, http):
+		super()._init(http)
+		self.api = ...

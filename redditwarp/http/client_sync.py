@@ -7,9 +7,7 @@ if TYPE_CHECKING:
 	from .response import Response
 
 import sys
-import time
-
-import requests
+from time import sleep
 
 from ..auth.client_sync import TokenClient
 from ..auth import TOKEN_ENDPOINT, RESOURCE_BASE_URL
@@ -74,12 +72,8 @@ class RedditHTTPClient:
 			if 200 <= status < 300:
 				return response
 
-			if status == 429:
-				assert False
-				raise AssertionError('429 response')
-
 			if status in (500, 502):
-				time.sleep(2**i + 1)
+				sleep(2**i + 1)
 				continue
 
 			break

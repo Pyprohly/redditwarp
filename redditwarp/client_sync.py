@@ -72,8 +72,8 @@ class Client:
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
 
-	def request(self, verb, path, *, params=None, data=None, headers=None):
-		return self.http.request(verb, path, params=params, data=data, headers=headers)
+	def request(self, verb, path, *, params=None, data=None, headers=None, timeout=8):
+		return self.http.request(verb, path, params=params, data=data, headers=headers, timeout=timeout)
 
 	def request_json(self, *args, **kwargs):
 		resp = self.request(*args, **kwargs)
@@ -81,3 +81,11 @@ class Client:
 
 	def close(self):
 		self.http.close()
+
+ClientCore = Client
+
+
+class Client(ClientCore):
+	def _init(self, http):
+		super()._init(http)
+		self.api = ...

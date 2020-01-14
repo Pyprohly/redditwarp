@@ -28,6 +28,8 @@ class BadRequest(ClientError):
 	STATUS_CODE = 400
 class Unauthorized(ClientError):
 	STATUS_CODE = 401
+class NotFound(ClientError):
+	STATUS_CODE = 404
 
 class InternalServerError(ServerError):
 	STATUS_CODE = 500
@@ -44,6 +46,7 @@ http_error_response_classes = {
 		HTTPResponseError,
 		BadRequest,
 		Unauthorized,
+		NotFound,
 		InternalServerError,
 		BadGateway,
 		ServiceUnavailable,

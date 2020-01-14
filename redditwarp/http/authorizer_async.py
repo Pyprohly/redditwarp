@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 	from .response import Response
 	from .token import TokenResponse
 
+import asyncio
 import time
 
 from .requestor_async import RequestorDecorator
@@ -52,18 +53,44 @@ class Authorized(RequestorDecorator):
 	def __init__(self, requestor: Requestor, authorizer: Optional[Authorizer] = None) -> None:
 		super().__init__(requestor)
 		self.authorizer = authorizer or Authorizer()
+		self._lock = asyncio.Lock()
+		self._event = asyncio.Event()
+		self._event.set()
+		self._futures = []
 
 	async def request(self, request: Request, timeout: Optional[int]) -> Response:
-		await self.prepare_request(request)
-		response = await self.requestor.request(request, timeout)
+		await self._event.wait()
+
+		async with self._lock:
+			await self.prepare_request(request)
+
+		fut = asyncio.ensure_future(
+				self.requestor.request(request, timeout))
+		self._futures.append(fut)
+		response = await fut
+
+		# Find and remove any completed task instead of just doing
+		# `self._futures.remove(fut)` so cancelled requests don't
+		# leave objects stuck in `self._futures` forever.
+		for f in self._futures:
+			if f.done():
+				self._futures.remove(f)
 
 		if response.status == 401:
-			await self.authorizer.renew_token()
+			if self._event.is_set():
+				# Stop new requests being made.
+				self._event.clear()
+
+				# Ensure all tasks are past the 401 check on
+				# `self._event.wait()` so `renew_token()` isn't called twice.
+				await asyncio.wait(self._futures)
+
+				await self.authorizer.renew_token()
+				self._event.set()
+			else:
+				await self._event.wait()
 
 			response = await self.requestor.request(request, timeout)
-			if response.status == 401:
-				# ! Raise an HTTP level exception
-				raise AssertionError('401 response')
 
 		return response
 
