@@ -61,7 +61,7 @@ class Session(BaseSession):
 			request=r,
 		)
 
-	async def close(self):
+	async def close(self) -> None:
 		await self.session.close()
 
 def new_session() -> Session:

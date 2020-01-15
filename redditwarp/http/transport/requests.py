@@ -60,7 +60,7 @@ class Session(BaseSession):
 			request=r,
 		)
 
-	def close(self):
+	def close(self) -> None:
 		self.session.close()
 
 def new_session() -> Session:

@@ -58,6 +58,16 @@ class RedditHTTPClient:
 		]
 		self.user_agent = ' '.join('/'.join(i) for i in u)
 
+	async def __aenter__(self) -> RedditHTTPClient:
+		return self
+
+	async def __aexit__(self,
+		exc_type: Optional[Type[BaseException]],
+		exc_value: Optional[BaseException],
+		traceback: Optional[TracebackType],
+	) -> Optional[bool]:
+		await self.close()
+
 	async def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None,
 			data: Any = None, headers: Dict[str, str] = None, timeout: int = 8) -> Response:
 		url = self.resource_base_url + path
@@ -81,7 +91,7 @@ class RedditHTTPClient:
 		clss = http_error_response_classes.get(status, HTTPResponseError)
 		raise clss(response)
 
-	async def close(self):
+	async def close(self) -> None:
 		await self.session.close()
 		await self._token_session.close()
 
