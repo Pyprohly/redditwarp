@@ -52,7 +52,7 @@ class Authorizer:
 class Authorized(RequestorDecorator):
 	def __init__(self, requestor: Requestor, authorizer: Optional[Authorizer] = None) -> None:
 		super().__init__(requestor)
-		self.authorizer = authorizer or Authorizer()
+		self.authorizer = authorizer
 		self._lock = asyncio.Lock()
 		self._event = asyncio.Event()
 		self._event.set()

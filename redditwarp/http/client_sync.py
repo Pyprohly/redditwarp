@@ -18,6 +18,14 @@ from .ratelimiter_sync import RateLimited
 from .exceptions import HTTPResponseError, http_error_response_classes
 from .. import __about__
 
+_u = [
+	(__about__.__title__, __about__.__version__),
+	('Python', '.'.join(map(str, sys.version_info[:2]))),
+	(t_requests.name, t_requests.version_string),
+]
+DEFAULT_USER_AGENT_STRING = ' '.join('/'.join(i) for i in _u)
+
+
 class RedditHTTPClient:
 	@property
 	def user_agent(self):
@@ -50,13 +58,7 @@ class RedditHTTPClient:
 		self.requestor = RateLimited(Authorized(self.session, self.authorizer))
 
 		self.resource_base_url = RESOURCE_BASE_URL
-
-		u = [
-			(__about__.__title__, __about__.__version__),
-			('Python', '.'.join(map(str, sys.version_info[:2]))),
-			(t_requests.name, t_requests.version_string),
-		]
-		self.user_agent = ' '.join('/'.join(i) for i in u)
+		self.user_agent = DEFAULT_USER_AGENT_STRING
 
 	def __enter__(self) -> RedditHTTPClient:
 		return self

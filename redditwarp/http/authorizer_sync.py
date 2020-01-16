@@ -55,7 +55,7 @@ class Authorized(RequestorDecorator):
 
 	def __init__(self, requestor: Requestor, authorizer: Optional[Authorizer] = None) -> None:
 		super().__init__(requestor)
-		self.authorizer = authorizer or Authorizer()
+		self.authorizer = authorizer
 
 	def request(self, request: Request, timeout: Optional[int]) -> Response:
 		self.prepare_request(request)
