@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 import json
 
 def response_json(response: Response) -> Dict[str, Any]:
-	if not response.headers['Content-Type'].startswith('application/json'):
+	if not response.headers.get('Content-Type', '').startswith('application/json'):
 		raise ValueError
 	text = response.data.decode()
 	return json.loads(text)

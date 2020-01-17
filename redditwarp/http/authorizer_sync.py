@@ -18,13 +18,13 @@ class Authorizer:
 
 	def __init__(self, token_client: TokenClient, token: Optional[Token] = None, expiry_skew: int = 30) -> None:
 		self.token_client = token_client
+		self.token = token
 		self.expiry_skew = expiry_skew
 		self.expiry_time = 0
 		self.expires_in_fallback = 3600
-		self.token: Optional[Token] = None
 
 	def token_expired(self) -> bool:
-		return time.monotonic() > self.expiry_time
+		return self.current_time() > self.expiry_time
 
 	def renew_token(self) -> Token:
 		tr: TokenResponse = self.token_client.fetch_token()
@@ -32,7 +32,7 @@ class Authorizer:
 		if expires_in is None:
 			expires_in = self.expires_in_fallback
 
-		self.expiry_time = int(time.monotonic()) + expires_in - self.expiry_skew
+		self.expiry_time = int(self.current_time()) + expires_in - self.expiry_skew
 		self.token = token = Token(
 			access_token=tr.access_token,
 			refresh_token=tr.refresh_token,
@@ -41,13 +41,18 @@ class Authorizer:
 		)
 		return token
 
-	def prepare_request(self, request: Request) -> None:
+	def prepare(self):
 		if (self.token is None) or self.token_expired():
 			self.renew_token()
+
+	def prepare_request(self, request: Request) -> None:
 		request.headers['Authorization'] = '{0.token_type} {0.access_token}'.format(self.token)
 
+	def current_time(self):
+		return time.monotonic()
+
 	def remaining_time(self) -> int:
-		return self.expiry_time - int(time.monotonic())
+		return self.expiry_time - int(self.current_time())
 
 
 class Authorized(RequestorDecorator):
@@ -67,4 +72,5 @@ class Authorized(RequestorDecorator):
 
 	def prepare_request(self, request: Request) -> None:
 		if 'Authorization' not in request.headers:
+			self.authorizer.prepare()
 			self.authorizer.prepare_request(request)

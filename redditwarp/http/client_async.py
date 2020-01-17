@@ -35,7 +35,6 @@ class RedditHTTPClient:
 	@user_agent.setter
 	def user_agent(self, value):
 		self.session.headers['User-Agent'] = value
-		self._token_session.headers['User-Agent'] = value
 
 	def __init__(self,
 		client_credentials: ClientCredentials,
@@ -44,12 +43,10 @@ class RedditHTTPClient:
 		session: Optional[BaseSession] = None,
 	) -> None:
 		self.session = t_aiohttp.new_session() if session is None else session
-		self.session.params['raw_json'] = '1'
 
-		self._token_session = t_aiohttp.new_session()
 		self.authorizer = Authorizer(
 			TokenClient(
-				self._token_session,
+				self.session,
 				TOKEN_ENDPOINT,
 				client_credentials,
 				grant,
@@ -76,6 +73,8 @@ class RedditHTTPClient:
 			data: Any = None, headers: Optional[Dict[str, str]] = None, timeout: int = 8) -> Response:
 		url = self.resource_base_url + path
 		r = Request(verb, url, params=params, data=data, headers=headers)
+		if 'raw_json' not in r.params:
+			r.params['raw_json'] = '1'
 
 		response = None
 		status = -1
@@ -97,6 +96,5 @@ class RedditHTTPClient:
 
 	async def close(self) -> None:
 		await self.session.close()
-		await self._token_session.close()
 
 HTTPClient = RedditHTTPClient
