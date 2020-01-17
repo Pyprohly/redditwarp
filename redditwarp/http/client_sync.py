@@ -9,12 +9,12 @@ if TYPE_CHECKING:
 import sys
 from time import sleep
 
+from .transport import requests as t_requests
 from ..auth.client_sync import TokenClient
 from ..auth import TOKEN_ENDPOINT, RESOURCE_BASE_URL
-from .transport import requests as t_requests
-from .request import Request
 from .authorizer_sync import Authorizer, Authorized
 from .ratelimiter_sync import RateLimited
+from .request import Request
 from .exceptions import HTTPResponseError, http_error_response_classes
 from .. import __about__
 

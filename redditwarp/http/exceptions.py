@@ -30,6 +30,10 @@ class Unauthorized(ClientError):
 	STATUS_CODE = 401
 class NotFound(ClientError):
 	STATUS_CODE = 404
+class PayloadTooLarge(ClientError):
+	STATUS_CODE = 413
+class TooManyRequests(ClientError):
+	STATUS_CODE = 429
 
 class InternalServerError(ServerError):
 	STATUS_CODE = 500
@@ -47,6 +51,9 @@ http_error_response_classes = {
 		BadRequest,
 		Unauthorized,
 		NotFound,
+		PayloadTooLarge,
+		TooManyRequests,
+
 		InternalServerError,
 		BadGateway,
 		ServiceUnavailable,

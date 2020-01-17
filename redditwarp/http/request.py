@@ -10,7 +10,7 @@ class Request:
 			The HTTP method to use for the request.
 		url: str
 			The URL to be requested.
-		params: Optional[Dict[str, str]]
+		params: Optional[Mapping[str, str]]
 			Query parameters appended to the URL.
 		data: Optional[:class:`.Payload`]
 			The body/payload of the HTTP request.

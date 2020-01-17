@@ -60,9 +60,9 @@ class InstalledClientGrant(AuthorizationGrant):
 
 
 def auto_grant_factory(
-	refresh_token: str,
-	username: str,
-	password: str,
+	refresh_token: Optional[str],
+	username: Optional[str],
+	password: Optional[str],
 ) -> Optional[AuthorizationGrant]:
 	"""Produce a simple, non-expiring grant from the given credentials.
 

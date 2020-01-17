@@ -9,12 +9,12 @@ if TYPE_CHECKING:
 import sys
 from asyncio import sleep
 
+from .transport import aiohttp as t_aiohttp
 from ..auth.client_async import TokenClient
 from ..auth import TOKEN_ENDPOINT, RESOURCE_BASE_URL
-from .transport import aiohttp as t_aiohttp
-from .request import Request
 from .authorizer_async import Authorizer, Authorized
 from .ratelimiter_async import RateLimited
+from .request import Request
 from .exceptions import HTTPResponseError, http_error_response_classes
 from .. import __about__
 

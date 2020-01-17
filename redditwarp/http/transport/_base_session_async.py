@@ -25,11 +25,15 @@ class BaseSession(Requestor):
 		await self.close()
 
 	def _prepare_request(self, request: Request) -> None:
-		# No clobber dict update
 		h = request.headers
 		h.update({**self.headers, **h})
 		p = request.params
 		p.update({**self.params, **p})
+
+		for d in h, p:
+			for k, v in d.items():
+				if v is None:
+					del d[k]
 
 	async def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		raise NotImplementedError
