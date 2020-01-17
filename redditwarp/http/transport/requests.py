@@ -9,7 +9,7 @@ from functools import partial
 
 import requests
 
-from ._base_session_sync import BaseSession
+from .base_session_sync import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response

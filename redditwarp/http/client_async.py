@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from typing import Any, Optional, Dict
 	from ..auth import ClientCredentials, Token, AuthorizationGrant
+	from .tranport.base_session_async import BaseSession
 	from .response import Response
 
 import sys
@@ -40,8 +41,9 @@ class RedditHTTPClient:
 		client_credentials: ClientCredentials,
 		grant: AuthorizationGrant,
 		token: Optional[Token],
+		session: Optional[BaseSession] = None,
 	) -> None:
-		self.session = t_aiohttp.new_session()
+		self.session = t_aiohttp.new_session() if session is None else session
 		self.session.params['raw_json'] = '1'
 
 		self._token_session = t_aiohttp.new_session()
@@ -71,7 +73,7 @@ class RedditHTTPClient:
 		await self.close()
 
 	async def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None,
-			data: Any = None, headers: Dict[str, str] = None, timeout: int = 8) -> Response:
+			data: Any = None, headers: Optional[Dict[str, str]] = None, timeout: int = 8) -> Response:
 		url = self.resource_base_url + path
 		r = Request(verb, url, params=params, data=data, headers=headers)
 

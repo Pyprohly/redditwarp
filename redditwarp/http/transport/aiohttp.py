@@ -9,7 +9,7 @@ from functools import partial
 
 import aiohttp
 
-from ._base_session_async import BaseSession
+from .base_session_async import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
