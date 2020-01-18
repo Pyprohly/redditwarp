@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from .request import Request
 
-from functools import partial
-
 import requests
 
 from .base_session_sync import BaseSession

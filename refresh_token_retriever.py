@@ -3,10 +3,8 @@ import re
 import socket
 import urllib.parse
 import webbrowser
-from pprint import pprint
 
-import redditwarp
-from redditwarp.auth.helper import (
+from redditwarp.auth.misc import (
 	AUTHORIZATION_ENDPOINT,
 	TOKEN_ENDPOINT,
 	authorization_url,
@@ -73,5 +71,5 @@ print('Fetching token...')
 print()
 token = token_client.fetch_token()
 
-print(f" Access Token: {token.access_token}")
 print(f"Refresh Token: {token.refresh_token}")
+print(f" Access Token: {token.access_token}")

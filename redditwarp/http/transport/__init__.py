@@ -1,2 +1,3 @@
 
-__all__ = ('requests', 'aiohttp')
+from . import requests
+from . import aiohttp

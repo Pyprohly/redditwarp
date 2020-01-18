@@ -5,14 +5,18 @@ from .http.client_sync import DEFAULT_USER_AGENT_STRING, HTTPClient
 from .http.util import response_json
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
-
+from .http.transport import requests as t_requests
+from .auth.client_sync import TokenClient
+from .auth import TOKEN_ENDPOINT
+from .http.authorizer_sync import Authorizer, Authorized
+from .http.ratelimiter_sync import RateLimited
 
 class Client:
 	"""The gateway to interacting with the Reddit API."""
 
 	@classmethod
 	def from_http(cls, http):
-		"""Alternative constructor. For testing purposes. For advanced uses.
+		"""An alternative constructor for testing purposes. For advanced uses.
 
 		Parameters
 		----------
@@ -52,13 +56,27 @@ class Client:
 			if grant is None:
 				assert False
 				raise ValueError('could not automatically create an authorization grant from the provided grant credentials')
-		else:
-			if any(auto_grant_creds):
-				raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
+		elif any(auto_grant_creds):
+			raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
-		cc = ClientCredentials(client_id, client_secret)
+		client_credentials = ClientCredentials(client_id, client_secret)
 		token = Token(access_token) if access_token else None
-		self._init(HTTPClient(cc, grant, token))
+		session = t_requests.new_session()
+		authorizer = Authorizer(
+			TokenClient(
+				session,
+				TOKEN_ENDPOINT,
+				client_credentials,
+				grant,
+			),
+			token,
+		)
+		http = HTTPClient(
+			RateLimited(Authorized(session, authorizer)),
+			session,
+		)
+		http.authorizer = authorizer
+		self._init(http)
 
 	def _init(self, http):
 		self.http = http

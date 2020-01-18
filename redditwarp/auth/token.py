@@ -17,8 +17,8 @@ class TokenResponse:
 		self.expires_in = expires_in
 		self.refresh_token = refresh_token
 		self.scope = scope
-		self.extra_params = kwargs
 		del kwargs['token_type']
+		self.extra_params = kwargs
 
 	def _members(self):
 		return {

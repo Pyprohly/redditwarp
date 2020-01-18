@@ -2,19 +2,17 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-	from typing import Any, Optional, Dict
-	from ..auth import ClientCredentials, Token, AuthorizationGrant
+	from typing import Type, Any, Optional, Dict
+	from types import TracebackType
 	from .tranport.base_session_async import BaseSession
+	from .requestor_async import Requestor
 	from .response import Response
 
 import sys
 from asyncio import sleep
 
 from .transport import aiohttp as t_aiohttp
-from ..auth.client_async import TokenClient
-from ..auth import TOKEN_ENDPOINT, RESOURCE_BASE_URL
-from .authorizer_async import Authorizer, Authorized
-from .ratelimiter_async import RateLimited
+from ..auth import RESOURCE_BASE_URL
 from .request import Request
 from .exceptions import HTTPResponseError, http_error_response_classes
 from .. import __about__
@@ -29,33 +27,20 @@ DEFAULT_USER_AGENT_STRING = ' '.join('/'.join(i) for i in _u)
 
 class RedditHTTPClient:
 	@property
-	def user_agent(self):
+	def user_agent(self) -> str:
 		return self.session.headers['User-Agent']
 
 	@user_agent.setter
-	def user_agent(self, value):
+	def user_agent(self, value) -> None:
 		self.session.headers['User-Agent'] = value
 
 	def __init__(self,
-		client_credentials: ClientCredentials,
-		grant: AuthorizationGrant,
-		token: Optional[Token],
-		session: Optional[BaseSession] = None,
+		requestor: Requestor,
+		session: BaseSession,
 	) -> None:
-		self.session = t_aiohttp.new_session() if session is None else session
-
-		self.authorizer = Authorizer(
-			TokenClient(
-				self.session,
-				TOKEN_ENDPOINT,
-				client_credentials,
-				grant,
-			),
-			token,
-		)
-
-		self.requestor = RateLimited(Authorized(self.session, self.authorizer))
-
+		self.requestor = requestor
+		self.session = session
+		self.authorizer = None
 		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = DEFAULT_USER_AGENT_STRING
 

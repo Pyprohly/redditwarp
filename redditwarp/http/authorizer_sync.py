@@ -20,10 +20,12 @@ class Authorizer:
 		self.token_client = token_client
 		self.token = token
 		self.expiry_skew = expiry_skew
-		self.expiry_time = 0
+		self.expiry_time: Optional[int] = None
 		self.expires_in_fallback = 3600
 
 	def token_expired(self) -> bool:
+		if self.expiry_time is None:
+			return False
 		return self.current_time() > self.expiry_time
 
 	def renew_token(self) -> Token:
@@ -51,7 +53,9 @@ class Authorizer:
 	def current_time(self):
 		return time.monotonic()
 
-	def remaining_time(self) -> int:
+	def remaining_time(self) -> Optional[int]:
+		if self.expiry_time is None:
+			return None
 		return self.expiry_time - int(self.current_time())
 
 

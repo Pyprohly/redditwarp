@@ -1,6 +1,4 @@
 
-from pprint import pprint
-
 import redditwarp
 
 def main():
