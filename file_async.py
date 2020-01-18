@@ -1,4 +1,5 @@
 
+import os
 import asyncio
 from pprint import pprint
 
@@ -6,7 +7,11 @@ import redditwarp
 
 async def main():
 	async with (
-		redditwarp.ClientAsync('GdfdxbF8ea73oQ', 'sOkVUjcTWNMZY11vWzlMAy4J7UE', username='Pyprohly', password='A2CVdajf2')
+		redditwarp.ClientAsync(
+			os.environ['redditwarp_client_id'],
+			os.environ['redditwarp_client_secret'],
+			os.environ['redditwarp_refresh_token'],
+		)
 	) as client:
 		'''
 		response = await client.request('GET', '/api/v1/me')

@@ -1,11 +1,16 @@
 
+import os
 from pprint import pprint
 
 import redditwarp
 
 def main():
 	with (
-		redditwarp.Client('GdfdxbF8ea73oQ', 'sOkVUjcTWNMZY11vWzlMAy4J7UE', username='Pyprohly', password='A2CVdajf2')
+		redditwarp.Client(
+			os.environ['redditwarp_client_id'],
+			os.environ['redditwarp_client_secret'],
+			os.environ['redditwarp_refresh_token'],
+		)
 	) as client:
 		'''
 		response = client.request('GET', '/api/v1/me')

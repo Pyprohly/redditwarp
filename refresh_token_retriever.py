@@ -1,4 +1,5 @@
 
+import os
 import re
 import socket
 import urllib.parse
@@ -14,12 +15,8 @@ from redditwarp.auth.grant import AuthorizationCodeGrant
 from redditwarp.auth.client import TokenClient, ClientCredentials
 from redditwarp.http.transport.requests import new_session
 
-#client = redditwarp.Client('GdfdxbF8ea73oQ', 'sOkVUjcTWNMZY11vWzlMAy4J7UE', username='Pyprohly', password='A2CVdajf2')
-
-#response = client.request('GET', '/api/info', params={'id': 't1_d98khom'})
-
-client_id = 'GdfdxbF8ea73oQ'
-client_secret = 'sOkVUjcTWNMZY11vWzlMAy4J7UE'
+client_id = os.environ['redditwarp_client_id']
+client_secret = os.environ['redditwarp_client_secret'],
 scope = '*'
 state = '136134345'
 redirect_uri = 'http://localhost:8080'
