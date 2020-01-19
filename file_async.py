@@ -13,12 +13,13 @@ async def main():
 			os.environ['redditwarp_refresh_token'],
 		)
 	) as client:
-		'''
+		#'''
 		response = await client.request('GET', '/api/v1/me')
 		pprint(response.data)
 		'''
 		data = await client.request_json('GET', '/api/v1/me')
 		pprint(data)
+		'''#'''
 
 	globals().update(locals())
 

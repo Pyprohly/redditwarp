@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from .request import Request
 
+import asyncio
 import aiohttp
 
 from .base_session_async import BaseSession
@@ -48,8 +49,10 @@ class Session(BaseSession):
 		try:
 			async with self.session.request(**kwargs) as resp:
 				content = await resp.content.read()
-		except Exception as exc:
-			raise exceptions.TransportError(exc) from exc
+		except asyncio.TimeoutError as e:
+			raise exceptions.TimeoutError(e) from e
+		except Exception as e:
+			raise exceptions.TransportError(e) from e
 
 		return Response(
 			status=resp.status,

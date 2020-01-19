@@ -8,6 +8,9 @@ if TYPE_CHECKING:
 class TransportError(Exception):
 	pass
 
+class TimeoutError(TransportError):
+	pass
+
 
 class HTTPError(Exception):
 	pass
