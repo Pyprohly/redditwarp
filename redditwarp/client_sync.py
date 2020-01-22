@@ -5,7 +5,7 @@ from .http.client_sync import DEFAULT_USER_AGENT_STRING, HTTPClient
 from .http.util import response_json
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
-from .http.transport import requests as t_requests
+from .http.transport.requests import new_session
 from .auth.client_sync import TokenClient
 from .auth import TOKEN_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
@@ -61,7 +61,7 @@ class Client:
 
 		client_credentials = ClientCredentials(client_id, client_secret)
 		token = Token(access_token) if access_token else None
-		session = t_requests.new_session()
+		session = new_session()
 		authorizer = Authorizer(
 			TokenClient(
 				session,
@@ -71,11 +71,8 @@ class Client:
 			),
 			token,
 		)
-		http = HTTPClient(
-			RateLimited(Authorized(session, authorizer)),
-			session,
-		)
-		http.authorizer = authorizer
+		requestor = RateLimited(Authorized(session, authorizer))
+		http = HTTPClient(requestor, session, authorizer)
 		self._init(http)
 
 	def _init(self, http):

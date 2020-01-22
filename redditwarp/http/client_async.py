@@ -5,6 +5,7 @@ if TYPE_CHECKING:
 	from typing import Type, Any, Optional, Dict
 	from types import TracebackType
 	from .tranport.base_session_async import BaseSession
+	from .authorizer_async import Authorizer
 	from .requestor_async import Requestor
 	from .response import Response
 
@@ -37,10 +38,11 @@ class RedditHTTPClient:
 	def __init__(self,
 		requestor: Requestor,
 		session: BaseSession,
+		authorizer: Optional[Authorizer],
 	) -> None:
 		self.requestor = requestor
 		self.session = session
-		self.authorizer = None
+		self.authorizer = authorizer
 		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = DEFAULT_USER_AGENT_STRING
 
