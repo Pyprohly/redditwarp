@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from typing import Optional, Type
 	from types import TracebackType
-	from .request import Request
-	from .response import Response
+	from ..request import Request
+	from ..response import Response
 
 from ..requestor import Requestor
 
@@ -14,7 +14,7 @@ class BaseSession(Requestor):
 		self.headers = {}
 		self.params = {}
 
-	async def __aenter__(self) -> BaseSession:
+	async def __aenter__(self):
 		return self
 
 	async def __aexit__(self,

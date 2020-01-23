@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-	from ..request import Request
+	from ..http.request import Request
 
 from dataclasses import dataclass
 from base64 import b64encode

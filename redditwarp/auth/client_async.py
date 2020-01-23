@@ -2,8 +2,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+	from .client import ClientCredentials
 	from .grant import AuthorizationGrant
-	from ..requestor import Requestor
+	from ..http.requestor import Requestor
 
 from ..http.request import Request
 from ..http.util import response_json

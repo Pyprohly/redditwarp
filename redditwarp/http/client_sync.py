@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from typing import Type, Any, Optional, Dict
 	from types import TracebackType
-	from .tranport.base_session_sync import BaseSession
+	from .transport.base_session_sync import BaseSession
 	from .authorizer_sync import Authorizer
 	from .requestor_sync import Requestor
 	from .response import Response
@@ -46,7 +46,7 @@ class RedditHTTPClient:
 		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = DEFAULT_USER_AGENT_STRING
 
-	def __enter__(self) -> RedditHTTPClient:
+	def __enter__(self):
 		return self
 
 	def __exit__(self,

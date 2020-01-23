@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from ..auth.client_sync import TokenClient
+	from ..auth.token import TokenResponse
 	from .requestor_sync import Requestor
 	from .request import Request
 	from .response import Response
-	from .token import TokenResponse
 
 import time
 
