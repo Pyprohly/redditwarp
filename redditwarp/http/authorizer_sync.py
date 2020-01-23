@@ -43,14 +43,14 @@ class Authorizer:
 		)
 		return token
 
-	def prepare(self):
+	def maybe_renew_token(self) -> None:
 		if (self.token is None) or self.token_expired():
 			self.renew_token()
 
 	def prepare_request(self, request: Request) -> None:
 		request.headers['Authorization'] = '{0.token_type} {0.access_token}'.format(self.token)
 
-	def current_time(self):
+	def current_time(self) -> float:
 		return time.monotonic()
 
 	def remaining_time(self) -> Optional[int]:
@@ -71,10 +71,11 @@ class Authorized(RequestorDecorator):
 		response = self.requestor.request(request, timeout)
 		if response.status == 401:
 			self.authorizer.renew_token()
+			self.authorizer.prepare_request(request)
 			response = self.requestor.request(request, timeout)
 		return response
 
 	def prepare_request(self, request: Request) -> None:
 		if 'Authorization' not in request.headers:
-			self.authorizer.prepare()
+			self.authorizer.maybe_renew_token()
 			self.authorizer.prepare_request(request)

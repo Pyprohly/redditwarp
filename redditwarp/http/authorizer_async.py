@@ -42,14 +42,14 @@ class Authorizer:
 		)
 		return token
 
-	async def prepare(self):
+	async def maybe_renew_token(self) -> None:
 		if (self.token is None) or self.token_expired():
 			await self.renew_token()
 
 	def prepare_request(self, request: Request) -> None:
 		request.headers['Authorization'] = '{0.token_type} {0.access_token}'.format(self.token)
 
-	def current_time(self):
+	def current_time(self) -> float:
 		return time.monotonic()
 
 	def remaining_time(self) -> Optional[int]:
@@ -87,14 +87,16 @@ class Authorized(RequestorDecorator):
 
 		if response.status == 401:
 			if self._event.is_set():
-				# Stop new requests being made.
+				# Stop new requests from being made.
 				self._event.clear()
 
-				# Ensure all tasks are past the 401 check on
+				# Ensure all tasks are past the 401 check and awaiting on
 				# `self._event.wait()` so `renew_token()` isn't called twice.
 				await asyncio.wait(self._futures)
 
 				await self.authorizer.renew_token()
+				self.authorizer.prepare_request(request)
+
 				self._event.set()
 			else:
 				await self._event.wait()
@@ -105,5 +107,5 @@ class Authorized(RequestorDecorator):
 
 	async def prepare_request(self, request: Request) -> None:
 		if 'Authorization' not in request.headers:
-			await self.authorizer.prepare()
+			await self.authorizer.maybe_renew_token()
 			self.authorizer.prepare_request(request)
