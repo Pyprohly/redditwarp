@@ -5,13 +5,13 @@ from pprint import pprint
 import redditwarp
 
 def main():
-	with (
-		redditwarp.Client(
-			os.environ['redditwarp_client_id'],
-			os.environ['redditwarp_client_secret'],
-			os.environ['redditwarp_refresh_token'],
-		)
-	) as client:
+	client = redditwarp.Client(
+		os.environ['redditwarp_client_id'],
+		os.environ['redditwarp_client_secret'],
+		os.environ['redditwarp_refresh_token'],
+	)
+	print(client.http.user_agent)
+	with client:
 		#'''
 		response = client.request('GET', '/api/v1/me')
 		pprint(response.data)

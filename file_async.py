@@ -6,13 +6,13 @@ from pprint import pprint
 import redditwarp
 
 async def main():
-	async with (
-		redditwarp.ClientAsync(
-			os.environ['redditwarp_client_id'],
-			os.environ['redditwarp_client_secret'],
-			os.environ['redditwarp_refresh_token'],
-		)
-	) as client:
+	client = redditwarp.ClientAsync(
+		os.environ['redditwarp_client_id'],
+		os.environ['redditwarp_client_secret'],
+		os.environ['redditwarp_refresh_token'],
+	)
+	print(client.http.user_agent)
+	async with client:
 		#'''
 		response = await client.request('GET', '/api/v1/me')
 		pprint(response.data)

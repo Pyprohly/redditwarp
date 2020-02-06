@@ -12,21 +12,22 @@ if TYPE_CHECKING:
 import sys
 from time import sleep
 
-from .transport import requests as t_requests
+from .transport import transport_reg
 from ..auth import RESOURCE_BASE_URL
 from .request import Request
 from .exceptions import HTTPResponseError, http_error_response_classes
 from .. import __about__
 
-_u = [
-	(__about__.__title__, __about__.__version__),
-	('Python', '.'.join(map(str, sys.version_info[:2]))),
-	(t_requests.name, t_requests.version_string),
-]
-DEFAULT_USER_AGENT_STRING = ' '.join('/'.join(i) for i in _u)
-
+transport_info = transport_reg['requests']
 
 class RedditHTTPClient:
+	USER_AGENT_STRING_HEAD = (
+		f"{__about__.__title__}/{__about__.__version__} "
+		f"Python/{'{0[0]}.{0[1]}'.format(sys.version_info)} "
+		f"{transport_info.name}/{transport_info.version_string} "
+		"Bot"
+	)
+
 	@property
 	def user_agent(self) -> str:
 		return self.session.headers['User-Agent']
@@ -44,7 +45,7 @@ class RedditHTTPClient:
 		self.session = session
 		self.authorizer = authorizer
 		self.resource_base_url = RESOURCE_BASE_URL
-		self.user_agent = DEFAULT_USER_AGENT_STRING
+		self.user_agent = self.USER_AGENT_STRING_HEAD
 
 	def __enter__(self):
 		return self

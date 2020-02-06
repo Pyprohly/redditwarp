@@ -1,7 +1,7 @@
 
 import __main__
 
-from .http.client_async import DEFAULT_USER_AGENT_STRING, HTTPClient
+from .http.client_async import HTTPClient
 from .http.util import response_json
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
@@ -92,11 +92,11 @@ class Client(ClientCore):
 		if not isinstance(name, str):
 			raise TypeError
 		if hasattr(__main__, '__file__'):
-			raise RuntimeError("instantiating Client in this way can only be done interactively")
+			raise RuntimeError("instantiating Client through __class_getitem__ can only be done interactively")
 		return cls.from_praw_config(name)
 
 	def set_user_agent(self, s):
-		ua = DEFAULT_USER_AGENT_STRING
+		ua = self.http.USER_AGENT_STRING_HEAD
 		if s is not None:
-			ua += ' ' + s
+			ua += ' -- ' + s
 		self.http.user_agent = ua
