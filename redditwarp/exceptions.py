@@ -2,12 +2,6 @@
 from typing import ClassVar
 from dataclasses import dataclass
 
-
-class ClientError:
-	...
-
-
-
 class APIError(Exception):
 	"""A base exception class representing an error that was indicated
 	in the response body, occurring when the remote API wishes to inform
@@ -53,9 +47,28 @@ class ContentCreationCooldown(RedditAPIError):
 	a RATELIMIT error, and it is the only error in the list.
 	"""
 
+	def __str__(self):
+		return super().__str__() + '''
+
+Looks like you hit a content creation ratelimit. This API error can happen
+when your account has low karma or no verified email.
+'''
+
 @dataclass
 class RedditErrorItem:
 	NAME: ClassVar[str] = ''
 	name: str
 	message: str
 	field: str
+
+def parse_reddit_error_items(d):
+	errors = d.get('json', {}).get('errors')
+	if errors:
+		return [RedditErrorItem(*e) for e in errors]
+	return None
+
+def new_reddit_api_error(response, error_list):
+	cls = RedditAPIError
+	if (len(error_list) == 1) and (error_list[0].name == 'RATELIMIT'):
+		cls = ContentCreationCooldown
+	return cls(response, error_list)

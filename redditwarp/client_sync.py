@@ -2,7 +2,7 @@
 import __main__
 
 from .http.client_sync import HTTPClient
-from .http.util import response_json
+from .http.util import response_json_loads
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.requests import new_session
@@ -10,6 +10,7 @@ from .auth.client_sync import TokenClient
 from .auth import TOKEN_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
+from .exceptions import parse_reddit_error_items, new_reddit_api_error
 
 class Client:
 	"""The gateway to interacting with the Reddit API."""
@@ -89,7 +90,11 @@ class Client:
 
 	def request_json(self, *args, **kwargs):
 		resp = self.request(*args, **kwargs)
-		return response_json(resp)
+		d = response_json_loads(resp)
+		error_list = parse_reddit_error_items(d)
+		if error_list is not None:
+			raise new_reddit_api_error(resp, error_list)
+		return d
 
 	def close(self):
 		self.http.close()

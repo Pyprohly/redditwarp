@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from typing import ClassVar
 
-from ..http.util import response_json
+from ..http.util import response_json_loads
 
 
 class AuthError(Exception):
@@ -27,7 +27,7 @@ class OAuth2ResponseError(AuthResponseError):
 
 	@classmethod
 	def from_response(cls, response: Response):
-		json_dict = response_json(response)
+		json_dict = response_json_loads(response)
 		return cls.from_response_and_json(response, json_dict)
 
 	@classmethod

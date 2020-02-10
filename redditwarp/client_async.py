@@ -2,7 +2,7 @@
 import __main__
 
 from .http.client_async import HTTPClient
-from .http.util import response_json
+from .http.util import response_json_loads
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.aiohttp import new_session
@@ -10,6 +10,7 @@ from .auth.client_async import TokenClient
 from .auth import TOKEN_ENDPOINT
 from .http.authorizer_async import Authorizer, Authorized
 from .http.ratelimiter_async import RateLimited
+from .exceptions import parse_reddit_error_items, new_reddit_api_error
 
 class Client:
 	@classmethod
@@ -61,7 +62,11 @@ class Client:
 
 	async def request_json(self, *args, **kwargs):
 		resp = await self.request(*args, **kwargs)
-		return response_json(resp)
+		d = response_json_loads(resp)
+		error_list = parse_reddit_error_items(d)
+		if error_list is not None:
+			raise new_reddit_api_error(resp, error_list)
+		return d
 
 	async def close(self):
 		await self.http.close()

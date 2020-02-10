@@ -6,8 +6,11 @@ if TYPE_CHECKING:
 
 import json
 
-def response_json(response: Response) -> Dict[str, Any]:
+json_decoder = json.JSONDecoder()
+json_loads = json_decoder.decode
+
+def response_json_loads(response: Response) -> Dict[str, Any]:
 	if not response.headers.get('Content-Type', '').startswith('application/json'):
 		raise ValueError
 	text = response.data.decode()
-	return json.loads(text)
+	return json_loads(text)
