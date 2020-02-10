@@ -15,8 +15,9 @@ from time import sleep
 from .transport import transport_reg
 from ..auth import RESOURCE_BASE_URL
 from .request import Request
-from .exceptions import HTTPResponseError, http_error_response_classes
+from .exceptions import get_http_response_error_class_by_status_code
 from .. import __about__
+from .payload import make_payload
 
 transport_info = transport_reg['requests']
 
@@ -60,7 +61,8 @@ class RedditHTTPClient:
 	def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None,
 			data: Any = None, headers: Optional[Dict[str, str]] = None, timeout: int = 8) -> Response:
 		url = self.resource_base_url + path
-		r = Request(verb, url, params=params, data=data, headers=headers)
+		payload = make_payload(data)
+		r = Request(verb, url, params=params, payload=payload, headers=headers)
 		if 'raw_json' not in r.params:
 			r.params['raw_json'] = '1'
 
@@ -79,8 +81,8 @@ class RedditHTTPClient:
 
 			break
 
-		clss = http_error_response_classes.get(status, HTTPResponseError)
-		raise clss(response)
+		cls = get_http_response_error_class_by_status_code(status)
+		raise cls(response)
 
 	def close(self) -> None:
 		self.session.close()

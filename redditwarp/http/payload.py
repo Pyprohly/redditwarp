@@ -23,3 +23,15 @@ class Text(Payload):
 class JSON(Payload):
 	def __init__(self, json: Any):
 		self.json = json
+
+
+def make_payload(data):
+	if data is None:
+		return None
+
+	if isinstance(data, dict):
+		return FormData(data)
+	if isinstance(data, str):
+		return Text(data)
+
+	raise NotImplementedError

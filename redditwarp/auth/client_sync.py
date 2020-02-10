@@ -12,7 +12,7 @@ from .token import TokenResponse
 from .exceptions import (
 	AuthResponseError,
 	Unauthorized,
-	oauth_error_response_classes,
+	oauth2_response_error_class_by_error_name,
 )
 
 __all__ = ('TokenClient',)
@@ -49,7 +49,7 @@ class TokenClient:
 				raise AuthResponseError(resp)
 
 			try:
-				clss = oauth_error_response_classes[error]
+				clss = oauth2_response_error_class_by_error_name[error]
 			except KeyError:
 				assert False
 				raise AuthResponseError(resp)

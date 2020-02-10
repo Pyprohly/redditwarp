@@ -18,12 +18,12 @@ class AuthResponseError(AuthError):
 		super().__init__()
 		self.response = response
 
-class OAuth2ErrorResponse(AuthResponseError):
+class OAuth2ResponseError(AuthResponseError):
 	"""
 	As detailed in the OAuth2 spec. For more information see
 	https://tools.ietf.org/html/rfc6749#section-5.2
 	"""
-	error_name: ClassVar[str] = ''
+	ERROR_NAME: ClassVar[str] = ''
 
 	@classmethod
 	def from_response(cls, response: Response):
@@ -44,28 +44,28 @@ class OAuth2ErrorResponse(AuthResponseError):
 		self.description = description
 		self.help_uri = help_uri
 
-class InvalidRequest(OAuth2ErrorResponse):
-	error_name = 'invalid_request'
+class InvalidRequest(OAuth2ResponseError):
+	ERROR_NAME = 'invalid_request'
 
-class InvalidClient(OAuth2ErrorResponse):
-	error_name = 'invalid_client'
+class InvalidClient(OAuth2ResponseError):
+	ERROR_NAME = 'invalid_client'
 
-class InvalidGrant(OAuth2ErrorResponse):
-	error_name = 'invalid_grant'
+class InvalidGrant(OAuth2ResponseError):
+	ERROR_NAME = 'invalid_grant'
 
-class UnauthorizedClient(OAuth2ErrorResponse):
-	error_name = 'unauthorized_client'
+class UnauthorizedClient(OAuth2ResponseError):
+	ERROR_NAME = 'unauthorized_client'
 
-class UnsupportedGrantType(OAuth2ErrorResponse):
-	error_name = 'unsupported_grant_type'
+class UnsupportedGrantType(OAuth2ResponseError):
+	ERROR_NAME = 'unsupported_grant_type'
 
-class InvalidScope(OAuth2ErrorResponse):
-	error_name = 'invalid_scope'
+class InvalidScope(OAuth2ResponseError):
+	ERROR_NAME = 'invalid_scope'
 
-oauth_error_response_classes = {
-	cls.error_name: cls
+oauth2_response_error_class_by_error_name = {
+	cls.ERROR_NAME: cls
 	for cls in [
-		OAuth2ErrorResponse,
+		OAuth2ResponseError,
 		InvalidRequest,
 		InvalidClient,
 		InvalidGrant,

@@ -2,7 +2,7 @@
 class Request:
 	"""An ABC that stores info about an outgoing request."""
 
-	def __init__(self, verb, url, params=None, data=None, headers=None):
+	def __init__(self, verb, url, params=None, payload=None, headers=None):
 		r"""
 		Parameters
 		----------
@@ -12,7 +12,7 @@ class Request:
 			The URL to be requested.
 		params: Optional[Mapping[str, str]]
 			Query parameters appended to the URL.
-		data: Optional[:class:`.Payload`]
+		payload: Optional[:class:`.Payload`]
 			The body/payload of the HTTP request.
 		headers: Optional[Mapping[str, str]]
 			Request headers.
@@ -20,7 +20,7 @@ class Request:
 		self.verb = verb
 		self.url = url
 		self.params = {} if params is None else params
-		self.data = data
+		self.payload = payload
 		self.headers = {} if headers is None else headers
 
 	def __repr__(self):
@@ -28,7 +28,7 @@ class Request:
 			('verb', self.verb),
 			('url', self.url),
 			('params', self.params),
-			('data', self.data),
+			('payload', self.payload),
 			('headers', self.headers)
 		)
 		return '%s(%s)' % (
@@ -36,8 +36,8 @@ class Request:
 				', '.join('%s=%r' % t for t in attrs))
 
 	def __member_keys(self):
-		return ('verb', 'url', 'params', 'data', 'headers')
+		return ('verb', 'url', 'params', 'payload', 'headers')
 	def __member_values(self):
-		return (self.verb, self.url, self.params, self.data, self.headers)
+		return (self.verb, self.url, self.params, self.payload, self.headers)
 	def __member_items(self):
 		return zip(self.__member_keys(), self.__member_values())

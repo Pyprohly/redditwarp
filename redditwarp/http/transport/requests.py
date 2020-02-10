@@ -13,12 +13,12 @@ from .. import payload
 from ..response import Response
 
 _PAYLOAD_DISPATCH_TABLE = {
-	type(None): lambda data: {},
-	payload.Raw: lambda data: dict(data=data),
-	payload.FormData: lambda data: dict(data=data),
-	payload.MultiPart: lambda data: dict(files=data),
-	payload.Text: lambda data: dict(data=data),
-	payload.JSON: lambda data: dict(json=data),
+	type(None): lambda y: {},
+	payload.Raw: lambda y: {'data': y.data},
+	payload.FormData: lambda y: {'data': y.data},
+	payload.MultiPart: lambda y: {'files': y.data},
+	payload.Text: lambda y: {'data': y.text},
+	payload.JSON: lambda y: {'json': y.json},
 }
 
 
@@ -42,7 +42,7 @@ class Session(BaseSession):
 			'headers': r.headers,
 			'timeout': timeout,
 		}
-		kwargs_x = _PAYLOAD_DISPATCH_TABLE[type(r.data)](r.data)
+		kwargs_x = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
 		kwargs.update(kwargs_x)
 
 		try:
