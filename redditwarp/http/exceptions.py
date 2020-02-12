@@ -11,7 +11,7 @@ class TimeoutError(TransportError):
 	pass
 
 
-class HTTPResponseError(Exception):
+class ResponseError(Exception):
 	"""The request completed but the response indicated an error."""
 	STATUS_CODE = 0
 
@@ -19,9 +19,9 @@ class HTTPResponseError(Exception):
 		super().__init__()
 		self.response = response
 
-class ClientError(HTTPResponseError):
+class ClientError(ResponseError):
 	STATUS_CODE = -400
-class ServerError(HTTPResponseError):
+class ServerError(ResponseError):
 	STATUS_CODE = -500
 
 class BadRequest(ClientError):
@@ -49,7 +49,6 @@ class GatewayTimeout(ServerError):
 http_response_error_class_by_status_code = {
 	cls.STATUS_CODE: cls
 	for cls in [
-		HTTPResponseError,
 		BadRequest,
 		Unauthorized,
 		NotFound,
@@ -64,4 +63,12 @@ http_response_error_class_by_status_code = {
 }
 
 def get_http_response_error_class_by_status_code(n):
-	return http_response_error_class_by_status_code.get(n, HTTPResponseError)
+	klass = http_response_error_class_by_status_code.get(n)
+	if klass is None:
+		if 400 <= n < 500:
+			klass = ClientError
+		elif 500 <= n < 600:
+			klass = ServerError
+		else:
+			klass = ResponseError
+	return klass

@@ -85,8 +85,10 @@ class Client:
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
 
-	def request(self, verb, path, *, params=None, data=None, headers=None, timeout=8):
-		return self.http.request(verb, path, params=params, data=data, headers=headers, timeout=timeout)
+	def request(self, verb, path, *, params=None,
+			payload=None, data=None, json=None, headers=None, timeout=8):
+		return self.http.request(verb, path, params=params,
+				payload=None, data=data, json=None, headers=headers, timeout=timeout)
 
 	def request_json(self, *args, **kwargs):
 		resp = self.request(*args, **kwargs)

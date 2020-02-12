@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 	from .authorizer_sync import Authorizer
 	from .requestor_sync import Requestor
 	from .response import Response
+	from .payload import Payload
 
 import sys
 from time import sleep
@@ -22,6 +23,7 @@ from .payload import make_payload
 transport_info = transport_reg['requests']
 
 class RedditHTTPClient:
+	TIMEOUT = 8
 	USER_AGENT_STRING_HEAD = (
 		f"{__about__.__title__}/{__about__.__version__} "
 		f"Python/{'{0[0]}.{0[1]}'.format(sys.version_info)} "
@@ -58,10 +60,19 @@ class RedditHTTPClient:
 	) -> Optional[bool]:
 		self.close()
 
-	def request(self, verb: str, path: str, *, params: Optional[Dict[str, str]] = None,
-			data: Any = None, headers: Optional[Dict[str, str]] = None, timeout: int = 8) -> Response:
+	def request(self,
+		verb: str,
+		path: str,
+		*,
+		params: Optional[Dict[str, str]] = None,
+		payload: Payload = None,
+		data: Any = None,
+		json: Any = None,
+		headers: Optional[Dict[str, str]] = None,
+		timeout: int = TIMEOUT,
+	) -> Response:
 		url = self.resource_base_url + path
-		payload = make_payload(data)
+		payload = make_payload(payload, data, json)
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
 		if 'raw_json' not in r.params:
 			r.params['raw_json'] = '1'
@@ -81,8 +92,7 @@ class RedditHTTPClient:
 
 			break
 
-		cls = get_http_response_error_class_by_status_code(status)
-		raise cls(response)
+		raise get_http_response_error_class_by_status_code(status)(response)
 
 	def close(self) -> None:
 		self.session.close()

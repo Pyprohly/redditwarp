@@ -25,13 +25,22 @@ class JSON(Payload):
 		self.json = json
 
 
-def make_payload(data):
-	if data is None:
-		return None
+def make_payload(payload, data, json):
+	if payload is not None:
+		return payload
 
-	if isinstance(data, dict):
-		return FormData(data)
-	if isinstance(data, str):
-		return Text(data)
+	if data is not None:
+		if isinstance(data, dict):
+			return FormData(data)
+		if isinstance(data, str):
+			return Text(data)
+		if isinstance(data, bytes):
+			return Raw(data)
+		raise NotImplementedError
 
-	raise NotImplementedError
+	if json is not None:
+		if isinstance(json, dict):
+			return JSON(json)
+		raise NotImplementedError
+
+	return None
