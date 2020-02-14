@@ -13,3 +13,6 @@ class Response:
 		self.data = data
 		self.request = request
 		self.response = response
+
+	def __repr__(self):
+		return f'<{self.__class__.__name__} [{self.status}]>'

@@ -13,11 +13,11 @@ async def main():
 	)
 	print(client.http.user_agent)
 	async with client:
-		#'''
-		response = await client.request('GET', '/api/v1/me')
+		'''
+		response = await client.http.request('GET', '/api/v1/me')
 		pprint(response.data)
 		'''
-		data = await client.request_json('GET', '/api/v1/me')
+		data = await client.request('GET', '/api/v1/me')
 		pprint(data)
 		'''#'''
 

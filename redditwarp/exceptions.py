@@ -3,17 +3,27 @@ from typing import ClassVar
 from dataclasses import dataclass
 
 class APIError(Exception):
-	"""A base exception class denoting an error that was indicated
-	in the response body of an API request, occurring when the remote
-	API wishes to inform the client that a service request was carried
-	out unsuccessfully.
+	"""A base exception class denoting that something in the response body
+	from an API request is amiss. Either an error was indicated by the API
+	or the structure is of something the client isn't prepared to handle.
 	"""
 
 	def __init__(self, response):
 		super().__init__()
 		self.response = response
 
+class BadDataLayout(APIError):
+	"""The response body contains data that the client can't handle."""
+	def __str__(self):
+		return '** Please file a bug report with RedditWrap **'
+
 class RedditAPIError(APIError):
+	"""An error class denoting an error that was indicated in the
+	response body of an API request, occurring when the remote API
+	wishes to inform the client that a service request was carried
+	out unsuccessfully.
+	"""
+
 	@property
 	def name(self):
 		return self.errors[0].name
@@ -73,7 +83,11 @@ class RedditErrorItem:
 def parse_reddit_error_items(data):
 	errors = data.get('json', {}).get('errors')
 	if errors:
-		return [RedditErrorItem(*e) for e in errors]
+		l = []
+		for e in errors:
+			name, message, field = e
+			l.append(RedditErrorItem(name, message, field or ''))
+		return l
 	return None
 
 def new_reddit_api_error(response, error_list):

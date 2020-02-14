@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 	from ..http.requestor import Requestor
 
 from ..http.request import Request
-from ..http.util import response_json_loads
+from ..http.util import json_loads_response
 from .token import TokenResponse
 from .exceptions import (
 	AuthResponseError,
@@ -37,7 +37,7 @@ class TokenClient:
 		apply_basic_auth(self.client_credentials, r)
 
 		resp = self.requestor.request(r)
-		resp_json = response_json_loads(resp)
+		resp_json = json_loads_response(resp)
 
 		error = resp_json.get('error')
 		if error:

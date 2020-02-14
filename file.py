@@ -12,11 +12,11 @@ def main():
 	)
 	print(client.http.user_agent)
 	with client:
-		#'''
-		response = client.request('GET', '/api/v1/me')
+		'''
+		response = client.http.request('GET', '/api/v1/me')
 		pprint(response.data)
 		'''
-		data = client.request_json('GET', '/api/v1/me')
+		data = client.request('GET', '/api/v1/me')
 		pprint(data)
 		'''#'''
 

@@ -2,7 +2,7 @@
 import __main__
 
 from .http.client_sync import HTTPClient
-from .http.util import response_json_loads
+from .http.util import json_loads_response
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.requests import new_session
@@ -10,7 +10,7 @@ from .auth.client_sync import TokenClient
 from .auth import TOKEN_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
-from .exceptions import parse_reddit_error_items, new_reddit_api_error
+from .exceptions import parse_reddit_error_items, new_reddit_api_error, BadDataLayout
 
 class Client:
 	"""The gateway to interacting with the Reddit API."""
@@ -85,21 +85,20 @@ class Client:
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.close()
 
+	def close(self):
+		self.http.close()
+
 	def request(self, verb, path, *, params=None,
 			payload=None, data=None, json=None, headers=None, timeout=8):
-		return self.http.request(verb, path, params=params,
-				payload=None, data=data, json=None, headers=headers, timeout=timeout)
-
-	def request_json(self, *args, **kwargs):
-		resp = self.request(*args, **kwargs)
-		d = response_json_loads(resp)
+		resp = self.http.request(verb, path, params=params,
+				payload=payload, data=data, json=json, headers=headers, timeout=timeout)
+		d = json_loads_response(resp)
+		if {'jquery', 'success'} <= d.keys():
+			raise BadDataLayout(resp)
 		error_list = parse_reddit_error_items(d)
 		if error_list is not None:
 			raise new_reddit_api_error(resp, error_list)
 		return d
-
-	def close(self):
-		self.http.close()
 
 ClientCore = Client
 

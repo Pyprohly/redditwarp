@@ -16,7 +16,7 @@ class ResponseError(Exception):
 	STATUS_CODE = 0
 
 	def __init__(self, response: Response):
-		super().__init__()
+		super().__init__(response)
 		self.response = response
 
 class ClientError(ResponseError):
@@ -51,6 +51,7 @@ http_response_error_class_by_status_code = {
 	for cls in [
 		BadRequest,
 		Unauthorized,
+		Forbidden,
 		NotFound,
 		PayloadTooLarge,
 		TooManyRequests,

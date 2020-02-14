@@ -9,7 +9,7 @@ import json
 json_decoder = json.JSONDecoder()
 json_loads = json_decoder.decode
 
-def response_json_loads(response: Response) -> Dict[str, Any]:
+def json_loads_response(response: Response) -> Dict[str, Any]:
 	if not response.headers.get('Content-Type', '').startswith('application/json'):
 		raise ValueError
 	text = response.data.decode()
