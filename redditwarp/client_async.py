@@ -11,6 +11,7 @@ from .auth import TOKEN_ENDPOINT
 from .http.authorizer_async import Authorizer, Authorized
 from .http.ratelimiter_async import RateLimited
 from .exceptions import parse_reddit_error_items, new_reddit_api_error, BadJSONLayout
+from ._site_procedures import SiteProcedures
 
 class Client:
 	@classmethod
@@ -98,7 +99,8 @@ ClientCore = Client
 class Client(ClientCore):
 	def _init(self, http):
 		super()._init(http)
-		self.api = ...
+		self.api = SiteProcedures(self)
+		self.fetch = self.api.fetch
 
 	def __class_getitem__(cls, name):
 		if not isinstance(name, str):
