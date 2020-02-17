@@ -38,11 +38,6 @@ class BaseSession(Requestor):
 		p = request.params
 		p.update({**self.params, **p})
 
-		for d in h, p:
-			d2 = {k: v for k, v in d.items() if v is not None}
-			d.clear()
-			d.update(d2)
-
 	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		raise NotImplementedError
 

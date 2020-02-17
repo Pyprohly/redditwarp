@@ -1,6 +1,7 @@
 
 from typing import ClassVar
 from dataclasses import dataclass
+from pprint import pformat
 
 class APIError(Exception):
 	"""A base exception class denoting that something in the response body
@@ -12,10 +13,16 @@ class APIError(Exception):
 		super().__init__()
 		self.response = response
 
-class BadDataLayout(APIError):
-	"""The response body contains data that the client can't handle."""
+class BadJSONLayout(APIError):
+	"""The response body contains JSON data that the client couldn't handle."""
+
+	def __init__(self, response, json=None):
+		super().__init__(response)
+		self.json = json
+
 	def __str__(self):
-		return '** Please file a bug report with RedditWrap **'
+		return f'\\\n{pformat(self.json)}\n\n' \
+				'** Please file a bug report with RedditWrap! **\n'
 
 class RedditAPIError(APIError):
 	"""An error class denoting an error that was indicated in the

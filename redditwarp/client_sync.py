@@ -10,7 +10,7 @@ from .auth.client_sync import TokenClient
 from .auth import TOKEN_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
-from .exceptions import parse_reddit_error_items, new_reddit_api_error, BadDataLayout
+from .exceptions import parse_reddit_error_items, new_reddit_api_error, BadJSONLayout
 
 class Client:
 	"""The gateway to interacting with the Reddit API."""
@@ -25,6 +25,21 @@ class Client:
 		"""
 		self = cls.__new__(cls)
 		self._init(http)
+		return self
+
+	@classmethod
+	def from_praw_config(cls, site_name='DEFAULT'):
+		config = load_praw_config()
+		section = config[site_name or 'DEFAULT']
+		get = section.get
+		self = cls(
+			client_id=get('client_id'),
+			client_secret=get('client_secret'),
+			refresh_token=get('refresh_token'),
+			username=get('username'),
+			password=get('password'),
+		)
+		self.set_user_agent(get('user_agent'))
 		return self
 
 	def __init__(self,
@@ -88,13 +103,19 @@ class Client:
 	def close(self):
 		self.http.close()
 
+	def set_user_agent(self, s):
+		ua = self.http.USER_AGENT_STRING_HEAD
+		if s is not None:
+			ua += ' -- ' + s
+		self.http.user_agent = ua
+
 	def request(self, verb, path, *, params=None,
 			payload=None, data=None, json=None, headers=None, timeout=8):
 		resp = self.http.request(verb, path, params=params,
 				payload=payload, data=data, json=json, headers=headers, timeout=timeout)
 		d = json_loads_response(resp)
 		if {'jquery', 'success'} <= d.keys():
-			raise BadDataLayout(resp)
+			raise BadJSONLayout(resp, d)
 		error_list = parse_reddit_error_items(d)
 		if error_list is not None:
 			raise new_reddit_api_error(resp, error_list)
@@ -107,30 +128,9 @@ class Client(ClientCore):
 		super()._init(http)
 		self.api = ...
 
-	@classmethod
-	def from_praw_config(cls, site_name='DEFAULT'):
-		config = load_praw_config()
-		section = config[site_name or 'DEFAULT']
-		get = section.get
-		self = cls(
-			client_id=get('client_id'),
-			client_secret=get('client_secret'),
-			refresh_token=get('refresh_token'),
-			username=get('username'),
-			password=get('password'),
-		)
-		self.set_user_agent(get('user_agent'))
-		return self
-
 	def __class_getitem__(cls, name):
 		if not isinstance(name, str):
 			raise TypeError
 		if hasattr(__main__, '__file__'):
 			raise RuntimeError("instantiating Client through __class_getitem__ can only be done interactively")
 		return cls.from_praw_config(name)
-
-	def set_user_agent(self, s):
-		ua = self.http.USER_AGENT_STRING_HEAD
-		if s is not None:
-			ua += ' -- ' + s
-		self.http.user_agent = ua

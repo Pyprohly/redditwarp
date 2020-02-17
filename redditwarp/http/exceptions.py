@@ -11,7 +11,10 @@ class TimeoutError(TransportError):
 	pass
 
 
-class ResponseError(Exception):
+class HTTPError(Exception):
+	pass
+
+class ResponseError(HTTPError):
 	"""The request completed but the response indicated an error."""
 	STATUS_CODE = 0
 
@@ -32,6 +35,8 @@ class Forbidden(ClientError):
 	STATUS_CODE = 403
 class NotFound(ClientError):
 	STATUS_CODE = 404
+class Conflict(ClientError):
+	STATUS_CODE = 409
 class PayloadTooLarge(ClientError):
 	STATUS_CODE = 413
 class TooManyRequests(ClientError):
@@ -53,6 +58,7 @@ http_response_error_class_by_status_code = {
 		Unauthorized,
 		Forbidden,
 		NotFound,
+		Conflict,
 		PayloadTooLarge,
 		TooManyRequests,
 
