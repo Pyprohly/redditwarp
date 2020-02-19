@@ -18,7 +18,7 @@ from ..auth import RESOURCE_BASE_URL
 from .request import Request
 from .exceptions import get_http_response_error_class_by_status_code
 from .. import __about__
-from .payload import make_payload
+from .payload import make_payload, FormData
 
 transport_info = transport_reg['aiohttp']
 
@@ -73,9 +73,18 @@ class RedditHTTPClient:
 	) -> Response:
 		url = self.resource_base_url + path
 		payload = make_payload(payload, data, json)
+		params = {} if params is None else params
+		headers = {} if headers is None else headers
+
+		if 'raw_json' not in params:
+			params['raw_json'] = '1'
+
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
-		if 'raw_json' not in r.params:
-			r.params['raw_json'] = '1'
+
+		if isinstance(r.payload, FormData):
+			d = r.payload.data
+			if 'api_type' not in d:
+				d['api_type'] = 'json'
 
 		response = None
 		status = -1

@@ -58,8 +58,8 @@ class Session(BaseSession):
 			status=resp.status,
 			headers=resp.headers,
 			data=content,
-			response=resp,
 			request=r,
+			transport_response=resp,
 		)
 
 	async def close(self) -> None:

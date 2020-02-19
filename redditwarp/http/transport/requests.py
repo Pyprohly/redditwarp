@@ -56,8 +56,8 @@ class Session(BaseSession):
 			status=resp.status_code,
 			headers=resp.headers,
 			data=resp.content,
-			response=resp,
 			request=r,
+			transport_response=resp,
 		)
 
 	def close(self) -> None:

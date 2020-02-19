@@ -1,3 +1,3 @@
 
 from .load_praw_config import load_praw_config
-from .data_attribute_namespace import DataAttributeNamespace, AttributeCollection
+from .data_members_namespace import DataMembersNamespace, AttributeCollection

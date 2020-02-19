@@ -11,7 +11,7 @@ from .auth import TOKEN_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
 from .exceptions import parse_reddit_error_items, new_reddit_api_error, BadJSONLayout
-from ._site_procedures import SiteProcedures
+from .site_procedures import SiteProcedures
 
 class Client:
 	"""The gateway to interacting with the Reddit API."""
