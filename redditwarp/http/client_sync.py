@@ -79,12 +79,12 @@ class RedditHTTPClient:
 		if 'raw_json' not in params:
 			params['raw_json'] = '1'
 
-		r = Request(verb, url, params=params, payload=payload, headers=headers)
-
-		if isinstance(r.payload, FormData):
-			d = r.payload.data
+		if isinstance(payload, FormData):
+			d = payload.data
 			if 'api_type' not in d:
 				d['api_type'] = 'json'
+
+		r = Request(verb, url, params=params, payload=payload, headers=headers)
 
 		response = None
 		status = -1
