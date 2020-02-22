@@ -20,10 +20,16 @@ class TokenBucket:
 			self.last_update = now
 
 	def get_value(self) -> float:
+		"""Return the number of tokens in the bucket."""
 		self._replenish()
 		return self._value
 
-	def consume(self, n: float) -> bool:
+	def can_consume(self, n: float) -> bool:
+		"""Check if `n` tokens are available."""
+		self._replenish()
+		return self._value >= n
+
+	def try_consume(self, n: float) -> bool:
 		"""Comsume `n` tokens if `n` tokens are available."""
 		self._replenish()
 		if self._value >= n:
@@ -32,24 +38,23 @@ class TokenBucket:
 		return False
 
 	def hard_consume(self, n: float) -> bool:
-		"""Comsume up to `n` tokens."""
+		"""Comsume up to `n` tokens, regardless if there aren't that many."""
 		self._replenish()
-		old_value = self._value
-
-		self._value -= n
-		if self._value < 0:
-			self._value = 0
-
-		return old_value >= n
+		prev_value = self._value
+		self._value = max(self._value - n, 0)
+		return prev_value >= n
 
 	def cooldown(self, n: float) -> float:
-		"""Return the duration the client should wait before `self.comsume()`
-		becomes `True` again.
+		"""Return the duration the client should wait before the `*_comsume`
+		methods return `True` again.
+
+		"`wait_consume()`" logic::
 
 			async with lock:
-				if not tb.consume(1):
-					await asyncio.sleep(tb.cooldown(1))
-					tb.consume(1)
+				if not tb.try_consume(1.72):
+					await asyncio.sleep(tb.cooldown(1.72))
+					h = tb.try_consume(1.72)
+					assert h
 		"""
 		return max(0, (n - self._value)/self.rate)
 

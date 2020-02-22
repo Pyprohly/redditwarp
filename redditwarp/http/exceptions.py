@@ -7,7 +7,10 @@ if TYPE_CHECKING:
 class TransportError(Exception):
 	pass
 
-class TimeoutError(TransportError):
+class NetworkError(TransportError):
+	pass
+
+class TimeoutError(NetworkError):
 	pass
 
 
@@ -61,7 +64,7 @@ http_response_error_class_by_status_code = {
 		Conflict,
 		PayloadTooLarge,
 		TooManyRequests,
-
+		#
 		InternalServerError,
 		BadGateway,
 		ServiceUnavailable,
@@ -72,10 +75,9 @@ http_response_error_class_by_status_code = {
 def get_http_response_error_class_by_status_code(n):
 	klass = http_response_error_class_by_status_code.get(n)
 	if klass is None:
+		klass = ResponseError
 		if 400 <= n < 500:
 			klass = ClientError
 		elif 500 <= n < 600:
 			klass = ServerError
-		else:
-			klass = ResponseError
 	return klass

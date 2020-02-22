@@ -14,10 +14,10 @@ from .requestor import RequestorDecorator
 class RateLimited(RequestorDecorator):
 	def __init__(self, requestor: Requestor) -> None:
 		super().__init__(requestor)
-		self.token_bucket = TokenBucket(6, .5)
 		self.reset = 0
 		self.remaining = 0
 		self.used = 0
+		self._burst_tb = TokenBucket(6, .5)
 		self._previous_request = 0
 		self._last_request = time.monotonic()
 
@@ -26,8 +26,10 @@ class RateLimited(RequestorDecorator):
 		if self.remaining:
 			s = self.reset / self.remaining
 
-		consume = self.token_bucket.hard_consume(1)
-		if consume and s < 1:
+		h = self._burst_tb.hard_consume(1)
+		if h and s < 1:
+			# If a token was consumed then burst this request, but only
+			# if the API didn't want us to wait more than a second.
 			s = 0
 
 		sleep(s)
@@ -47,14 +49,14 @@ class RateLimited(RequestorDecorator):
 			self.used = float(headers['x-ratelimit-used'])
 			return
 
-		if self.reset < 1:
-			self.reset = 100
-			self.remaining = 200
-			self.used = 0
-		else:
+		if self.reset > 0:
 			self.reset -= int(self._last_request - self._previous_request)
 			self.remaining -= 1
 			self.used += 1
+		else:
+			self.reset = 100
+			self.remaining = 200
+			self.used = 0
 
 
 from .ratelimiter import TokenBucket

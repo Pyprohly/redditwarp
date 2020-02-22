@@ -15,10 +15,10 @@ from .requestor import RequestorDecorator
 class RateLimited(RequestorDecorator):
 	def __init__(self, requestor: Requestor) -> None:
 		super().__init__(requestor)
-		self.token_bucket = TokenBucket(10, 1.1)
 		self.reset = 0
 		self.remaining = 0
 		self.used = 0
+		self._ratelimiting_tb = TokenBucket(10, 1.1)
 		self._previous_request = 0
 		self._last_request = time.monotonic()
 		self._lock = asyncio.Lock()
@@ -26,17 +26,24 @@ class RateLimited(RequestorDecorator):
 	async def request(self, request: Request, timeout: Optional[int]) -> Response:
 		s = 0
 		if self.remaining:
+			# Note: in an async setting we can't rely on this result
+			# being current because of the possibility of concurrency.
 			s = self.reset / self.remaining
 
+		tb = self._ratelimiting_tb
 		async with self._lock:
+			# If the API wants us to sleep for longer than a second, obey.
 			if s > 1:
 				await sleep(s)
-				self.token_bucket.hard_consume(s)
+				# Don't add any tokens for the time spent sleeping here,
+				# so the rate limiting is the conjunction of what the API
+				# wants and what the token bucket wants.
+				tb.hard_consume(s)
 
-			if not self.token_bucket.consume(1):
-				c = self.token_bucket.cooldown(1)
+			if not tb.try_consume(1):
+				c = tb.cooldown(1)
 				await sleep(c)
-				self.token_bucket.consume(1)
+				tb.try_consume(1)
 
 		self._previous_request = self._last_request
 		self._last_request = time.monotonic()
@@ -53,14 +60,14 @@ class RateLimited(RequestorDecorator):
 			self.used = float(headers['x-ratelimit-used'])
 			return
 
-		if self.reset < 1:
-			self.reset = 100
-			self.remaining = 200
-			self.used = 0
-		else:
+		if self.reset > 0:
 			self.reset -= int(self._last_request - self._previous_request)
 			self.remaining -= 1
 			self.used += 1
+		else:
+			self.reset = 100
+			self.remaining = 200
+			self.used = 0
 
 
 from .ratelimiter import TokenBucket
