@@ -9,12 +9,12 @@ class APIError(Exception):
 	or the structure is of something the client isn't prepared to handle.
 	"""
 
-	def __init__(self, response):
+	def __init__(self, response: 'Optional[Response]'):
 		super().__init__()
 		self.response = response
 
 class BadJSONLayout(APIError):
-	"""The response body contains JSON data that the client couldn't handle."""
+	"""The response body contains JSON data that the client can't handle."""
 
 	def __init__(self, response, json=None):
 		super().__init__(response)
@@ -76,8 +76,8 @@ class ContentCreationCooldown(RedditAPIError):
 	def __str__(self):
 		return super().__str__() + '''
 
-Looks like you hit a content creation ratelimit. This API error can happen
-when your account has low karma or no verified email.
+Looks like you hit a content creation ratelimit. This can happen when
+your account has low karma or no verified email.
 '''
 
 @dataclass

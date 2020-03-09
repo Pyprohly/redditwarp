@@ -28,9 +28,9 @@ ppr = PrettyPrinter()
 ppr_format = ppr._format
 
 def pretty_format(obj):
-	# This function ensures `obj`'s pretty-print-formatted string is returned,
-	# since `pprint.pformat()` only invokes an object's pretty printer
-	# if its __repr__ is long enough.
+	# This function ensures `obj`'s pretty-print-formatted string is
+	# returned, since `pprint.pformat()` only invokes an object's
+	# pretty printer if its __repr__ is long enough.
 	sio = StringIO()
 	ppr_format(obj, sio, 0, 999999, {}, 0)
 	return sio.getvalue()
