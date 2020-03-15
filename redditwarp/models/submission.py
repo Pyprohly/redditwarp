@@ -1,28 +1,30 @@
 
 from datetime import datetime, timezone
-from ..util import AttributeCollection
+from .object import FancyAttributeNamespaces
+from .design_classes import ThingMixin
 
-class Submission:
-	THING_PREFIX = 't3_'
+class Submission(ThingMixin, FancyAttributeNamespaces):
+	THING_PREFIX = 't3'
+
+	BASE_ATTR_DEPS = {
+		'id': ('id',),
+		'id36': ('id',),
+		'full_id36': ('id',),
+		'created_at': ('created_utc',),
+		'created_ut': ('created_utc',),
+	}
 
 	def __init__(self, data):
-		self.a = AttributeCollection(self)
-		self._update(data)
-		self.b = data
+		super().__init__(data)
+		self.__set_attrs(data)
 
-	def _update(self, data):
-		self.id = int(data['id'], 36)
-		self.id36 = data['id']
-		self.full_id36 = self.THING_PREFIX + data['id']
+	def __set_attrs(self, data):
 		self.created_at = datetime.fromtimestamp(data['created_utc'], timezone.utc)
 		self.created_ut = int(data['created_utc'])
 
-	def __repr__(self):
-		return f'<{self.__class__.__name__} id36={self.id36!r}>'
-
 class TextPost(Submission):
-	def _update(self, data):
-		super()._update(data)
+	def __init__(self, data):
+		super().__init__(data)
 		self.body = data['selftext']
 		self.body_html = data['selftext_html']
 

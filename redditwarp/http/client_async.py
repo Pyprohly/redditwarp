@@ -36,7 +36,7 @@ class RedditHTTPClient:
 		return self.session.headers['User-Agent']
 
 	@user_agent.setter
-	def user_agent(self, value) -> None:
+	def user_agent(self, value: str) -> None:
 		self.session.headers['User-Agent'] = value
 
 	def __init__(self,

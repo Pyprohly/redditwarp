@@ -64,14 +64,14 @@ def auto_grant_factory(
 	username: Optional[str],
 	password: Optional[str],
 ) -> Optional[AuthorizationGrant]:
-	"""Produce a simple, non-expiring grant from the given credentials.
+	"""Produce a simple non-expiring grant from the provided credentials:
 
 		* Refresh Token
 		* Resource Owner Password Credentials
 		* Client Credentials
 
-	Note this function won't return the (Reddit-specific) Installed Client
-	grant type. This grant should be explicitly created if needed.
+	This function doesn't return the (Reddit-specific) Installed Client
+	grant type.
 	"""
 	if refresh_token:
 		return RefreshTokenGrant(refresh_token)

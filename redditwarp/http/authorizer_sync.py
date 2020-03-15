@@ -21,7 +21,7 @@ class Authorizer:
 		self.token = token
 		self.expiry_skew = expiry_skew
 		self.expiry_time: Optional[int] = None
-		self.expires_in_fallback = 3600
+		self.expires_in_fallback: int = 3600
 
 	def token_expired(self) -> bool:
 		if self.expiry_time is None:
@@ -35,15 +35,17 @@ class Authorizer:
 			expires_in = self.expires_in_fallback
 
 		self.expiry_time = int(self.current_time()) + expires_in - self.expiry_skew
-		self.token = token = Token(
+		token = Token(
 			access_token=tr.access_token,
 			refresh_token=tr.refresh_token,
 			expires_in=expires_in,
 			scope=tr.scope,
 		)
+		self.token = token
 		return token
 
 	def maybe_renew_token(self) -> None:
+		"""Renew the token if it is unavailable or has expired."""
 		if (self.token is None) or self.token_expired():
 			self.renew_token()
 
@@ -66,6 +68,11 @@ class Authorized(RequestorDecorator):
 		super().__init__(requestor)
 		self.authorizer = authorizer
 
+	def prepare_request(self, request: Request) -> None:
+		if 'Authorization' not in request.headers:
+			self.authorizer.maybe_renew_token()
+			self.authorizer.prepare_request(request)
+
 	def request(self, request: Request, timeout: Optional[int]) -> Response:
 		self.prepare_request(request)
 		response = self.requestor.request(request, timeout)
@@ -74,8 +81,3 @@ class Authorized(RequestorDecorator):
 			self.authorizer.prepare_request(request)
 			response = self.requestor.request(request, timeout)
 		return response
-
-	def prepare_request(self, request: Request) -> None:
-		if 'Authorization' not in request.headers:
-			self.authorizer.maybe_renew_token()
-			self.authorizer.prepare_request(request)

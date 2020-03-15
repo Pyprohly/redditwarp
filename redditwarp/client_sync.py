@@ -40,7 +40,8 @@ class Client:
 			username=get('username'),
 			password=get('password'),
 		)
-		self.set_user_agent(get('user_agent'))
+		if 'user_agent' in section:
+			self.set_user_agent(get('user_agent'))
 		return self
 
 	def __init__(self,

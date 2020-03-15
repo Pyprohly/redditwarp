@@ -26,7 +26,7 @@ class RateLimited(RequestorDecorator):
 	async def request(self, request: Request, timeout: Optional[int]) -> Response:
 		s = 0
 		if self.remaining:
-			# Note: in an async setting we can't rely on this result
+			# Note: in async code we can't rely on the value of this result
 			# being current because of the possibility of concurrency.
 			s = self.reset / self.remaining
 
@@ -35,6 +35,7 @@ class RateLimited(RequestorDecorator):
 			# If the API wants us to sleep for longer than a second, obey.
 			if s > 1:
 				await sleep(s)
+
 				# Don't add any tokens for the time spent sleeping here,
 				# so the rate limiting is the conjunction of what the API
 				# wants and what the token bucket wants.

@@ -11,7 +11,7 @@ from redditwarp.auth.misc import (
 	authorization_url,
 )
 
-from redditwarp.auth.grant import AuthorizationCodeGrant
+from redditwarp.auth.grants import AuthorizationCodeGrant
 from redditwarp.auth.client import TokenClient, ClientCredentials
 from redditwarp.http.transport.requests import new_session
 

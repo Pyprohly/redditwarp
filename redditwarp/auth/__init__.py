@@ -1,6 +1,6 @@
 
 from .client import *
 from .exceptions import *
-from .grant import *
+from .grants import *
 from .misc import *
 from .token import *

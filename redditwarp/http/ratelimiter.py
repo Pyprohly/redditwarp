@@ -48,13 +48,15 @@ class TokenBucket:
 		"""Return the duration the client should wait before the `*_comsume`
 		methods return `True` again.
 
-		"`wait_consume()`" logic::
+		This class is not IO-bound so there is no "`wait_consume()`" method.
+		Here is the logic for that::
 
+			t = 1
 			async with lock:
-				if not tb.try_consume(1.72):
-					await asyncio.sleep(tb.cooldown(1.72))
-					h = tb.try_consume(1.72)
-					assert h
+				if not tb.try_consume(t):
+					await asyncio.sleep(tb.cooldown(t))
+					u = tb.hard_consume(t)
+					assert u
 		"""
 		return max(0, (n - self._value)/self.rate)
 
