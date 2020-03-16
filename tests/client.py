@@ -20,13 +20,13 @@ session = new_session()
 #session.headers['Accept-Encoding'] = 'identity'
 
 authorizer = Authorizer(
+	None,
 	TokenClient(
 		session,
 		TOKEN_ENDPOINT,
 		client_credentials,
 		ClientCredentialsGrant(),
 	),
-	None,
 )
 requestor = RateLimited(Authorized(session, authorizer))
 userless_http = HTTPClient(
@@ -38,13 +38,13 @@ userless_client = redditwarp.Client.from_http(userless_http)
 authorizer.token = redditwarp.auth.token.Token('<ACCESS_TOKEN>')
 
 authorizer = Authorizer(
+	None,
 	TokenClient(
 		session,
 		TOKEN_ENDPOINT,
 		client_credentials,
 		RefreshTokenGrant(os.environ['redditwarp_refresh_token']),
 	),
-	None,
 )
 requestor = RateLimited(Authorized(session, authorizer))
 user_http = HTTPClient(

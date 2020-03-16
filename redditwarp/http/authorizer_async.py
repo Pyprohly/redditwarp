@@ -15,9 +15,11 @@ from .requestor_async import RequestorDecorator
 from ..auth import Token
 
 class Authorizer:
-	def __init__(self, token_client: TokenClient, token: Optional[Token] = None, expiry_skew: int = 30) -> None:
-		self.token_client = token_client
+	def __init__(self, token: Optional[Token] = None,
+			token_client: Optional[TokenClient] = None,
+			expiry_skew: int = 30) -> None:
 		self.token = token
+		self.token_client = token_client
 		self.expiry_skew = expiry_skew
 		self.expiry_time: Optional[int] = None
 		self.expires_in_fallback: int = 3600
@@ -27,8 +29,17 @@ class Authorizer:
 			return False
 		return self.current_time() > self.expiry_time
 
+	def can_renew_token(self) -> bool:
+		return self.token_client is not None
+
 	async def renew_token(self) -> Token:
-		tr: TokenResponse = await self.token_client.fetch_token()
+		try:
+			tr: TokenResponse = await self.token_client.fetch_token()
+		except AttributeError as e:
+			if str(e) == "'NoneType' object has no attribute 'fetch_token'":
+				raise RuntimeError('no token client set')
+			raise
+
 		expires_in = tr.expires_in
 		if expires_in is None:
 			expires_in = self.expires_in_fallback
@@ -43,12 +54,18 @@ class Authorizer:
 		self.token = token
 		return token
 
-	async def maybe_renew_token(self) -> None:
+	async def maybe_renew_token(self) -> Optional[Token]:
 		if (self.token is None) or self.token_expired():
-			await self.renew_token()
+			return await self.renew_token()
+		return None
 
 	def prepare_request(self, request: Request) -> None:
-		request.headers['Authorization'] = '{0.token_type} {0.access_token}'.format(self.token)
+		try:
+			request.headers['Authorization'] = '{0.TOKEN_TYPE} {0.access_token}'.format(self.token)
+		except AttributeError as e:
+			if "'NoneType' object" in str(e):
+				raise RuntimeError('no token set')
+			raise
 
 	def current_time(self) -> float:
 		return time.monotonic()
@@ -60,7 +77,7 @@ class Authorizer:
 
 
 class Authorized(RequestorDecorator):
-	def __init__(self, requestor: Requestor, authorizer: Optional[Authorizer] = None) -> None:
+	def __init__(self, requestor: Requestor, authorizer: Authorizer) -> None:
 		super().__init__(requestor)
 		self.authorizer = authorizer
 		self._lock = asyncio.Lock()
@@ -90,7 +107,7 @@ class Authorized(RequestorDecorator):
 			if f.done():
 				self._futures.remove(f)
 
-		if response.status == 401:
+		if response.status == 401 and self.authorizer.can_renew_token():
 			# We need to call `renew_token()` but ensure only one task does it.
 			if self._valve.is_set():
 				# Stop new requests from being made.

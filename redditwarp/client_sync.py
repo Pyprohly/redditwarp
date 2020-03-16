@@ -18,7 +18,7 @@ class Client:
 
 	@classmethod
 	def from_http(cls, http):
-		"""An alternative constructor for testing purposes. For advanced uses.
+		"""A constructor for testing purposes or advanced uses.
 
 		Parameters
 		----------
@@ -43,6 +43,29 @@ class Client:
 		if 'user_agent' in section:
 			self.set_user_agent(get('user_agent'))
 		return self
+
+	@classmethod
+	def from_access_token(cls, client_id, client_secret, access_token):
+		"""Construct a Reddit client instance without a token client.
+
+		...In other words, `self.http.authorizer.token_client` will be `None`.
+
+		When the access token becomes invalid you'll need to deal with the 401
+		Unauthorized exception that will be thrown on requests.
+
+		Parameters
+		----------
+		client_id: str
+		client_secret: str
+		access_token: str
+		"""
+		client_credentials = ClientCredentials(client_id, client_secret)
+		token = Token(access_token)
+		session = new_session()
+		authorizer = Authorizer(token, None)
+		requestor = RateLimited(Authorized(session, authorizer))
+		http = HTTPClient(requestor, session, authorizer)
+		return cls.from_http(http)
 
 	def __init__(self,
 			client_id, client_secret, refresh_token=None,
@@ -78,16 +101,16 @@ class Client:
 			raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
 		client_credentials = ClientCredentials(client_id, client_secret)
-		token = Token(access_token) if access_token else None
+		token = None if access_token is None else Token(access_token)
 		session = new_session()
 		authorizer = Authorizer(
+			token,
 			TokenClient(
 				session,
 				TOKEN_ENDPOINT,
 				client_credentials,
 				grant,
 			),
-			token,
 		)
 		requestor = RateLimited(Authorized(session, authorizer))
 		http = HTTPClient(requestor, session, authorizer)

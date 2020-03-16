@@ -27,7 +27,7 @@ class TokenClient:
 
 	async def fetch_token(self) -> TokenResponse:
 		params = {k: v for k, v in vars(self.grant).items() if v}
-		params['grant_type'] = self.grant.grant_type
+		params['grant_type'] = self.grant.GRANT_TYPE
 
 		r = Request('POST', self.token_endpoint, params=params)
 		apply_basic_auth(self.client_credentials, r)

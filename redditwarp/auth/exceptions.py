@@ -18,6 +18,9 @@ class AuthResponseError(AuthError):
 		super().__init__()
 		self.response = response
 
+class Unauthorized(AuthResponseError):
+	pass
+
 class OAuth2ResponseError(AuthResponseError):
 	"""
 	As detailed in the OAuth2 spec. For more information see
@@ -74,7 +77,3 @@ oauth2_response_error_class_by_error_name = {
 		InvalidScope,
 	]
 }
-
-
-class Unauthorized(AuthResponseError):
-	pass

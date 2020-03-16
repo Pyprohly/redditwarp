@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from dataclasses import dataclass
 from base64 import b64encode
 
-@dataclass
+@dataclass(frozen=True)
 class ClientCredentials:
 	client_id: str
 	client_secret: str

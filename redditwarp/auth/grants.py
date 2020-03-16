@@ -25,36 +25,36 @@ class AuthorizationGrant:
 	An empty string should be treated the same as `None` in all fields that
 	are annotated as `Optional`.
 	"""
-	grant_type: ClassVar[str] = ''
+	GRANT_TYPE: ClassVar[str] = ''
 
 @dataclass
 class AuthorizationCodeGrant(AuthorizationGrant):
-	grant_type = 'authorization_code'
+	GRANT_TYPE = 'authorization_code'
 	code: str
 	redirect_uri: Optional[str]
 	client_id: Optional[str] = None
 
 @dataclass
 class ResourceOwnerPasswordCredentialsGrant(AuthorizationGrant):
-	grant_type = 'password'
+	GRANT_TYPE = 'password'
 	username: str
 	password: str
 	scope: Optional[str] = None
 
 @dataclass
 class ClientCredentialsGrant(AuthorizationGrant):
-	grant_type = 'client_credentials'
+	GRANT_TYPE = 'client_credentials'
 	scope: Optional[str] = None
 
 @dataclass
 class RefreshTokenGrant(AuthorizationGrant):
-	grant_type = 'refresh_token'
+	GRANT_TYPE = 'refresh_token'
 	refresh_token: str
 	scope: Optional[str] = None
 
 @dataclass
 class InstalledClientGrant(AuthorizationGrant):
-	grant_type = "https://oauth.reddit.com/grants/installed_client"
+	GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client"
 	device_id: str
 	scope: Optional[str] = None
 
