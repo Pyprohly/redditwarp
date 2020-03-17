@@ -37,8 +37,7 @@ class Client:
 		return self
 
 	@classmethod
-	def from_access_token(cls, client_id, client_secret, access_token):
-		client_credentials = ClientCredentials(client_id, client_secret)
+	def from_access_token(cls, access_token):
 		token = Token(access_token)
 		session = new_session()
 		authorizer = Authorizer(token, None)
@@ -104,6 +103,9 @@ class Client:
 		if error_list is not None:
 			raise new_reddit_api_error(resp, error_list)
 		return d
+
+	def set_access_token(self, access_token):
+		self.http.authorizer.token = Token(access_token)
 
 ClientCore = Client
 

@@ -38,7 +38,7 @@ class Authorizer:
 			tr: TokenResponse = self.token_client.fetch_token()
 		except AttributeError as e:
 			if str(e) == "'NoneType' object has no attribute 'fetch_token'":
-				raise RuntimeError('no token client set')
+				raise RuntimeError('a new token was requested but no token client is set')
 			raise
 
 		expires_in = tr.expires_in
@@ -65,8 +65,8 @@ class Authorizer:
 		try:
 			request.headers['Authorization'] = '{0.TOKEN_TYPE} {0.access_token}'.format(self.token)
 		except AttributeError as e:
-			if "'NoneType' object" in str(e):
-				raise RuntimeError('no token set')
+			if str(e).startswith("'NoneType'"):
+				raise RuntimeError('no token is set')
 			raise
 
 	def current_time(self) -> float:
@@ -85,16 +85,14 @@ class Authorized(RequestorDecorator):
 		super().__init__(requestor)
 		self.authorizer = authorizer
 
-	def prepare_request(self, request: Request) -> None:
-		if 'Authorization' not in request.headers:
-			self.authorizer.maybe_renew_token()
-			self.authorizer.prepare_request(request)
-
 	def request(self, request: Request, timeout: Optional[int]) -> Response:
-		self.prepare_request(request)
+		self.authorizer.maybe_renew_token()
+		self.authorizer.prepare_request(request)
 		response = self.requestor.request(request, timeout)
+
 		if response.status == 401 and self.authorizer.can_renew_token():
 			self.authorizer.renew_token()
 			self.authorizer.prepare_request(request)
 			response = self.requestor.request(request, timeout)
+
 		return response

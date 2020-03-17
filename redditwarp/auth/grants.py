@@ -17,7 +17,7 @@ __all__ = (
 	'auto_grant_factory',
 )
 
-@dataclass
+@dataclass(frozen=True)
 class AuthorizationGrant:
 	"""An authorization grant is a credential representing the resource
 	owner's authorization that's used to exchange for a bearer token.
@@ -27,32 +27,32 @@ class AuthorizationGrant:
 	"""
 	GRANT_TYPE: ClassVar[str] = ''
 
-@dataclass
+@dataclass(frozen=True)
 class AuthorizationCodeGrant(AuthorizationGrant):
 	GRANT_TYPE = 'authorization_code'
 	code: str
 	redirect_uri: Optional[str]
 	client_id: Optional[str] = None
 
-@dataclass
+@dataclass(frozen=True)
 class ResourceOwnerPasswordCredentialsGrant(AuthorizationGrant):
 	GRANT_TYPE = 'password'
 	username: str
 	password: str
 	scope: Optional[str] = None
 
-@dataclass
+@dataclass(frozen=True)
 class ClientCredentialsGrant(AuthorizationGrant):
 	GRANT_TYPE = 'client_credentials'
 	scope: Optional[str] = None
 
-@dataclass
+@dataclass(frozen=True)
 class RefreshTokenGrant(AuthorizationGrant):
 	GRANT_TYPE = 'refresh_token'
 	refresh_token: str
 	scope: Optional[str] = None
 
-@dataclass
+@dataclass(frozen=True)
 class InstalledClientGrant(AuthorizationGrant):
 	GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client"
 	device_id: str

@@ -2,7 +2,7 @@
 from typing import ClassVar, Optional, Any
 from dataclasses import dataclass
 
-__all__ = ('TokenResponse', 'BearerToken', 'Token')
+__all__ = ('TokenResponse', 'Token')
 
 class TokenResponse:
 	def __init__(self,

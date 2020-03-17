@@ -37,7 +37,7 @@ class Authorizer:
 			tr: TokenResponse = await self.token_client.fetch_token()
 		except AttributeError as e:
 			if str(e) == "'NoneType' object has no attribute 'fetch_token'":
-				raise RuntimeError('no token client set')
+				raise RuntimeError('a new token was requested but no token client is set')
 			raise
 
 		expires_in = tr.expires_in
@@ -63,8 +63,8 @@ class Authorizer:
 		try:
 			request.headers['Authorization'] = '{0.TOKEN_TYPE} {0.access_token}'.format(self.token)
 		except AttributeError as e:
-			if "'NoneType' object" in str(e):
-				raise RuntimeError('no token set')
+			if str(e).startswith("'NoneType'"):
+				raise RuntimeError('no token is set')
 			raise
 
 	def current_time(self) -> float:
@@ -85,16 +85,12 @@ class Authorized(RequestorDecorator):
 		self._valve.set()
 		self._futures = []
 
-	async def prepare_request(self, request: Request) -> None:
-		if 'Authorization' not in request.headers:
-			await self.authorizer.maybe_renew_token()
-			self.authorizer.prepare_request(request)
-
 	async def request(self, request: Request, timeout: Optional[int]) -> Response:
 		await self._valve.wait()
 
 		async with self._lock:
-			await self.prepare_request(request)
+			await self.authorizer.maybe_renew_token()
+			self.authorizer.prepare_request(request)
 
 		fut = asyncio.ensure_future(self.requestor.request(request, timeout))
 		self._futures.append(fut)

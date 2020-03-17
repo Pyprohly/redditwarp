@@ -45,21 +45,19 @@ class Client:
 		return self
 
 	@classmethod
-	def from_access_token(cls, client_id, client_secret, access_token):
+	def from_access_token(cls, access_token):
 		"""Construct a Reddit client instance without a token client.
 
-		...In other words, `self.http.authorizer.token_client` will be `None`.
+		No token client means `self.http.authorizer.token_client` will be `None`.
 
-		When the access token becomes invalid you'll need to deal with the 401
-		Unauthorized exception that will be thrown on requests.
+		When the token becomes invalid you'll need to deal with the 401
+		Unauthorized exception that will be thrown on requests. You can
+		use the :meth:`set_access_token` method to assign a new token.
 
 		Parameters
 		----------
-		client_id: str
-		client_secret: str
 		access_token: str
 		"""
-		client_credentials = ClientCredentials(client_id, client_secret)
 		token = Token(access_token)
 		session = new_session()
 		authorizer = Authorizer(token, None)
@@ -145,6 +143,17 @@ class Client:
 		if error_list is not None:
 			raise new_reddit_api_error(resp, error_list)
 		return d
+
+	def set_access_token(self, access_token):
+		"""Manually set the access token.
+
+		Tip: to get the current access token use `self.http.authorizer.token.access_token`
+
+		Parameters
+		----------
+		access_token: str
+		"""
+		self.http.authorizer.token = Token(access_token)
 
 ClientCore = Client
 
