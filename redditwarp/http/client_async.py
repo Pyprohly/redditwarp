@@ -16,7 +16,6 @@ from asyncio import sleep
 from .transport import transport_reg
 from ..auth import RESOURCE_BASE_URL
 from .request import Request
-from .exceptions import get_http_response_error_class_by_status_code
 from .. import __about__
 from .payload import make_payload, FormData
 
@@ -76,32 +75,23 @@ class RedditHTTPClient:
 		params = {} if params is None else params
 		headers = {} if headers is None else headers
 
-		if 'raw_json' not in params:
-			params['raw_json'] = '1'
+		params.setdefault('raw_json', '1')
 
 		if isinstance(payload, FormData):
-			d = payload.data
-			if 'api_type' not in d:
-				d['api_type'] = 'json'
+			payload.data.setdefault('api_type', 'json')
 
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
 
 		response = None
-		status = -1
 		for i in range(5):
 			response = await self.requestor.request(r, timeout)
-			status = response.status
 
-			if 200 <= status < 300:
-				return response
-
-			if status in (500, 502):
-				await sleep(2**i + 1)
+			if response.status in (500, 502):
+				await sleep(i**2)
 				continue
-
 			break
 
-		raise get_http_response_error_class_by_status_code(status)(response)
+		return response
 
 	async def close(self) -> None:
 		await self.session.close()

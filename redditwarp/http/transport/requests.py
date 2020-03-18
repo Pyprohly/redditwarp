@@ -57,7 +57,7 @@ class Session(BaseSession):
 			headers=resp.headers,
 			data=resp.content,
 			request=r,
-			transport_response=resp,
+			underlying_response=resp,
 		)
 
 	def close(self) -> None:

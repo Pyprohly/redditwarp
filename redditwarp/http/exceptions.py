@@ -18,7 +18,7 @@ class HTTPError(Exception):
 	pass
 
 class ResponseError(HTTPError):
-	"""The request completed but the response indicated an error."""
+	"""The request completed successfully but the response indicated an error."""
 	STATUS_CODE = 0
 
 	def __init__(self, response: Response):
@@ -73,6 +73,9 @@ http_response_error_class_by_status_code = {
 }
 
 def get_http_response_error_class_by_status_code(n):
+	if n < 400:
+		return None
+
 	klass = http_response_error_class_by_status_code.get(n)
 	if klass is None:
 		klass = ResponseError
@@ -81,3 +84,8 @@ def get_http_response_error_class_by_status_code(n):
 		elif 500 <= n < 600:
 			klass = ServerError
 	return klass
+
+def raise_for_status(response):
+	err_cls = get_http_response_error_class_by_status_code(response.status)
+	if err_cls:
+		raise err_cls(response)

@@ -51,10 +51,10 @@ class RateLimited(RequestorDecorator):
 
 		response = await self.requestor.request(request, timeout)
 
-		self.parse_ratelimit_headers(response.headers)
+		self.scan_ratelimit_headers(response.headers)
 		return response
 
-	def parse_ratelimit_headers(self, headers):
+	def scan_ratelimit_headers(self, headers):
 		if 'x-ratelimit-reset' in headers:
 			self.reset = float(headers['x-ratelimit-reset'])
 			self.remaining = float(headers['x-ratelimit-remaining'])

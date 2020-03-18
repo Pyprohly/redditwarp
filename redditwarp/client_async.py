@@ -102,6 +102,7 @@ class Client:
 		error_list = parse_reddit_error_items(d)
 		if error_list is not None:
 			raise new_reddit_api_error(resp, error_list)
+		resp.raise_for_status()
 		return d
 
 	def set_access_token(self, access_token):

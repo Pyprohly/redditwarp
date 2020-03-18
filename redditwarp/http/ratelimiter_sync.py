@@ -29,7 +29,7 @@ class RateLimited(RequestorDecorator):
 		h = self._burst_tb.hard_consume(1)
 		if h and s < 1:
 			# If a token was consumed then burst this request, but only
-			# if the API didn't want us to wait more than a second.
+			# if the API didn't want us to wait for more than a second.
 			s = 0
 
 		sleep(s)
@@ -39,10 +39,10 @@ class RateLimited(RequestorDecorator):
 
 		response = self.requestor.request(request, timeout)
 
-		self.parse_ratelimit_headers(response.headers)
+		self.scan_ratelimit_headers(response.headers)
 		return response
 
-	def parse_ratelimit_headers(self, headers):
+	def scan_ratelimit_headers(self, headers):
 		if 'x-ratelimit-reset' in headers:
 			self.reset = float(headers['x-ratelimit-reset'])
 			self.remaining = float(headers['x-ratelimit-remaining'])
