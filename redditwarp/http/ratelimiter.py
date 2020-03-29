@@ -61,5 +61,5 @@ class TokenBucket:
 		return max(0, (n - self._value)/self.rate)
 
 
-from .ratelimiter_sync import RateLimited as RateLimitedSync, RateLimited
-from .ratelimiter_async import RateLimited as RateLimitedAsync
+from .ratelimiter_sync import RateLimited as RateLimitedSync, RateLimited  # noqa
+from .ratelimiter_async import RateLimited as RateLimitedAsync  # noqa

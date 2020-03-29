@@ -19,5 +19,5 @@ def apply_basic_auth(client_credentials: ClientCredentials, request: Request) ->
 	request.headers['Authorization'] = auth_string
 
 
-from .client_sync import TokenClient as TokenClientSync, TokenClient
-from .client_async import TokenClient as TokenClientAsync
+from .client_sync import TokenClient as TokenClientSync, TokenClient  # noqa
+from .client_async import TokenClient as TokenClientAsync  # noqa

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import T, Iterable
+from typing import T, Iterable, Callable
 
 class TheStubbornCallerIterator:
 	"""For each callable in the given iterator, call it and return its result.

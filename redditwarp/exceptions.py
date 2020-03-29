@@ -1,5 +1,4 @@
 
-from typing import ClassVar
 from dataclasses import dataclass
 from pprint import pformat
 
@@ -162,7 +161,7 @@ def get_variant1_reddit_api_error(response, error_list):
 def raise_for_variant1_reddit_api_error(resp, data):
 	error_list = try_parse_reddit_error_items(data)
 	if error_list is not None:
-		raise get_reddit_api_error(resp, error_list)
+		raise get_variant1_reddit_api_error(resp, error_list)
 
 
 class Variant2RedditAPIError(RedditAPIError):

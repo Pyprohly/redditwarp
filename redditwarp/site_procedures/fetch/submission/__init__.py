@@ -1,2 +1,2 @@
 
-from .submission import *
+from .submission import *  # noqa

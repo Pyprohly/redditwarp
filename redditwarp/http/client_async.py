@@ -17,7 +17,7 @@ from .transport import transport_reg
 from ..auth import RESOURCE_BASE_URL
 from .request import Request
 from .. import __about__
-from .payload import make_payload, FormData
+from .payload import make_payload
 
 transport_info = transport_reg['aiohttp']
 
@@ -64,7 +64,7 @@ class RedditHTTPClient:
 		path: str,
 		*,
 		params: Optional[Dict[str, str]] = None,
-		payload: Payload = None,
+		payload: Optional[Payload] = None,
 		data: Any = None,
 		json: Any = None,
 		headers: Optional[Dict[str, str]] = None,
