@@ -7,9 +7,9 @@ if TYPE_CHECKING:
 	from .request import Request
 
 from dataclasses import dataclass
-from .exceptions import raise_for_status
+from .exceptions import raise_now, raise_for_status
 
-@dataclass
+@dataclass(eq=False)
 class Response:
 	status: int
 	headers: Mapping[str, str]
@@ -19,6 +19,9 @@ class Response:
 
 	def __repr__(self) -> None:
 		return f'<{self.__class__.__name__} [{self.status}]>'
+
+	def raise_now(self) -> None:
+		raise_now(self)
 
 	def raise_for_status(self) -> None:
 		raise_for_status(self)

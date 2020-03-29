@@ -76,9 +76,7 @@ class RedditHTTPClient:
 		headers = {} if headers is None else headers
 
 		params.setdefault('raw_json', '1')
-
-		if isinstance(payload, FormData):
-			payload.data.setdefault('api_type', 'json')
+		params.setdefault('api_type', 'json')
 
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
 

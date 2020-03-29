@@ -1,6 +1,7 @@
 
 import __main__
 
+from . import http
 from .http.client_sync import HTTPClient
 from .http.util import json_loads_response
 from .auth import ClientCredentials, Token, auto_grant_factory
@@ -10,7 +11,13 @@ from .auth.client_sync import TokenClient
 from .auth import TOKEN_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
-from .exceptions import parse_reddit_error_items, new_reddit_api_error, BadJSONLayout
+from .exceptions import (
+	HTTPStatusError,
+	UnidentifiedResponseContentError,
+	raise_for_content_response_error,
+	raise_for_variant1_reddit_api_error,
+	raise_for_variant2_reddit_api_error,
+)
 from .site_procedures import SiteProcedures
 
 class Client:
@@ -116,6 +123,7 @@ class Client:
 
 	def _init(self, http):
 		self.http = http
+		self.last_response = None
 
 	def __enter__(self):
 		return self
@@ -136,14 +144,23 @@ class Client:
 			payload=None, data=None, json=None, headers=None, timeout=8):
 		resp = self.http.request(verb, path, params=params,
 				payload=payload, data=data, json=json, headers=headers, timeout=timeout)
-		d = json_loads_response(resp)
-		if {'jquery', 'success'} <= d.keys():
-			raise BadJSONLayout(resp, d)
-		error_list = parse_reddit_error_items(d)
-		if error_list is not None:
-			raise new_reddit_api_error(resp, error_list)
-		resp.raise_for_status()
-		return d
+		self.last_response = resp
+
+		try:
+			data = json_loads_response(resp)
+		except ValueError:
+			raise UnidentifiedResponseContentError(resp) from None
+
+		raise_for_content_response_error(resp, data)
+		raise_for_variant1_reddit_api_error(resp, data)
+		raise_for_variant2_reddit_api_error(resp, data)
+
+		try:
+			resp.raise_for_status()
+		except http.exceptions.StatusCodeException as e:
+			raise HTTPStatusError(resp) from e
+
+		return data
 
 	def set_access_token(self, access_token):
 		"""Manually set the access token.

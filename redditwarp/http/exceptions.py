@@ -14,20 +14,28 @@ class TimeoutError(NetworkError):
 	pass
 
 
-class HTTPError(Exception):
+class HTTPException(Exception):
 	pass
 
-class ResponseError(HTTPError):
-	"""The request completed successfully but the response indicated an error."""
-	STATUS_CODE = 0
+class ResponseException(HTTPException):
+	"""The request completed successfully but there was an issue with the response."""
 
 	def __init__(self, response: Response):
 		super().__init__(response)
 		self.response = response
 
-class ClientError(ResponseError):
+class StatusCodeException(ResponseException):
+	STATUS_CODE = 0
+
+class InformationalResponse(StatusCodeException):
+	STATUS_CODE = -100
+class SuccessfulResponse(StatusCodeException):
+	STATUS_CODE = -200
+class RedirectionResponse(StatusCodeException):
+	STATUS_CODE = -300
+class ClientError(StatusCodeException):
 	STATUS_CODE = -400
-class ServerError(ResponseError):
+class ServerError(StatusCodeException):
 	STATUS_CODE = -500
 
 class BadRequest(ClientError):
@@ -54,9 +62,10 @@ class ServiceUnavailable(ServerError):
 class GatewayTimeout(ServerError):
 	STATUS_CODE = 504
 
-http_response_error_class_by_status_code = {
+status_code_exception_class_by_status_code = {
 	cls.STATUS_CODE: cls
 	for cls in [
+		# Client errors
 		BadRequest,
 		Unauthorized,
 		Forbidden,
@@ -64,7 +73,8 @@ http_response_error_class_by_status_code = {
 		Conflict,
 		PayloadTooLarge,
 		TooManyRequests,
-		#
+
+		# Server errors
 		InternalServerError,
 		BadGateway,
 		ServiceUnavailable,
@@ -72,20 +82,25 @@ http_response_error_class_by_status_code = {
 	]
 }
 
-def get_http_response_error_class_by_status_code(n):
-	if n < 400:
-		return None
-
-	klass = http_response_error_class_by_status_code.get(n)
+def get_status_code_exception_class_by_status_code(n: int) -> StatusCodeException:
+	klass = status_code_exception_class_by_status_code.get(n)
 	if klass is None:
-		klass = ResponseError
-		if 400 <= n < 500:
+		klass = StatusCodeException
+		if 100 <= n < 200:
+			klass = InformationalResponse
+		elif 200 <= n < 300:
+			klass = SuccessfulResponse
+		elif 300 <= n < 400:
+			klass = RedirectionResponse
+		elif 400 <= n < 500:
 			klass = ClientError
 		elif 500 <= n < 600:
 			klass = ServerError
 	return klass
 
-def raise_for_status(response):
-	err_cls = get_http_response_error_class_by_status_code(response.status)
-	if err_cls:
-		raise err_cls(response)
+def raise_now(resp: Response) -> None:
+	raise get_status_code_exception_class_by_status_code(resp.status)
+
+def raise_for_status(resp: Response) -> None:
+	if resp.status >= 400:
+		raise_now(resp)

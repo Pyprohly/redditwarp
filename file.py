@@ -13,7 +13,8 @@ def main():
 	print(client.http.user_agent)
 	with client:
 		'''
-		response = client.http.request('GET', '/api/v1/me')
+		response = client.http.request('POST', '/api/lock')
+		pprint(response.status)
 		pprint(response.data)
 		'''
 		data = client.request('GET', '/api/v1/me')

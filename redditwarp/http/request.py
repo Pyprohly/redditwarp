@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass, field
 
-@dataclass
+@dataclass(eq=False)
 class Request:
 	r"""An data class that stores information about an outgoing request.
 

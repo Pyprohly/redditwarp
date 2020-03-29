@@ -9,20 +9,50 @@ class APIError(Exception):
 	or the structure is of something the client isn't prepared to handle.
 	"""
 
-	def __init__(self, response: 'Optional[Response]'):
+	def __init__(self, response):
 		super().__init__()
 		self.response = response
 
-class BadJSONLayout(APIError):
-	"""The response body contains JSON data that the client can't handle."""
+class HTTPStatusError(APIError):
+	"""There was nothing useful to process in the response body and the
+	response had a bad status code.
+	"""
 
-	def __init__(self, response, json=None):
+
+
+class ResponseContentError(APIError):
+	pass
+
+class UnidentifiedResponseContentError(ResponseContentError):
+	"""The response body contains data that the client isn't prepared to handle."""
+
+	def __str__(self):
+		return '** Please file a bug report with RedditWrap! **'
+
+class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentError):
+	# Unused
+	"""The response body contains JSON data that the client isn't prepared to handle."""
+
+	def __init__(self, response, json):
 		super().__init__(response)
 		self.json = json
 
 	def __str__(self):
-		return f'\\\n{pformat(self.json)}\n\n' \
-				'** Please file a bug report with RedditWrap! **\n'
+		return f'\\\n{pformat(self.json)}\n\n' + super().__str__()
+
+
+class UnacceptableResponseContentError(ResponseContentError):
+	"""The response body contains data that the client doesn’t want to handle."""
+
+	def __str__(self):
+		return f'\\\n{self.response.data}\n\n' \
+				'** Please file a bug report with RedditWrap! **'
+
+def raise_for_content_response_error(resp, data):
+	if {'jquery', 'success'} <= data.keys():
+		raise UnacceptableResponseContentError(resp)
+
+
 
 class RedditAPIError(APIError):
 	"""An error class denoting an error that was indicated in the
@@ -32,12 +62,39 @@ class RedditAPIError(APIError):
 	"""
 
 	@property
-	def name(self):
-		return self.errors[0].name
+	def codename(self):
+		return ''
 
 	@property
-	def message(self):
-		return self.errors[0].message
+	def detail(self):
+		return ''
+
+	@property
+	def field(self):
+		return ''
+
+	def __repr__(self):
+		return f'<{self.__class__.__name__} ({self.response})>'
+
+	def __str__(self):
+		return f"{self.codename}: {self.detail}{self.field and ' -> '}{self.field}"
+
+class Variant1RedditAPIError(RedditAPIError):
+	"""An error class denoting an error that was indicated in the
+	response body of an API request, occurring when the remote API
+	wishes to inform the client that a service request was carried
+	out unsuccessfully.
+	"""
+
+	# {'json': {'errors': [['NO_TEXT', 'we need something here', 'title']]}}
+
+	@property
+	def codename(self):
+		return self.errors[0].codename
+
+	@property
+	def detail(self):
+		return self.errors[0].detail
 
 	@property
 	def field(self):
@@ -55,20 +112,20 @@ class RedditAPIError(APIError):
 		self.errors = errors
 
 	def __repr__(self):
-		err_names = [err.name for err in self.errors]
-		return f'<{self.__class__.__name__} ({self.response.status}) {err_names}>'
+		err_names = [err.codename for err in self.errors]
+		return f'<{self.__class__.__name__} ({self.response}) {err_names}>'
 
 	def __str__(self):
 		err_count = len(self.errors)
 		if err_count > 1:
-			return f'multiple errors ({err_count}) encountered:\n' \
+			return f"multiple ({err_count}) errors encountered:\n" \
 					+ '\n'.join(
-						f"  {err.name}: {err.message}{err.field and ' -> '}{err.field}"
+						f"  {err.codename}: {err.detail}{err.field and ' -> '}{err.field}"
 						for err in self.errors)
 
-		return f"{self.name}: {self.message}{self.field and ' -> '}{self.field}"
+		return super().__str__()
 
-class ContentCreationCooldown(RedditAPIError):
+class ContentCreationCooldown(Variant1RedditAPIError):
 	"""Used over RedditAPIError when the error items list contains
 	a RATELIMIT error, and it is the only error in the list.
 	"""
@@ -82,12 +139,11 @@ your account has low karma or no verified email.
 
 @dataclass
 class RedditErrorItem:
-	NAME: ClassVar[str] = ''
-	name: str
-	message: str
+	codename: str
+	detail: str
 	field: str
 
-def parse_reddit_error_items(data):
+def try_parse_reddit_error_items(data):
 	errors = data.get('json', {}).get('errors')
 	if errors:
 		l = []
@@ -97,8 +153,43 @@ def parse_reddit_error_items(data):
 		return l
 	return None
 
-def new_reddit_api_error(response, error_list):
-	cls = RedditAPIError
+def get_variant1_reddit_api_error(response, error_list):
+	cls = Variant1RedditAPIError
 	if (len(error_list) == 1) and (error_list[0].name == 'RATELIMIT'):
 		cls = ContentCreationCooldown
 	return cls(response, error_list)
+
+def raise_for_variant1_reddit_api_error(resp, data):
+	error_list = try_parse_reddit_error_items(data)
+	if error_list is not None:
+		raise get_reddit_api_error(resp, error_list)
+
+
+class Variant2RedditAPIError(RedditAPIError):
+	# {"fields": ["title"], "explanation": "this is too long (max: 50)", "message": "Bad Request", "reason": "TOO_LONG"}
+
+	@property
+	def codename(self):
+		return self._codename
+
+	@property
+	def detail(self):
+		return self._detail
+
+	@property
+	def field(self):
+		return self._field
+
+	def __init__(self, response, codename, detail, fields):
+		super().__init__(response)
+		self._codename = codename
+		self._detail = detail
+		self._field = fields[0] if fields else ''
+		self.fields = fields
+
+def raise_for_variant2_reddit_api_error(resp, data):
+	if {'fields', 'explanation', 'message', 'reason'} == data.keys():
+		codename = data['reason']
+		detail = data['explanation']
+		fields = data['fields']
+		raise Variant2RedditAPIError(resp, codename, detail, fields)
