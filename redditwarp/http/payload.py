@@ -1,5 +1,5 @@
 
-from typing import Any, Dict
+from typing import Optional, Any, Dict
 
 class Payload:
 	CONTENT_TYPE_SUGGESTION = ''
@@ -30,7 +30,7 @@ class JSON(Payload):
 		self.json = json
 
 
-def make_payload(payload, data, json):
+def make_payload(payload: Optional[Payload], data: Any, json: Any):
 	if payload is not None:
 		return payload
 

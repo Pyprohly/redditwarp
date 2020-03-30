@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
+	from collections.abc import Mapping
 	from .requestor_sync import Requestor
 	from .request import Request
 	from .response import Response
@@ -14,9 +15,9 @@ from .requestor_sync import RequestorDecorator
 class RateLimited(RequestorDecorator):
 	def __init__(self, requestor: Requestor) -> None:
 		super().__init__(requestor)
-		self.reset = 0
-		self.remaining = 0
-		self.used = 0
+		self.reset = 0.
+		self.remaining = 0.
+		self.used = 0.
 		self._burst_tb = TokenBucket(6, .5)
 		self._previous_request = 0.
 		self._last_request = time.monotonic()
@@ -42,7 +43,7 @@ class RateLimited(RequestorDecorator):
 		self.scan_ratelimit_headers(response.headers)
 		return response
 
-	def scan_ratelimit_headers(self, headers):
+	def scan_ratelimit_headers(self, headers: Mapping[str, str]):
 		if 'x-ratelimit-reset' in headers:
 			self.reset = float(headers['x-ratelimit-reset'])
 			self.remaining = float(headers['x-ratelimit-remaining'])
