@@ -4,15 +4,20 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from typing import Optional, Type
 	from types import TracebackType
+	from collections.abc import Mapping
 	from ..request import Request
 	from ..response import Response
 
-from ..requestor import Requestor
+from ..requestor_async import Requestor
 
 class BaseSession(Requestor):
-	def __init__(self) -> None:
-		self.headers = {}
-		self.params = {}
+	def __init__(self,
+		*,
+		params: Optional[Mapping[str, str]] = None,
+		headers: Optional[Mapping[str, str]] = None,
+	) -> None:
+		self.params = {} if params is None else params
+		self.headers = {} if headers is None else headers
 
 	async def __aenter__(self):
 		return self
@@ -23,6 +28,7 @@ class BaseSession(Requestor):
 		traceback: Optional[TracebackType],
 	) -> Optional[bool]:
 		await self.close()
+		return None
 
 	def _prepare_request(self, request: Request) -> None:
 		h = request.headers

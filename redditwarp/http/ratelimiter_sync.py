@@ -2,14 +2,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-	from .requestor import Requestor
+	from .requestor_sync import Requestor
 	from .request import Request
 	from .response import Response
 
 import time
 from time import sleep
 
-from .requestor import RequestorDecorator
+from .requestor_sync import RequestorDecorator
 
 class RateLimited(RequestorDecorator):
 	def __init__(self, requestor: Requestor) -> None:
@@ -18,11 +18,11 @@ class RateLimited(RequestorDecorator):
 		self.remaining = 0
 		self.used = 0
 		self._burst_tb = TokenBucket(6, .5)
-		self._previous_request = 0
+		self._previous_request = 0.
 		self._last_request = time.monotonic()
 
-	def request(self, request: Request, timeout: Optional[int]) -> Response:
-		s = 0
+	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
+		s = 0.
 		if self.remaining:
 			s = self.reset / self.remaining
 

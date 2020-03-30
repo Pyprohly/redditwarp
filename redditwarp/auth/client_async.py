@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from .grants import AuthorizationGrant
-	from ..http.requestor import Requestor
+	from ..http.requestor_async import Requestor
 
 from ..http.request import Request
 from ..http.util import json_loads_response

@@ -89,4 +89,4 @@ class AttributeDict(MutableMapping):
 		stream.write(')')
 
 	if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
-		PrettyPrinter._dispatch[__repr__] = _pprint
+		PrettyPrinter._dispatch[__repr__] = _pprint  # type: ignore[attr-defined] # noqa

@@ -1,5 +1,5 @@
 
-import __main__
+import __main__  # type: ignore[import]
 
 from . import http
 from .http.client_async import HTTPClient
@@ -20,7 +20,7 @@ from .exceptions import (
 )
 #from .api import SiteProcedures
 
-class Client:
+class ClientCore:
 	@classmethod
 	def from_http(cls, http):
 		self = cls.__new__(cls)
@@ -124,8 +124,6 @@ class Client:
 
 	def set_access_token(self, access_token):
 		self.http.authorizer.token = Token(access_token)
-
-ClientCore = Client
 
 class Client(ClientCore):
 	def _init(self, http):

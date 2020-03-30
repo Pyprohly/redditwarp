@@ -1,8 +1,14 @@
 
-from collections import namedtuple
+from typing import NamedTuple
 
-version_info = namedtuple('VersionInfo', 'major minor micro releaselevel serial') \
-(
+class VersionInfo(NamedTuple):
+	major: int
+	minor: int
+	micro: int
+	releaselevel: str
+	serial: int
+
+version_info = VersionInfo(
 	major=0,
 	minor=1,
 	micro=0,

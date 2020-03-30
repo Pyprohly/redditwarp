@@ -1,5 +1,5 @@
 
-import __main__
+import __main__  # type: ignore[import]
 
 from . import http
 from .http.client_sync import HTTPClient
@@ -20,7 +20,7 @@ from .exceptions import (
 )
 from .site_procedures import SiteProcedures
 
-class Client:
+class ClientCore:
 	"""The gateway to interacting with the Reddit API."""
 
 	@classmethod
@@ -172,8 +172,6 @@ class Client:
 		access_token: str
 		"""
 		self.http.authorizer.token = Token(access_token)
-
-ClientCore = Client
 
 class Client(ClientCore):
 	def _init(self, http):

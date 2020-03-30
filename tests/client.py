@@ -1,6 +1,5 @@
 
 import os
-import time
 
 import redditwarp
 from redditwarp.auth import ClientCredentials, ClientCredentialsGrant, RefreshTokenGrant

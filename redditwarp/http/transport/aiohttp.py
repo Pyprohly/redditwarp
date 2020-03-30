@@ -1,7 +1,7 @@
 """Transport adapter for aiohttp."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Mapping, Any
 if TYPE_CHECKING:
 	from ..request import Request
 
@@ -13,7 +13,7 @@ from .. import exceptions
 from .. import payload
 from ..response import Response
 
-_PAYLOAD_DISPATCH_TABLE = {
+_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
 	type(None): lambda y: {},
 	payload.Raw: lambda y: {'data': y.data},
 	payload.FormData: lambda y: {'data': y.data},
@@ -28,15 +28,20 @@ version_string = aiohttp.__version__
 
 
 class Session(BaseSession):
-	def __init__(self, session: aiohttp.ClientSession) -> None:
-		super().__init__()
+	def __init__(self,
+		session: aiohttp.ClientSession,
+		*,
+		params: Optional[Mapping[str, str]] = None,
+		headers: Optional[Mapping[str, str]] = None,
+	) -> None:
+		super().__init__(params=params, headers=headers)
 		self.session = session
 
 	async def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
 		self._prepare_request(request)
 
 		r = request
-		kwargs = {
+		kwargs: Any = {
 			'method': r.verb,
 			'url': r.url,
 			'params': r.params,
@@ -65,7 +70,10 @@ class Session(BaseSession):
 	async def close(self) -> None:
 		await self.session.close()
 
-def new_session() -> Session:
+def new_session(*,
+	params: Optional[Mapping[str, str]] = None,
+	headers: Optional[Mapping[str, str]] = None,
+) -> Session:
 	connector = aiohttp.TCPConnector(limit=20)
 	se = aiohttp.ClientSession(connector=connector)
-	return Session(se)
+	return Session(se, params=params, headers=headers)

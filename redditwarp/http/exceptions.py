@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Type
 if TYPE_CHECKING:
 	from .response import Response
 
@@ -82,7 +82,7 @@ status_code_exception_class_by_status_code = {
 	]
 }
 
-def get_status_code_exception_class_by_status_code(n: int) -> StatusCodeException:
+def get_status_code_exception_class_by_status_code(n: int) -> Type[StatusCodeException]:
 	klass = status_code_exception_class_by_status_code.get(n)
 	if klass is None:
 		klass = StatusCodeException

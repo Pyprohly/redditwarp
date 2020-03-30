@@ -8,12 +8,12 @@ if TYPE_CHECKING:
 class Requestor:
 	"""A Requestor is a thing that makes requests."""
 
-	def request(self, request: Request, timeout: Optional[int]) -> Response:
+	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
 		raise NotImplementedError
 
 class RequestorDecorator(Requestor):
 	def __init__(self, requestor: Requestor) -> None:
 		self.requestor = requestor
 
-	def request(self, request: Request, timeout: Optional[int]) -> Response:
+	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
 		return self.requestor.request(request, timeout)

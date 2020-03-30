@@ -17,7 +17,7 @@ class Response:
 	request: Optional[Request] = None
 	underlying_response: Optional[Any] = None
 
-	def __repr__(self) -> None:
+	def __repr__(self) -> str:
 		return f'<{self.__class__.__name__} [{self.status}]>'
 
 	def raise_now(self) -> None:

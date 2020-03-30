@@ -1,9 +1,11 @@
 
-from typing import T, Iterable, Sequence
+from typing import TypeVar, Iterable, Iterator, Sequence
 
 from itertools import islice
 
-def chunked(src: Iterable[T], size: int) -> Sequence[T]:
+T = TypeVar('T')
+
+def chunked(src: Iterable[T], size: int) -> Iterator[Sequence[T]]:
 	it = iter(src)
 	while True:
 		chunk = tuple(islice(it, size))

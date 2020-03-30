@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-	from .requestor import Requestor
+	from .requestor_async import Requestor
 	from .request import Request
 	from .response import Response
 
@@ -10,7 +10,7 @@ import asyncio
 import time
 from asyncio import sleep
 
-from .requestor import RequestorDecorator
+from .requestor_async import RequestorDecorator
 
 class RateLimited(RequestorDecorator):
 	def __init__(self, requestor: Requestor) -> None:
@@ -19,12 +19,12 @@ class RateLimited(RequestorDecorator):
 		self.remaining = 0
 		self.used = 0
 		self._ratelimiting_tb = TokenBucket(10, 1.1)
-		self._previous_request = 0
+		self._previous_request = 0.
 		self._last_request = time.monotonic()
 		self._lock = asyncio.Lock()
 
-	async def request(self, request: Request, timeout: Optional[int]) -> Response:
-		s = 0
+	async def request(self, request: Request, timeout: Optional[int] = None) -> Response:
+		s = 0.
 		if self.remaining:
 			# Note: in async code we can't rely on the value of this result
 			# being current because of the possibility of concurrency.

@@ -30,14 +30,6 @@ class RedditHTTPClient:
 		"Bot"
 	)
 
-	@property
-	def user_agent(self) -> str:
-		return self.session.headers['User-Agent']
-
-	@user_agent.setter
-	def user_agent(self, value: str) -> None:
-		self.session.headers['User-Agent'] = value
-
 	def __init__(self,
 		requestor: Requestor,
 		session: BaseSession,
@@ -58,6 +50,7 @@ class RedditHTTPClient:
 		traceback: Optional[TracebackType],
 	) -> Optional[bool]:
 		await self.close()
+		return None
 
 	async def request(self,
 		verb: str,
@@ -78,9 +71,10 @@ class RedditHTTPClient:
 		params.setdefault('raw_json', '1')
 		params.setdefault('api_type', 'json')
 
+		headers['User-Agent'] = self.user_agent
+
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
 
-		response = None
 		for i in range(5):
 			response = await self.requestor.request(r, timeout)
 

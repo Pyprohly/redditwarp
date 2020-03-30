@@ -6,12 +6,12 @@ if TYPE_CHECKING:
 	from .response import Response
 
 class Requestor:
-	async def request(self, request: Request, timeout: Optional[int]) -> Response:
+	async def request(self, request: Request, timeout: Optional[int] = None) -> Response:
 		raise NotImplementedError
 
 class RequestorDecorator(Requestor):
 	def __init__(self, requestor: Requestor) -> None:
 		self.requestor = requestor
 
-	async def request(self, request: Request, timeout: Optional[int]) -> Response:
+	async def request(self, request: Request, timeout: Optional[int] = None) -> Response:
 		return await self.requestor.request(request, timeout)

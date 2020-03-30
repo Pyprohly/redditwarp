@@ -1,6 +1,8 @@
 
 from __future__ import annotations
-from typing import T, Iterable, Callable
+from typing import TypeVar, Iterable, Callable, Optional
+
+T = TypeVar('T')
 
 class TheStubbornCallerIterator:
 	"""For each callable in the given iterator, call it and return its result.
@@ -11,7 +13,7 @@ class TheStubbornCallerIterator:
 
 	def __init__(self, iterable: Iterable[Callable[[], T]]) -> None:
 		self._iterator = iter(iterable)
-		self.current_callable = None
+		self.current_callable: Optional[Callable[[], T]] = None
 
 	def __iter__(self):
 		return self

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 if TYPE_CHECKING:
 	from ..auth.client_async import TokenClient
 	from ..auth.token import TokenResponse
@@ -33,12 +33,10 @@ class Authorizer:
 		return self.token_client is not None
 
 	async def renew_token(self) -> Token:
-		try:
-			tr: TokenResponse = await self.token_client.fetch_token()
-		except AttributeError as e:
-			if str(e) == "'NoneType' object has no attribute 'fetch_token'":
-				raise RuntimeError('a new token was requested but no token client is set')
-			raise
+		if self.token_client is None:
+			raise RuntimeError('a new token was requested but no token client is set')
+
+		tr: TokenResponse = await self.token_client.fetch_token()
 
 		expires_in = tr.expires_in
 		if expires_in is None:
@@ -60,12 +58,9 @@ class Authorizer:
 		return None
 
 	def prepare_request(self, request: Request) -> None:
-		try:
-			request.headers['Authorization'] = '{0.TOKEN_TYPE} {0.access_token}'.format(self.token)
-		except AttributeError as e:
-			if str(e).startswith("'NoneType'"):
-				raise RuntimeError('no token is set')
-			raise
+		if self.token is None:
+			raise RuntimeError('no token is set')
+		request.headers['Authorization'] = '{0.TOKEN_TYPE} {0.access_token}'.format(self.token)
 
 	def current_time(self) -> float:
 		return time.monotonic()
@@ -83,9 +78,9 @@ class Authorized(RequestorDecorator):
 		self._lock = asyncio.Lock()
 		self._valve = asyncio.Event()
 		self._valve.set()
-		self._futures = []
+		self._futures: List[asyncio.Future] = []
 
-	async def request(self, request: Request, timeout: Optional[int]) -> Response:
+	async def request(self, request: Request, timeout: Optional[int] = None) -> Response:
 		await self._valve.wait()
 
 		async with self._lock:

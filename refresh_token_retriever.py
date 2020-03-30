@@ -16,7 +16,7 @@ from redditwarp.auth.client import TokenClient, ClientCredentials
 from redditwarp.http.transport.requests import new_session
 
 client_id = os.environ['redditwarp_client_id']
-client_secret = os.environ['redditwarp_client_secret'],
+client_secret = os.environ['redditwarp_client_secret']
 scope = '*'
 state = '136134345'
 redirect_uri = 'http://localhost:8080'
@@ -47,21 +47,23 @@ with socket.socket() as server:
 		data = client.recv(1024)
 		client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-print(f"Recieved: {data}")
+print(f"Recieved: {data!r}")
 print()
-query = re.match(r'^GET /\?(.*) HTTP', data.decode())[1]
+m = re.match(r'^GET /\?(.*) HTTP', data.decode())
+if not m:
+	raise Exception
+query = m[1]
 response_dict = urllib.parse.parse_qs(query)
-response_dict = {k: v[0] for k, v in response_dict.items()}
+response_dict2 = {k: v[0] for k, v in response_dict.items()}
 
-assert response_dict['state'] == state
+assert response_dict2['state'] == state
 '''#'''
 
-code = response_dict['code']
+code = response_dict2['code'][0]
 
 grant = AuthorizationCodeGrant(code, redirect_uri)
 client_credentials = ClientCredentials(client_id, client_secret)
-session = new_session()
-session.headers['User-Agent'] = 'RedditWarp authorization code flow script'
+session = new_session(headers={'User-Agent': 'RedditWarp authorization code flow script'})
 token_client = TokenClient(session, TOKEN_ENDPOINT, client_credentials, grant)
 
 print('Fetching token...')

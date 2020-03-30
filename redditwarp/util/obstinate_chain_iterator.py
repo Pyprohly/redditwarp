@@ -1,6 +1,8 @@
 
 from __future__ import annotations
-from typing import T, Iterable
+from typing import TypeVar, Iterable
+
+T = TypeVar('T')
 
 class ObstinateChainIterator:
 	"""Like `itertools.chain.from_iterable()` but retains its state when
@@ -9,7 +11,7 @@ class ObstinateChainIterator:
 
 	def __init__(self, iterable: Iterable[Iterable[T]]) -> None:
 		self._iterator = iter(iterable)
-		self._current_it = iter(())
+		self._current_it: Iterable[T] = iter(())
 
 	def __iter__(self):
 		return self
