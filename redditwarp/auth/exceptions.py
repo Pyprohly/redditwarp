@@ -5,10 +5,12 @@ if TYPE_CHECKING:
 	from typing import Any, Dict
 	from ..http.response import Response
 
-from typing import ClassVar
+from typing import Type, TypeVar, ClassVar
 
 from ..http.util import json_loads_response
 
+
+T = TypeVar('T', bound='OAuth2ResponseError')
 
 class AuthError(Exception):
 	"""The root class for all OAuth authorization-related errors."""
@@ -29,12 +31,12 @@ class OAuth2ResponseError(AuthResponseError):
 	ERROR_NAME: ClassVar[str] = ''
 
 	@classmethod
-	def from_response(cls, response: Response):
+	def from_response(cls: Type[T], response: Response) -> T:
 		json_dict = json_loads_response(response)
 		return cls.from_response_and_json(response, json_dict)
 
 	@classmethod
-	def from_response_and_json(cls, response: Response, json: Dict[str, Any]):
+	def from_response_and_json(cls: Type[T], response: Response, json: Dict[str, Any]) -> T:
 		return cls(
 			response,
 			json.get('error_description', ''),

@@ -30,7 +30,7 @@ class JSON(Payload):
 		self.json = json
 
 
-def make_payload(payload: Optional[Payload], data: Any, json: Any):
+def make_payload(payload: Optional[Payload] = None, data: Any = None, json: Any = None) -> Optional[Payload]:
 	if payload is not None:
 		return payload
 

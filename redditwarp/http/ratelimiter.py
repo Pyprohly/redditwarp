@@ -8,16 +8,19 @@ class TokenBucket:
 		self.capacity = capacity
 		self.rate = rate
 		self.time_func = time_func
-		self.last_update = time_func()
 		self._value = capacity
+		self._last_update = time_func()
+
+	def _checkpoint_time(self) -> float:
+		now = self.time_func()
+		time_delta = now - self._last_update
+		self._last_update = now
+		return time_delta
 
 	def _replenish(self) -> None:
 		if self._value < self.capacity:
-			now = self.time_func()
-			time_delta = now - self.last_update
-			new_tokens = self.rate * time_delta
-			self._value = min(self.capacity, self._value + new_tokens)
-			self.last_update = now
+			new_tokens = self.rate * self._checkpoint_time()
+			self._value = min(self._value + new_tokens, self.capacity)
 
 	def get_value(self) -> float:
 		"""Return the number of tokens in the bucket."""
@@ -26,23 +29,31 @@ class TokenBucket:
 
 	def can_consume(self, n: float) -> bool:
 		"""Check if `n` tokens are available."""
-		self._replenish()
-		return self._value >= n
+		return n <= self.get_value()
 
 	def try_consume(self, n: float) -> bool:
 		"""Comsume `n` tokens if `n` tokens are available."""
-		self._replenish()
-		if self._value >= n:
+		if self.can_consume(n):
 			self._value -= n
 			return True
 		return False
 
+	def do_consume(self, n: float) -> bool:
+		"""Comsume `n` tokens. Raise an exception if `n` tokens aren't available."""
+		if self.try_consume(n):
+			return True
+		raise RuntimeError(f'attempted consume of {n} token(s) when {self._value} were available')
+
 	def hard_consume(self, n: float) -> bool:
-		"""Comsume up to `n` tokens, regardless if there aren't that many."""
-		self._replenish()
-		prev_value = self._value
+		"""Comsume up to `n` tokens."""
+		t = self.get_value()
 		self._value = max(self._value - n, 0)
-		return prev_value >= n
+		return n <= t
+
+	def consume_all(self) -> None:
+		"""Like `self.hard_consume(float('inf'))`."""
+		self._checkpoint_time()
+		self._value = 0
 
 	def cooldown(self, n: float) -> float:
 		"""Return the duration the client should wait before the `*_comsume`
@@ -51,12 +62,11 @@ class TokenBucket:
 		This class is not IO-bound so there is no "`wait_consume()`" method.
 		Here is the logic for that::
 
-			t = 1
+			t = 2
 			async with lock:
 				if not tb.try_consume(t):
 					await asyncio.sleep(tb.cooldown(t))
-					u = tb.hard_consume(t)
-					assert u
+					tb.do_consume(t)
 		"""
 		return max(0, (n - self._value)/self.rate)
 

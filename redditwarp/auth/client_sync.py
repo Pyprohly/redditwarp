@@ -43,7 +43,6 @@ class TokenClient:
 			if 400 <= resp.status < 500:
 				if error == 401:
 					raise Unauthorized(resp)
-
 				assert False
 				raise AuthResponseError(resp)
 
