@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-	from typing import Type, Any, Optional, Dict
+	from typing import Type, Any, Optional, Mapping, Dict
 	from types import TracebackType
 	from .transport.base_session_async import BaseSession
 	from .authorizer_async import Authorizer
@@ -30,14 +30,30 @@ class RedditHTTPClient:
 		"Bot"
 	)
 
+	@property
+	def default_headers(self):
+		return self._default_headers
+
+	@property
+	def user_agent(self):
+		return self._default_headers['User-Agent']
+
+	@user_agent.setter
+	def user_agent(self, value):
+		self._default_headers['User-Agent'] = value
+
 	def __init__(self,
 		requestor: Requestor,
 		session: BaseSession,
+		*,
+		default_headers: Optional[Mapping[str, str]] = None,
 		authorizer: Optional[Authorizer],
 	) -> None:
 		self.requestor = requestor
 		self.session = session
+		self._default_headers = {} if default_headers is None else default_headers
 		self.authorizer = authorizer
+
 		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = self.USER_AGENT_STRING_HEAD
 
@@ -70,8 +86,7 @@ class RedditHTTPClient:
 
 		params.setdefault('raw_json', '1')
 		params.setdefault('api_type', 'json')
-
-		headers['User-Agent'] = self.user_agent
+		headers.setdefault('User-Agent', self.user_agent)
 
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
 

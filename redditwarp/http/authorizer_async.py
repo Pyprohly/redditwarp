@@ -34,7 +34,7 @@ class Authorizer:
 
 	async def renew_token(self) -> Token:
 		if self.token_client is None:
-			raise RuntimeError('a new token was requested but no token client is set')
+			raise RuntimeError('a new token was requested but no token client is assigned')
 
 		tr: TokenResponse = await self.token_client.fetch_token()
 

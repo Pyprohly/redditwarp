@@ -11,6 +11,7 @@ from .auth.client_sync import TokenClient
 from .auth import TOKEN_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
+from .http.apply_headers_sync import ApplyHeaders
 from .exceptions import (
 	HTTPStatusError,
 	UnidentifiedResponseContentError,
@@ -69,7 +70,7 @@ class ClientCore:
 		session = new_session()
 		authorizer = Authorizer(token, None)
 		requestor = RateLimited(Authorized(session, authorizer))
-		http = HTTPClient(requestor, session, authorizer)
+		http = HTTPClient(requestor, session, authorizer=authorizer)
 		return cls.from_http(http)
 
 	def __init__(self,
@@ -108,17 +109,19 @@ class ClientCore:
 		client_credentials = ClientCredentials(client_id, client_secret)
 		token = None if access_token is None else Token(access_token)
 		session = new_session()
+		ah = ApplyHeaders(session, None)
 		authorizer = Authorizer(
 			token,
 			TokenClient(
-				session,
+				ah,
 				TOKEN_ENDPOINT,
 				client_credentials,
 				grant,
 			),
 		)
 		requestor = RateLimited(Authorized(session, authorizer))
-		http = HTTPClient(requestor, session, authorizer)
+		http = HTTPClient(requestor, session, authorizer=authorizer)
+		ah.headers = http.default_headers
 		self._init(http)
 
 	def _init(self, http):
