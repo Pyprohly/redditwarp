@@ -64,7 +64,7 @@ class Session(BaseSession):
 			headers=resp.headers,
 			data=content,
 			request=r,
-			underlying_response=resp,
+			underlying_object=resp,
 		)
 
 	async def close(self) -> None:

@@ -7,33 +7,24 @@ if TYPE_CHECKING:
 
 from typing import Type, TypeVar, ClassVar
 
-from ..http.util import json_loads_response
+from .. import http
+
+
+class AuthResponseException(http.exceptions.ResponseException):
+	pass
+
+class Unauthorized(AuthResponseException):
+	pass
 
 
 T = TypeVar('T', bound='OAuth2ResponseError')
 
-class AuthError(Exception):
-	"""The root class for all OAuth authorization-related errors."""
-
-class AuthResponseError(AuthError):
-	def __init__(self, response: Response):
-		super().__init__()
-		self.response = response
-
-class Unauthorized(AuthResponseError):
-	pass
-
-class OAuth2ResponseError(AuthResponseError):
+class OAuth2ResponseError(AuthResponseException):
 	"""
 	As detailed in the OAuth2 spec. For more information see
 	https://tools.ietf.org/html/rfc6749#section-5.2
 	"""
 	ERROR_NAME: ClassVar[str] = ''
-
-	@classmethod
-	def from_response(cls: Type[T], response: Response) -> T:
-		json_dict = json_loads_response(response)
-		return cls.from_response_and_json(response, json_dict)
 
 	@classmethod
 	def from_response_and_json(cls: Type[T], response: Response, json: Dict[str, Any]) -> T:

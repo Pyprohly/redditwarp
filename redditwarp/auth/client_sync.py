@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from .grants import AuthorizationGrant
-	from ..http.requestor import Requestor
+	from ..http.requestor_sync import Requestor
 
 from ..http.request import Request
 from ..http.util import json_loads_response
+from ..http.payload import FormData
 from .token import TokenResponse
 from .exceptions import (
-	AuthResponseError,
+	AuthResponseException,
 	Unauthorized,
 	oauth2_response_error_class_by_error_name,
 )
@@ -29,28 +30,24 @@ class TokenClient:
 		self.grant = grant
 
 	def fetch_token(self) -> TokenResponse:
-		params = {k: v for k, v in vars(self.grant).items() if v}
-		params['grant_type'] = self.grant.GRANT_TYPE
+		data = {k: v for k, v in vars(self.grant).items() if v}
+		data['grant_type'] = self.grant.GRANT_TYPE
 
-		r = Request('POST', self.token_endpoint, params=params)
-		apply_basic_auth(self.client_credentials, r)
+		r = Request('POST', self.token_endpoint, payload=FormData(data))
+		apply_basic_auth(r, self.client_credentials)
 
 		resp = self.requestor.request(r)
 		resp_json = json_loads_response(resp)
 
 		error = resp_json.get('error')
 		if error:
-			if 400 <= resp.status < 500:
-				if error == 401:
-					raise Unauthorized(resp)
-				assert False
-				raise AuthResponseError(resp)
+			if error == 401:
+				raise Unauthorized(resp)
 
 			try:
 				clss = oauth2_response_error_class_by_error_name[error]
 			except KeyError:
-				assert False
-				raise AuthResponseError(resp)
+				raise AuthResponseException(resp) from None
 			raise clss.from_response_and_json(resp, resp_json)
 
 		return TokenResponse(**resp_json)

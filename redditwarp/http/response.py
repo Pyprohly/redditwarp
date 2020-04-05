@@ -15,7 +15,7 @@ class Response:
 	headers: Mapping[str, str]
 	data: bytes
 	request: Optional[Request] = None
-	underlying_response: Optional[Any] = None
+	underlying_object: Any = None
 
 	def __repr__(self) -> str:
 		return f'<{self.__class__.__name__} [{self.status}]>'

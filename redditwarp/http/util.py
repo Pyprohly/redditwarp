@@ -14,6 +14,3 @@ def json_loads_response(response: Response) -> Dict[str, Any]:
 		raise ValueError
 	text = response.data.decode()
 	return json_loads(text)
-
-def get_reddit_token_client(requestor, client_credentials, grant):
-	...

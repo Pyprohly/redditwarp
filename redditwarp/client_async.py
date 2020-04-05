@@ -14,8 +14,8 @@ from .http.ratelimiter_async import RateLimited
 from .http.apply_headers_async import ApplyHeaders
 from .exceptions import (
 	HTTPStatusError,
-	UnidentifiedResponseContentError,
-	raise_for_content_response_error,
+	get_response_content_error,
+	raise_for_json_response_content_error,
 	raise_for_variant1_reddit_api_error,
 	raise_for_variant2_reddit_api_error,
 )
@@ -105,16 +105,21 @@ class ClientCore:
 
 	async def request(self, verb, path, *, params=None,
 			payload=None, data=None, json=None, headers=None, timeout=8):
-		resp = await self.http.request(verb, path, params=params,
-				payload=payload, data=data, json=json, headers=headers, timeout=timeout)
-		self.last_response = resp
+		try:
+			resp = await self.http.request(verb, path, params=params,
+					payload=payload, data=data, json=json, headers=headers, timeout=timeout)
+		except http.exceptions.ResponseException as e:
+			self.last_response = e.response
+			raise
+		else:
+			self.last_response = resp
 
 		try:
 			data = json_loads_response(resp)
 		except ValueError:
-			raise UnidentifiedResponseContentError(resp) from None
+			raise get_response_content_error(resp) from None
 
-		raise_for_content_response_error(resp, data)
+		raise_for_json_response_content_error(resp, data)
 		raise_for_variant1_reddit_api_error(resp, data)
 		raise_for_variant2_reddit_api_error(resp, data)
 

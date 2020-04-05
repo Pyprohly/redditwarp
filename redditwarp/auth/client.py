@@ -12,7 +12,7 @@ class ClientCredentials:
 	client_id: str
 	client_secret: str
 
-def apply_basic_auth(client_credentials: ClientCredentials, request: Request) -> None:
+def apply_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
 	ci = client_credentials.client_id
 	cs = client_credentials.client_secret
 	auth_string = 'basic ' + b64encode(f'{ci}:{cs}'.encode()).decode()

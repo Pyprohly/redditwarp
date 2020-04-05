@@ -26,7 +26,7 @@ class UnidentifiedResponseContentError(ResponseContentError):
 	"""The response body contains data that the client isn't prepared to handle."""
 
 	def __str__(self):
-		return '** Please file a bug report with RedditWrap! **'
+		return '\\\n\n** Please file a bug report with RedditWrap! **'
 
 class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentError):
 	# Unused
@@ -37,18 +37,30 @@ class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentErro
 		self.json = json
 
 	def __str__(self):
-		return f'\\\n{pformat(self.json)}\n\n' + super().__str__()
+		return f'\\\n{pformat(self.json)}\n\n' \
+				'** Please file a bug report with RedditWrap! **'
 
 
 class UnacceptableResponseContentError(ResponseContentError):
-	"""The response body contains data that the client doesn’t want to handle."""
+	"""The response body contains data in a format that the client doesn’t want
+	to or can't handle.
+	"""
 
 	def __str__(self):
 		return f'\\\n{self.response.data}\n\n' \
 				'** Please file a bug report with RedditWrap! **'
 
-def raise_for_content_response_error(resp, data):
-	if {'jquery', 'success'} <= data.keys():
+class UserAgentRequired(ResponseContentError):
+	pass
+
+
+def get_response_content_error(resp):
+	if b'>user agent required</' in resp.data:
+		return UserAgentRequired(resp)
+	return UnidentifiedResponseContentError(resp)
+
+def raise_for_json_response_content_error(resp, json_data):
+	if {'jquery', 'success'} <= json_data.keys():
 		raise UnacceptableResponseContentError(resp)
 
 
