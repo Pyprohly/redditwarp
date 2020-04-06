@@ -12,7 +12,7 @@ def main():
 			os.environ['redditwarp_client_secret'],
 			os.environ['redditwarp_refresh_token'],
 		)
-		client.http.user_agent = ''
+		#client.http.user_agent = 'Mozilla/5.0 (compatible; Charlotte/1.1; http://www.searchme.com/support/)'
 		#client.http.user_agent = 'console:myapp:v0 by /u/Pyprohly'
 		#client.http.user_agent = 'PyprohlyBot by /u/Pyprohly PRAW/6.5.1 prawcore/1.0.1'
 		print(client.http.user_agent)

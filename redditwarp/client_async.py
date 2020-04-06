@@ -7,8 +7,8 @@ from .http.util import json_loads_response
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.aiohttp import new_session
-from .auth.client_async import TokenClient
-from .auth import TOKEN_ENDPOINT
+from .auth.token_obtainment_client_async import TokenObtainmentClient
+from .auth import TOKEN_OBTAINMENT_ENDPOINT
 from .http.authorizer_async import Authorizer, Authorized
 from .http.ratelimiter_async import RateLimited
 from .http.apply_headers_async import ApplyHeaders
@@ -72,9 +72,9 @@ class ClientCore:
 		ah = ApplyHeaders(session, None)
 		authorizer = Authorizer(
 			token,
-			TokenClient(
+			TokenObtainmentClient(
 				ah,
-				TOKEN_ENDPOINT,
+				TOKEN_OBTAINMENT_ENDPOINT,
 				client_credentials,
 				grant,
 			),

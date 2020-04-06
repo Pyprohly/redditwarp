@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, List
 if TYPE_CHECKING:
-	from ..auth.client_async import TokenClient
+	from ..auth.token_obtainment_client_async import TokenObtainmentClient
 	from ..auth.token import TokenResponse
 	from .requestor_async import Requestor
 	from .request import Request
@@ -16,13 +16,14 @@ from ..auth import Token
 
 class Authorizer:
 	def __init__(self, token: Optional[Token] = None,
-			token_client: Optional[TokenClient] = None,
+			token_client: Optional[TokenObtainmentClient] = None,
 			expiry_skew: int = 30) -> None:
 		self.token = token
 		self.token_client = token_client
 		self.expiry_skew = expiry_skew
 		self.expiry_time: Optional[int] = None
 		self.expires_in_fallback: int = 3600
+		self.last_token_response: Optional[TokenResponse] = None
 
 	def token_expired(self) -> bool:
 		if self.expiry_time is None:
@@ -36,7 +37,8 @@ class Authorizer:
 		if self.token_client is None:
 			raise RuntimeError('a new token was requested but no token client is assigned')
 
-		tr: TokenResponse = await self.token_client.fetch_token()
+		tr = await self.token_client.fetch_token()
+		self.last_token_response = tr
 
 		expires_in = tr.expires_in
 		if expires_in is None:

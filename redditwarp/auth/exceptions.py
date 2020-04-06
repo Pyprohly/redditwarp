@@ -13,6 +13,31 @@ from .. import http
 class AuthResponseException(http.exceptions.ResponseException):
 	pass
 
+
+
+class ResponseContentError(AuthResponseException):
+	pass
+
+class UnidentifiedResponseContentError(ResponseContentError):
+	pass
+
+class HTMLDocumentResponseContentError(ResponseContentError):
+	pass
+
+class PossiblyBlacklistedUserAgent(HTMLDocumentResponseContentError):
+	pass
+
+
+def get_response_content_error(resp):
+	if resp.data.lower().startswith(b'<!doctype html>'):
+		if (b'<p>you are not allowed to do that</p>\n\n &mdash; access was denied to this resource.</div>'
+				in resp.data):
+			return PossiblyBlacklistedUserAgent(resp)
+		return HTMLDocumentResponseContentError(resp)
+	return UnidentifiedResponseContentError(resp)
+
+
+
 class Unauthorized(AuthResponseException):
 	pass
 

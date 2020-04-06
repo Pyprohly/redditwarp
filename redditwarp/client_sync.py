@@ -7,8 +7,8 @@ from .http.util import json_loads_response
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.requests import new_session
-from .auth.client_sync import TokenClient
-from .auth import TOKEN_ENDPOINT
+from .auth.token_obtainment_client_sync import TokenObtainmentClient
+from .auth import TOKEN_OBTAINMENT_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
 from .http.apply_headers_sync import ApplyHeaders
@@ -56,11 +56,11 @@ class ClientCore:
 	def from_access_token(cls, access_token):
 		"""Construct a Reddit client instance without a token client.
 
-		No token client means `self.http.authorizer.token_client` will be `None`.
+		No token client means `self.http.authorizer.token_client` is `None`.
 
-		When the token becomes invalid you'll need to deal with the 401
-		Unauthorized exception that will be thrown on requests. You can
-		use the :meth:`set_access_token` method to assign a new token.
+		When the token becomes invalid you'll need to deal with the 401 Unauthorized
+		exception that will be thrown upon making requests. You can use the
+		:meth:`set_access_token` method to assign a new token.
 
 		Parameters
 		----------
@@ -112,9 +112,9 @@ class ClientCore:
 		ah = ApplyHeaders(session, None)
 		authorizer = Authorizer(
 			token,
-			TokenClient(
+			TokenObtainmentClient(
 				ah,
-				TOKEN_ENDPOINT,
+				TOKEN_OBTAINMENT_ENDPOINT,
 				client_credentials,
 				grant,
 			),

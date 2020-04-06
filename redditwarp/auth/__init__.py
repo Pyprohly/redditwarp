@@ -1,6 +1,7 @@
 
-from .client import *  # noqa
+from .token_obtainment_client import *  # noqa
+from .client_credentials import *  # noqa
 from .exceptions import *  # noqa
 from .grants import *  # noqa
-from .misc import *  # noqa
 from .token import *  # noqa
+from .misc import *  # noqa

@@ -40,7 +40,6 @@ class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentErro
 		return f'\\\n{pformat(self.json)}\n\n' \
 				'** Please file a bug report with RedditWrap! **'
 
-
 class UnacceptableResponseContentError(ResponseContentError):
 	"""The response body contains data in a format that the client doesn’t want
 	to or can't handle.
@@ -50,13 +49,18 @@ class UnacceptableResponseContentError(ResponseContentError):
 		return f'\\\n{self.response.data}\n\n' \
 				'** Please file a bug report with RedditWrap! **'
 
-class UserAgentRequired(ResponseContentError):
+class HTMLDocumentResponseContentError(ResponseContentError):
+	pass
+
+class UserAgentRequired(HTMLDocumentResponseContentError):
 	pass
 
 
 def get_response_content_error(resp):
-	if b'>user agent required</' in resp.data:
-		return UserAgentRequired(resp)
+	if resp.data.lower().startswith(b'<!doctype html>'):
+		if b'>user agent required</' in resp.data:
+			return UserAgentRequired(resp)
+		return HTMLDocumentResponseContentError(resp)
 	return UnidentifiedResponseContentError(resp)
 
 def raise_for_json_response_content_error(resp, json_data):

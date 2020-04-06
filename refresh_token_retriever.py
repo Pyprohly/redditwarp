@@ -7,12 +7,13 @@ import webbrowser
 
 from redditwarp.auth.misc import (
 	AUTHORIZATION_ENDPOINT,
-	TOKEN_ENDPOINT,
+	TOKEN_OBTAINMENT_ENDPOINT,
 	authorization_url,
 )
 
+from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.grants import AuthorizationCodeGrant
-from redditwarp.auth.client import TokenClient, ClientCredentials
+from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
 from redditwarp.http.transport.requests import new_session
 
 client_id = os.environ['redditwarp_client_id']
@@ -64,7 +65,7 @@ code = response_dict2['code'][0]
 grant = AuthorizationCodeGrant(code, redirect_uri)
 client_credentials = ClientCredentials(client_id, client_secret)
 session = new_session(headers={'User-Agent': 'RedditWarp authorization code flow script'})
-token_client = TokenClient(session, TOKEN_ENDPOINT, client_credentials, grant)
+token_client = TokenObtainmentClient(session, TOKEN_OBTAINMENT_ENDPOINT, client_credentials, grant)
 
 print('Fetching token...')
 print()
