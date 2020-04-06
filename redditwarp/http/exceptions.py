@@ -99,7 +99,7 @@ def get_status_code_exception_class_by_status_code(n: int) -> Type[StatusCodeExc
 	return klass
 
 def raise_now(resp: Response) -> None:
-	raise get_status_code_exception_class_by_status_code(resp.status)
+	raise get_status_code_exception_class_by_status_code(resp.status)(resp)
 
 def raise_for_status(resp: Response) -> None:
 	if resp.status >= 400:

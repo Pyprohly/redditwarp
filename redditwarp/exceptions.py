@@ -2,17 +2,15 @@
 from dataclasses import dataclass
 from pprint import pformat
 
-class APIError(Exception):
+from .http import exceptions as http_exc
+
+class APIError(http_exc.ResponseException):
 	"""A base exception class denoting that something in the response body
 	from an API request is amiss. Either an error was indicated by the API
 	or the structure is of something the client isn't prepared to handle.
 	"""
 
-	def __init__(self, response):
-		super().__init__()
-		self.response = response
-
-class HTTPStatusError(APIError):
+class HTTPStatusError(http_exc.StatusCodeException):
 	"""There was nothing useful to process in the response body and the
 	response had a bad status code.
 	"""

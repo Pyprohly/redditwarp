@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 	from .grants import AuthorizationGrant
 	from ..http.requestor_sync import Requestor
 
+from .. import http
 from ..http.request import Request
 from ..http.util import json_loads_response
 from ..http.payload import FormData
@@ -13,6 +14,7 @@ from .token import TokenResponse
 from .misc import apply_basic_auth
 from .exceptions import (
 	AuthResponseException,
+	HTTPStatusError,
 	Unauthorized,
 	oauth2_response_error_class_by_error_name,
 	get_response_content_error,
@@ -56,5 +58,10 @@ class TokenObtainmentClient:
 			except KeyError:
 				raise AuthResponseException(resp) from None
 			raise clss.from_response_and_json(resp, resp_json)
+
+		try:
+			resp.raise_for_status()
+		except http.exceptions.StatusCodeException as e:
+			raise HTTPStatusError(resp) from e
 
 		return TokenResponse.from_kwargs(**resp_json)

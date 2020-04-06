@@ -7,10 +7,12 @@ if TYPE_CHECKING:
 
 from typing import Type, TypeVar, ClassVar
 
-from .. import http
+from ..http import exceptions as http_exc
 
+class AuthResponseException(http_exc.ResponseException):
+	pass
 
-class AuthResponseException(http.exceptions.ResponseException):
+class HTTPStatusError(http_exc.StatusCodeException):
 	pass
 
 
