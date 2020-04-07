@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 import time
 
 from .requestor_sync import RequestorDecorator
-from ..auth import Token
+from ..auth.token import Token, make_bearer_token
 
 class Authorizer:
 	"""Knows how to authorize requests."""
@@ -38,22 +38,15 @@ class Authorizer:
 		if self.token_client is None:
 			raise RuntimeError('a new token was requested but no token client is assigned')
 
-		tr = self.token_client.fetch_token()
+		tr = self.token_client.fetch_token_response()
 		self.last_token_response = tr
+		t = make_bearer_token(tr)
+		self.token = t
 
-		expires_in = tr.expires_in
-		if expires_in is None:
-			expires_in = self.expires_in_fallback
-
+		expires_in = self.expires_in_fallback if t.expires_in is None else t.expires_in
 		self.expiry_time = int(self.current_time()) + expires_in - self.expiry_skew
-		token = Token(
-			access_token=tr.access_token,
-			refresh_token=tr.refresh_token,
-			expires_in=expires_in,
-			scope=tr.scope,
-		)
-		self.token = token
-		return token
+
+		return t
 
 	def maybe_renew_token(self) -> Optional[Token]:
 		"""Attempt to renew the token if it is unavailable or has expired."""

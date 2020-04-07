@@ -69,7 +69,7 @@ token_client = TokenObtainmentClient(session, TOKEN_OBTAINMENT_ENDPOINT, client_
 
 print('Fetching token...')
 print()
-token = token_client.fetch_token()
+token = token_client.fetch_token_response()
 
 print(f"Refresh Token: {token.refresh_token}")
 print(f" Access Token: {token.access_token}")

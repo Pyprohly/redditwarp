@@ -13,7 +13,7 @@ from ..http.payload import FormData
 from .token import TokenResponse
 from .misc import apply_basic_auth
 from .exceptions import (
-	AuthResponseException,
+	OAuth2ResponseError,
 	HTTPStatusError,
 	Unauthorized,
 	oauth2_response_error_class_by_error_name,
@@ -34,7 +34,7 @@ class TokenObtainmentClient:
 		self.client_credentials = client_credentials
 		self.grant = grant
 
-	def fetch_token(self) -> TokenResponse:
+	def fetch_token_response(self) -> TokenResponse:
 		data = {k: v for k, v in vars(self.grant).items() if v}
 		data['grant_type'] = self.grant.GRANT_TYPE
 
@@ -53,10 +53,7 @@ class TokenObtainmentClient:
 			if error == 401:
 				raise Unauthorized(resp)
 
-			try:
-				clss = oauth2_response_error_class_by_error_name[error]
-			except KeyError:
-				raise AuthResponseException(resp) from None
+			clss = oauth2_response_error_class_by_error_name.get(error, OAuth2ResponseError)
 			raise clss.from_response_and_json(resp, resp_json)
 
 		try:

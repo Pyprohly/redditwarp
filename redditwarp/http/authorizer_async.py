@@ -12,7 +12,7 @@ import asyncio
 import time
 
 from .requestor_async import RequestorDecorator
-from ..auth import Token
+from ..auth.token import Token, make_bearer_token
 
 class Authorizer:
 	def __init__(self, token: Optional[Token] = None,
@@ -37,22 +37,15 @@ class Authorizer:
 		if self.token_client is None:
 			raise RuntimeError('a new token was requested but no token client is assigned')
 
-		tr = await self.token_client.fetch_token()
+		tr = await self.token_client.fetch_token_response()
 		self.last_token_response = tr
+		t = make_bearer_token(tr)
+		self.token = t
 
-		expires_in = tr.expires_in
-		if expires_in is None:
-			expires_in = self.expires_in_fallback
-
+		expires_in = self.expires_in_fallback if t.expires_in is None else t.expires_in
 		self.expiry_time = int(self.current_time()) + expires_in - self.expiry_skew
-		token = Token(
-			access_token=tr.access_token,
-			refresh_token=tr.refresh_token,
-			expires_in=expires_in,
-			scope=tr.scope,
-		)
-		self.token = token
-		return token
+
+		return t
 
 	async def maybe_renew_token(self) -> Optional[Token]:
 		if (self.token is None) or self.token_expired():

@@ -7,17 +7,20 @@ if TYPE_CHECKING:
 
 from typing import Type, TypeVar, ClassVar
 
-from ..http import exceptions as http_exc
-
-class AuthResponseException(http_exc.ResponseException):
+class AuthException(Exception):
 	pass
 
-class HTTPStatusError(http_exc.StatusCodeException):
+class ResponseException(AuthException):
+	def __init__(self, response: Response):
+		super().__init__(response)
+		self.response = response
+
+class HTTPStatusError(ResponseException):
 	pass
 
 
 
-class ResponseContentError(AuthResponseException):
+class ResponseContentError(ResponseException):
 	pass
 
 class UnidentifiedResponseContentError(ResponseContentError):
@@ -40,13 +43,13 @@ def get_response_content_error(resp):
 
 
 
-class Unauthorized(AuthResponseException):
+class Unauthorized(ResponseException):
 	pass
 
 
 T = TypeVar('T', bound='OAuth2ResponseError')
 
-class OAuth2ResponseError(AuthResponseException):
+class OAuth2ResponseError(ResponseException):
 	"""
 	As detailed in the OAuth2 spec. For more information see
 	https://tools.ietf.org/html/rfc6749#section-5.2

@@ -2,6 +2,7 @@
 import __main__  # type: ignore[import]
 
 from . import http
+from . import auth
 from .http.client_sync import HTTPClient
 from .http.util import json_loads_response
 from .auth import ClientCredentials, Token, auto_grant_factory
@@ -13,6 +14,7 @@ from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimiter_sync import RateLimited
 from .http.apply_headers_sync import ApplyHeaders
 from .exceptions import (
+	ResponseException,
 	HTTPStatusError,
 	get_response_content_error,
 	raise_for_json_response_content_error,
@@ -109,11 +111,11 @@ class ClientCore:
 		client_credentials = ClientCredentials(client_id, client_secret)
 		token = None if access_token is None else Token(access_token)
 		session = new_session()
-		ah = ApplyHeaders(session, None)
+		aphe = ApplyHeaders(session, None)
 		authorizer = Authorizer(
 			token,
 			TokenObtainmentClient(
-				ah,
+				aphe,
 				TOKEN_OBTAINMENT_ENDPOINT,
 				client_credentials,
 				grant,
@@ -121,7 +123,7 @@ class ClientCore:
 		)
 		requestor = RateLimited(Authorized(session, authorizer))
 		http = HTTPClient(requestor, session, authorizer=authorizer)
-		ah.headers = http.default_headers
+		aphe.headers = http.default_headers
 		self._init(http)
 
 	def _init(self, http):
@@ -148,11 +150,15 @@ class ClientCore:
 		try:
 			resp = self.http.request(verb, path, params=params,
 					payload=payload, data=data, json=json, headers=headers, timeout=timeout)
+
+		except auth.exceptions.ResponseException as e:
+			self.last_response = e.response
+			raise ResponseException(e.response) from e
 		except http.exceptions.ResponseException as e:
 			self.last_response = e.response
-			raise
-		else:
-			self.last_response = resp
+			raise ResponseException(e.response) from e
+
+		self.last_response = resp
 
 		try:
 			data = json_loads_response(resp)
