@@ -9,10 +9,10 @@ from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.requests import new_session
 from .auth.token_obtainment_client_sync import TokenObtainmentClient
-from .auth import TOKEN_OBTAINMENT_ENDPOINT
+from .auth.const import TOKEN_OBTAINMENT_ENDPOINT
 from .http.authorizer_sync import Authorizer, Authorized
-from .http.ratelimiter_sync import RateLimited
-from .http.apply_headers_sync import ApplyHeaders
+from .http.ratelimited_sync import RateLimited
+from .http.default_header_receptive_sync import DefaultHeaderReceptive
 from .exceptions import (
 	ResponseException,
 	HTTPStatusError,
@@ -99,31 +99,27 @@ class ClientCore:
 		TypeError
 			If bare credentials were provided and the `grant` parameter was used.
 		"""
-		auto_grant_creds = (refresh_token, username, password)
+		grant_creds = (refresh_token, username, password)
 		if grant is None:
-			grant = auto_grant_factory(*auto_grant_creds)
+			grant = auto_grant_factory(*grant_creds)
 			if grant is None:
-				assert False
-				raise ValueError('could not automatically create an authorization grant from the provided grant credentials')
-		elif any(auto_grant_creds):
-			raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
+				raise ValueError("couldn't automatically create a grant from the provided credentials")
+		elif any(grant_creds):
+			raise TypeError("you shouldn't pass any grant credentials if you explicitly provide a grant")
 
 		client_credentials = ClientCredentials(client_id, client_secret)
 		token = None if access_token is None else Token(access_token)
 		session = new_session()
-		aphe = ApplyHeaders(session, None)
-		authorizer = Authorizer(
-			token,
-			TokenObtainmentClient(
-				aphe,
-				TOKEN_OBTAINMENT_ENDPOINT,
-				client_credentials,
-				grant,
-			),
+		token_client = TokenObtainmentClient(
+			session,
+			TOKEN_OBTAINMENT_ENDPOINT,
+			client_credentials,
+			grant,
 		)
+		authorizer = Authorizer(token, token_client)
 		requestor = RateLimited(Authorized(session, authorizer))
 		http = HTTPClient(requestor, session, authorizer=authorizer)
-		aphe.headers = http.default_headers
+		token_client.requestor = DefaultHeaderReceptive(token_client.requestor, http.default_headers)
 		self._init(http)
 
 	def _init(self, http):
@@ -142,7 +138,7 @@ class ClientCore:
 	def set_user_agent(self, s):
 		ua = self.http.USER_AGENT_STRING_HEAD
 		if s is not None:
-			ua += ' -- ' + s
+			ua += ' Bot -- ' + s
 		self.http.user_agent = ua
 
 	def request(self, verb, path, *, params=None,

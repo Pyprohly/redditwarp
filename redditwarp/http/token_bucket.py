@@ -51,7 +51,7 @@ class TokenBucket:
 		return n <= t
 
 	def consume_all(self) -> None:
-		"""Like `self.hard_consume(float('inf'))`."""
+		"""Deplete the token bucket. Like `self.hard_consume(float('inf'))`."""
 		self._checkpoint_time()
 		self._value = 0
 
@@ -69,7 +69,3 @@ class TokenBucket:
 					tb.do_consume(t)
 		"""
 		return max(0, (n - self._value)/self.rate)
-
-
-from .ratelimiter_sync import RateLimited as RateLimitedSync, RateLimited  # noqa
-from .ratelimiter_async import RateLimited as RateLimitedAsync  # noqa

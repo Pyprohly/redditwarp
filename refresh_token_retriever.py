@@ -1,16 +1,13 @@
 
 import os
 import re
+import uuid
 import socket
 import urllib.parse
 import webbrowser
 
-from redditwarp.auth.misc import (
-	AUTHORIZATION_ENDPOINT,
-	TOKEN_OBTAINMENT_ENDPOINT,
-	authorization_url,
-)
-
+from redditwarp.auth.misc import authorization_url
+from redditwarp.auth.const AUTHORIZATION_ENDPOINT, TOKEN_OBTAINMENT_ENDPOINT
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.grants import AuthorizationCodeGrant
 from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
@@ -19,18 +16,18 @@ from redditwarp.http.transport.requests import new_session
 client_id = os.environ['redditwarp_client_id']
 client_secret = os.environ['redditwarp_client_secret']
 scope = '*'
-state = '136134345'
+state = str(uuid.uuid4())
 redirect_uri = 'http://localhost:8080'
 
 #'''
 url = authorization_url(
-	AUTHORIZATION_ENDPOINT,
-	'code',
-	client_id,
-	redirect_uri,
-	scope,
-	state,
-	dict(duration='permanent'),
+	url=AUTHORIZATION_ENDPOINT,
+	response_type='code',
+	client_id=client_id,
+	redirect_uri=redirect_uri,
+	scope=scope,
+	state=state,
+	extra_params=dict(duration='permanent'),
 )
 print(url)
 print()
@@ -60,7 +57,7 @@ response_dict2 = {k: v[0] for k, v in response_dict.items()}
 assert response_dict2['state'] == state
 '''#'''
 
-code = response_dict2['code'][0]
+code = response_dict2['code']
 
 grant = AuthorizationCodeGrant(code, redirect_uri)
 client_credentials = ClientCredentials(client_id, client_secret)

@@ -10,20 +10,9 @@ from base64 import b64encode
 from urllib.parse import urlencode
 
 __all__ = (
-	'AUTHORIZATION_ENDPOINT',
-	'AUTHORIZATION_ENDPOINT_MOBILE',
-	'TOKEN_OBTAINMENT_ENDPOINT',
-	'TOKEN_REVOCATION_ENDPOINT',
-	'RESOURCE_BASE_URL',
 	'authorization_url',
 	'apply_basic_auth',
 )
-
-AUTHORIZATION_ENDPOINT = "https://www.reddit.com/api/v1/authorize"
-AUTHORIZATION_ENDPOINT_MOBILE = AUTHORIZATION_ENDPOINT + ".compact"
-TOKEN_OBTAINMENT_ENDPOINT = "https://www.reddit.com/api/v1/access_token"
-TOKEN_REVOCATION_ENDPOINT = "https://www.reddit.com/api/v1/revoke_token"
-RESOURCE_BASE_URL = "https://oauth.reddit.com"
 
 def authorization_url(
 	url: str,

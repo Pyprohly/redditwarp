@@ -14,7 +14,7 @@ import sys
 from asyncio import sleep
 
 from .transport import transport_reg
-from ..auth import RESOURCE_BASE_URL
+from ..auth.const import RESOURCE_BASE_URL
 from .request import Request
 from .. import __about__
 from .payload import make_payload
@@ -26,8 +26,7 @@ class RedditHTTPClient:
 	USER_AGENT_STRING_HEAD = (
 		f"{__about__.__title__}/{__about__.__version__} "
 		f"Python/{'{0[0]}.{0[1]}'.format(sys.version_info)} "
-		f"{transport_info.name}/{transport_info.version_string} "
-		"Bot"
+		f"{transport_info.name}/{transport_info.version_string}"
 	)
 
 	@property

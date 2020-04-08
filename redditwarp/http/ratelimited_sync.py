@@ -11,6 +11,7 @@ import time
 from time import sleep
 
 from .requestor_sync import RequestorDecorator
+from .token_bucket import TokenBucket
 
 class RateLimited(RequestorDecorator):
 	def __init__(self, requestor: Requestor) -> None:
@@ -58,6 +59,3 @@ class RateLimited(RequestorDecorator):
 			self.reset = 100
 			self.remaining = 200
 			self.used = 0
-
-
-from .ratelimiter import TokenBucket

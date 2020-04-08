@@ -8,7 +8,7 @@ from redditwarp.http.transport.requests import new_session
 from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
 from redditwarp.auth import TOKEN_OBTAINMENT_ENDPOINT
 from redditwarp.http.authorizer_sync import Authorizer, Authorized
-from redditwarp.http.ratelimiter_sync import RateLimited
+from redditwarp.http.ratelimited_sync import RateLimited
 
 client_credentials = ClientCredentials(
 	os.environ['redditwarp_client_id'],
