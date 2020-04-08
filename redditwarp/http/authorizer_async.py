@@ -22,7 +22,7 @@ class Authorizer:
 		self.token_client = token_client
 		self.expiry_skew = expiry_skew
 		self.expiry_time: Optional[int] = None
-		self.expires_in_fallback: int = 3600
+		self.expires_in_fallback: Optional[int] = None
 		self.last_token_response: Optional[TokenResponse] = None
 
 	def token_expired(self) -> bool:
@@ -39,13 +39,18 @@ class Authorizer:
 
 		tr = await self.token_client.fetch_token_response()
 		self.last_token_response = tr
-		t = make_bearer_token(tr)
-		self.token = t
+		tk = make_bearer_token(tr)
+		self.token = tk
 
-		expires_in = self.expires_in_fallback if t.expires_in is None else t.expires_in
-		self.expiry_time = int(self.current_time()) + expires_in - self.expiry_skew
+		if tk.expires_in is None:
+			if self.expires_in_fallback is None:
+				self.expiry_time = None
+			else:
+				self.expiry_time = int(self.current_time()) + self.expires_in_fallback - self.expiry_skew
+		else:
+			self.expiry_time = int(self.current_time()) + tk.expires_in - self.expiry_skew
 
-		return t
+		return tk
 
 	async def maybe_renew_token(self) -> Optional[Token]:
 		if (self.token is None) or self.token_expired():
@@ -60,10 +65,10 @@ class Authorizer:
 	def current_time(self) -> float:
 		return time.monotonic()
 
-	def remaining_time(self) -> Optional[int]:
+	def remaining_time(self) -> Optional[float]:
 		if self.expiry_time is None:
 			return None
-		return self.expiry_time - int(self.current_time())
+		return self.expiry_time - self.current_time()
 
 
 class Authorized(RequestorDecorator):
@@ -80,27 +85,24 @@ class Authorized(RequestorDecorator):
 
 		async with self._lock:
 			await self.authorizer.maybe_renew_token()
-			self.authorizer.prepare_request(request)
+		self.authorizer.prepare_request(request)
 
 		fut = asyncio.ensure_future(self.requestor.request(request, timeout))
 		self._futures.append(fut)
-		response = await fut
-
-		# Find and remove any completed task instead of just doing
-		# `self._futures.remove(fut)` so that cancelled requests
-		# don't leave objects stuck in `self._futures` forever.
-		for f in self._futures.copy():
-			if f.done():
-				self._futures.remove(f)
+		try:
+			response = await fut
+		finally:
+			self._futures.remove(fut)
 
 		if response.status == 401 and self.authorizer.can_renew_token():
-			# We need to call `renew_token()` but ensure only one task does it.
+			# Need to call `renew_token()`.
+			# Ensure only one task does it
 			if self._valve.is_set():
-				# Stop new requests from being made.
+				# Stop new requests from being made
 				self._valve.clear()
 
-				# Ensure all tasks are past the 401 status check and awaiting on
-				# `self._valve.wait()`.
+				# Ensure all tasks are past the 401 response status check
+				# and are awaiting on `self._valve.wait()`
 				await asyncio.wait(self._futures)
 
 				await self.authorizer.renew_token()

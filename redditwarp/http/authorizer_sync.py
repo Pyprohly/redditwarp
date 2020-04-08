@@ -23,7 +23,7 @@ class Authorizer:
 		self.token_client = token_client
 		self.expiry_skew = expiry_skew
 		self.expiry_time: Optional[int] = None
-		self.expires_in_fallback: int = 3600
+		self.expires_in_fallback: Optional[int] = None
 		self.last_token_response: Optional[TokenResponse] = None
 
 	def token_expired(self) -> bool:
@@ -40,13 +40,18 @@ class Authorizer:
 
 		tr = self.token_client.fetch_token_response()
 		self.last_token_response = tr
-		t = make_bearer_token(tr)
-		self.token = t
+		tk = make_bearer_token(tr)
+		self.token = tk
 
-		expires_in = self.expires_in_fallback if t.expires_in is None else t.expires_in
-		self.expiry_time = int(self.current_time()) + expires_in - self.expiry_skew
+		if tk.expires_in is None:
+			if self.expires_in_fallback is None:
+				self.expiry_time = None
+			else:
+				self.expiry_time = int(self.current_time()) + self.expires_in_fallback - self.expiry_skew
+		else:
+			self.expiry_time = int(self.current_time()) + tk.expires_in - self.expiry_skew
 
-		return t
+		return tk
 
 	def maybe_renew_token(self) -> Optional[Token]:
 		"""Attempt to renew the token if it is unavailable or has expired."""
@@ -62,10 +67,10 @@ class Authorizer:
 	def current_time(self) -> float:
 		return time.monotonic()
 
-	def remaining_time(self) -> Optional[int]:
+	def remaining_time(self) -> Optional[float]:
 		if self.expiry_time is None:
 			return None
-		return self.expiry_time - int(self.current_time())
+		return self.expiry_time - self.current_time()
 
 
 class Authorized(RequestorDecorator):
@@ -78,11 +83,13 @@ class Authorized(RequestorDecorator):
 	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
 		self.authorizer.maybe_renew_token()
 		self.authorizer.prepare_request(request)
+
 		response = self.requestor.request(request, timeout)
 
 		if response.status == 401 and self.authorizer.can_renew_token():
 			self.authorizer.renew_token()
 			self.authorizer.prepare_request(request)
+
 			response = self.requestor.request(request, timeout)
 
 		return response
