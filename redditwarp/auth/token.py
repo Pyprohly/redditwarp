@@ -37,6 +37,7 @@ class TokenResponse:
 class BearerToken:
 	TOKEN_TYPE: ClassVar[str] = 'bearer'
 	access_token: str
+	token_type: str = TOKEN_TYPE
 	expires_in: Optional[int] = None
 	refresh_token: Optional[str] = None
 	scope: Optional[str] = None
@@ -48,6 +49,7 @@ def make_bearer_token(tr: TokenResponse) -> BearerToken:
 		raise ValueError
 	return BearerToken(
 		access_token=tr.access_token,
+		token_type=tr.token_type,
 		refresh_token=tr.refresh_token,
 		expires_in=tr.expires_in,
 		scope=tr.scope,

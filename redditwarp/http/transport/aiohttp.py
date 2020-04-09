@@ -55,9 +55,9 @@ class Session(BaseSession):
 			async with self.session.request(**kwargs) as resp:
 				content = await resp.content.read()
 		except asyncio.TimeoutError as e:
-			raise exceptions.TimeoutError(e) from e
+			raise exceptions.TimeoutError from e
 		except Exception as e:
-			raise exceptions.TransportError(e) from e
+			raise exceptions.TransportError from e
 
 		return Response(
 			status=resp.status,

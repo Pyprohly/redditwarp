@@ -11,9 +11,12 @@ class AuthException(Exception):
 	pass
 
 class ResponseException(AuthException):
-	def __init__(self, response: Response):
-		super().__init__(response)
+	def __init__(self, response: Response) -> None:
+		super().__init__()
 		self.response = response
+
+	def __str__(self) -> str:
+		return str(self.response)
 
 class HTTPStatusError(ResponseException):
 	pass
@@ -60,13 +63,15 @@ class OAuth2ResponseError(ResponseException):
 	def from_response_and_json(cls: Type[T], response: Response, json: Dict[str, Any]) -> T:
 		return cls(
 			response,
+			json.get('error', ''),
 			json.get('error_description', ''),
 			json.get('error_uri', ''),
 		)
 
-	def __init__(self, response: Response,
-			description: str = '', help_uri: str = ''):
+	def __init__(self, response: Response, error_name: str = '',
+			description: str = '', help_uri: str = '') -> None:
 		super().__init__(response)
+		self.error_name = error_name
 		self.description = description
 		self.help_uri = help_uri
 

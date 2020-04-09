@@ -14,7 +14,8 @@ from .http.authorizer_async import Authorizer, Authorized
 from .http.ratelimited_async import RateLimited
 from .http.default_header_receptive_sync import DefaultHeaderReceptive
 from .exceptions import (
-	ResponseException,
+	AuthError,
+	APIError,
 	HTTPStatusError,
 	get_response_content_error,
 	raise_for_json_response_content_error,
@@ -109,10 +110,10 @@ class ClientCore:
 
 		except auth.exceptions.ResponseException as e:
 			self.last_response = e.response
-			raise ResponseException(e.response) from e
+			raise AuthError(e.response) from e
 		except http.exceptions.ResponseException as e:
 			self.last_response = e.response
-			raise ResponseException(e.response) from e
+			raise APIError(e.response) from e
 
 		self.last_response = resp
 

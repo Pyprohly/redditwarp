@@ -55,6 +55,7 @@ __all__ = (
 	'__author__',
 	'__license__',
 	'__copyright__',
+	'version_info',
 )
 
 class VersionInfo(NamedTuple):

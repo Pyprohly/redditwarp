@@ -53,9 +53,9 @@ class Session(BaseSession):
 		try:
 			resp = self.session.request(**kwargs)
 		except requests.exceptions.ReadTimeout as e:
-			raise exceptions.TimeoutError(e) from e
+			raise exceptions.TimeoutError from e
 		except Exception as e:
-			raise exceptions.TransportError(e) from e
+			raise exceptions.TransportError from e
 
 		return Response(
 			status=resp.status_code,

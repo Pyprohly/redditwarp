@@ -20,9 +20,12 @@ class HTTPException(Exception):
 class ResponseException(HTTPException):
 	"""The request completed successfully but there was an issue with the response."""
 
-	def __init__(self, response: Response):
-		super().__init__(response)
+	def __init__(self, response: Response) -> None:
+		super().__init__()
 		self.response = response
+
+	def __str__(self) -> str:
+		return str(self.response)
 
 class StatusCodeException(ResponseException):
 	STATUS_CODE = 0

@@ -5,10 +5,17 @@ from pprint import pformat
 class RootException(Exception):
 	pass
 
+class ClientError(RootException):
+	pass
+
+
 class ResponseException(RootException):
 	def __init__(self, response):
-		super().__init__(response)
+		super().__init__()
 		self.response = response
+
+class AuthError(ResponseException):
+	pass
 
 class APIError(ResponseException):
 	"""A base exception class denoting that something in the response body
