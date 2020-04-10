@@ -44,8 +44,7 @@ class RateLimited(RequestorDecorator):
 				tb.do_consume(s)
 
 			if not tb.try_consume(1):
-				c = tb.cooldown(1)
-				await sleep(c)
+				await sleep(tb.cooldown(1))
 				tb.do_consume(1)
 
 		self._prev_request = self._last_request

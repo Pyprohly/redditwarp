@@ -5,4 +5,4 @@ from .client_credentials import *  # noqa
 from .exceptions import *  # noqa
 from .grants import *  # noqa
 from .token import *  # noqa
-from .misc import *  # noqa
+from .util import *  # noqa

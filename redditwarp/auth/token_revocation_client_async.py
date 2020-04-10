@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from .. import http
 from ..http.request import Request
 from ..http.payload import FormData
-from .misc import apply_basic_auth
+from .util import apply_basic_auth
 from .exceptions import HTTPStatusError
 
 __all__ = ('TokenRevocationClient',)

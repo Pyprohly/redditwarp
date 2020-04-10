@@ -11,7 +11,7 @@ from ..http.request import Request
 from ..http.util import json_loads_response
 from ..http.payload import FormData
 from .token import TokenResponse
-from .misc import apply_basic_auth
+from .util import apply_basic_auth
 from .exceptions import (
 	OAuth2ResponseError,
 	HTTPStatusError,

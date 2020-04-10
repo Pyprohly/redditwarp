@@ -6,7 +6,7 @@ import socket
 import urllib.parse
 import webbrowser
 
-from redditwarp.auth.misc import authorization_url
+from redditwarp.auth.util import authorization_url
 from redditwarp.auth.const AUTHORIZATION_ENDPOINT, TOKEN_OBTAINMENT_ENDPOINT
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.grants import AuthorizationCodeGrant

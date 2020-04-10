@@ -47,7 +47,7 @@ class TokenBucket:
 	def hard_consume(self, n: float) -> bool:
 		"""Comsume up to `n` tokens."""
 		t = self.get_value()
-		self._value = max(self._value - n, 0)
+		self._value = max(t - n, 0)
 		return n <= t
 
 	def consume_all(self) -> None:
@@ -62,10 +62,10 @@ class TokenBucket:
 		This class is not IO-bound so there is no "`wait_consume()`" method.
 		Here is the logic for implementing that::
 
-			t = 3
 			async with lock:
+				t = 3
 				if not tb.try_consume(t):
 					await asyncio.sleep(tb.cooldown(t))
 					tb.do_consume(t)
 		"""
-		return max(0, (n - self._value)/self.rate)
+		return max(0, (n - self.get_value())/self.rate)
