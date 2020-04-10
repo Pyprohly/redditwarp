@@ -1,5 +1,5 @@
 
-import sys
+import sys  # noqa
 import os
 import redditwarp
 

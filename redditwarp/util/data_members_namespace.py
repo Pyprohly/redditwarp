@@ -13,13 +13,13 @@ rep.maxstring = 250
 rep.maxother = 250
 reprepr = rep.repr
 
-class _StrReprStr(str):
+class StrReprStr(str):
 	def __repr__(self):
 		return str(self)
 
 def neat_repr_dict(d):
 	return {
-		k: (literal_eval(reprepr(v)) if isinstance(v, str) else _StrReprStr(reprepr(v)))
+		k: (literal_eval(reprepr(v)) if isinstance(v, str) else StrReprStr(reprepr(v)))
 		for k, v in d.items()
 	}
 

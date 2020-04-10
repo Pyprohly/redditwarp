@@ -13,9 +13,9 @@ class TokenBucket:
 
 	def _checkpoint_time(self) -> float:
 		now = self.time_func()
-		time_delta = now - self._last_update
+		delta = now - self._last_update
 		self._last_update = now
-		return time_delta
+		return delta
 
 	def _replenish(self) -> None:
 		if self._value < self.capacity:
@@ -42,7 +42,7 @@ class TokenBucket:
 		"""Comsume `n` tokens. Raise an exception if `n` tokens aren't available."""
 		if self.try_consume(n):
 			return True
-		raise RuntimeError(f'attempted consume of {n} token(s) when {self._value} were available')
+		raise RuntimeError(f'attempted consume of {n} tokens when {self._value} were available')
 
 	def hard_consume(self, n: float) -> bool:
 		"""Comsume up to `n` tokens."""
@@ -60,9 +60,9 @@ class TokenBucket:
 		methods return `True` again.
 
 		This class is not IO-bound so there is no "`wait_consume()`" method.
-		Here is the logic for that::
+		Here is the logic for implementing that::
 
-			t = 2
+			t = 3
 			async with lock:
 				if not tb.try_consume(t):
 					await asyncio.sleep(tb.cooldown(t))

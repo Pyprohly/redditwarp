@@ -12,7 +12,7 @@ def base_digits(base, n):
 		n //= base
 	return digits
 
-def to_base(base, alphabet, n):
+def to_base(base, n, alphabet):
 	if base > len(alphabet):
 		raise ValueError('alphabet not large enough')
 
@@ -22,4 +22,4 @@ def to_base(base, alphabet, n):
 	return sign + ''.join(reversed([alphabet[i] for i in digits]))
 
 def to_base36(n):
-	return to_base(36, '0123456789abcdefghijklmnopqrstuvwxyz', n)
+	return to_base(36, n, '0123456789abcdefghijklmnopqrstuvwxyz')

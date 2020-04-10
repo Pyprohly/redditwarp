@@ -3,25 +3,22 @@ from collections.abc import Mapping, MutableMapping
 from pprint import PrettyPrinter
 
 class AttributeDict(MutableMapping):
-	"""A dict-like class extended to expose its keys though attributes.
+	"""Wrap a mapping to expose its keys though attributes.
 
-	Inherited dict methods (`.update()`, `.clear()`, etc.) always take
+	MutableMapping methods (`.update()`, `.clear()`, etc.) take
 	precedence over arbitrary attribute access. Indexing should instead
 	be used to access the values of those names to avoid the collision.
 
 	There are no restrictions on the key name. If a key can't be get/set
-	as an attribute then indexing can be used.
+	as an attribute then indexing should be used.
 
-	A mapping passed to the constructor will have its reference stored.
-	This makes it suitable for wrapping mapping types.
-
-	The inner dict object can be retrieved using `abs(self)`.
+	The underlying mapping object can be retrieved with `abs(self)`.
 	"""
 
-	__slots__ = '_store'
+	__slots__ = ('_store',)
 
-	def __init__(self, data=None):
-		object.__setattr__(self, '_store', {} if data is None else data)
+	def __init__(self, data: MutableMapping):
+		object.__setattr__(self, '_store', data)
 
 	def __repr__(self):
 		return f'{self.__class__.__name__}({self._store})'
@@ -57,13 +54,11 @@ class AttributeDict(MutableMapping):
 		try:
 			attr = self[name]
 		except KeyError:
-			pass
-		else:
-			if isinstance(attr, mapping_type):
-				return type(self)(attr)
-			return attr
+			raise AttributeError(repr(name)) from None
 
-		raise AttributeError(repr(name))
+		if isinstance(attr, mapping_type):
+			return type(self)(attr)
+		return attr
 
 	__setattr__ = __setitem__
 

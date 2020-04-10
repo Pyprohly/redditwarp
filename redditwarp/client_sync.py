@@ -41,8 +41,20 @@ class ClientCore:
 
 	@classmethod
 	def from_praw_config(cls, site_name='DEFAULT'):
+		section_name = site_name or 'DEFAULT'
 		config = load_praw_config()
-		section = config[site_name or 'DEFAULT']
+		try:
+			section = config[section_name]
+		except KeyError:
+			class StrReprStr(str):
+				def __repr__(self):
+					return str(self)
+			msg = f"No config section {section_name!r}"
+			sections = config.defaults().keys() | set(config.sections())
+			if not sections:
+				msg += ' in empty config'
+			raise KeyError(StrReprStr(msg)) from None
+
 		get = section.get
 		self = cls(
 			client_id=get('client_id'),
