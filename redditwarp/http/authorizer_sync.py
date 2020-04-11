@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
 	from ..auth.token_obtainment_client_sync import TokenObtainmentClient
-	from ..auth.token import TokenResponse
+	from ..auth.token import Token
 	from .requestor_sync import Requestor
 	from .request import Request
 	from .response import Response
@@ -11,20 +11,20 @@ if TYPE_CHECKING:
 import time
 
 from .requestor_sync import RequestorDecorator
-from ..auth.token import Token, make_bearer_token
+from .exceptions import UnknownTokenType
 
 class Authorizer:
 	"""Knows how to authorize requests."""
 
-	def __init__(self, token: Optional[Token] = None,
-			token_client: Optional[TokenObtainmentClient] = None,
-			expiry_skew: int = 30) -> None:
+	def __init__(self,
+		token: Optional[Token],
+		token_client: Optional[TokenObtainmentClient],
+	) -> None:
 		self.token = token
 		self.token_client = token_client
-		self.expiry_skew = expiry_skew
+		self.expiry_skew = 30
 		self.expiry_time: Optional[int] = None
 		self.expires_in_fallback: Optional[int] = None
-		self.last_token_response: Optional[TokenResponse] = None
 
 	def token_expired(self) -> bool:
 		if self.expiry_time is None:
@@ -38,10 +38,10 @@ class Authorizer:
 		if self.token_client is None:
 			raise RuntimeError('a new token was requested but no token client is assigned')
 
-		tr = self.token_client.fetch_token_response()
-		self.last_token_response = tr
-		tk = make_bearer_token(tr)
-		self.token = tk
+		self.token = tk = self.token_client.fetch_token()
+
+		if tk.token_type.lower() != 'bearer':
+			raise UnknownTokenType(tk)
 
 		if tk.expires_in is None:
 			if self.expires_in_fallback is None:
@@ -60,9 +60,10 @@ class Authorizer:
 		return None
 
 	def prepare_request(self, request: Request) -> None:
-		if self.token is None:
+		tk = self.token
+		if tk is None:
 			raise RuntimeError('no token is set')
-		request.headers['Authorization'] = '{0.TOKEN_TYPE} {0.access_token}'.format(self.token)
+		request.headers['Authorization'] = f'{tk.token_type} {tk.access_token}'
 
 	def current_time(self) -> float:
 		return time.monotonic()

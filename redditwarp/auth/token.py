@@ -1,12 +1,22 @@
 
-from typing import Type, TypeVar, ClassVar, Optional, Any, Dict
-from dataclasses import dataclass
+from typing import Type, TypeVar, Optional, Any, Mapping
+from dataclasses import dataclass, field
 
-__all__ = ('TokenResponse', 'Token')
+__all__ = ('ResponseToken', 'Token')
 
-T = TypeVar('T', bound='TokenResponse')
+T = TypeVar('T', bound='ResponseToken')
 
-class TokenResponse:
+
+@dataclass(frozen=True)
+class Token:
+	access_token: str
+	token_type: str = 'Bearer'
+	expires_in: Optional[int] = None
+	refresh_token: Optional[str] = None
+	scope: Optional[str] = None
+
+@dataclass(frozen=True)
+class ResponseToken(Token):
 	@classmethod
 	def from_kwargs(cls: Type[T], **kwargs: Any) -> T:
 		return cls(
@@ -18,39 +28,9 @@ class TokenResponse:
 			extra_params=kwargs,
 		)
 
-	def __init__(self,
-		access_token: str,
-		token_type: str,
-		expires_in: Optional[int] = None,
-		refresh_token: Optional[str] = None,
-		scope: Optional[str] = None,
-		extra_params: Optional[Dict[str, Any]] = None,
-	) -> None:
-		self.access_token = access_token
-		self.token_type = token_type
-		self.expires_in = expires_in
-		self.refresh_token = refresh_token
-		self.scope = scope
-		self.extra_params = {} if extra_params is None else extra_params
+	extra_params: Mapping[str, Any] = field(default_factory=dict)
 
 @dataclass(frozen=True)
-class BearerToken:
-	TOKEN_TYPE: ClassVar[str] = 'bearer'
-	access_token: str
-	token_type: str = TOKEN_TYPE
-	expires_in: Optional[int] = None
-	refresh_token: Optional[str] = None
-	scope: Optional[str] = None
-
-Token = BearerToken
-
-def make_bearer_token(tr: TokenResponse) -> BearerToken:
-	if tr.token_type.lower() != 'bearer':
-		raise ValueError
-	return BearerToken(
-		access_token=tr.access_token,
-		token_type=tr.token_type,
-		refresh_token=tr.refresh_token,
-		expires_in=tr.expires_in,
-		scope=tr.scope,
-	)
+class DeviceIDResponseToken(ResponseToken):
+	...
+	device_id: str = ''

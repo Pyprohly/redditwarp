@@ -103,7 +103,10 @@ class RedditAPIError(APIError):
 		return f'<{self.__class__.__name__} ({self.response})>'
 
 	def __str__(self):
-		return f"{self.codename}: {self.detail}{self.field and ' -> '}{self.field}"
+		cn = self.codename
+		de = self.detail
+		fd = self.field
+		return f"{cn}: {de}{fd and f' -> {fd}'}"
 
 class Variant1RedditAPIError(RedditAPIError):
 	"""An error class denoting an error that was indicated in the
@@ -146,7 +149,7 @@ class Variant1RedditAPIError(RedditAPIError):
 		if err_count > 1:
 			return f"multiple ({err_count}) errors encountered:\n" \
 					+ '\n'.join(
-						f"  {err.codename}: {err.detail}{err.field and ' -> '}{err.field}"
+						f"  {err.codename}: {err.detail}{err.field and f' -> {err.field}'}"
 						for err in self.errors)
 
 		return super().__str__()
@@ -214,7 +217,7 @@ class Variant2RedditAPIError(RedditAPIError):
 		self.fields = fields
 
 def raise_for_variant2_reddit_api_error(resp, data):
-	if {'fields', 'explanation', 'message', 'reason'} == data.keys():
+	if data.keys() == {'fields', 'explanation', 'message', 'reason'}:
 		codename = data['reason']
 		detail = data['explanation']
 		fields = data['fields']

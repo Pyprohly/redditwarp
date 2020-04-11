@@ -10,7 +10,7 @@ from .. import http
 from ..http.request import Request
 from ..http.util import json_loads_response
 from ..http.payload import FormData
-from .token import TokenResponse
+from .token import ResponseToken
 from .util import apply_basic_auth
 from .exceptions import (
 	OAuth2ResponseError,
@@ -34,7 +34,7 @@ class TokenObtainmentClient:
 		self.client_credentials = client_credentials
 		self.grant = grant
 
-	def fetch_token_response(self) -> TokenResponse:
+	def fetch_token(self) -> ResponseToken:
 		data = {k: v for k, v in vars(self.grant).items() if v}
 		data['grant_type'] = self.grant.GRANT_TYPE
 
@@ -61,4 +61,4 @@ class TokenObtainmentClient:
 		except http.exceptions.StatusCodeException as e:
 			raise HTTPStatusError(resp) from e
 
-		return TokenResponse.from_kwargs(**resp_json)
+		return ResponseToken.from_kwargs(**resp_json)

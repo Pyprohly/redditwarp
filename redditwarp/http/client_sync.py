@@ -85,7 +85,7 @@ class RedditHTTPClient:
 
 		params.setdefault('raw_json', '1')
 		params.setdefault('api_type', 'json')
-		headers.setdefault('User-Agent', self.user_agent)
+		headers.update({**self.default_headers, **headers})
 
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
 

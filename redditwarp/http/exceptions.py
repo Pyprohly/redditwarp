@@ -3,6 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Type
 if TYPE_CHECKING:
 	from .response import Response
+	from ..auth.token import Token
+
+class UnknownTokenType(Exception):
+	def __init__(self, token: Token):
+		self.token = token
+
 
 class TransportError(Exception):
 	pass

@@ -49,10 +49,8 @@ class ClientCore:
 			class StrReprStr(str):
 				def __repr__(self):
 					return str(self)
-			msg = f"No config section {section_name!r}"
 			sections = config.defaults().keys() | set(config.sections())
-			if not sections:
-				msg += ' in empty config'
+			msg = f"No section {section_name!r} in{'' if sections else ' empty'} config"
 			raise KeyError(StrReprStr(msg)) from None
 
 		get = section.get
@@ -120,19 +118,17 @@ class ClientCore:
 		elif any(grant_creds):
 			raise TypeError("you shouldn't pass any grant credentials if you explicitly provide a grant")
 
-		client_credentials = ClientCredentials(client_id, client_secret)
 		token = None if access_token is None else Token(access_token)
 		session = new_session()
-		token_client = TokenObtainmentClient(
-			session,
-			TOKEN_OBTAINMENT_ENDPOINT,
-			client_credentials,
-			grant,
-		)
-		authorizer = Authorizer(token, token_client)
+		authorizer = Authorizer(token, None)
 		requestor = RateLimited(Authorized(session, authorizer))
 		http = HTTPClient(requestor, session, authorizer=authorizer)
-		token_client.requestor = DefaultHeaderReceptive(token_client.requestor, http.default_headers)
+		authorizer.token_client = TokenObtainmentClient(
+			DefaultHeaderReceptive(session, http.default_headers),
+			TOKEN_OBTAINMENT_ENDPOINT,
+			ClientCredentials(client_id, client_secret),
+			grant,
+		)
 		self._init(http)
 
 	def _init(self, http):
@@ -149,6 +145,7 @@ class ClientCore:
 		self.http.close()
 
 	def set_user_agent(self, s):
+		s = str(s)
 		ua = self.http.USER_AGENT_STRING_HEAD
 		if s is not None:
 			ua += ' Bot -- ' + s
@@ -188,7 +185,8 @@ class ClientCore:
 	def set_access_token(self, access_token):
 		"""Manually set the access token.
 
-		Tip: to get the current access token use `self.http.authorizer.token.access_token`
+		Tip: get the currently set access token with
+		`self.http.authorizer.token.access_token`
 
 		Parameters
 		----------
