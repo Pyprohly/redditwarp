@@ -5,12 +5,30 @@ if TYPE_CHECKING:
 	from .response import Response
 	from ..auth.token import Token
 
-class UnknownTokenType(Exception):
-	def __init__(self, token: Token):
+class RootException(Exception):
+	pass
+
+class BasicException(RootException):
+	def __init__(self, exc_msg: object = None) -> None:
+		super().__init__()
+		self.exc_msg = exc_msg
+
+	def __str__(self) -> str:
+		if self.exc_msg is None:
+			return self.exc_str()
+		return str(self.exc_msg)
+
+	def exc_str(self) -> str:
+		return ''
+
+
+class UnknownTokenType(BasicException):
+	def __init__(self, exc_msg: object = None, *, token: Token):
+		super().__init__(exc_msg)
 		self.token = token
 
 
-class TransportError(Exception):
+class TransportError(BasicException):
 	pass
 
 class NetworkError(TransportError):
@@ -20,14 +38,14 @@ class TimeoutError(NetworkError):
 	pass
 
 
-class HTTPException(Exception):
+class HTTPException(BasicException):
 	pass
 
 class ResponseException(HTTPException):
 	"""The request completed successfully but there was an issue with the response."""
 
-	def __init__(self, response: Response) -> None:
-		super().__init__()
+	def __init__(self, exc_msg: object = None, *, response: Response) -> None:
+		super().__init__(exc_msg)
 		self.response = response
 
 	def __str__(self) -> str:
@@ -42,33 +60,33 @@ class SuccessfulResponse(StatusCodeException):
 	STATUS_CODE = -200
 class RedirectionResponse(StatusCodeException):
 	STATUS_CODE = -300
-class ClientError(StatusCodeException):
+class ClientErrorResponse(StatusCodeException):
 	STATUS_CODE = -400
-class ServerError(StatusCodeException):
+class ServerErrorResponse(StatusCodeException):
 	STATUS_CODE = -500
 
-class BadRequest(ClientError):
+class BadRequest(ClientErrorResponse):
 	STATUS_CODE = 400
-class Unauthorized(ClientError):
+class Unauthorized(ClientErrorResponse):
 	STATUS_CODE = 401
-class Forbidden(ClientError):
+class Forbidden(ClientErrorResponse):
 	STATUS_CODE = 403
-class NotFound(ClientError):
+class NotFound(ClientErrorResponse):
 	STATUS_CODE = 404
-class Conflict(ClientError):
+class Conflict(ClientErrorResponse):
 	STATUS_CODE = 409
-class PayloadTooLarge(ClientError):
+class PayloadTooLarge(ClientErrorResponse):
 	STATUS_CODE = 413
-class TooManyRequests(ClientError):
+class TooManyRequests(ClientErrorResponse):
 	STATUS_CODE = 429
 
-class InternalServerError(ServerError):
+class InternalServerError(ServerErrorResponse):
 	STATUS_CODE = 500
-class BadGateway(ServerError):
+class BadGateway(ServerErrorResponse):
 	STATUS_CODE = 502
-class ServiceUnavailable(ServerError):
+class ServiceUnavailable(ServerErrorResponse):
 	STATUS_CODE = 503
-class GatewayTimeout(ServerError):
+class GatewayTimeout(ServerErrorResponse):
 	STATUS_CODE = 504
 
 status_code_exception_class_by_status_code = {
@@ -102,13 +120,13 @@ def get_status_code_exception_class_by_status_code(n: int) -> Type[StatusCodeExc
 		elif 300 <= n < 400:
 			klass = RedirectionResponse
 		elif 400 <= n < 500:
-			klass = ClientError
+			klass = ClientErrorResponse
 		elif 500 <= n < 600:
-			klass = ServerError
+			klass = ServerErrorResponse
 	return klass
 
 def raise_now(resp: Response) -> None:
-	raise get_status_code_exception_class_by_status_code(resp.status)(resp)
+	raise get_status_code_exception_class_by_status_code(resp.status)(response=resp)
 
 def raise_for_status(resp: Response) -> None:
 	if resp.status >= 400:

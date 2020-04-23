@@ -7,15 +7,29 @@ if TYPE_CHECKING:
 
 from typing import Type, TypeVar, ClassVar
 
-class AuthException(Exception):
+class RootException(Exception):
 	pass
 
-class ResponseException(AuthException):
-	def __init__(self, response: Response) -> None:
+class BasicException(RootException):
+	def __init__(self, exc_msg: object = None) -> None:
 		super().__init__()
-		self.response = response
+		self.exc_msg = exc_msg
 
 	def __str__(self) -> str:
+		if self.exc_msg is None:
+			return self.exc_str()
+		return str(self.exc_msg)
+
+	def exc_str(self) -> str:
+		return ''
+
+
+class ResponseException(BasicException):
+	def __init__(self, exc_msg: object = None, *, response: Response) -> None:
+		super().__init__(exc_msg)
+		self.response = response
+
+	def exc_str(self) -> str:
 		return str(self.response)
 
 class HTTPStatusError(ResponseException):
@@ -46,10 +60,6 @@ def get_response_content_error(resp):
 
 
 
-class Unauthorized(ResponseException):
-	pass
-
-
 T = TypeVar('T', bound='OAuth2ResponseError')
 
 class OAuth2ResponseError(ResponseException):
@@ -62,15 +72,15 @@ class OAuth2ResponseError(ResponseException):
 	@classmethod
 	def from_response_and_json(cls: Type[T], response: Response, json: Dict[str, Any]) -> T:
 		return cls(
-			response,
-			json.get('error', ''),
-			json.get('error_description', ''),
-			json.get('error_uri', ''),
+			response=response,
+			error_name=json.get('error', ''),
+			description=json.get('error_description', ''),
+			help_uri=json.get('error_uri', ''),
 		)
 
-	def __init__(self, response: Response, error_name: str = '',
+	def __init__(self, exc_msg: object = None, *, response: Response, error_name: str = '',
 			description: str = '', help_uri: str = '') -> None:
-		super().__init__(response)
+		super().__init__(exc_msg=exc_msg, response=response)
 		self.error_name = error_name
 		self.description = description
 		self.help_uri = help_uri

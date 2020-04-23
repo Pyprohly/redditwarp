@@ -23,8 +23,8 @@ class AuthorizationGrant:
 	owner's authorization that's used to exchange for a bearer token.
 
 	An empty string should be treated the same as `None` in all fields
-	annotated as `Optional`. The annotation is a reflection of the
-	grant field requirements detailed in the OAuth2 spec.
+	annotated as `Optional`. The annotation is a reflection of the field
+	value requirements of various grants types defined in the OAuth2 spec.
 	"""
 	GRANT_TYPE: ClassVar[str] = ''
 
@@ -78,4 +78,6 @@ def auto_grant_factory(
 		return RefreshTokenGrant(refresh_token)
 	if username and password:
 		return ResourceOwnerPasswordCredentialsGrant(username, password)
+	if username or password:
+		return None
 	return ClientCredentialsGrant()

@@ -34,8 +34,10 @@ def authorization_url(
 	params = {k: v for k, v in params.items() if v}
 	return f'{url}?{urlencode(params)}'
 
-def apply_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
+def basic_auth(client_credentials: ClientCredentials) -> str:
 	ci = client_credentials.client_id
 	cs = client_credentials.client_secret
-	hv = 'basic ' + b64encode(f'{ci}:{cs}'.encode()).decode()
-	request.headers['Authorization'] = hv
+	return 'Basic ' + b64encode(f'{ci}:{cs}'.encode()).decode()
+
+def apply_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
+	request.headers['Authorization'] = basic_auth(client_credentials)

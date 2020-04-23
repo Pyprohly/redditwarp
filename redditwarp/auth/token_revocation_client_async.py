@@ -33,7 +33,7 @@ class TokenRevocationClient:
 		try:
 			resp.raise_for_status()
 		except http.exceptions.StatusCodeException as e:
-			raise HTTPStatusError(resp) from e
+			raise HTTPStatusError(response=resp) from e
 
 	async def revoke_access_token(self, token: str) -> None:
 		await self.revoke_token(token, 'access_token')

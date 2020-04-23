@@ -5,13 +5,27 @@ from pprint import pformat
 class RootException(Exception):
 	pass
 
-class ClientError(RootException):
+class BasicException(RootException):
+	def __init__(self, exc_msg: object = None) -> None:
+		super().__init__()
+		self.exc_msg = exc_msg
+
+	def __str__(self) -> str:
+		if self.exc_msg is None:
+			return self.exc_str()
+		return str(self.exc_msg)
+
+	def exc_str(self) -> str:
+		return ''
+
+
+class ClientError(BasicException):
 	pass
 
 
-class ResponseException(RootException):
-	def __init__(self, response):
-		super().__init__()
+class ResponseException(BasicException):
+	def __init__(self, exc_msg=None, *, response):
+		super().__init__(exc_msg)
 		self.response = response
 
 class AuthError(ResponseException):
@@ -40,11 +54,11 @@ class UnidentifiedResponseContentError(ResponseContentError):
 		return '\\\n\n** Please file a bug report with RedditWrap! **'
 
 class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentError):
-	# Unused
+	# Unused. This will never be raised.
 	"""The response body contains JSON data that the client isn't prepared to handle."""
 
-	def __init__(self, response, json):
-		super().__init__(response)
+	def __init__(self, exc_msg=None, *, response, json):
+		super().__init__(exc_msg=exc_msg, response=response)
 		self.json = json
 
 	def __str__(self):
@@ -129,14 +143,14 @@ class Variant1RedditAPIError(RedditAPIError):
 	def field(self):
 		return self.errors[0].field
 
-	def __init__(self, response, errors):
+	def __init__(self, exc_msg=None, *, response, errors):
 		"""
 		Parameters
 		----------
 		response: :class:`.http.Response`
 		errors: List[:class:`.RedditErrorItem`]
 		"""
-		super().__init__(response)
+		super().__init__(exc_msg=exc_msg, response=response)
 		errors[0]
 		self.errors = errors
 
@@ -209,8 +223,8 @@ class Variant2RedditAPIError(RedditAPIError):
 	def field(self):
 		return self._field
 
-	def __init__(self, response, codename, detail, fields):
-		super().__init__(response)
+	def __init__(self, exc_msg=None, *, response, codename, detail, fields):
+		super().__init__(exc_msg=exc_msg, response=response)
 		self._codename = codename
 		self._detail = detail
 		self._field = fields[0] if fields else ''

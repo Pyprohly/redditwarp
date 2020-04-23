@@ -40,7 +40,7 @@ class Authorizer:
 		self.token = tk = await self.token_client.fetch_token()
 
 		if tk.token_type.lower() != 'bearer':
-			raise UnknownTokenType(tk)
+			raise UnknownTokenType(token=tk)
 
 		if tk.expires_in is None:
 			if self.expires_in_fallback is None:

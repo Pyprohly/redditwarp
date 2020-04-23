@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
 	from .client_credentials import ClientCredentials
 	from .grants import AuthorizationGrant
@@ -13,9 +13,8 @@ from ..http.payload import FormData
 from .token import ResponseToken
 from .util import apply_basic_auth
 from .exceptions import (
-	OAuth2ResponseError,
+	ResponseException,
 	HTTPStatusError,
-	Unauthorized,
 	oauth2_response_error_class_by_error_name,
 	get_response_content_error,
 )
@@ -30,7 +29,7 @@ class TokenObtainmentClient:
 		self.client_credentials = client_credentials
 		self.grant = grant
 
-	async def fetch_token(self) -> ResponseToken:
+	async def fetch_json_dict(self) -> Mapping[str, Any]:
 		data = {k: v for k, v in vars(self.grant).items() if v}
 		data['grant_type'] = self.grant.GRANT_TYPE
 
@@ -46,15 +45,19 @@ class TokenObtainmentClient:
 
 		error = resp_json.get('error')
 		if error:
-			if error == 401:
-				raise Unauthorized(resp)
-
-			clss = oauth2_response_error_class_by_error_name.get(error, OAuth2ResponseError)
-			raise clss.from_response_and_json(resp, resp_json)
+			clss = oauth2_response_error_class_by_error_name.get(error)
+			if clss:
+				raise clss.from_response_and_json(resp, resp_json)
 
 		try:
 			resp.raise_for_status()
 		except http.exceptions.StatusCodeException as e:
-			raise HTTPStatusError(resp) from e
+			raise HTTPStatusError(response=resp) from e
 
-		return ResponseToken.from_kwargs(**resp_json)
+		if error:
+			raise ResponseException(response=resp)
+
+		return resp_json
+
+	async def fetch_token(self) -> ResponseToken:
+		return ResponseToken.from_dict(await self.fetch_json_dict())

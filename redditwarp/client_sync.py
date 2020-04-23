@@ -77,7 +77,7 @@ class ClientCore:
 
 		Parameters
 		----------
-		access_token: str
+		t: str
 		"""
 		token = Token(access_token)
 		session = new_session()
@@ -95,20 +95,36 @@ class ClientCore:
 		----------
 		client_id: str
 		client_secret: str
-			Required for all grant types except for the (Reddit-specific) Installed Client grant type.
-			If you're using an Installed Client grant you may set this to an empty string.
+			You won't be given a client secret if you're an installed app using the
+			:class:`~.InstalledClient` grant type. The Reddit docs say to use an
+			empty string in this case.
 		refresh_token: Optional[str]
 		access_token: Optional[str]
+			Initialize the client :class:`~.Authorizer` with an access token.
+			The token will continue to be used until the server indicates
+			an invalid token, in which case the configured grant will used to
+			exchange for a new access token.
 		username: Optional[str]
+			Reddit account username.
+			Must be used with :param:`password`.
+			Ignored if :param:`refresh_token` is used.
 		password: Optional[str]
-		grant: Optional[:class:`AuthorizationGrant`]
-			Configure the authorization grant explicitly. You'd use this parameter if you need
-			control over authorization scopes, or if you need to use the Installed Client grant type.
+			Reddit account password.
+			Must be used with :param:`username`.
+			Ignored if :param:`refresh_token` is used.
+		grant: Optional[:class:`~.AuthorizationGrant`]
+			Explicitly input a grant. Use this parameter if you need to limit
+			authorization scopes, or if you need to use the Installed Client grant type.
+
+		A :class:`~.ClientCredentialsGrant` grant will be configured if only :param:`client_id`
+		and :param:`client_secret` are specified.
 
 		Raises
 		------
 		TypeError
-			If bare credentials were provided and the `grant` parameter was used.
+			If grant credential parameters were specified and the `grant` parameter was used.
+		ValueError
+			You used :param:`username` without :param:`password` or vice versa.
 		"""
 		grant_creds = (refresh_token, username, password)
 		if grant is None:

@@ -4,9 +4,6 @@ from dataclasses import dataclass, field
 
 __all__ = ('ResponseToken', 'Token')
 
-T = TypeVar('T', bound='ResponseToken')
-
-
 @dataclass(frozen=True)
 class Token:
 	access_token: str
@@ -15,22 +12,26 @@ class Token:
 	refresh_token: Optional[str] = None
 	scope: Optional[str] = None
 
+T = TypeVar('T', bound='ResponseToken')
+
 @dataclass(frozen=True)
 class ResponseToken(Token):
+	"""
+	Attributes
+	----------
+	b: Mapping[str, Any]
+		The bare json dictionary object.
+	"""
+
 	@classmethod
-	def from_kwargs(cls: Type[T], **kwargs: Any) -> T:
+	def from_dict(cls: Type[T], b: Mapping[str, Any]) -> T:
 		return cls(
-			access_token=kwargs.pop('access_token'),
-			token_type=kwargs.pop('token_type'),
-			expires_in=kwargs.pop('expires_in', None),
-			refresh_token=kwargs.pop('refresh_token', None),
-			scope=kwargs.pop('scope', None),
-			extra_params=kwargs,
+			access_token=b['access_token'],
+			token_type=b['token_type'],
+			expires_in=b.get('expires_in'),
+			refresh_token=b.get('refresh_token'),
+			scope=b.get('scope'),
+			b=b,
 		)
 
-	extra_params: Mapping[str, Any] = field(default_factory=dict)
-
-@dataclass(frozen=True)
-class DeviceIDResponseToken(ResponseToken):
-	...
-	device_id: str = ''
+	b: Mapping[str, Any] = field(default_factory=dict)
