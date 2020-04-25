@@ -6,7 +6,7 @@ from redditwarp.auth import ClientCredentials, ClientCredentialsGrant, RefreshTo
 from redditwarp.http import HTTPClient
 from redditwarp.http.transport.requests import new_session
 from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
-from redditwarp.auth import TOKEN_OBTAINMENT_ENDPOINT
+from redditwarp.auth import TOKEN_OBTAINMENT_URL
 from redditwarp.http.authorizer_sync import Authorizer, Authorized
 from redditwarp.http.ratelimited_sync import RateLimited
 
@@ -22,7 +22,7 @@ authorizer = Authorizer(
 	None,
 	TokenObtainmentClient(
 		session,
-		TOKEN_OBTAINMENT_ENDPOINT,
+		TOKEN_OBTAINMENT_URL,
 		client_credentials,
 		ClientCredentialsGrant(),
 	),
@@ -40,7 +40,7 @@ authorizer = Authorizer(
 	None,
 	TokenObtainmentClient(
 		session,
-		TOKEN_OBTAINMENT_ENDPOINT,
+		TOKEN_OBTAINMENT_URL,
 		client_credentials,
 		RefreshTokenGrant(os.environ['redditwarp_refresh_token']),
 	),

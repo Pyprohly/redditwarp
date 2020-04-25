@@ -9,7 +9,7 @@ from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.requests import new_session
 from .auth.token_obtainment_client_sync import TokenObtainmentClient
-from .auth.const import TOKEN_OBTAINMENT_ENDPOINT
+from .auth.const import TOKEN_OBTAINMENT_URL
 from .http.authorizer_sync import Authorizer, Authorized
 from .http.ratelimited_sync import RateLimited
 from .http.default_header_receptive_sync import DefaultHeaderReceptive
@@ -141,7 +141,7 @@ class ClientCore:
 		http = HTTPClient(requestor, session, authorizer=authorizer)
 		authorizer.token_client = TokenObtainmentClient(
 			DefaultHeaderReceptive(session, http.default_headers),
-			TOKEN_OBTAINMENT_ENDPOINT,
+			TOKEN_OBTAINMENT_URL,
 			ClientCredentials(client_id, client_secret),
 			grant,
 		)
@@ -175,10 +175,10 @@ class ClientCore:
 
 		except auth.exceptions.ResponseException as e:
 			self.last_response = e.response
-			raise AuthError(e.response) from e
+			raise AuthError(response=e.response) from e
 		except http.exceptions.ResponseException as e:
 			self.last_response = e.response
-			raise APIError(e.response) from e
+			raise APIError(response=e.response) from e
 
 		self.last_response = resp
 
@@ -194,7 +194,7 @@ class ClientCore:
 		try:
 			resp.raise_for_status()
 		except http.exceptions.StatusCodeException as e:
-			raise HTTPStatusError(resp) from e
+			raise HTTPStatusError(response=resp) from e
 
 		return data
 

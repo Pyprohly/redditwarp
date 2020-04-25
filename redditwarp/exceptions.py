@@ -50,7 +50,7 @@ class ResponseContentError(APIError):
 class UnidentifiedResponseContentError(ResponseContentError):
 	"""The response body contains data that the client isn't prepared to handle."""
 
-	def __str__(self):
+	def exc_str(self):
 		return '\\\n\n** Please file a bug report with RedditWrap! **'
 
 class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentError):
@@ -61,7 +61,7 @@ class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentErro
 		super().__init__(exc_msg=exc_msg, response=response)
 		self.json = json
 
-	def __str__(self):
+	def exc_str(self):
 		return f'\\\n{pformat(self.json)}\n\n' \
 				'** Please file a bug report with RedditWrap! **'
 
@@ -70,7 +70,7 @@ class UnacceptableResponseContentError(ResponseContentError):
 	to or can't handle.
 	"""
 
-	def __str__(self):
+	def exc_str(self):
 		return f'\\\n{self.response.data}\n\n' \
 				'** Please file a bug report with RedditWrap! **'
 
@@ -84,13 +84,13 @@ class UserAgentRequired(HTMLDocumentResponseContentError):
 def get_response_content_error(resp):
 	if resp.data.lower().startswith(b'<!doctype html>'):
 		if b'>user agent required</' in resp.data:
-			return UserAgentRequired(resp)
-		return HTMLDocumentResponseContentError(resp)
-	return UnidentifiedResponseContentError(resp)
+			return UserAgentRequired(response=resp)
+		return HTMLDocumentResponseContentError(response=resp)
+	return UnidentifiedResponseContentError(response=resp)
 
 def raise_for_json_response_content_error(resp, json_data):
 	if {'jquery', 'success'} <= json_data.keys():
-		raise UnacceptableResponseContentError(resp)
+		raise UnacceptableResponseContentError(response=resp)
 
 
 
@@ -200,7 +200,7 @@ def get_variant1_reddit_api_error(response, error_list):
 	cls = Variant1RedditAPIError
 	if (len(error_list) == 1) and (error_list[0].name == 'RATELIMIT'):
 		cls = ContentCreationCooldown
-	return cls(response, error_list)
+	return cls(response=response, errors=error_list)
 
 def raise_for_variant1_reddit_api_error(resp, data):
 	error_list = try_parse_reddit_error_items(data)
@@ -235,4 +235,9 @@ def raise_for_variant2_reddit_api_error(resp, data):
 		codename = data['reason']
 		detail = data['explanation']
 		fields = data['fields']
-		raise Variant2RedditAPIError(resp, codename, detail, fields)
+		raise Variant2RedditAPIError(
+			response=resp,
+			codename=codename,
+			detail=detail,
+			fields=fields,
+		)
