@@ -28,10 +28,13 @@ class ResponseException(BasicException):
 		super().__init__(exc_msg)
 		self.response = response
 
-class AuthError(ResponseException):
+class ServiceRequestError(ResponseException):
 	pass
 
-class APIError(ResponseException):
+class AuthError(ServiceRequestError):
+	pass
+
+class APIError(ServiceRequestError):
 	"""A base exception class denoting that something in the response body
 	from an API request is amiss. Either an error was indicated by the API
 	or the structure is of something the client isn't prepared to handle.

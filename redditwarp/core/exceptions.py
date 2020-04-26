@@ -32,6 +32,9 @@ class ResponseException(BasicException):
 	def exc_str(self) -> str:
 		return str(self.response)
 
+class HTTPStatusError(ResponseException):
+	pass
+
 class ResponseContentError(ResponseException):
 	pass
 
@@ -41,10 +44,10 @@ class UnidentifiedResponseContentError(ResponseContentError):
 class HTMLDocumentResponseContentError(ResponseContentError):
 	pass
 
-class PossiblyBlacklistedUserAgent(HTMLDocumentResponseContentError):
+class PossiblyBlacklistedUserAgent(ResponseException):
 	pass
 
-def get_response_content_error(resp: Response) -> ResponseContentError:
+def get_exception_for_auth_response_content_error(resp: Response) -> ResponseException:
 	if resp.data.lower().startswith(b'<!doctype html>'):
 		if (b'<p>you are not allowed to do that</p>\n\n &mdash; access was denied to this resource.</div>'
 				in resp.data):
@@ -66,16 +69,23 @@ class FaultyUserAgent(ResponseException):
 
 def raise_for_auth_response_exception(e: auth.exceptions.ResponseException) -> None:
 	if isinstance(e, auth.exceptions.ResponseContentError):
-		raise get_response_content_error(e.response) from e
+		raise get_exception_for_auth_response_content_error(e.response) from e
 
 	elif isinstance(e, auth.exceptions.HTTPStatusError):
-		if e.response.request is None:
-			return
+		if e.response.status == 400:
+			raise HTTPStatusError('check your grant credentials', response=e.response) from e
 
-		ua = e.response.request.headers['User-Agent']
-		for i in user_agent.FAULTY_LIST:
-			if i in ua:
-				raise FaultyUserAgent(
-					f'using {i!r} in your user-agent string is known to interfere with your rate limits. Remove it from your user-agent string.',
-					response=e.response,
-				) from e
+		elif e.response.status == 401:
+			raise HTTPStatusError('check your client credentials', response=e.response) from e
+
+		elif e.response.status == 429:
+			if e.response.request is None:
+				return
+
+			ua = e.response.request.headers['User-Agent']
+			for i in user_agent.FAULTY_LIST:
+				if i in ua:
+					raise FaultyUserAgent(
+						f'using {i!r} in your user-agent string is known to interfere with your rate limits. Remove it from your user-agent string.',
+						response=e.response,
+					) from e
