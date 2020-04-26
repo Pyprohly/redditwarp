@@ -18,7 +18,7 @@ from .exceptions import (
 	APIError,
 	HTTPStatusError,
 	get_response_content_error,
-	raise_for_json_response_content_error,
+	raise_for_json_layout_content_error,
 	raise_for_variant1_reddit_api_error,
 	raise_for_variant2_reddit_api_error,
 )
@@ -187,7 +187,7 @@ class ClientCore:
 		except ValueError:
 			raise get_response_content_error(resp) from None
 
-		raise_for_json_response_content_error(resp, data)
+		raise_for_json_layout_content_error(resp, data)
 		raise_for_variant1_reddit_api_error(resp, data)
 		raise_for_variant2_reddit_api_error(resp, data)
 
@@ -201,7 +201,7 @@ class ClientCore:
 	def set_access_token(self, access_token):
 		"""Manually set the access token.
 
-		Tip: get the currently set access token with
+		Tip: the currently set access token can be found with
 		`self.http.authorizer.token.access_token`
 
 		Parameters

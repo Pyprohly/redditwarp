@@ -3,7 +3,7 @@ from typing import Optional
 import re
 from dataclasses import dataclass
 
-PATTERN = r'''
+BOT_USER_AGENT_PATTERN = r'''
 ^(?:(?P<platform>[\w-]+):)?
 
 (?P<app_id>[\w-]+)
@@ -51,7 +51,16 @@ u_SuvaBot/7 (bby  u/Pyprohly)
 console:u_SuvaBot/1.2.0 (by u/Pyprohly)some text
 '''
 
-BOT_USER_AGENT_REGEX = re.compile(PATTERN, re.X)
+BOT_USER_AGENT_REGEX = re.compile(BOT_USER_AGENT_PATTERN, re.X)
+
+BLACKLIST = [
+	'scraping',
+	'searchme',
+]
+
+FAULTY_LIST = [
+	'curl',
+]
 
 @dataclass
 class BotUserAgent:

@@ -35,29 +35,8 @@ class ResponseException(BasicException):
 class HTTPStatusError(ResponseException):
 	pass
 
-
-
 class ResponseContentError(ResponseException):
 	pass
-
-class UnidentifiedResponseContentError(ResponseContentError):
-	pass
-
-class HTMLDocumentResponseContentError(ResponseContentError):
-	pass
-
-class PossiblyBlacklistedUserAgent(HTMLDocumentResponseContentError):
-	pass
-
-
-def get_response_content_error(resp: Response) -> ResponseContentError:
-	if resp.data.lower().startswith(b'<!doctype html>'):
-		if (b'<p>you are not allowed to do that</p>\n\n &mdash; access was denied to this resource.</div>'
-				in resp.data):
-			return PossiblyBlacklistedUserAgent(response=resp)
-		return HTMLDocumentResponseContentError(response=resp)
-	return UnidentifiedResponseContentError(response=resp)
-
 
 
 T = TypeVar('T', bound='OAuth2ResponseError')

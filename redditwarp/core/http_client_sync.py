@@ -13,11 +13,13 @@ if TYPE_CHECKING:
 import sys
 from time import sleep
 
+from .. import auth
 from ..http.transport import transport_reg
 from ..auth.const import RESOURCE_BASE_URL
 from ..http.request import Request
 from .. import __about__
 from ..http.payload import make_payload
+from .exceptions import raise_for_auth_response_exception
 
 transport_info = transport_reg['requests']
 
@@ -90,14 +92,19 @@ class RedditHTTPClient:
 		r = Request(verb, url, params=params, payload=payload, headers=headers)
 
 		for i in range(5):
-			response = self.requestor.request(r, timeout)
+			try:
+				resp = self.requestor.request(r, timeout)
 
-			if response.status in (500, 502):
+			except auth.exceptions.ResponseException as e:
+				raise_for_auth_response_exception(e)
+				raise
+
+			if resp.status in (500, 502):
 				sleep(i**2)
 				continue
 			break
 
-		return response
+		return resp
 
 	def close(self) -> None:
 		self.session.close()

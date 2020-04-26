@@ -14,9 +14,9 @@ from .token import ResponseToken
 from .util import apply_basic_auth
 from .exceptions import (
 	ResponseException,
+	ResponseContentError,
 	HTTPStatusError,
 	oauth2_response_error_class_by_error_name,
-	get_response_content_error,
 )
 
 __all__ = ('TokenObtainmentClient',)
@@ -41,7 +41,7 @@ class TokenObtainmentClient:
 		try:
 			resp_json = json_loads_response(resp)
 		except ValueError:
-			raise get_response_content_error(resp) from None
+			raise ResponseContentError(response=resp) from None
 
 		error = resp_json.get('error')
 		if error:

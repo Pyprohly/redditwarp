@@ -65,6 +65,7 @@ class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentErro
 		return f'\\\n{pformat(self.json)}\n\n' \
 				'** Please file a bug report with RedditWrap! **'
 
+
 class UnacceptableResponseContentError(ResponseContentError):
 	"""The response body contains data in a format that the client doesn’t want
 	to or can't handle.
@@ -74,23 +75,37 @@ class UnacceptableResponseContentError(ResponseContentError):
 		return f'\\\n{self.response.data}\n\n' \
 				'** Please file a bug report with RedditWrap! **'
 
+class UnacceptableJSONLayoutResponseContentError(UnacceptableResponseContentError):
+	"""The response body contains JSON data that the client isn't prepared to handle."""
+
+	def __init__(self, exc_msg=None, *, response, json):
+		super().__init__(exc_msg=exc_msg, response=response)
+		self.json = json
+
+	def exc_str(self):
+		return f'\\\n{pformat(self.json)}\n\n' \
+				'** Please file a bug report with RedditWrap! **'
+
+
 class HTMLDocumentResponseContentError(ResponseContentError):
 	pass
 
-class UserAgentRequired(HTMLDocumentResponseContentError):
+class UserAgentRequired(ResponseException):
 	pass
 
 
 def get_response_content_error(resp):
 	if resp.data.lower().startswith(b'<!doctype html>'):
 		if b'>user agent required</' in resp.data:
-			return UserAgentRequired(response=resp)
+			return UserAgentRequired(
+					'the Reddit API wants you to set a user-agent',
+					response=resp)
 		return HTMLDocumentResponseContentError(response=resp)
 	return UnidentifiedResponseContentError(response=resp)
 
-def raise_for_json_response_content_error(resp, json_data):
+def raise_for_json_layout_content_error(resp, json_data):
 	if {'jquery', 'success'} <= json_data.keys():
-		raise UnacceptableResponseContentError(response=resp)
+		raise UnacceptableJSONLayoutResponseContentError(response=resp, json=json_data)
 
 
 
