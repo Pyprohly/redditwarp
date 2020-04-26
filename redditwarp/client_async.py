@@ -3,16 +3,16 @@ import __main__  # type: ignore[import]
 
 from . import http
 from . import auth
-from .http.client_async import HTTPClient
-from .http.util import json_loads_response
+from .core.http_client_async import HTTPClient
+from .http.misc import json_loads_response
 from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import load_praw_config
 from .http.transport.aiohttp import new_session
 from .auth.token_obtainment_client_async import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL
-from .http.authorizer_async import Authorizer, Authorized
-from .http.ratelimited_async import RateLimited
-from .http.default_header_receptive_sync import DefaultHeaderReceptive
+from .core.authorizer_async import Authorizer, Authorized
+from .core.ratelimited_async import RateLimited
+from .core.default_header_receptive_sync import DefaultHeaderReceptive
 from .exceptions import (
 	AuthError,
 	APIError,

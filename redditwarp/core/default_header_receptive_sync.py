@@ -2,11 +2,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Mapping
 if TYPE_CHECKING:
-	from .requestor_sync import Requestor
-	from .request import Request
-	from .response import Response
+	from ..http.requestor_sync import Requestor
+	from ..http.request import Request
+	from ..http.response import Response
 
-from .requestor_sync import RequestorDecorator
+from ..http.requestor_sync import RequestorDecorator
 
 class DefaultHeaderReceptive(RequestorDecorator):
 	def __init__(self, requestor: Requestor, headers: Optional[Mapping[str, str]]):

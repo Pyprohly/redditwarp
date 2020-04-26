@@ -42,7 +42,7 @@ class Session(BaseSession):
 		r = request
 		kwargs: Any = {
 			'method': r.verb,
-			'url': r.url,
+			'url': r.uri,
 			'params': r.params,
 			'headers': r.headers,
 			'timeout': timeout,

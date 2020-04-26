@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 @dataclass(eq=False)
 class Request:
 	verb: str
-	url: str
+	uri: str
 	params: MutableMapping[str, str] = field(default_factory=dict)
 	payload: Optional[Payload] = None
 	headers: MutableMapping[str, str] = field(default_factory=dict)

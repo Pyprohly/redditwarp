@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 from .. import http
 from ..http.request import Request
-from ..http.util import json_loads_response
+from ..http.misc import json_loads_response
 from ..http.payload import FormData
 from .token import ResponseToken
 from .util import apply_basic_auth
@@ -22,10 +22,10 @@ from .exceptions import (
 __all__ = ('TokenObtainmentClient',)
 
 class TokenObtainmentClient:
-	def __init__(self, requestor: Requestor, endpoint: str,
+	def __init__(self, requestor: Requestor, uri: str,
 			client_credentials: ClientCredentials, grant: AuthorizationGrant) -> None:
 		self.requestor = requestor
-		self.endpoint = endpoint
+		self.uri = uri
 		self.client_credentials = client_credentials
 		self.grant = grant
 
@@ -33,7 +33,7 @@ class TokenObtainmentClient:
 		data = {k: v for k, v in vars(self.grant).items() if v}
 		data['grant_type'] = self.grant.GRANT_TYPE
 
-		r = Request('POST', self.endpoint, payload=FormData(data))
+		r = Request('POST', self.uri, payload=FormData(data))
 		apply_basic_auth(r, self.client_credentials)
 
 		resp = await self.requestor.request(r)

@@ -51,7 +51,7 @@ class TokenBucket:
 		return n <= t
 
 	def consume_all(self) -> None:
-		"""Deplete the token bucket. Like `self.hard_consume(float('inf'))`."""
+		"""Deplete the token bucket, as if `self.hard_consume(float('inf'))`."""
 		self._checkpoint_time()
 		self._value = 0
 

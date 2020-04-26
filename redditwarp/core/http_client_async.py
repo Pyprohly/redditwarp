@@ -4,20 +4,20 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from typing import Type, Any, Optional, Mapping, Dict
 	from types import TracebackType
-	from .transport.base_session_async import BaseSession
+	from ..http.transport.base_session_async import BaseSession
 	from .authorizer_async import Authorizer
-	from .requestor_async import Requestor
-	from .response import Response
-	from .payload import Payload
+	from ..http.requestor_async import Requestor
+	from ..http.response import Response
+	from ..http.payload import Payload
 
 import sys
 from asyncio import sleep
 
-from .transport import transport_reg
+from ..http.transport import transport_reg
 from ..auth.const import RESOURCE_BASE_URL
-from .request import Request
+from ..http.request import Request
 from .. import __about__
-from .payload import make_payload
+from ..http.payload import make_payload
 
 transport_info = transport_reg['aiohttp']
 

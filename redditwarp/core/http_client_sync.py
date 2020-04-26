@@ -4,20 +4,20 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from typing import Type, Any, Optional, Mapping, Dict
 	from types import TracebackType
-	from .transport.base_session_sync import BaseSession
+	from ..http.transport.base_session_sync import BaseSession
 	from .authorizer_sync import Authorizer
-	from .requestor_sync import Requestor
-	from .response import Response
-	from .payload import Payload
+	from ..http.requestor_sync import Requestor
+	from ..http.response import Response
+	from ..http.payload import Payload
 
 import sys
 from time import sleep
 
-from .transport import transport_reg
+from ..http.transport import transport_reg
 from ..auth.const import RESOURCE_BASE_URL
-from .request import Request
+from ..http.request import Request
 from .. import __about__
-from .payload import make_payload
+from ..http.payload import make_payload
 
 transport_info = transport_reg['requests']
 

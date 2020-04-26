@@ -1,21 +1,20 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, List
 if TYPE_CHECKING:
-	from ..auth.token_obtainment_client_sync import TokenObtainmentClient
+	from ..auth.token_obtainment_client_async import TokenObtainmentClient
 	from ..auth.token import Token
-	from .requestor_sync import Requestor
-	from .request import Request
-	from .response import Response
+	from ..http.requestor_async import Requestor
+	from ..http.request import Request
+	from ..http.response import Response
 
+import asyncio
 import time
 
-from .requestor_sync import RequestorDecorator
-from .exceptions import UnknownTokenType
+from ..http.requestor_async import RequestorDecorator
+from ..http.exceptions import UnknownTokenType
 
 class Authorizer:
-	"""Knows how to authorize requests."""
-
 	def __init__(self,
 		token: Optional[Token],
 		token_client: Optional[TokenObtainmentClient],
@@ -34,11 +33,11 @@ class Authorizer:
 	def can_renew_token(self) -> bool:
 		return self.token_client is not None
 
-	def renew_token(self) -> Token:
+	async def renew_token(self) -> Token:
 		if self.token_client is None:
 			raise RuntimeError('a new token was requested but no token client is assigned')
 
-		self.token = tk = self.token_client.fetch_token()
+		self.token = tk = await self.token_client.fetch_token()
 
 		if tk.token_type.lower() != 'bearer':
 			raise UnknownTokenType(token=tk)
@@ -53,10 +52,9 @@ class Authorizer:
 
 		return tk
 
-	def maybe_renew_token(self) -> Optional[Token]:
-		"""Attempt to renew the token if it is unavailable or has expired."""
+	async def maybe_renew_token(self) -> Optional[Token]:
 		if (self.token is None) or self.token_expired():
-			return self.renew_token()
+			return await self.renew_token()
 		return None
 
 	def prepare_request(self, request: Request) -> None:
@@ -75,22 +73,46 @@ class Authorizer:
 
 
 class Authorized(RequestorDecorator):
-	"""Used to perform requests to endpoints that require authorization."""
-
 	def __init__(self, requestor: Requestor, authorizer: Authorizer) -> None:
 		super().__init__(requestor)
 		self.authorizer = authorizer
+		self._lock = asyncio.Lock()
+		self._valve = asyncio.Event()
+		self._valve.set()
+		self._futures: List[asyncio.Future] = []
 
-	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
-		self.authorizer.maybe_renew_token()
+	async def request(self, request: Request, timeout: Optional[int] = None) -> Response:
+		await self._valve.wait()
+
+		async with self._lock:
+			await self.authorizer.maybe_renew_token()
 		self.authorizer.prepare_request(request)
 
-		response = self.requestor.request(request, timeout)
+		fut = asyncio.ensure_future(self.requestor.request(request, timeout))
+		self._futures.append(fut)
+		try:
+			response = await fut
+		finally:
+			self._futures.remove(fut)
 
 		if response.status == 401 and self.authorizer.can_renew_token():
-			self.authorizer.renew_token()
-			self.authorizer.prepare_request(request)
+			# Need to call `renew_token()`.
+			# Ensure only one task does it
+			if self._valve.is_set():
+				# Stop new requests from being made
+				self._valve.clear()
 
-			response = self.requestor.request(request, timeout)
+				# Ensure all tasks are past the 401 response status check
+				# and are awaiting on `self._valve.wait()`
+				await asyncio.wait(self._futures)
+
+				await self.authorizer.renew_token()
+				self.authorizer.prepare_request(request)
+
+				self._valve.set()
+			else:
+				await self._valve.wait()
+
+			response = await self.requestor.request(request, timeout)
 
 		return response
