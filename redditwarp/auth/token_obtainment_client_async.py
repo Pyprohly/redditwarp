@@ -13,8 +13,8 @@ from ..http.payload import FormData
 from .token import ResponseToken
 from .util import apply_basic_auth
 from .exceptions import (
-	ResponseException,
 	ResponseContentError,
+	UnrecognizedOAuth2ResponseError,
 	HTTPStatusError,
 	oauth2_response_error_class_by_error_name,
 )
@@ -46,8 +46,8 @@ class TokenObtainmentClient:
 		error = resp_json.get('error')
 		if error:
 			clss = oauth2_response_error_class_by_error_name.get(error)
-			if clss:
-				raise clss.from_response_and_json(resp, resp_json)
+			if clss is not None:
+				raise clss.from_json_dict(resp, resp_json)
 
 		try:
 			resp.raise_for_status()
@@ -55,7 +55,7 @@ class TokenObtainmentClient:
 			raise HTTPStatusError(response=resp) from e
 
 		if error:
-			raise ResponseException(response=resp)
+			raise UnrecognizedOAuth2ResponseError(response=resp)
 
 		return resp_json
 

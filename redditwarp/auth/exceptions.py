@@ -38,8 +38,9 @@ class HTTPStatusError(ResponseException):
 class ResponseContentError(ResponseException):
 	pass
 
+class UnrecognizedOAuth2ResponseError(ResponseException):
+	pass
 
-T = TypeVar('T', bound='OAuth2ResponseError')
 
 class OAuth2ResponseError(ResponseException):
 	"""
@@ -48,13 +49,15 @@ class OAuth2ResponseError(ResponseException):
 	"""
 	ERROR_NAME: ClassVar[str] = ''
 
+	T = TypeVar('T', bound='OAuth2ResponseError')
+
 	@classmethod
-	def from_response_and_json(cls: Type[T], response: Response, json: Dict[str, Any]) -> T:
+	def from_json_dict(cls: Type[T], response: Response, json_dict: Dict[str, Any]) -> T:
 		return cls(
 			response=response,
-			error_name=json.get('error', ''),
-			description=json.get('error_description', ''),
-			help_uri=json.get('error_uri', ''),
+			error_name=json_dict.get('error', ''),
+			description=json_dict.get('error_description', ''),
+			help_uri=json_dict.get('error_uri', ''),
 		)
 
 	def __init__(self, exc_msg: object = None, *, response: Response, error_name: str = '',

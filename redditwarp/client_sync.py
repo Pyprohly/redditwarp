@@ -40,17 +40,17 @@ class ClientCore:
 		return self
 
 	@classmethod
-	def from_praw_config(cls, site_name='DEFAULT'):
-		section_name = site_name or 'DEFAULT'
+	def from_praw_config(cls, site_name=''):
 		config = load_praw_config()
+		section_name = site_name or config.default_section
 		try:
 			section = config[section_name]
 		except KeyError:
 			class StrReprStr(str):
 				def __repr__(self):
 					return str(self)
-			sections = config.defaults().keys() | set(config.sections())
-			msg = f"No section {section_name!r} in{'' if sections else ' empty'} config"
+			empty = not any(s.values() for s in config.values())
+			msg = f"No section {section_name!r} in{' empty' if empty else ''} config"
 			raise KeyError(StrReprStr(msg)) from None
 
 		get = section.get
@@ -95,8 +95,8 @@ class ClientCore:
 		----------
 		client_id: str
 		client_secret: str
-			You won't be given a client secret if you're an installed app using the
-			:class:`~.InstalledClient` grant type. The Reddit docs say to use an
+			If you've registered an installed app (hence using the :class:`~.InstalledClient`
+			grant type) you won't be given a client secret. The Reddit docs say to use an
 			empty string in this case.
 		refresh_token: Optional[str]
 		access_token: Optional[str]
@@ -132,7 +132,7 @@ class ClientCore:
 			if grant is None:
 				raise ValueError("couldn't automatically create a grant from the provided credentials")
 		elif any(grant_creds):
-			raise TypeError("you shouldn't pass any grant credentials if you explicitly provide a grant")
+			raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
 		token = None if access_token is None else Token(access_token)
 		session = new_session()

@@ -86,6 +86,6 @@ def raise_for_auth_response_exception(e: auth.exceptions.ResponseException) -> N
 			for i in user_agent.FAULTY_LIST:
 				if i in ua:
 					raise FaultyUserAgent(
-						f'using {i!r} in your user-agent string is known to interfere with your rate limits. Remove it from your user-agent string.',
+						f'using {i!r} in your user-agent string is known to interfere with rate limits. Remove it from your user-agent string.',
 						response=e.response,
 					) from e
