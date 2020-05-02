@@ -7,12 +7,12 @@ if TYPE_CHECKING:
 
 import requests
 
-from .base_session_sync import BaseSession
+from ..base_session_sync import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
 
-_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
+_PAYLOAD_DISPATCH_TABLE: Mapping = {
 	type(None): lambda y: {},
 	payload.Raw: lambda y: {'data': y.data},
 	payload.FormData: lambda y: {'data': y.data},
@@ -36,7 +36,11 @@ class Session(BaseSession):
 		super().__init__(params=params, headers=headers)
 		self.session = session
 
-	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
+	def request(self, request: Request, *, timeout: Optional[float] = 8,
+			auxiliary: Optional[Mapping] = None) -> Response:
+		if timeout is None:
+			timeout = 8
+
 		self._prepare_request(request)
 
 		r = request
@@ -67,6 +71,7 @@ class Session(BaseSession):
 
 	def close(self) -> None:
 		self.session.close()
+
 
 def new_session(*,
 	params: Optional[Mapping[str, str]] = None,

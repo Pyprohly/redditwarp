@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from typing import Type, Any, Optional, Mapping, Dict
 	from types import TracebackType
-	from ..http.transport.base_session_async import BaseSession
+	from ..http.base_session_async import BaseSession
 	from .authorizer_async import Authorizer
 	from ..http.requestor_async import Requestor
 	from ..http.response import Response
@@ -78,7 +78,8 @@ class RedditHTTPClient:
 		data: Any = None,
 		json: Any = None,
 		headers: Optional[Dict[str, str]] = None,
-		timeout: int = TIMEOUT,
+		timeout: float = TIMEOUT,
+		auxiliary: Optional[Mapping] = None,
 	) -> Response:
 		url = self.resource_base_url + path
 		payload = make_payload(payload, data, json)
@@ -93,7 +94,7 @@ class RedditHTTPClient:
 
 		for i in range(5):
 			try:
-				resp = await self.requestor.request(r, timeout)
+				resp = await self.requestor.request(r, timeout=timeout, auxiliary=auxiliary)
 
 			except auth.exceptions.ResponseException as e:
 				raise_for_auth_response_exception(e)

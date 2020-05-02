@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Mapping
 if TYPE_CHECKING:
 	from ..auth.token_obtainment_client_sync import TokenObtainmentClient
 	from ..auth.token import Token
@@ -81,16 +81,17 @@ class Authorized(RequestorDecorator):
 		super().__init__(requestor)
 		self.authorizer = authorizer
 
-	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
+	def request(self, request: Request, *, timeout: Optional[float] = None,
+			auxiliary: Optional[Mapping] = None) -> Response:
 		self.authorizer.maybe_renew_token()
 		self.authorizer.prepare_request(request)
 
-		response = self.requestor.request(request, timeout)
+		response = self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
 
 		if response.status == 401 and self.authorizer.can_renew_token():
 			self.authorizer.renew_token()
 			self.authorizer.prepare_request(request)
 
-			response = self.requestor.request(request, timeout)
+			response = self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
 
 		return response

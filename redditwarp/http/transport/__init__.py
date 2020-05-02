@@ -1,12 +1,17 @@
 
-import collections
+from typing import Any
+from dataclasses import dataclass
 
 from . import requests
 from . import aiohttp
 
-TransportInfo = collections.namedtuple('TransportInfo', 'name version_string session')
+@dataclass
+class _TransportInfo:
+	name: str
+	version_string: str
+	session: Any
 
 transport_reg = {
-	'requests': TransportInfo('requests', requests.version_string, requests.Session),
-	'aiohttp': TransportInfo('aiohttp', aiohttp.version_string, aiohttp.Session),
+	'requests': _TransportInfo('requests', requests.version_string, requests.Session),
+	'aiohttp': _TransportInfo('aiohttp', aiohttp.version_string, aiohttp.Session),
 }

@@ -5,20 +5,12 @@ if TYPE_CHECKING:
 	from typing import Optional, Type
 	from types import TracebackType
 	from collections.abc import Mapping
-	from ..request import Request
-	from ..response import Response
+	from .request import Request
+	from .response import Response
 
-from ..requestor import Requestor
+from .requestor_async import Requestor
 
 class BaseSession(Requestor):
-	"""
-	Attributes
-	----------
-	headers: :class:`CaseInsensitiveDict`[str, Union[str, bytes]]
-		A case-insensitive dictionary of headers to be sent on each Request.
-	params: Dict[str, Union[str, bytes]]
-		Dictionary of querystring data to attach to each Request.
-	"""
 	def __init__(self,
 		*,
 		params: Optional[Mapping[str, str]] = None,
@@ -27,15 +19,15 @@ class BaseSession(Requestor):
 		self.params = {} if params is None else params
 		self.headers = {} if headers is None else headers
 
-	def __enter__(self):
+	async def __aenter__(self):
 		return self
 
-	def __exit__(self,
+	async def __aexit__(self,
 		exc_type: Optional[Type[BaseException]],
 		exc_value: Optional[BaseException],
 		traceback: Optional[TracebackType],
 	) -> Optional[bool]:
-		self.close()
+		await self.close()
 		return None
 
 	def _prepare_request(self, request: Request) -> None:
@@ -44,8 +36,9 @@ class BaseSession(Requestor):
 		p = request.params
 		p.update({**self.params, **p})
 
-	def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
+	async def request(self, request: Request, *, timeout: Optional[float] = None,
+			auxiliary: Optional[Mapping] = None) -> Response:
 		raise NotImplementedError
 
-	def close(self) -> None:
+	async def close(self) -> None:
 		pass

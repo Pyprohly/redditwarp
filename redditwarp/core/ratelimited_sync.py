@@ -23,7 +23,8 @@ class RateLimited(RequestorDecorator):
 		self._prev_request = 0.
 		self._last_request = time.monotonic()
 
-	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
+	def request(self, request: Request, *, timeout: Optional[float] = None,
+			auxiliary: Optional[Mapping] = None) -> Response:
 		s = 0.
 		if self.remaining:
 			s = self.reset / self.remaining
@@ -39,7 +40,7 @@ class RateLimited(RequestorDecorator):
 		self._prev_request = self._last_request
 		self._last_request = time.monotonic()
 
-		response = self.requestor.request(request, timeout)
+		response = self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
 
 		self.scan_ratelimit_headers(response.headers)
 		return response

@@ -13,8 +13,9 @@ class DefaultHeaderReceptive(RequestorDecorator):
 		super().__init__(requestor)
 		self.headers = headers
 
-	def request(self, request: Request, timeout: Optional[int] = None) -> Response:
+	def request(self, request: Request, *, timeout: Optional[float] = None,
+			auxiliary: Optional[Mapping] = None) -> Response:
 		if self.headers:
 			h = request.headers
 			h.update({**self.headers, **h})
-		return self.requestor.request(request, timeout)
+		return self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)

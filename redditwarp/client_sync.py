@@ -167,11 +167,11 @@ class ClientCore:
 			ua += ' Bot -- ' + s
 		self.http.user_agent = ua
 
-	def request(self, verb, path, *, params=None,
-			payload=None, data=None, json=None, headers=None, timeout=8):
+	def request(self, verb, path, *, params=None, payload=None,
+			data=None, json=None, headers=None, timeout=8, auxiliary=None):
 		try:
-			resp = self.http.request(verb, path, params=params,
-					payload=payload, data=data, json=json, headers=headers, timeout=timeout)
+			resp = self.http.request(verb, path, params=params, payload=payload,
+					data=data, json=json, headers=headers, timeout=timeout, auxiliary=auxiliary)
 
 		except auth.exceptions.ResponseException as e:
 			self.last_response = e.response

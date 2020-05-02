@@ -8,12 +8,12 @@ if TYPE_CHECKING:
 import asyncio
 import aiohttp
 
-from .base_session_async import BaseSession
+from ..base_session_async import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
 
-_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
+_PAYLOAD_DISPATCH_TABLE: Mapping = {
 	type(None): lambda y: {},
 	payload.Raw: lambda y: {'data': y.data},
 	payload.FormData: lambda y: {'data': y.data},
@@ -37,7 +37,11 @@ class Session(BaseSession):
 		super().__init__(params=params, headers=headers)
 		self.session = session
 
-	async def request(self, request: Request, timeout: Optional[int] = 8) -> Response:
+	async def request(self, request: Request, *, timeout: Optional[float] = 8,
+			auxiliary: Optional[Mapping] = None) -> Response:
+		if timeout is None:
+			timeout = 8
+
 		self._prepare_request(request)
 
 		r = request
@@ -46,7 +50,7 @@ class Session(BaseSession):
 			'url': r.uri,
 			'params': r.params,
 			'headers': r.headers,
-			'timeout': timeout,
+			'timeout': aiohttp.ClientTimeout(total=5*60, connect=timeout),
 		}
 		kwargs_x = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
 		kwargs.update(kwargs_x)
@@ -69,6 +73,7 @@ class Session(BaseSession):
 
 	async def close(self) -> None:
 		await self.session.close()
+
 
 def new_session(*,
 	params: Optional[Mapping[str, str]] = None,
