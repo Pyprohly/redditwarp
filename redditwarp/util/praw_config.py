@@ -17,7 +17,7 @@ def get_praw_ini_potential_locations():
 	location_components = [
 		(tlp_dir,),  # Package default
 		(getenv2('APPDATA'),),  # Windows
-		(getenv2('HOME'), '.config',),  # Legacy Linux and macOS
+		(getenv2('HOME'), '.config'),  # Legacy Linux, and macOS
 		(getenv2('XDG_CONFIG_HOME'),),  # Modern Linux
 		('.',),  # Current working directory
 	]
@@ -29,7 +29,8 @@ def get_praw_ini_potential_locations():
 	]
 	return locations
 
-def load_praw_config():
-	config = configparser.ConfigParser()
+def get_praw_config(config=None):
+	if config is None:
+		config = configparser.ConfigParser()
 	config.read(get_praw_ini_potential_locations())
 	return config

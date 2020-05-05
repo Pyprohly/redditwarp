@@ -27,6 +27,8 @@ version_string = requests.__version__
 
 
 class Session(BaseSession):
+	TIMEOUT = 8
+
 	def __init__(self,
 		session: requests.Session,
 		*,
@@ -36,12 +38,14 @@ class Session(BaseSession):
 		super().__init__(params=params, headers=headers)
 		self.session = session
 
-	def request(self, request: Request, *, timeout: Optional[float] = 8,
+	def request(self, request: Request, *, timeout: Optional[float] = TIMEOUT,
 			auxiliary: Optional[Mapping] = None) -> Response:
-		if timeout is None:
-			timeout = 8
-
 		self._prepare_request(request)
+
+		if timeout is None:
+			timeout = self.TIMEOUT
+		elif timeout < 0:
+			timeout = None
 
 		r = request
 		kwargs: Any = {

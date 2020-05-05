@@ -12,8 +12,6 @@ class Token:
 	refresh_token: Optional[str] = None
 	scope: Optional[str] = None
 
-T = TypeVar('T', bound='ResponseToken')
-
 @dataclass(frozen=True)
 class ResponseToken(Token):
 	"""
@@ -22,6 +20,8 @@ class ResponseToken(Token):
 	b: Mapping[str, Any]
 		The bare json dictionary object.
 	"""
+
+	T = TypeVar('T', bound='ResponseToken')
 
 	@classmethod
 	def from_dict(cls: Type[T], b: Mapping[str, Any]) -> T:
@@ -34,4 +34,4 @@ class ResponseToken(Token):
 			b=b,
 		)
 
-	b: Mapping[str, Any] = field(default_factory=dict)
+	b: Mapping[str, Any] = field(default_factory=dict, repr=False)

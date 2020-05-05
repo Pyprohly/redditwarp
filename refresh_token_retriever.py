@@ -7,7 +7,7 @@ import urllib.parse
 import webbrowser
 
 from redditwarp.auth.util import authorization_url
-from redditwarp.auth.const AUTHORIZATION_ENDPOINT, TOKEN_OBTAINMENT_URL
+from redditwarp.auth.const import AUTHORIZATION_ENDPOINT, TOKEN_OBTAINMENT_URL
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.grants import AuthorizationCodeGrant
 from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
@@ -45,8 +45,8 @@ with socket.socket() as server:
 		data = client.recv(1024)
 		client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-print(f"Recieved: {data!r}")
-print()
+print(f"Recieved: {data!r}\n")
+print(f"@'''\n{data.decode()}\n'''@\n")
 m = re.match(r'^GET /\?(.*) HTTP', data.decode())
 if not m:
 	raise Exception
@@ -64,9 +64,9 @@ client_credentials = ClientCredentials(client_id, client_secret)
 session = new_session(headers={'User-Agent': 'RedditWarp authorization code flow script'})
 token_client = TokenObtainmentClient(session, TOKEN_OBTAINMENT_URL, client_credentials, grant)
 
-print('Fetching token...')
+print('Fetching token... ', end='')
+token = token_client.fetch_token()
+print('Done.')
 print()
-token = token_client.fetch_token_response()
-
 print(f"Refresh Token: {token.refresh_token}")
 print(f" Access Token: {token.access_token}")

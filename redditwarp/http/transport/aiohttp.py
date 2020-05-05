@@ -28,6 +28,8 @@ version_string = aiohttp.__version__
 
 
 class Session(BaseSession):
+	TIMEOUT = 8
+
 	def __init__(self,
 		session: aiohttp.ClientSession,
 		*,
@@ -37,12 +39,17 @@ class Session(BaseSession):
 		super().__init__(params=params, headers=headers)
 		self.session = session
 
-	async def request(self, request: Request, *, timeout: Optional[float] = 8,
+	async def request(self, request: Request, *, timeout: Optional[float] = TIMEOUT,
 			auxiliary: Optional[Mapping] = None) -> Response:
-		if timeout is None:
-			timeout = 8
-
 		self._prepare_request(request)
+
+		if timeout is None:
+			timeout = self.TIMEOUT
+
+		aiohttp_client_timeout_kwargs = {'total': 5*60, 'connect': timeout}
+
+		if timeout < 0:
+			aiohttp_client_timeout_kwargs.clear()
 
 		r = request
 		kwargs: Any = {
@@ -50,7 +57,7 @@ class Session(BaseSession):
 			'url': r.uri,
 			'params': r.params,
 			'headers': r.headers,
-			'timeout': aiohttp.ClientTimeout(total=5*60, connect=timeout),
+			'timeout': aiohttp.ClientTimeout(**aiohttp_client_timeout_kwargs),
 		}
 		kwargs_x = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
 		kwargs.update(kwargs_x)

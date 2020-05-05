@@ -6,7 +6,7 @@ from . import auth
 from .core.http_client_async import HTTPClient
 from .http.misc import json_loads_response
 from .auth import ClientCredentials, Token, auto_grant_factory
-from .util import load_praw_config
+from .util import get_praw_config
 from .http.transport.aiohttp import new_session
 from .auth.token_obtainment_client_async import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL
@@ -33,7 +33,7 @@ class ClientCore:
 
 	@classmethod
 	def from_praw_config(cls, site_name=''):
-		config = load_praw_config()
+		config = get_praw_config()
 		section_name = site_name or config.default_section
 		try:
 			section = config[section_name]
@@ -149,7 +149,7 @@ class Client(ClientCore):
 	def _init(self, http):
 		super()._init(http)
 		self.api = ...#SiteProcedures(self)
-		self.fetch = self.api.fetch
+		#self.fetch = self.api.fetch
 
 	def __class_getitem__(cls, name):
 		if not isinstance(name, str):
