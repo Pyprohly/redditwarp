@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from ..http.response import Response
+	from ..auth.token import Token
 
 from .. import auth
 from .. import user_agent
@@ -23,6 +24,11 @@ class BasicException(RootException):
 	def exc_str(self) -> str:
 		return ''
 
+
+class UnknownTokenType(BasicException):
+	def __init__(self, exc_msg: object = None, *, token: Token):
+		super().__init__(exc_msg)
+		self.token = token
 
 class ResponseException(BasicException):
 	def __init__(self, exc_msg: object = None, *, response: Response) -> None:

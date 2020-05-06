@@ -12,7 +12,7 @@ from .auth.token_obtainment_client_sync import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL
 from .core.authorizer_sync import Authorizer, Authorized
 from .core.ratelimited_sync import RateLimited
-from .core.default_header_receptive_sync import DefaultHeaderReceptive
+from .core.default_headers_predisposed_sync import DefaultHeadersPredisposed
 from .exceptions import (
 	AuthError,
 	APIError,
@@ -140,7 +140,7 @@ class ClientCore:
 		requestor = RateLimited(Authorized(session, authorizer))
 		http = HTTPClient(requestor, session, authorizer=authorizer)
 		authorizer.token_client = TokenObtainmentClient(
-			DefaultHeaderReceptive(session, http.default_headers),
+			DefaultHeadersPredisposed(session, http.default_headers),
 			TOKEN_OBTAINMENT_URL,
 			ClientCredentials(client_id, client_secret),
 			grant,
@@ -216,9 +216,9 @@ class Client(ClientCore):
 		self.api = SiteProcedures(self)
 		self.fetch = self.api.fetch
 
-	def __class_getitem__(cls, name):
-		if not isinstance(name, str):
+	def __matmul__(cls, other):
+		if not isinstance(other, str):
 			raise TypeError
 		if hasattr(__main__, '__file__'):
-			raise RuntimeError("instantiating Client through __class_getitem__ can only be done interactively")
-		return cls.from_praw_config(name)
+			raise RuntimeError("instantiating Client through __matmul__ can only be done interactively")
+		return cls.from_praw_config(other)

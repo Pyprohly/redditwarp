@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Type
 if TYPE_CHECKING:
 	from .response import Response
-	from ..auth.token import Token
 
 class RootException(Exception):
 	pass
@@ -20,12 +19,6 @@ class BasicException(RootException):
 
 	def exc_str(self) -> str:
 		return ''
-
-
-class UnknownTokenType(BasicException):
-	def __init__(self, exc_msg: object = None, *, token: Token):
-		super().__init__(exc_msg)
-		self.token = token
 
 
 class TransportError(BasicException):

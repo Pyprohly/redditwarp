@@ -12,7 +12,7 @@ import asyncio
 import time
 
 from ..http.requestor_async import RequestorDecorator
-from ..http.exceptions import UnknownTokenType
+from .exceptions import UnknownTokenType
 
 class Authorizer:
 	def __init__(self,

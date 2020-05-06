@@ -1,7 +1,7 @@
 
-from .default_header_receptive_sync import (  # noqa
-	DefaultHeaderReceptive as DefaultHeaderReceptiveSync, DefaultHeaderReceptive,
+from .default_headers_predisposed_sync import (  # noqa
+	DefaultHeadersPredisposed as DefaultHeadersPredisposedSync, DefaultHeadersPredisposed,
 )
-from .default_header_receptive_async import (  # noqa
-	DefaultHeaderReceptive as DefaultHeaderReceptiveAsync,
+from .default_headers_predisposed_async import (  # noqa
+	DefaultHeadersPredisposed as DefaultHeadersPredisposedAsync,
 )

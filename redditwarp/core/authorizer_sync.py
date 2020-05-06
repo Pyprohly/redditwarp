@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 import time
 
 from ..http.requestor_sync import RequestorDecorator
-from ..http.exceptions import UnknownTokenType
+from .exceptions import UnknownTokenType
 
 class Authorizer:
 	"""Knows how to authorize requests."""

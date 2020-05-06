@@ -2,10 +2,10 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-	from typing import Type, Any, Optional, Mapping, Dict
+	from typing import Type, Any, Optional, Mapping, MutableMapping, Dict
 	from types import TracebackType
 	from ..http.base_session_async import BaseSession
-	from .authorizer_async import Authorizer
+	from .authorizer_async import Authorizer, Authorized
 	from ..http.requestor_async import Requestor
 	from ..http.response import Response
 	from ..http.payload import Payload
@@ -32,33 +32,44 @@ class RedditHTTPClient:
 	)
 
 	@property
-	def default_headers(self):
+	def default_headers(self) -> MutableMapping[str, str]:
 		return self._default_headers
 
 	@property
-	def user_agent(self):
+	def user_agent(self) -> str:
 		return self._default_headers['User-Agent']
 
 	@user_agent.setter
-	def user_agent(self, value):
+	def user_agent(self, value: str) -> None:
 		self._default_headers['User-Agent'] = value
 
-	def __init__(self,
-		requestor: Requestor,
-		session: BaseSession,
-		*,
-		default_headers: Optional[Mapping[str, str]] = None,
-		authorizer: Optional[Authorizer],
-	) -> None:
-		self.requestor = requestor
-		self.session = session
-		self._default_headers = {} if default_headers is None else default_headers
-		self.authorizer = authorizer
+	@property
+	def authorizer(self) -> Optional[Authorizer]:
+		if self.authorized_requestor is None:
+			return None
+		return self.authorized_requestor.authorizer
 
+	@authorizer.setter
+	def authorizer(self, value: Authorizer) -> None:
+		if self.authorized_requestor is None:
+			raise RuntimeError('The client is not configured in a way that knows how update this field.')
+		self.authorized_requestor.authorizer = value
+
+	def __init__(self,
+		session: BaseSession,
+		requestor: Optional[Requestor],
+		*,
+		default_headers: Optional[MutableMapping[str, str]] = None,
+		authorized_requestor: Optional[Authorized],
+	) -> None:
+		self.session = session
+		self.requestor = session if requestor is None else requestor
+		self._default_headers = {} if default_headers is None else default_headers
+		self.authorized_requestor = authorized_requestor
 		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = self.USER_AGENT_STRING_HEAD
 
-	async def __aenter__(self):
+	async def __aenter__(self) -> RedditHTTPClient:
 		return self
 
 	async def __aexit__(self,
