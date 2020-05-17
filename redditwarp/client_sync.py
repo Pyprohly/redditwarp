@@ -216,9 +216,9 @@ class Client(ClientCore):
 		self.api = SiteProcedures(self)
 		self.fetch = self.api.fetch
 
-	def __matmul__(cls, other):
+	def __class_getitem__(cls, other):
 		if not isinstance(other, str):
 			raise TypeError
 		if hasattr(__main__, '__file__'):
-			raise RuntimeError("instantiating Client through __matmul__ can only be done interactively")
+			raise RuntimeError("instantiating Client through __class_getitem__ can only be done interactively")
 		return cls.from_praw_config(other)

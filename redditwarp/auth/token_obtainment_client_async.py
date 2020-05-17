@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Any
+from typing import TYPE_CHECKING, Optional, Mapping, Any
 if TYPE_CHECKING:
 	from .client_credentials import ClientCredentials
 	from .grants import AuthorizationGrant
@@ -23,16 +23,24 @@ __all__ = ('TokenObtainmentClient',)
 
 class TokenObtainmentClient:
 	def __init__(self, requestor: Requestor, uri: str,
-			client_credentials: ClientCredentials, grant: AuthorizationGrant) -> None:
+			client_credentials: ClientCredentials,
+			grant: Optional[AuthorizationGrant] = None,
+			grant_info: Optional[Mapping[str, str]] = None) -> None:
 		self.requestor = requestor
 		self.uri = uri
 		self.client_credentials = client_credentials
-		self.grant = grant
+
+		if grant_info is None:
+			if grant is None:
+				raise TypeError
+			grant_info = vars(grant)
+		self.grant_info: Mapping[str, str] = grant_info
+
+	def set_grant(self, grant: AuthorizationGrant) -> None:
+		self.grant_info = vars(grant)
 
 	async def fetch_json_dict(self) -> Mapping[str, Any]:
-		data = {k: v for k, v in vars(self.grant).items() if v}
-		data['grant_type'] = self.grant.GRANT_TYPE
-
+		data = dict(self.grant_info)
 		r = Request('POST', self.uri, payload=FormData(data))
 		apply_basic_auth(r, self.client_credentials)
 

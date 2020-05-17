@@ -1,9 +1,9 @@
 
 from .authorizer_sync import (  # noqa
-	Authorizer as AuthorizerSync, Authorizer,
-	Authorized as AuthorizedSync, Authorized,
+	Authorizer as SyncAuthorizer, Authorizer,
+	Authorized as SyncAuthorized, Authorized,
 )
 from .authorizer_async import (  # noqa
-	Authorizer as AuthorizerAsync,
-	Authorized as AuthorizedAsync,
+	Authorizer as AsyncAuthorizer,
+	Authorized as AsyncAuthorized,
 )

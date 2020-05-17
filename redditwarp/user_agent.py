@@ -1,7 +1,5 @@
 
-from typing import Optional
 import re
-from dataclasses import dataclass
 
 BOT_USER_AGENT_PATTERN = r'''
 ^(?:(?P<platform>[\w-]+):)?
@@ -58,10 +56,11 @@ BLACKLIST = [
 	'searchme',
 ]
 
-FAULTY_LIST = [
+FAULTY = [
 	'curl',
 ]
 
+'''
 @dataclass
 class BotUserAgent:
 	platform: Optional[str]
@@ -86,3 +85,4 @@ def parse(s):
 	if m:
 		return BotUserAgent(**m.groupdict())
 	return None
+'''

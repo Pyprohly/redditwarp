@@ -2,7 +2,7 @@
 from typing import Type, TypeVar, Optional, Any, Mapping
 from dataclasses import dataclass, field
 
-__all__ = ('ResponseToken', 'Token')
+__all__ = ('Token', 'ResponseToken')
 
 @dataclass(frozen=True)
 class Token:
@@ -17,21 +17,21 @@ class ResponseToken(Token):
 	"""
 	Attributes
 	----------
-	b: Mapping[str, Any]
+	d: Mapping[str, Any]
 		The bare json dictionary object.
 	"""
 
 	T = TypeVar('T', bound='ResponseToken')
 
 	@classmethod
-	def from_dict(cls: Type[T], b: Mapping[str, Any]) -> T:
+	def from_dict(cls: Type[T], d: Mapping[str, Any]) -> T:
 		return cls(
-			access_token=b['access_token'],
-			token_type=b['token_type'],
-			expires_in=b.get('expires_in'),
-			refresh_token=b.get('refresh_token'),
-			scope=b.get('scope'),
-			b=b,
+			access_token=d['access_token'],
+			token_type=d['token_type'],
+			expires_in=d.get('expires_in'),
+			refresh_token=d.get('refresh_token'),
+			scope=d.get('scope'),
+			d=d,
 		)
 
-	b: Mapping[str, Any] = field(default_factory=dict, repr=False)
+	d: Mapping[str, Any] = field(default_factory=dict, repr=False)

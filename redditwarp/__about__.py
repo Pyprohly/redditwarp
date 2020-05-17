@@ -51,6 +51,7 @@ __all__ = (
 	'__title__',
 	'__summary__',
 	'__uri__',
+	'__url__',
 	'__version__',
 	'__author__',
 	'__license__',
@@ -74,13 +75,14 @@ version_info = VersionInfo(
 )
 
 __title__ = 'RedditWarp'
-__summary__ = 'The unofficial, async-ready, advanced Reddit API wrapper for Python developers'
+__summary__ = 'The unofficial, async-ready, advanced Reddit API wrapper for Python development'
 __uri__ = "https://github.com/Pyprohly/redditwarp"
+__url__ = __uri__
 
 #__version__ = '.'.join(map(str, version_info[:3]))
 __version__ = 'alpha'
 
-__author__ = 'Pyprohly' # u/Pyprohly
+__author__ = 'u/Pyprohly'
 
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2020 Pyprohly'
