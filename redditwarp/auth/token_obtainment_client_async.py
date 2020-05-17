@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, Any
+from typing import TYPE_CHECKING, Union, Mapping, Any
 if TYPE_CHECKING:
 	from .client_credentials import ClientCredentials
 	from .grants import AuthorizationGrant
@@ -24,15 +24,13 @@ __all__ = ('TokenObtainmentClient',)
 class TokenObtainmentClient:
 	def __init__(self, requestor: Requestor, uri: str,
 			client_credentials: ClientCredentials,
-			grant: Optional[AuthorizationGrant] = None,
-			grant_info: Optional[Mapping[str, str]] = None) -> None:
+			grant: Union[AuthorizationGrant, Mapping[str, str]]) -> None:
 		self.requestor = requestor
 		self.uri = uri
 		self.client_credentials = client_credentials
 
-		if grant_info is None:
-			if grant is None:
-				raise TypeError
+		grant_info = grant
+		if isinstance(grant_info, AuthorizationGrant):
 			grant_info = vars(grant)
 		self.grant_info: Mapping[str, str] = grant_info
 
