@@ -62,8 +62,9 @@ class ClientCore:
 		token = Token(access_token)
 		session = new_session()
 		authorizer = Authorizer(token, None)
-		requestor = RateLimited(Authorized(session, authorizer))
-		http = HTTPClient(requestor, session, authorizer=authorizer)
+		authorized_requestor = Authorized(session, authorizer)
+		requestor = RateLimited(authorized_requestor)
+		http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
 		return cls.from_http(http)
 
 	def __init__(self,
@@ -81,8 +82,9 @@ class ClientCore:
 		token = None if access_token is None else Token(access_token)
 		session = new_session()
 		authorizer = Authorizer(token, None)
-		requestor = RateLimited(Authorized(session, authorizer))
-		http = HTTPClient(requestor, session, authorizer=authorizer)
+		authorized_requestor = Authorized(session, authorizer)
+		requestor = RateLimited(authorized_requestor)
+		http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
 		authorizer.token_client = TokenObtainmentClient(
 			DefaultHeadersPredisposed(session, http.default_headers),
 			TOKEN_OBTAINMENT_URL,
