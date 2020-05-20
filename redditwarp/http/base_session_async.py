@@ -19,7 +19,7 @@ class BaseSession(Requestor):
 		self.params = {} if params is None else params
 		self.headers = {} if headers is None else headers
 
-	async def __aenter__(self):
+	async def __aenter__(self) -> BaseSession:
 		return self
 
 	async def __aexit__(self,

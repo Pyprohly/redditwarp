@@ -1,4 +1,13 @@
 
+from __future__ import annotations
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, MutableMapping, Dict
+if TYPE_CHECKING:
+	from types import TracebackType
+	from .http.payload import Payload
+	from .http.response import Response
+	from .auth.grants import AuthorizationGrant
+	from .core.http_client_sync import HTTPClient
+
 import __main__  # type: ignore[import]
 
 from . import http
@@ -9,7 +18,7 @@ from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import get_praw_config
 from .http.transport.requests import new_session
 from .auth.token_obtainment_client_sync import TokenObtainmentClient
-from .auth.const import TOKEN_OBTAINMENT_URL
+from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
 from .core.authorizer_sync import Authorizer, Authorized
 from .core.ratelimited_sync import RateLimited
 from .core.default_headers_predisposed_sync import DefaultHeadersPredisposed
@@ -27,8 +36,10 @@ from .site_procedures import SiteProcedures
 class ClientCore:
 	"""The gateway to interacting with the Reddit API."""
 
+	T = TypeVar('T', bound='ClientCore')
+
 	@classmethod
-	def from_http(cls, http):
+	def from_http(cls: Type[T], http: HTTPClient) -> T:
 		"""A constructor for testing purposes or advanced uses.
 
 		Parameters
@@ -40,14 +51,14 @@ class ClientCore:
 		return self
 
 	@classmethod
-	def from_praw_config(cls, site_name=''):
+	def from_praw_config(cls: Type[T], site_name: str = '') -> T:
 		config = get_praw_config()
-		section_name = site_name or config.default_section
+		section_name = site_name or config.default_section  # type: ignore[attr-defined]
 		try:
 			section = config[section_name]
 		except KeyError:
 			class StrReprStr(str):
-				def __repr__(self):
+				def __repr__(self) -> str:
 					return str(self)
 			empty = not any(s.values() for s in config.values())
 			msg = f"No section {section_name!r} in{' empty' if empty else ''} config"
@@ -66,7 +77,7 @@ class ClientCore:
 		return self
 
 	@classmethod
-	def from_access_token(cls, access_token):
+	def from_access_token(cls: Type[T], access_token: str) -> T:
 		"""Construct a Reddit client instance without a token client.
 
 		No token client means `self.http.authorizer.token_client` is `None`.
@@ -88,9 +99,10 @@ class ClientCore:
 		return cls.from_http(http)
 
 	def __init__(self,
-			client_id, client_secret, refresh_token=None,
-			access_token=None, *, username=None, password=None,
-			grant=None):
+			client_id: str, client_secret: str, refresh_token: Optional[str] = None,
+			access_token: Optional[str] = None, *,
+			username: Optional[str] = None, password: Optional[str] = None,
+			grant: Optional[AuthorizationGrant] = None):
 		"""
 		Parameters
 		----------
@@ -149,30 +161,47 @@ class ClientCore:
 		)
 		self._init(http)
 
-	def _init(self, http):
+	def _init(self, http: HTTPClient) -> None:
 		self.http = http
-		self.last_response = None
+		self.last_response: Optional[Response] = None
+		self.resource_base_url = RESOURCE_BASE_URL
 
-	def __enter__(self):
+	def __enter__(self) -> ClientCore:
 		return self
 
-	def __exit__(self, exc_type, exc_value, traceback):
+	def __exit__(self,
+		exc_type: Optional[Type[BaseException]],
+		exc_value: Optional[BaseException],
+		traceback: Optional[TracebackType],
+	) -> Optional[bool]:
 		self.close()
+		return None
 
-	def close(self):
+	def close(self) -> None:
 		self.http.close()
 
-	def set_user_agent(self, s):
+	def set_user_agent(self, s: Optional[str]) -> None:
 		s = str(s)
 		ua = self.http.USER_AGENT_STRING_HEAD
 		if s is not None:
 			ua += ' Bot -- ' + s
 		self.http.user_agent = ua
 
-	def request(self, verb, path, *, params=None, payload=None,
-			data=None, json=None, headers=None, timeout=8, auxiliary=None):
+	def request(self,
+		verb: str,
+		path: str,
+		*,
+		params: Optional[MutableMapping[str, str]] = None,
+		payload: Optional[Payload] = None,
+		data: Any = None,
+		json: Any = None,
+		headers: Optional[MutableMapping[str, str]] = None,
+		timeout: float = 8,
+		auxiliary: Optional[MutableMapping] = None,
+	) -> Dict[str, Any]:
+		uri = self.resource_base_url + path
 		try:
-			resp = self.http.request(verb, path, params=params, payload=payload,
+			resp = self.http.request(verb, uri, params=params, payload=payload,
 					data=data, json=json, headers=headers, timeout=timeout, auxiliary=auxiliary)
 
 		except auth.exceptions.ResponseException as e:
@@ -200,7 +229,7 @@ class ClientCore:
 
 		return data
 
-	def set_access_token(self, access_token):
+	def set_access_token(self, access_token: str) -> None:
 		"""Manually set the access token.
 
 		Tip: the currently set access token can be found with
@@ -210,15 +239,19 @@ class ClientCore:
 		----------
 		access_token: str
 		"""
+		if self.http.authorizer is None:
+			raise RuntimeError('The HTTP client does not know of an authorizer instance to assign a token to')
 		self.http.authorizer.token = Token(access_token)
 
 class Client(ClientCore):
-	def _init(self, http):
+	T = TypeVar('T', bound='Client')
+
+	def _init(self, http: HTTPClient) -> None:
 		super()._init(http)
 		self.api = SiteProcedures(self)
 		self.fetch = self.api.fetch
 
-	def __class_getitem__(cls, other):
+	def __class_getitem__(cls: Type[T], other: Any) -> T:
 		if not isinstance(other, str):
 			raise TypeError
 		if hasattr(__main__, '__file__'):

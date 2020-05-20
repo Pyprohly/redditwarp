@@ -1,18 +1,20 @@
 
-def base_digits(base, n):
+from typing import Sequence, List
+
+def base_digits(base: int, n: int) -> Sequence[int]:
 	if base < 2:
 		raise ValueError('`base` must be at least 2')
 	if n < 0:
 		raise ValueError('`n` must be positive')
 
-	digits = []
+	digits: List[int] = []
 	digits_append = digits.append
 	while n:
 		digits_append(n % base)
 		n //= base
 	return digits
 
-def to_base(base, n, alphabet):
+def to_base(base: int, n: int, alphabet: str) -> str:
 	if base > len(alphabet):
 		raise ValueError('alphabet not large enough')
 
@@ -21,5 +23,5 @@ def to_base(base, n, alphabet):
 	digits = base_digits(base, n)
 	return sign + ''.join(reversed([alphabet[i] for i in digits]))
 
-def to_base36(n):
+def to_base36(n: int) -> str:
 	return to_base(36, n, '0123456789abcdefghijklmnopqrstuvwxyz')

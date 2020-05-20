@@ -1,10 +1,10 @@
 
 from __future__ import annotations
-from typing import TypeVar, Iterable, Callable, Optional
+from typing import TypeVar, Generic, Iterable, Callable, Optional, Iterator
 
 T = TypeVar('T')
 
-class TheStubbornCallerIterator:
+class TheStubbornCallerIterator(Generic[T]):
 	"""For each callable in the given iterator, call it and return its result.
 
 	If a callable raises an exception, it will propagate normally. The next
@@ -15,7 +15,7 @@ class TheStubbornCallerIterator:
 		self._iterator = iter(iterable)
 		self.current_callable: Optional[Callable[[], T]] = None
 
-	def __iter__(self):
+	def __iter__(self) -> Iterator[T]:
 		return self
 
 	def __next__(self) -> T:

@@ -1,10 +1,10 @@
 
 from __future__ import annotations
-from typing import TypeVar, Iterable
+from typing import TypeVar, Iterable, Generic, Iterator
 
 T = TypeVar('T')
 
-class ObstinateChainIterator:
+class ObstinateChainIterator(Generic[T]):
 	"""Like `itertools.chain.from_iterable()` but retains its state when
 	an exception occurs during iteration.
 	"""
@@ -13,7 +13,7 @@ class ObstinateChainIterator:
 		self._iterator = iter(iterable)
 		self._current_it: Iterable[T] = iter(())
 
-	def __iter__(self):
+	def __iter__(self) -> Iterator[T]:
 		return self
 
 	def __next__(self) -> T:

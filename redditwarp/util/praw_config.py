@@ -1,10 +1,12 @@
 
+from typing import Optional, Sequence
+
 import sys
 from os import path as op
 from os import getenv
 import configparser
 
-def get_praw_ini_potential_locations():
+def get_praw_ini_potential_locations() -> Sequence[str]:
 	inifile = 'praw.ini'
 
 	tlp_dir = ''
@@ -29,7 +31,7 @@ def get_praw_ini_potential_locations():
 	]
 	return locations
 
-def get_praw_config(config=None):
+def get_praw_config(config: Optional[configparser.ConfigParser] = None) -> configparser.ConfigParser:
 	if config is None:
 		config = configparser.ConfigParser()
 	config.read(get_praw_ini_potential_locations())

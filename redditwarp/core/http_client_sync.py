@@ -15,7 +15,6 @@ from time import sleep
 
 from .. import auth
 from ..http.transport import transport_reg
-from ..auth.const import RESOURCE_BASE_URL
 from ..http.request import Request
 from .. import __about__
 from ..http.payload import make_payload
@@ -66,7 +65,6 @@ class RedditHTTPClient:
 		self.requestor = session if requestor is None else requestor
 		self._default_headers = {} if default_headers is None else default_headers
 		self.authorized_requestor = authorized_requestor
-		self.resource_base_url = RESOURCE_BASE_URL
 		self.user_agent = self.USER_AGENT_STRING_HEAD
 
 	def __enter__(self) -> RedditHTTPClient:
@@ -82,17 +80,16 @@ class RedditHTTPClient:
 
 	def request(self,
 		verb: str,
-		path: str,
+		uri: str,
 		*,
-		params: Optional[Dict[str, str]] = None,
+		params: Optional[MutableMapping[str, str]] = None,
 		payload: Optional[Payload] = None,
 		data: Any = None,
 		json: Any = None,
-		headers: Optional[Dict[str, str]] = None,
+		headers: Optional[MutableMapping[str, str]] = None,
 		timeout: float = TIMEOUT,
-		auxiliary: Optional[Mapping] = None,
+		auxiliary: Optional[MutableMapping] = None,
 	) -> Response:
-		url = self.resource_base_url + path
 		payload = make_payload(payload, data, json)
 		params = {} if params is None else params
 		headers = {} if headers is None else headers
@@ -101,7 +98,7 @@ class RedditHTTPClient:
 		params.setdefault('api_type', 'json')
 		headers.update({**self.default_headers, **headers})
 
-		r = Request(verb, url, params=params, payload=payload, headers=headers)
+		r = Request(verb, uri, params=params, payload=payload, headers=headers)
 
 		for i in range(5):
 			try:
