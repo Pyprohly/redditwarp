@@ -7,7 +7,7 @@ from pprint import PrettyPrinter
 
 V = TypeVar('V')
 
-class AttributeDict(MutableMapping[str, V]):
+class AttributeMappingWrapper(MutableMapping[str, V]):
 	"""Wrap a mapping to expose its keys though attributes.
 
 	MutableMapping methods (`.update()`, `.clear()`, etc.) take
@@ -56,7 +56,7 @@ class AttributeDict(MutableMapping[str, V]):
 		name: str,
 		mapping_type: Type[MutableMapping[str, V]] = MutableMapping_,
 	) -> Any:
-		"""Mapping-like objects are wrapped in an AttributeDict before being
+		"""Mapping-like objects are wrapped in an AttributeMappingWrapper before being
 		returned. This lets you dot chain into nested mappings.
 		"""
 		try:
@@ -81,7 +81,7 @@ class AttributeDict(MutableMapping[str, V]):
 	@staticmethod
 	def _pprint(
 		printer: PrettyPrinter,
-		obj: AttributeDict,
+		obj: AttributeMappingWrapper,
 		stream: IO[str],
 		indent: int,
 		allowance: int,

@@ -6,7 +6,6 @@ if TYPE_CHECKING:
 	from .http.payload import Payload
 	from .http.response import Response
 	from .auth.grants import AuthorizationGrant
-	from .core.http_client_async import HTTPClient
 
 import __main__  # type: ignore[import]
 
@@ -18,7 +17,7 @@ from .auth import ClientCredentials, Token, auto_grant_factory
 from .util import get_praw_config
 from .http.transport.aiohttp import new_session
 from .auth.token_obtainment_client_async import TokenObtainmentClient
-from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
+from .auth.const import TOKEN_OBTAINMENT_ENDPOINT_URL, RESOURCE_BASE_URL
 from .core.authorizer_async import Authorizer, Authorized
 from .core.ratelimited_async import RateLimited
 from .core.default_headers_predisposed_async import DefaultHeadersPredisposed
@@ -100,7 +99,7 @@ class ClientCore:
 		http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
 		authorizer.token_client = TokenObtainmentClient(
 			DefaultHeadersPredisposed(session, http.default_headers),
-			TOKEN_OBTAINMENT_URL,
+			TOKEN_OBTAINMENT_ENDPOINT_URL,
 			ClientCredentials(client_id, client_secret),
 			grant,
 		)

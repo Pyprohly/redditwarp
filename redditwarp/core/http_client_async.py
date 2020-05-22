@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-	from typing import Type, Any, Optional, Mapping, MutableMapping, Dict
+	from typing import Type, Any, Optional, MutableMapping
 	from types import TracebackType
 	from ..http.base_session_async import BaseSession
 	from .authorizer_async import Authorizer, Authorized

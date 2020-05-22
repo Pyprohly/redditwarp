@@ -1,9 +1,9 @@
 
 from datetime import datetime, timezone
-from .object import FancyAttributeNamespaces
+from .object import FunBox
 from .design_classes import ThingMixin
 
-class Submission(ThingMixin, FancyAttributeNamespaces):
+class Submission(ThingMixin, FunBox):
 	THING_PREFIX = 't3'
 
 	def __init__(self, data):

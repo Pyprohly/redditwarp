@@ -10,11 +10,11 @@ from base64 import b64encode
 from urllib.parse import urlencode
 
 __all__ = (
-	'authorization_url',
+	'basic_auth',
 	'apply_basic_auth',
 )
 
-def authorization_url(
+def _authorization_url(
 	url: str,
 	response_type: str,
 	client_id: str,

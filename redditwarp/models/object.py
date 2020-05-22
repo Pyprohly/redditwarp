@@ -1,14 +1,11 @@
 
 from __future__ import annotations
-from typing import Any, Mapping
+from typing import Any, MutableMapping
 
 from ..util.data_members_namespace import AttributeCollection
-from ..util.attributedict import AttributeDict
+from ..util.attribute_mapping_wrapper import AttributeMappingWrapper
 
-class Object:
-	pass
-
-class FancyAttributeNamespaces(Object):
+class FunBox:
 	def __init__(self, d: MutableMapping[str, Any]):
 		self.a = AttributeCollection(self)
-		self.b = AttributeDict(d)
+		self.b = AttributeMappingWrapper(d)

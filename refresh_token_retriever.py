@@ -6,7 +6,6 @@ import socket
 import urllib.parse
 import webbrowser
 
-from redditwarp.auth.util import authorization_url
 from redditwarp.auth.const import AUTHORIZATION_ENDPOINT, TOKEN_OBTAINMENT_URL
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.grants import AuthorizationCodeGrant
@@ -20,15 +19,16 @@ state = str(uuid.uuid4())
 redirect_uri = 'http://localhost:8080'
 
 #'''
-url = authorization_url(
-	url=AUTHORIZATION_ENDPOINT,
-	response_type='code',
-	client_id=client_id,
-	redirect_uri=redirect_uri,
-	scope=scope,
-	state=state,
-	extra_params=dict(duration='permanent'),
-)
+params = {
+	'response_type': 'code',
+	'client_id': client_id,
+	'redirect_uri': redirect_uri,
+	'scope': scope,
+	'state': state,
+	'duration': 'permanent',
+}
+url = f'{AUTHORIZATION_ENDPOINT}?{urllib.parse.urlencode(params)}'
+
 print(url)
 print()
 
