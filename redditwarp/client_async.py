@@ -1,13 +1,11 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, MutableMapping, Dict
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, MutableMapping, Dict, cast
 if TYPE_CHECKING:
 	from types import TracebackType
 	from .http.payload import Payload
 	from .http.response import Response
 	from .auth.grants import AuthorizationGrant
-
-import __main__  # type: ignore[import]
 
 from . import http
 from . import auth
@@ -30,7 +28,9 @@ from .exceptions import (
 	raise_for_variant1_reddit_api_error,
 	raise_for_variant2_reddit_api_error,
 )
-#from .api import SiteProcedures
+#from .site_procedures import SiteProcedures
+
+interactive_mode = not hasattr(__import__('__main__'), '__file__')
 
 class ClientCore:
 
@@ -178,7 +178,16 @@ class ClientCore:
 			raise RuntimeError('The HTTP client does not know of an authorizer instance to assign a token to')
 		self.http.authorizer.token = Token(access_token)
 
-class Client(ClientCore):
+ClientMeta = type
+if interactive_mode:
+	class ClientMeta(type):  # type: ignore[no-redef]
+		def __call__(cls: type, *args: Any, **kwds: Any) -> Client:
+			cls = cast(Type[Client], cls)
+			if len(args) == 1:
+				return cls.from_praw_config(*args)
+			return type.__call__(cls, *args, **kwds)
+
+class Client(ClientCore, metaclass=ClientMeta):  # type: ignore[misc]
 	T = TypeVar('T', bound='Client')
 
 	def _init(self, http: HTTPClient) -> None:
@@ -189,6 +198,6 @@ class Client(ClientCore):
 	def __class_getitem__(cls: Type[T], other: Any) -> T:
 		if not isinstance(other, str):
 			raise TypeError
-		if hasattr(__main__, '__file__'):
+		if interactive_mode:
 			raise RuntimeError("instantiating Client through __class_getitem__ can only be done interactively")
 		return cls.from_praw_config(other)
