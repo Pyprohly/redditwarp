@@ -1,13 +1,12 @@
 
 from __future__ import annotations
-from typing import Any, Type, TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO
+from typing import Any, TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO, Generic, cast
 
-from collections.abc import MutableMapping as MutableMapping_
 from pprint import PrettyPrinter
 
 V = TypeVar('V')
 
-class AttributeMappingWrapper(MutableMapping[str, V]):
+class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
 	"""Wrap a mapping to expose its keys though attributes.
 
 	MutableMapping methods (`.update()`, `.clear()`, etc.) take
@@ -19,10 +18,10 @@ class AttributeMappingWrapper(MutableMapping[str, V]):
 
 	The underlying mapping object can be retrieved with `abs(self)`.
 	"""
-
 	__slots__ = ('_store',)
+	_store: Mapping[str, V]
 
-	def __init__(self, data: MutableMapping[str, V]):
+	def __init__(self, data: Mapping[str, V]) -> None:
 		object.__setattr__(self, '_store', data)
 
 	def __repr__(self) -> str:
@@ -37,7 +36,7 @@ class AttributeMappingWrapper(MutableMapping[str, V]):
 	def __iter__(self) -> Iterator[str]:
 		return iter(self._store)
 
-	def __abs__(self) -> MutableMapping[str, V]:
+	def __abs__(self) -> Mapping[str, V]:
 		return self._store
 
 	def __dir__(self) -> Iterable[str]:
@@ -47,14 +46,13 @@ class AttributeMappingWrapper(MutableMapping[str, V]):
 		return self._store[key]
 
 	def __setitem__(self, key: str, value: V) -> None:
-		self._store[key] = value
+		cast(MutableMapping[str, V], self._store)[key] = value
 
 	def __delitem__(self, key: str) -> None:
-		del self._store[key]
+		del cast(MutableMapping[str, V], self._store)[key]
 
 	def __getattr__(self,
 		name: str,
-		mapping_type: Type[MutableMapping[str, V]] = MutableMapping_,
 	) -> Any:
 		"""Mapping-like objects are wrapped in an AttributeMappingWrapper before being
 		returned. This lets you dot chain into nested mappings.
@@ -64,7 +62,7 @@ class AttributeMappingWrapper(MutableMapping[str, V]):
 		except KeyError:
 			raise AttributeError(repr(name)) from None
 
-		if isinstance(attr, mapping_type):
+		if isinstance(attr, Mapping):
 			return type(self)(attr)
 		return attr
 
@@ -72,10 +70,10 @@ class AttributeMappingWrapper(MutableMapping[str, V]):
 
 	__delattr__ = __delitem__
 
-	def __getstate__(self) -> MutableMapping[str, V]:
+	def __getstate__(self) -> Mapping[str, V]:
 		return self._store
 
-	def __setstate__(self, state: MutableMapping[str, V]) -> None:
+	def __setstate__(self, state: Mapping[str, V]) -> None:
 		object.__setattr__(self, '_store', state)
 
 	@staticmethod
@@ -101,4 +99,4 @@ class AttributeMappingWrapper(MutableMapping[str, V]):
 		stream.write(')')
 
 	if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
-		PrettyPrinter._dispatch[__repr__] = _pprint  # type: ignore[attr-defined] # noqa
+		PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined] # noqa

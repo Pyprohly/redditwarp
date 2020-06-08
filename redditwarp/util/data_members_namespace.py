@@ -102,7 +102,7 @@ class DataMembersNamespace(Collection[str]):
 		)
 
 	if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
-		PrettyPrinter._dispatch[__repr__] = _pprint  # type: ignore[attr-defined] # noqa
+		PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined] # noqa
 
 
 class AttributeCollection(DataMembersNamespace):

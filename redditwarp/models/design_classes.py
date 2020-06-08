@@ -1,14 +1,18 @@
-"""Artifical class constructs that roughly reflect the design model of some Reddit objects."""
+"""Artifical class constructs that reflect the design model of some Reddit objects.
+"""
 
-class ThingMixin:
-	THING_PREFIX = 't'
+from __future__ import annotations
+from typing import Mapping, Any
 
-	def __init__(self, data):
-		super().__init__(data)
-		id_ = data['id']
-		self.id = int(id_, 36)
-		self.id36 = id_
-		self.full_id36 = f'{self.THING_PREFIX}_{id_}'
+from .object import FunBox
 
-	def __repr__(self):
+class Thing(FunBox):
+	THING_PREFIX = ''
+
+	def __init__(self, d: Mapping[str, Any]) -> None:
+		super().__init__(d)
+		self.id36 = id36 = d['id']
+		self.id = int(id36, 36)
+
+	def __repr__(self) -> str:
 		return f'<{self.__class__.__name__} id36={self.id36!r}>'
