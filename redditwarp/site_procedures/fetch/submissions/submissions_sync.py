@@ -1,122 +1,98 @@
 
 from __future__ import annotations
-
-from functools import partial
+from typing import TYPE_CHECKING, Iterable, Dict, Any, List, Callable, Mapping, TypeVar
+if TYPE_CHECKING:
+	from ....client_sync import Client
+	from ....models.submission import Submission
 
 from ....models.submission import LinkPost, TextPost
 from ....util.base_conversion import to_base36
 from ....util.chunked import chunked
-from ....util.the_stubborn_caller_iterator import TheStubbornCallerIterator
-from ....util.obstinate_chain_iterator import ObstinateChainIterator
+from ....util.call_chunk_chaining_iterator import CallChunkChainingIterator
+
+T = TypeVar('T')
+
+def _by_ids(
+	ids: Iterable[int],
+	by_id36s: Callable[[Iterable[str]], CallChunkChainingIterator[T]],
+) -> CallChunkChainingIterator[T]:
+	id36s = map(to_base36, ids)
+	return by_id36s(id36s)
+
+def _by_id36s(
+	client: Client,
+	id36s: Iterable[str],
+	parse_for_submissions: Callable[[Mapping[str, Any]], List[T]],
+) -> CallChunkChainingIterator[T]:
+	t_id36s = map('t3_'.__add__, id36s)
+	chunks = chunked(t_id36s, 100)
+	strseqs = map(','.join, chunks)
+
+	def api_call_func(ids_str: str, client: Client) -> Dict[str, Any]:
+		return client.request('GET', '/api/info', params={'id': ids_str})
+
+	def call_chunk(ids_str: str, client: Client = client) -> Callable[[], List[T]]:
+		return lambda: parse_for_submissions(api_call_func(ids_str, client))
+
+	call_chunks = map(call_chunk, strseqs)
+	return CallChunkChainingIterator(call_chunks)
+
 
 class as_textposts:
-	def __init__(self, outer, client):
-		self._outer = outer
+	def __init__(self, client: Client):
 		self._client = client
 
-	def __call__(self, id):
-		_check_id(id)
-		id36 = to_base36(id)
-		return _fetch_textpost_by_id36(client, id36)
+	def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[TextPost]:
+		return _by_ids(ids, self.by_id36s)
 
-	def by_id36(self, id36):
-		_check_id36(id36)
-		return _fetch_textpost_by_id36(client, id36)
+	def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[TextPost]:
+		def parse_for_submissions(root: Mapping[str, Any]) -> List[TextPost]:
+			submissions_data = (child['data'] for child in root['data']['children'])
+			output = []
+			for data in submissions_data:
+				is_textpost = data['is_self']
+				if is_textpost:
+					output.append(TextPost(data))
+			return output
+
+		return _by_id36s(self._client, id36s, parse_for_submissions)
 
 class as_linkposts:
-	def __init__(self, outer, client):
-		self._outer = outer
+	def __init__(self, client: Client):
 		self._client = client
 
-	def __call__(self, id):
-		_check_id(id)
-		id36 = to_base36(id)
-		return _fetch_linkpost_by_id36(client, id36)
+	def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[LinkPost]:
+		return _by_ids(ids, self.by_id36s)
 
-	def by_id36(self, id36):
-		_check_id36(id36)
-		return _fetch_linkpost_by_id36(client, id36)
-
-
-class via_call_chunks:
-	@staticmethod
-	def _api_info_call_chunk(client, id_str):
-		def __():
-			root = client.request('GET', '/api/info', params={'id': id_str})
-			children = root['data']['children']
+	def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[LinkPost]:
+		def parse_for_submissions(root: Mapping[str, Any]) -> List[LinkPost]:
+			submissions_data = (child['data'] for child in root['data']['children'])
 			output = []
-			append = output.append
-			for child in children:
-				data = child['data']
+			for data in submissions_data:
 				is_textpost = data['is_self']
-				cls = TextPost if is_textpost else LinkPost
-				append(cls(data))
+				if not is_textpost:
+					output.append(LinkPost(data))
 			return output
-		return __
 
-	@staticmethod
-	def _api_info_call_chunks(client, it):
-		for seq in chunked(it, 100):
-			p = ','.join(seq)
-			yield _api_info_call_chunk(client, p)
-
-	def __init__(self, outer, client):
-		self._outer = outer
-		self._client = client
-
-	def __call__(self, ids):
-		"""
-		Parameters
-		----------
-		ids: Iterable[int]
-
-		Returns
-		-------
-		Callable[[], Collection[Submission]]
-		"""
-		it = ('t3_' + to_base36(i) for i in ids if i >= 0)
-		yield from self._api_info_call_chunks(self._client, it)
-
-	def by_id36(self, id36s):
-		"""
-		Parameters
-		----------
-		id36s: Iterable[str]
-
-		Returns
-		-------
-		Callable[[], Collection[Submission]]
-		"""
-		it = ('t3_' + i for i in id36s if i.isalnum())
-		yield from self._api_info_call_chunks(self._client, it)
+		return _by_id36s(self._client, id36s, parse_for_submissions)
 
 class submissions:
-	def __init__(self, client):
+	def __init__(self, client: Client):
 		self._client = client
-		self.via_call_chunks = via_call_chunks(self, client)
-		self.as_textposts = as_textposts(self, client)
-		self.as_linkposts = as_linkposts(self, client)
+		self.as_textposts = as_textposts(client)
+		self.as_linkposts = as_linkposts(client)
 
-	def __call__(self, ids):
-		"""
-		Parameters
-		----------
-		ids: Iterable[int]
+	def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[Submission]:
+		return _by_ids(ids, self.by_id36s)
 
-		Returns
-		-------
-		Iterator[Submission]
-		"""
-		return ObstinateChainIterator(TheStubbornCallerIterator(self.via_call_chunks(ids)))
+	def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[Submission]:
+		def parse_for_submissions(root: Mapping[str, Any]) -> List[Submission]:
+			submissions_data = (child['data'] for child in root['data']['children'])
+			output = []
+			for data in submissions_data:
+				is_textpost = data['is_self']
+				klass = TextPost if is_textpost else LinkPost
+				output.append(klass(data))
+			return output
 
-	def by_id36(self, id36s):
-		"""
-		Parameters
-		----------
-		id36s: Iterable[str]
-
-		Returns
-		-------
-		Iterator[Submission]
-		"""
-		return ObstinateChainIterator(TheStubbornCallerIterator(self.via_call_chunks.by_id36(id36s)))
+		return _by_id36s(self._client, id36s, parse_for_submissions)

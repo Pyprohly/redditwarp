@@ -258,10 +258,3 @@ class Client(ClientCore, metaclass=ClientMeta):  # type: ignore[misc]
 		super()._init(http)
 		self.api = SiteProcedures(self)
 		self.fetch = self.api.fetch
-
-	def __class_getitem__(cls: Type[T], other: Any) -> T:
-		if not isinstance(other, str):
-			raise TypeError
-		if interactive_mode:
-			raise RuntimeError("instantiating Client through __class_getitem__ can only be done interactively")
-		return cls.from_praw_config(other)

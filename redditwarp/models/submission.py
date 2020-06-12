@@ -22,9 +22,9 @@ class Submission(Thing):
 		self.score: int = d['score']
 
 		# DELETE THIS. Create self.subreddit object instead
-		self.subreddit_name = d['subreddit']
-		_, _, self.subreddit_id36 = d['subreddit'].partition('_')
-		self.subreddit_id = int(self.subreddit_id36, 36)
+		#self.subreddit_name = d['subreddit']
+		#_, _, self.subreddit_id36 = d['subreddit'].partition('_')
+		#self.subreddit_id = int(self.subreddit_id36, 36)
 
 
 
