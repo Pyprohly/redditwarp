@@ -91,8 +91,7 @@ class submissions:
 			output = []
 			for data in submissions_data:
 				is_textpost = data['is_self']
-				klass = TextPost if is_textpost else LinkPost
-				output.append(klass(data))
+				output.append((TextPost if is_textpost else LinkPost)(data))
 			return output
 
 		return _by_id36s(self._client, id36s, parse_for_submissions)

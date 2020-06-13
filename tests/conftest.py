@@ -1,4 +1,4 @@
-
+'''
 import pytest
 
 import sys, os
@@ -13,3 +13,4 @@ def userless_client():
 @pytest.fixture(scope='session')
 def user_client():
 	return client.user_client
+'''

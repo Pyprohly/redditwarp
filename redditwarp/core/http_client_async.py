@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-	from typing import Type, Any, Optional, MutableMapping
+	from typing import Type, Any, Optional, Mapping, MutableMapping
 	from types import TracebackType
 	from ..http.base_session_async import BaseSession
 	from .authorizer_async import Authorizer, Authorized
@@ -88,7 +88,7 @@ class RedditHTTPClient:
 		json: Any = None,
 		headers: Optional[MutableMapping[str, str]] = None,
 		timeout: float = TIMEOUT,
-		auxiliary: Optional[MutableMapping] = None,
+		auxiliary: Optional[Mapping] = None,
 	) -> Response:
 		payload = make_payload(payload, data, json)
 		params = {} if params is None else params

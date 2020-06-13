@@ -1,4 +1,4 @@
-
+'''
 import os
 
 import redditwarp
@@ -53,3 +53,4 @@ user_http = HTTPClient(
 )
 user_client = redditwarp.Client.from_http(user_http)
 authorizer.token = redditwarp.auth.token.Token('<ACCESS_TOKEN>')
+'''

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, MutableMapping, Dict, cast
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableMapping, Dict, cast
 if TYPE_CHECKING:
 	from types import TracebackType
 	from .http.payload import Payload
@@ -141,7 +141,7 @@ class ClientCore:
 		json: Any = None,
 		headers: Optional[MutableMapping[str, str]] = None,
 		timeout: float = 8,
-		auxiliary: Optional[MutableMapping] = None,
+		auxiliary: Optional[Mapping] = None,
 	) -> Dict[str, Any]:
 		uri = self.resource_base_url + path
 		try:

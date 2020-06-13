@@ -88,6 +88,6 @@ class submission:
 				return None
 			data = children[0]['data']
 			is_textpost = data['is_self']
-			return TextPost(data) if is_textpost else LinkPost(data)
+			return (TextPost if is_textpost else LinkPost)(data)
 
 		return _by_id36(self._client, id36, parse_for_submission)
