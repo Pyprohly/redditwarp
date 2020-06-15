@@ -5,5 +5,5 @@ __all__ = ('ClientCredentials',)
 
 @dataclass(frozen=True)
 class ClientCredentials:
-	client_id: str
-	client_secret: str
+    client_id: str
+    client_secret: str

@@ -52,37 +52,37 @@ console:u_SuvaBot/1.2.0 (by u/Pyprohly)some text
 BOT_USER_AGENT_REGEX = re.compile(BOT_USER_AGENT_PATTERN, re.X)
 
 BLACKLIST = [
-	'scraping',
-	'searchme',
+    'scraping',
+    'searchme',
 ]
 
 FAULTY = [
-	'curl',
+    'curl',
 ]
 
 '''
 @dataclass
 class BotUserAgent:
-	platform: Optional[str]
-	app_id: str
-	version: Optional[str]
-	author: Optional[str]
+    platform: Optional[str]
+    app_id: str
+    version: Optional[str]
+    author: Optional[str]
 
-	def __str__(self):
-		pf = self.platform
-		ap = self.app_id
-		vn = self.version
-		au = self.author
-		return (
-			f"{f'{pf}:' if pf else ''}"
-			f"{ap}"
-			f"{f'/{vn}' if vn else ''}"
-			f"{f' (by {au})' if au else ''}"
-		)
+    def __str__(self):
+        pf = self.platform
+        ap = self.app_id
+        vn = self.version
+        au = self.author
+        return (
+            f"{f'{pf}:' if pf else ''}"
+            f"{ap}"
+            f"{f'/{vn}' if vn else ''}"
+            f"{f' (by {au})' if au else ''}"
+        )
 
 def parse(s):
-	m = BOT_USER_AGENT_REGEX.match(s)
-	if m:
-		return BotUserAgent(**m.groupdict())
-	return None
+    m = BOT_USER_AGENT_REGEX.match(s)
+    if m:
+        return BotUserAgent(**m.groupdict())
+    return None
 '''

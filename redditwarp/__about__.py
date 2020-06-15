@@ -48,30 +48,30 @@
 from typing import NamedTuple
 
 __all__ = (
-	'__title__',
-	'__summary__',
-	'__uri__',
-	'__url__',
-	'__version__',
-	'__author__',
-	'__license__',
-	'__copyright__',
-	'version_info',
+    '__title__',
+    '__summary__',
+    '__uri__',
+    '__url__',
+    '__version__',
+    '__author__',
+    '__license__',
+    '__copyright__',
+    'version_info',
 )
 
 class VersionInfo(NamedTuple):
-	major: int
-	minor: int
-	micro: int
-	releaselevel: str
-	serial: int
+    major: int
+    minor: int
+    micro: int
+    releaselevel: str
+    serial: int
 
 version_info = VersionInfo(
-	major=0,
-	minor=1,
-	micro=0,
-	releaselevel='alpha',
-	serial=0,
+    major=0,
+    minor=1,
+    micro=0,
+    releaselevel='alpha',
+    serial=0,
 )
 
 __title__ = 'RedditWarp'

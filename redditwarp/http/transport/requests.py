@@ -3,7 +3,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Mapping, Any
 if TYPE_CHECKING:
-	from ..request import Request
+    from ..request import Request
 
 import requests
 
@@ -13,12 +13,12 @@ from .. import payload
 from ..response import Response
 
 _PAYLOAD_DISPATCH_TABLE: Mapping = {
-	type(None): lambda y: {},
-	payload.Raw: lambda y: {'data': y.data},
-	payload.FormData: lambda y: {'data': y.data},
-	payload.MultiPart: lambda y: {'files': y.data},
-	payload.Text: lambda y: {'data': y.text},
-	payload.JSON: lambda y: {'json': y.json},
+    type(None): lambda y: {},
+    payload.Raw: lambda y: {'data': y.data},
+    payload.FormData: lambda y: {'data': y.data},
+    payload.MultiPart: lambda y: {'files': y.data},
+    payload.Text: lambda y: {'data': y.text},
+    payload.JSON: lambda y: {'json': y.json},
 }
 
 
@@ -27,61 +27,61 @@ version_string = requests.__version__
 
 
 class Session(BaseSession):
-	TIMEOUT = 8
+    TIMEOUT = 8
 
-	def __init__(self,
-		session: requests.Session,
-		*,
-		params: Optional[Mapping[str, str]] = None,
-		headers: Optional[Mapping[str, str]] = None,
-	) -> None:
-		super().__init__(params=params, headers=headers)
-		self.session = session
+    def __init__(self,
+        session: requests.Session,
+        *,
+        params: Optional[Mapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
+    ) -> None:
+        super().__init__(params=params, headers=headers)
+        self.session = session
 
-	def request(self, request: Request, *, timeout: Optional[float] = TIMEOUT,
-			aux_info: Optional[Mapping] = None) -> Response:
-		self._prepare_request(request)
+    def request(self, request: Request, *, timeout: Optional[float] = TIMEOUT,
+            aux_info: Optional[Mapping] = None) -> Response:
+        self._prepare_request(request)
 
-		if timeout is None:
-			timeout = self.TIMEOUT
-		elif timeout < 0:
-			timeout = None
+        if timeout is None:
+            timeout = self.TIMEOUT
+        elif timeout < 0:
+            timeout = None
 
-		r = request
-		kwargs: Any = {
-			'method': r.verb,
-			'url': r.uri,
-			'params': r.params,
-			'headers': r.headers,
-			'timeout': timeout,
-		}
-		kwargs_x = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
-		kwargs.update(kwargs_x)
+        r = request
+        kwargs: Any = {
+            'method': r.verb,
+            'url': r.uri,
+            'params': r.params,
+            'headers': r.headers,
+            'timeout': timeout,
+        }
+        kwargs_x = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
+        kwargs.update(kwargs_x)
 
-		try:
-			resp = self.session.request(**kwargs)
-		except requests.exceptions.ReadTimeout as e:
-			raise exceptions.TimeoutError from e
-		except Exception as e:
-			raise exceptions.TransportError from e
+        try:
+            resp = self.session.request(**kwargs)
+        except requests.exceptions.ReadTimeout as e:
+            raise exceptions.TimeoutError from e
+        except Exception as e:
+            raise exceptions.TransportError from e
 
-		return Response(
-			status=resp.status_code,
-			headers=resp.headers,
-			data=resp.content,
-			request=r,
-			underlying_object=resp,
-		)
+        return Response(
+            status=resp.status_code,
+            headers=resp.headers,
+            data=resp.content,
+            request=r,
+            underlying_object=resp,
+        )
 
-	def close(self) -> None:
-		self.session.close()
+    def close(self) -> None:
+        self.session.close()
 
 
 def new_session(*,
-	params: Optional[Mapping[str, str]] = None,
-	headers: Optional[Mapping[str, str]] = None,
+    params: Optional[Mapping[str, str]] = None,
+    headers: Optional[Mapping[str, str]] = None,
 ) -> Session:
-	retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
-	se = requests.Session()
-	se.mount('https://', retry_adapter)
-	return Session(se, params=params, headers=headers)
+    retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
+    se = requests.Session()
+    se.mount('https://', retry_adapter)
+    return Session(se, params=params, headers=headers)
