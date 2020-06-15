@@ -37,7 +37,7 @@ class BaseSession(Requestor):
 		p.update({**self.params, **p})
 
 	async def request(self, request: Request, *, timeout: Optional[float] = None,
-			auxiliary: Optional[Mapping] = None) -> Response:
+			aux_info: Optional[Mapping] = None) -> Response:
 		raise NotImplementedError
 
 	async def close(self) -> None:

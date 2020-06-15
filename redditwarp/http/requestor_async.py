@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 class Requestor:
 	async def request(self, request: Request, *, timeout: Optional[float] = None,
-			auxiliary: Optional[Mapping] = None) -> Response:
+			aux_info: Optional[Mapping] = None) -> Response:
 		raise NotImplementedError
 
 class RequestorDecorator(Requestor):
@@ -15,5 +15,5 @@ class RequestorDecorator(Requestor):
 		self.requestor = requestor
 
 	async def request(self, request: Request, *, timeout: Optional[float] = None,
-			auxiliary: Optional[Mapping] = None) -> Response:
-		return await self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
+			aux_info: Optional[Mapping] = None) -> Response:
+		return await self.requestor.request(request, timeout=timeout, aux_info=aux_info)

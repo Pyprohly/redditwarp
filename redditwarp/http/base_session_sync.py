@@ -46,7 +46,7 @@ class BaseSession(Requestor):
 		p.update({**self.params, **p})
 
 	def request(self, request: Request, *, timeout: Optional[float] = None,
-			auxiliary: Optional[Mapping] = None) -> Response:
+			aux_info: Optional[Mapping] = None) -> Response:
 		"""
 		Parameters
 		----------
@@ -56,7 +56,7 @@ class BaseSession(Requestor):
 
 			A None value will use a default that is specific to the transport
 			adaptor. A negative number will wait an infinite amount of time.
-		auxiliary: Optional[Mapping[Any, Any]]
+		aux_info: Optional[Mapping[Any, Any]]
 			Additional information to be consumed by a custom :class:`BaseSession` class.
 		"""
 		raise NotImplementedError

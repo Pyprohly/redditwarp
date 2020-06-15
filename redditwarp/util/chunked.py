@@ -1,6 +1,5 @@
 
 from typing import TypeVar, Iterable, Iterator, Sequence
-
 from itertools import islice
 
 T = TypeVar('T')

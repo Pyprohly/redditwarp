@@ -82,14 +82,14 @@ class Authorized(RequestorDecorator):
 		self._futures: List[asyncio.Future] = []
 
 	async def request(self, request: Request, *, timeout: Optional[float] = None,
-			auxiliary: Optional[Mapping] = None) -> Response:
+			aux_info: Optional[Mapping] = None) -> Response:
 		await self._valve.wait()
 
 		async with self._lock:
 			await self.authorizer.maybe_renew_token()
 		self.authorizer.prepare_request(request)
 
-		coro = self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
+		coro = self.requestor.request(request, timeout=timeout, aux_info=aux_info)
 		fut = asyncio.ensure_future(coro)
 		self._futures.append(fut)
 		try:
@@ -115,6 +115,6 @@ class Authorized(RequestorDecorator):
 			else:
 				await self._valve.wait()
 
-			response = await self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
+			response = await self.requestor.request(request, timeout=timeout, aux_info=aux_info)
 
 		return response

@@ -196,12 +196,12 @@ class ClientCore:
 		json: Any = None,
 		headers: Optional[MutableMapping[str, str]] = None,
 		timeout: float = 8,
-		auxiliary: Optional[Mapping] = None,
+		aux_info: Optional[Mapping] = None,
 	) -> Dict[str, Any]:
 		uri = self.resource_base_url + path
 		try:
 			resp = self.http.request(verb, uri, params=params, payload=payload,
-					data=data, json=json, headers=headers, timeout=timeout, auxiliary=auxiliary)
+					data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
 
 		except auth.exceptions.ResponseException as e:
 			self.last_response = e.response

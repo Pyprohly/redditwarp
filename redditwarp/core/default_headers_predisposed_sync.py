@@ -14,8 +14,8 @@ class DefaultHeadersPredisposed(RequestorDecorator):
 		self.headers = headers
 
 	def request(self, request: Request, *, timeout: Optional[float] = None,
-			auxiliary: Optional[Mapping] = None) -> Response:
+			aux_info: Optional[Mapping] = None) -> Response:
 		if self.headers:
 			h = request.headers
 			h.update({**self.headers, **h})
-		return self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
+		return self.requestor.request(request, timeout=timeout, aux_info=aux_info)

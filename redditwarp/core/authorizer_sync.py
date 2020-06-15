@@ -82,16 +82,16 @@ class Authorized(RequestorDecorator):
 		self.authorizer = authorizer
 
 	def request(self, request: Request, *, timeout: Optional[float] = None,
-			auxiliary: Optional[Mapping] = None) -> Response:
+			aux_info: Optional[Mapping] = None) -> Response:
 		self.authorizer.maybe_renew_token()
 		self.authorizer.prepare_request(request)
 
-		response = self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
+		response = self.requestor.request(request, timeout=timeout, aux_info=aux_info)
 
 		if response.status == 401 and self.authorizer.can_renew_token():
 			self.authorizer.renew_token()
 			self.authorizer.prepare_request(request)
 
-			response = self.requestor.request(request, timeout=timeout, auxiliary=auxiliary)
+			response = self.requestor.request(request, timeout=timeout, aux_info=aux_info)
 
 		return response

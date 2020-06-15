@@ -40,7 +40,7 @@ class Session(BaseSession):
 		self.session = session
 
 	async def request(self, request: Request, *, timeout: Optional[float] = TIMEOUT,
-			auxiliary: Optional[Mapping] = None) -> Response:
+			aux_info: Optional[Mapping] = None) -> Response:
 		self._prepare_request(request)
 
 		if timeout is None:

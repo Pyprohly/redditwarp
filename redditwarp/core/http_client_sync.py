@@ -88,7 +88,7 @@ class RedditHTTPClient:
 		json: Any = None,
 		headers: Optional[MutableMapping[str, str]] = None,
 		timeout: float = TIMEOUT,
-		auxiliary: Optional[Mapping] = None,
+		aux_info: Optional[Mapping] = None,
 	) -> Response:
 		payload = make_payload(payload, data, json)
 		params = {} if params is None else params
@@ -102,7 +102,7 @@ class RedditHTTPClient:
 
 		for i in range(5):
 			try:
-				resp = self.requestor.request(r, timeout=timeout, auxiliary=auxiliary)
+				resp = self.requestor.request(r, timeout=timeout, aux_info=aux_info)
 
 			except auth.exceptions.ResponseException as e:
 				raise_for_auth_response_exception(e)

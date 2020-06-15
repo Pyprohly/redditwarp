@@ -12,7 +12,7 @@ class StubbornCallerIterator(Generic[T]):
 	"""
 
 	def __init__(self, iterable: Iterable[Callable[[], T]]) -> None:
-		self._iterator = iter(iterable)
+		self._itr = iter(iterable)
 		self.current: Optional[Callable[[], T]] = None
 
 	def __iter__(self) -> Iterator[T]:
@@ -20,7 +20,7 @@ class StubbornCallerIterator(Generic[T]):
 
 	def __next__(self) -> T:
 		if self.current is None:
-			self.current = next(self._iterator)
+			self.current = next(self._itr)
 		value = self.current()
 		self.current = None
 		return value
