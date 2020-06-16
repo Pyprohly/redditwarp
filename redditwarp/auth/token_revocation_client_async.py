@@ -11,13 +11,11 @@ from ..http.payload import FormData
 from .util import apply_basic_auth
 from .exceptions import HTTPStatusError
 
-__all__ = ('TokenRevocationClient',)
-
 class TokenRevocationClient:
-    def __init__(self, requestor: Requestor, endpoint: str,
+    def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials) -> None:
         self.requestor = requestor
-        self.endpoint = endpoint
+        self.uri = uri
         self.client_credentials = client_credentials
 
     async def revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> None:
@@ -25,7 +23,7 @@ class TokenRevocationClient:
         if token_type_hint:
             data['token_type_hint'] = token_type_hint
 
-        r = Request('POST', self.endpoint, payload=FormData(data))
+        r = Request('POST', self.uri, payload=FormData(data))
         apply_basic_auth(r, self.client_credentials)
 
         resp = await self.requestor.request(r)

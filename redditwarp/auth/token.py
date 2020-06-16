@@ -2,8 +2,6 @@
 from typing import Type, TypeVar, Optional, Any, Mapping
 from dataclasses import dataclass, field
 
-__all__ = ('Token', 'ResponseToken')
-
 @dataclass(frozen=True)
 class Token:
     access_token: str
@@ -34,4 +32,4 @@ class ResponseToken(Token):
             d=d,
         )
 
-    d: Mapping[str, Any] = field(default_factory=dict, repr=False)
+    d: Mapping[str, Any] = field(repr=False, default_factory=dict)

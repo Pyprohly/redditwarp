@@ -9,12 +9,9 @@ if TYPE_CHECKING:
 from base64 import b64encode
 from urllib.parse import urlencode
 
-__all__ = (
-    'basic_auth',
-    'apply_basic_auth',
-)
+from . import grants
 
-def _authorization_url(
+def __authorization_url(  # UNUSED: rejected consideration
     url: str,
     response_type: str,
     client_id: str,
@@ -41,3 +38,24 @@ def basic_auth(client_credentials: ClientCredentials) -> str:
 
 def apply_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
     request.headers['Authorization'] = basic_auth(client_credentials)
+
+def auto_grant_factory(
+    refresh_token: Optional[str],
+    username: Optional[str],
+    password: Optional[str],
+) -> Optional[grants.AuthorizationGrant]:
+    """Produce a simple non-expiring grant from the provided credentials.
+
+    Return either:
+
+        * Refresh Token
+        * Resource Owner Password Credentials
+        * Client Credentials
+    """
+    if refresh_token:
+        return grants.RefreshTokenGrant(refresh_token)
+    if username and password:
+        return grants.ResourceOwnerPasswordCredentialsGrant(username, password)
+    if username or password:
+        return None
+    return grants.ClientCredentialsGrant()

@@ -1,18 +1,18 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableMapping, Dict, cast
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableMapping, Dict, cast, Union
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
     from .http.response import Response
-    from .auth.grants import AuthorizationGrant
 
 from . import http
 from . import auth
 from .core.http_client_async import HTTPClient
 from .http.misc import json_loads_response
-from .auth import ClientCredentials, Token, auto_grant_factory
-from .util import get_praw_config
+from .auth import ClientCredentials, Token
+from .auth.util import auto_grant_factory
+from .util.praw_config import get_praw_config
 from .http.transport.aiohttp import new_session
 from .auth.token_obtainment_client_async import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_ENDPOINT_URL, RESOURCE_BASE_URL
@@ -29,6 +29,8 @@ from .exceptions import (
     raise_for_variant2_reddit_api_error,
 )
 #from .site_procedures import SiteProcedures
+
+AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
 
 interactive_mode = not hasattr(__import__('__main__'), '__file__')
 
