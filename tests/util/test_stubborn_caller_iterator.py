@@ -1,7 +1,9 @@
 
+from typing import List, Callable
+
 from redditwarp.util.stubborn_caller_iterator import StubbornCallerIterator
 
-def test_iteration():
+def test_iteration() -> None:
 	it = [
 		lambda: 1,
 		lambda: 7,
@@ -14,18 +16,18 @@ def test_iteration():
 
 	assert list(StubbornCallerIterator([])) == []
 
-def test_exception_during_iteration():
+def test_exception_during_iteration() -> None:
 	class throw_on_first_call_then_return:
-		def __init__(self):
+		def __init__(self) -> None:
 			self.call_count = 0
-		def __call__(self):
+		def __call__(self) -> int:
 			self.call_count += 1
 			if self.call_count == 1:
 				raise RuntimeError
 			return 3
 
 	j = throw_on_first_call_then_return()
-	it = [
+	it: List[Callable[[], int]] = [
 		lambda: 1,
 		lambda: 2,
 		j,

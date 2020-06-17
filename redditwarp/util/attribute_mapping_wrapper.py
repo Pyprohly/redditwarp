@@ -66,7 +66,10 @@ class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
             return type(self)(attr)
         return attr
 
-    __setattr__ = __setitem__
+    #__setattr__ = __setitem__
+    # Do it the long way. Make mypy happy.
+    def __setattr__(self, name: str, value: V) -> None:
+        return self.__setitem__(name, value)
 
     __delattr__ = __delitem__
 

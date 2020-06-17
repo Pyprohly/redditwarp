@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from .. import http
 from ..http.request import Request
-from ..http.misc import json_loads_response
+from ..http.util.json_loads import json_loads_response
 from ..http.payload import FormData
 from .token import ResponseToken
 from .util import apply_basic_auth

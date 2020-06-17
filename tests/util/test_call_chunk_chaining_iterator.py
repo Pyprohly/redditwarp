@@ -1,12 +1,14 @@
 
+from typing import List, Callable, Iterable
+
 from redditwarp.util.obstinate_call_chunk_chaining_iterator import ObstinateCallChunkChainingIterator
 
-def test_call_chunks_attrib():
+def test_call_chunks_attrib() -> None:
 	it = [lambda: [1]]
 	cci = ObstinateCallChunkChainingIterator(it)
 	assert cci.call_chunks is it
 
-def test_simple_iteration():
+def test_simple_iteration() -> None:
 	it = [
 		lambda: [1],
 		lambda: [2, 3],
@@ -15,7 +17,7 @@ def test_simple_iteration():
 	cci = ObstinateCallChunkChainingIterator(it)
 	assert list(cci) == [1,2,3,4,5,6]
 
-def test_current_iter():
+def test_current_iter() -> None:
 	l1 = [0, 1, 2]
 	l2 = [3, 4]
 	c1 = lambda: l1
@@ -32,18 +34,18 @@ def test_current_iter():
 	assert next(cci) == 8
 	assert next(cci) == 9
 
-def test_exception_during_iteration():
+def test_exception_during_iteration() -> None:
 	class throw_on_first_call_then_return:
-		def __init__(self):
+		def __init__(self) -> None:
 			self.call_count = 0
-		def __call__(self):
+		def __call__(self) -> List[int]:
 			self.call_count += 1
 			if self.call_count == 1:
 				raise RuntimeError
 			return [2]
 
 	j = throw_on_first_call_then_return()
-	it = [
+	it: List[Callable[[], List[int]]] = [
 		lambda: [1],
 		j,
 		lambda: [3],
@@ -61,8 +63,9 @@ def test_exception_during_iteration():
 	assert cci.current_callable is None
 	assert next(cci) == 3
 
-def test_current_callable_is_setable():
-	cci = ObstinateCallChunkChainingIterator(())
+def test_current_callable_is_setable() -> None:
+	it: Iterable = ()
+	cci = ObstinateCallChunkChainingIterator(it)
 	assert list(cci) == []
 	cci.current_callable = lambda: (1,2,3)
 	assert list(cci) == [1,2,3]

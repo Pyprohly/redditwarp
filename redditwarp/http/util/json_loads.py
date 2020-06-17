@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Any
 if TYPE_CHECKING:
-    from .response import Response
+    from ..response import Response
 
 import json
 

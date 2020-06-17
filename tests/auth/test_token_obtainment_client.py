@@ -2,13 +2,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Mapping, Optional, Any
+    from typing import Mapping, Optional, Any, List
 
-import pytest
+import pytest  # type: ignore[import]
 
 from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
 from redditwarp.auth.client_credentials import ClientCredentials
-from redditwarp.auth.token import ResponseToken
 from redditwarp.auth.util import basic_auth
 from redditwarp.auth.exceptions import (
     ResponseContentError,
@@ -30,14 +29,14 @@ class MockRequestor(Requestor):
         self.response_status = response_status
         self.response_headers = response_headers
         self.response_data = response_data
-        self.history = []
+        self.history: List[Request] = []
 
     def request(self, request: Request, *, timeout: Optional[float] = None,
             aux_info: Optional[Mapping] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
-def test_fetch_json_dict():
+def test_fetch_json_dict() -> None:
     requestor = MockRequestor(
         response_status=200,
         response_headers={'Content-Type': 'application/json'},
@@ -63,7 +62,7 @@ def test_fetch_json_dict():
     assert req.payload.data == {'grant_type': 'epyt_tnarg', 'data1': 'blah'}
     assert req.headers['Authorization'] == basic_auth(client_credentials)
 
-def test_fetch_json_dict__exceptions():
+def test_fetch_json_dict__exceptions() -> None:
     requestor = MockRequestor(
         response_status=502,
         response_headers={},
@@ -100,7 +99,7 @@ def test_fetch_json_dict__exceptions():
     with pytest.raises(UnrecognizedOAuth2ResponseError):
         o.fetch_json_dict()
 
-def test_fetch_token():
+def test_fetch_token() -> None:
     class MyTokenObtainmentClient(TokenObtainmentClient):
         def fetch_json_dict(self) -> Mapping[str, Any]:
             return {

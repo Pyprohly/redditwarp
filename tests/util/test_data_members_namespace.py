@@ -1,31 +1,33 @@
 
 import os
-import pytest
-from redditwarp.util.data_members_namespace import DataMembersNamespace, AttributeCollection
+
+import pytest  # type: ignore[import]
+
+from redditwarp.util.data_members_namespace import DataMembersNamespace, DataMembersMapping
 
 class A:
-	def __init__(self):
+	def __init__(self) -> None:
 		self.aaa = 1
 
 	@property
-	def bbb(self):
+	def bbb(self) -> int:
 		return 2
 
-	def ccc(self):
+	def ccc(self) -> int:
 		return 3
 
 class B(A):
 	pass
 
 class C(B):
-	def __init__(self):
+	def __init__(self) -> None:
 		super().__init__()
 		self.ddd = 4
 		self.eee = lambda: 5
 
 
 class TestDataAttributeNamespace:
-	def test_getattr(self):
+	def test_getattr(self) -> None:
 		d = DataMembersNamespace(C())
 		assert d.aaa == 1
 		assert d.bbb == 2
@@ -38,13 +40,13 @@ class TestDataAttributeNamespace:
 		with pytest.raises(AttributeError):
 			d.zzz
 
-	def test_iter(self):
+	def test_iter(self) -> None:
 		assert list(DataMembersNamespace(C())) == ['aaa', 'bbb', 'ddd', 'eee']
 
-	def test_len(self):
+	def test_len(self) -> None:
 		assert len(DataMembersNamespace(C())) == 4
 
-	def test_contains(self):
+	def test_contains(self) -> None:
 		d = DataMembersNamespace(C())
 		assert 'aaa' in d
 		assert 'bbb' in d
@@ -52,21 +54,21 @@ class TestDataAttributeNamespace:
 		assert 'ddd' in d
 		assert 'eee' in d
 
-	def test_dir(self):
+	def test_dir(self) -> None:
 		d = DataMembersNamespace(C())
 		assert dir(d) == ['aaa', 'bbb', 'ddd', 'eee']
 
-	def test_print(self):
+	def test_print(self) -> None:
 		# Check no exception raised
 		with open(os.devnull, 'w') as null:
 			print(DataMembersNamespace(C()), file=null)
 
-class TestAttributeCollection:
-	def test_general(self):
-		assert issubclass(AttributeCollection, DataMembersNamespace)
+class TestDataMembersMapping:
+	def test_general(self) -> None:
+		assert issubclass(DataMembersMapping, DataMembersNamespace)
 
-	def test_getitem(self):
-		d = AttributeCollection(C())
+	def test_getitem(self) -> None:
+		d = DataMembersMapping(C())
 		assert d['aaa'] == 1
 		assert d['bbb'] == 2
 		assert d['ddd'] == 4
@@ -74,6 +76,5 @@ class TestAttributeCollection:
 
 		with pytest.raises(KeyError):
 			d['ccc']
-
 		with pytest.raises(KeyError):
 			d['zzz']

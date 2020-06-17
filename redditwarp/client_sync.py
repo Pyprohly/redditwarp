@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 from . import http
 from . import auth
 from .core.http_client_sync import HTTPClient
-from .http.misc import json_loads_response
+from .http.util.json_loads import json_loads_response
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
 from .util.praw_config import get_praw_config
