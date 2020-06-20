@@ -1,0 +1,141 @@
+
+from typing import Dict
+
+from collections.abc import MutableMapping#, Mapping, MappingView
+import pickle
+
+import pytest  # type: ignore[import]
+
+from redditwarp.http.util.case_insensitive_dict import CaseInsensitiveDict
+
+
+def test_init() -> None:
+    assert issubclass(CaseInsensitiveDict, MutableMapping)
+
+    # Check that a mutable default argument isn't used.
+    d1: CaseInsensitiveDict[int] = CaseInsensitiveDict()
+    d2: CaseInsensitiveDict[int] = CaseInsensitiveDict()
+    d1['a'] = 10
+    assert 'a' in d1
+    assert 'a' not in d2
+
+    # Check that the mapping's reference is not stored.
+    mydict: Dict = {'key': 'value'}
+    d: CaseInsensitiveDict[str] = CaseInsensitiveDict(mydict)
+    mydict.clear()
+    assert len(d) == 1
+
+    mydict = {'a': 1, 'b': 2}
+    assert CaseInsensitiveDict({'a': 1, 'b': 2}) == mydict
+    assert mydict == CaseInsensitiveDict({'a': 1, 'b': 2})
+    assert mydict == CaseInsensitiveDict({'a': 1}, b=2)
+    assert mydict == CaseInsensitiveDict(a=1, b=2)
+
+def test_contains() -> None:
+    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'abc': 1})
+    assert 'abc' in d
+    assert 'ABC' in d
+    assert 'aBC' in d
+
+def test_iter() -> None:
+    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'B': 2, 'c': 3})
+    assert list(d) == ['a', 'B', 'c']
+
+def test_eq() -> None:
+    CI = CaseInsensitiveDict
+    assert CI({'e': 1}) == {'e': 1}
+    assert {'e': 1} == CI({'e': 1})
+    assert CI({'e': 1}) == CI({'E': 1})
+    assert CI({'E': 1}) == CI({'e': 1})
+    assert CI({'e': 1}) == {'E': 1}
+    assert {'E': 1} == CI({'e': 1})
+
+    assert CI({'e': 1}) != {'f': 1}
+
+def test_getitem() -> None:
+    d: CaseInsensitiveDict[Dict] = CaseInsensitiveDict({'b': {'bb': 22}})
+    # Not recursive
+    assert type(d['b']) is dict
+    assert d['b']['bb'] == 22
+
+    d = CaseInsensitiveDict({'abc': 1})
+    assert d['abc'] == d['ABC'] == d['AbC'] == d['aBC'] == 1
+
+    with pytest.raises(KeyError):
+        d['z']
+
+def test_setitem() -> None:
+    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1})
+    assert len(d) == 1
+    d['b'] = 2
+    assert d['b'] == d['B'] == 2
+    assert len(d) == 2
+
+    assert list(d) == ['a', 'b']
+    d['A'] = 1
+    assert list(d) == ['A', 'b']
+
+def test_delitem() -> None:
+    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'b': 2, 'c': 3})
+    assert len(d) == 3
+
+    del d['c']
+    assert 'c' not in d
+    assert len(d) == 2
+
+    del d['B']
+    assert 'B' not in d
+    assert len(d) == 1
+
+'''
+def test_repr() -> None:
+    def assert_dict_repr(mydict: Mapping, items: MappingView) -> None:
+        dict_repr = repr(mydict)
+        if not (dict_repr.startswith(type(mydict).__name__ + '({') and dict_repr.endswith('})')):
+            return False
+
+        str_items = ('%r: %r' % (k, v) for k, v in items)
+        return all(item in dict_repr for item in str_items)
+
+    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'B': 2, 'c': 3})
+    assert assert_dict_repr(d, {'a': 1, 'B': 2, 'c': 3}.items())
+    d.pop('c')
+    assert assert_dict_repr(d, {'a': 1, 'B': 2}.items())
+
+    assert repr(CaseInsensitiveDict()) == \
+            repr(CaseInsensitiveDict({})) == \
+            'CaseInsensitiveDict()'
+
+    d = CaseInsensitiveDict({'a': 1})
+    assert assert_dict_repr(d, {'a': 1}.items())
+    d.pop('a')
+    assert repr(d) == 'CaseInsensitiveDict()'
+'''
+
+def test_update() -> None:
+    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'b': 2, 'c': 3})
+    assert len(d) == 3
+    d.update({'C': 8, 'D': 11})
+    assert len(d) == 4
+    assert d['a'] == 1
+    assert d['b'] == 2
+    assert d['c'] == 8
+    assert d['d'] == 11
+
+def test_clear() -> None:
+    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'b': 2, 'c': 3})
+    assert len(d) == 3
+    d.clear()
+    assert len(d) == 0
+
+def test_pickle() -> None:
+    mydict: Dict = {
+        'a': 1,
+        'b': 2,
+        'c': {'dee': 40, 'eee': {'eff': 'gee', 'hch': 80}},
+        'foo': [1, 2, 3],
+    }
+    d: object = CaseInsensitiveDict(mydict)
+    for level in range(pickle.HIGHEST_PROTOCOL + 1):
+        other = pickle.loads(pickle.dumps(d, protocol=level))
+        assert d == other

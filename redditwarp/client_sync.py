@@ -20,8 +20,6 @@ from .core.authorizer_sync import Authorizer, Authorized
 from .core.ratelimited_sync import RateLimited
 from .core.default_headers_predisposed_sync import DefaultHeadersPredisposed
 from .exceptions import (
-    AuthError,
-    APIError,
     HTTPStatusError,
     get_response_content_error,
     raise_for_json_layout_content_error,
@@ -100,7 +98,8 @@ class ClientCore:
         return cls.from_http(http)
 
     def __init__(self,
-            client_id: str, client_secret: str, refresh_token: Optional[str] = None,
+            client_id: str, client_secret: str,
+            refresh_token: Optional[str] = None,
             access_token: Optional[str] = None, *,
             username: Optional[str] = None, password: Optional[str] = None,
             grant: Optional[AuthorizationGrant] = None):
@@ -204,15 +203,11 @@ class ClientCore:
         try:
             resp = self.http.request(verb, uri, params=params, payload=payload,
                     data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
+            self.last_response = resp
 
-        except auth.exceptions.ResponseException as e:
+        except (auth.exceptions.ResponseException, http.exceptions.ResponseException) as e:
             self.last_response = e.response
-            raise AuthError(response=e.response) from e
-        except http.exceptions.ResponseException as e:
-            self.last_response = e.response
-            raise APIError(response=e.response) from e
-
-        self.last_response = resp
+            raise
 
         try:
             data = json_loads_response(resp)
@@ -250,12 +245,10 @@ if interactive_mode:
         def __call__(cls: type, *args: Any, **kwds: Any) -> Client:
             cls = cast(Type[Client], cls)
             if len(args) == 1:
-                return cls.from_praw_config(*args)
+                return cls.from_praw_config(*args, **kwds)
             return type.__call__(cls, *args, **kwds)
 
 class Client(ClientCore, metaclass=ClientMeta):  # type: ignore[misc]
-    T = TypeVar('T', bound='Client')
-
     def _init(self, http: HTTPClient) -> None:
         super()._init(http)
         self.api = SiteProcedures(self)

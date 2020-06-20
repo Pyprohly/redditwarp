@@ -82,7 +82,7 @@ class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: AttributeMappingWrapper,
+        obj: Mapping,
         stream: IO[str],
         indent: int,
         allowance: int,

@@ -32,32 +32,32 @@ class TokenBucket:
         return n <= self.get_value()
 
     def try_consume(self, n: float) -> bool:
-        """Comsume `n` tokens if `n` tokens are available."""
+        """Consume `n` tokens if `n` tokens are available."""
         if self.can_consume(n):
             self._value -= n
             return True
         return False
 
     def do_consume(self, n: float) -> bool:
-        """Comsume `n` tokens. Raise an exception if `n` tokens aren't available."""
+        """Consume `n` tokens. If `n` tokens aren't available, raise an exception."""
         if self.try_consume(n):
             return True
-        raise RuntimeError(f'attempted consume of {n} tokens when {self._value} were available')
+        raise RuntimeError(f'attempted to consume {n} tokens when {self._value} were available')
 
     def hard_consume(self, n: float) -> bool:
-        """Comsume up to `n` tokens."""
+        """Consume up to `n` tokens."""
         t = self.get_value()
         self._value = max(t - n, 0)
         return n <= t
 
     def consume_all(self) -> None:
-        """Deplete the token bucket, as if `self.hard_consume(float('inf'))`."""
+        """Deplete the token bucket, like `self.hard_consume(float('inf'))`."""
         self._checkpoint_time()
         self._value = 0
 
     def cooldown(self, n: float) -> float:
         """Return the duration the client should wait before the `*_comsume`
-        methods return `True` again.
+        methods will return `True` again.
 
         This class is not IO-bound so there is no "`wait_consume()`" method.
         Here is the logic for implementing that::

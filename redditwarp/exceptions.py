@@ -27,33 +27,19 @@ class BasicException(RootException):
 class ClientError(BasicException):
     pass
 
-
 class ResponseException(BasicException):
     def __init__(self, exc_msg: object = None, *, response: Response):
         super().__init__(exc_msg)
         self.response = response
 
-class ServiceRequestError(ResponseException):
+class HTTPStatusError(ResponseException):
     pass
 
-class AuthError(ServiceRequestError):
-    pass
-
-class APIError(ServiceRequestError):
+class ResponseContentError(ResponseException):
     """A base exception class denoting that something in the response body
     from an API request is amiss. Either an error was indicated by the API
     or the structure is of something the client isn't prepared to handle.
     """
-
-class HTTPStatusError(APIError):
-    """There was nothing useful to process in the response body and the
-    response had a bad status code.
-    """
-
-
-
-class ResponseContentError(APIError):
-    pass
 
 class UnidentifiedResponseContentError(ResponseContentError):
     """The response body contains data that the client isn't prepared to handle."""
@@ -117,7 +103,7 @@ def raise_for_json_layout_content_error(resp: Response, json_data: MutableMappin
 
 
 
-class RedditAPIError(APIError):
+class RedditAPIError(ResponseException):
     """An error class denoting an error that was indicated in the
     response body of an API request, occurring when the remote API
     wishes to inform the client that a service request was carried
@@ -246,7 +232,8 @@ class Variant2RedditAPIError(RedditAPIError):
     def field(self) -> str:
         return self._field
 
-    def __init__(self, exc_msg: object = None, *, response: Response, codename: str, detail: str, fields: str):
+    def __init__(self, exc_msg: object = None, *, response: Response,
+            codename: str, detail: str, fields: str):
         super().__init__(exc_msg=exc_msg, response=response)
         self._codename = codename
         self._detail = detail

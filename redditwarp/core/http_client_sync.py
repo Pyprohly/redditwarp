@@ -18,7 +18,7 @@ from ..http.transport import transport_reg
 from ..http.request import Request
 from .. import __about__
 from ..http.payload import make_payload
-from .exceptions import raise_for_auth_response_exception
+from .exceptions import handle_auth_response_exception
 
 transport_info = transport_reg['requests']
 
@@ -105,8 +105,7 @@ class RedditHTTPClient:
                 resp = self.requestor.request(r, timeout=timeout, aux_info=aux_info)
 
             except auth.exceptions.ResponseException as e:
-                raise_for_auth_response_exception(e)
-                raise
+                handle_auth_response_exception(e)
 
             if resp.status in (500, 502):
                 sleep(i**2)
