@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 from . import http
 from . import auth
+from . import core
 from .core.http_client_sync import HTTPClient
 from .http.util.json_loads import json_loads_response
 from .auth import ClientCredentials, Token
@@ -83,7 +84,7 @@ class ClientCore:
 
         When the token becomes invalid you'll need to deal with the 401 Unauthorized
         exception that will be thrown upon making requests. You can use the
-        :meth:`set_access_token` method to assign a new token.
+        :meth:`set_access_token` instance method to assign a new token.
 
         Parameters
         ----------
@@ -181,7 +182,6 @@ class ClientCore:
         self.http.close()
 
     def set_user_agent(self, s: Optional[str]) -> None:
-        s = str(s)
         ua = self.http.USER_AGENT_STRING_HEAD
         if s is not None:
             ua += ' Bot -- ' + s
@@ -204,8 +204,11 @@ class ClientCore:
             resp = self.http.request(verb, uri, params=params, payload=payload,
                     data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
             self.last_response = resp
-
-        except (auth.exceptions.ResponseException, http.exceptions.ResponseException) as e:
+        except (
+            auth.exceptions.ResponseException,
+            http.exceptions.ResponseException,
+            core.exceptions.ResponseException,
+        ) as e:
             self.last_response = e.response
             raise
 
@@ -242,11 +245,11 @@ class ClientCore:
 ClientMeta = type
 if interactive_mode:
     class ClientMeta(type):  # type: ignore[no-redef]
-        def __call__(cls: type, *args: Any, **kwds: Any) -> Client:
+        def __call__(cls: type, *args: Any, **kwargs: Any) -> Client:
             cls = cast(Type[Client], cls)
             if len(args) == 1:
-                return cls.from_praw_config(*args, **kwds)
-            return type.__call__(cls, *args, **kwds)
+                return cls.from_praw_config(*args, **kwargs)
+            return type.__call__(cls, *args, **kwargs)
 
 class Client(ClientCore, metaclass=ClientMeta):  # type: ignore[misc]
     def _init(self, http: HTTPClient) -> None:

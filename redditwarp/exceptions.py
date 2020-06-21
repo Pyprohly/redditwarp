@@ -81,20 +81,16 @@ class UnacceptableJSONLayoutResponseContentError(UnacceptableResponseContentErro
                 '** Please file a bug report with RedditWrap! **'
 
 
-class HTMLDocumentResponseContentError(ResponseContentError):
-    pass
-
-class UserAgentRequired(ResponseException):
+class HTMLDocumentReceivedError(ResponseContentError):
     pass
 
 
 def get_response_content_error(resp: Response) -> Exception:
     if resp.data.lower().startswith(b'<!doctype html>'):
+        msg = None
         if b'>user agent required</' in resp.data:
-            return UserAgentRequired(
-                    'the Reddit API wants you to set a user-agent',
-                    response=resp)
-        return HTMLDocumentResponseContentError(response=resp)
+            msg = 'the Reddit API is asking you to set a user-agent'
+        return HTMLDocumentReceivedError(msg, response=resp)
     return UnidentifiedResponseContentError(response=resp)
 
 def raise_for_json_layout_content_error(resp: Response, json_data: MutableMapping[str, Any]) -> None:
@@ -131,14 +127,12 @@ class RedditAPIError(ResponseException):
         fd = self.field
         return f"{cn}: {de}{fd and f' -> {fd}'}"
 
-class Variant1RedditAPIError(RedditAPIError):
+class RedditAPIErrorVariant1(RedditAPIError):
     """An error class denoting an error that was indicated in the
     response body of an API request, occurring when the remote API
     wishes to inform the client that a service request was carried
     out unsuccessfully.
     """
-
-    # {'json': {'errors': [['NO_TEXT', 'we need something here', 'title']]}}
 
     @property
     def codename(self) -> str:
@@ -177,7 +171,7 @@ class Variant1RedditAPIError(RedditAPIError):
 
         return super().__str__()
 
-class ContentCreationCooldown(Variant1RedditAPIError):
+class ContentCreationCooldown(RedditAPIErrorVariant1):
     """Used over RedditAPIError when the error items list contains
     a RATELIMIT error, and it is the only error in the list.
     """
@@ -205,8 +199,8 @@ def try_parse_reddit_error_items(data: Mapping[str, Any]) -> Optional[List[Reddi
         return l
     return None
 
-def get_variant1_reddit_api_error(response: Response, error_list: List[RedditErrorItem]) -> Variant1RedditAPIError:
-    cls = Variant1RedditAPIError
+def get_variant1_reddit_api_error(response: Response, error_list: List[RedditErrorItem]) -> RedditAPIErrorVariant1:
+    cls = RedditAPIErrorVariant1
     if (len(error_list) == 1) and (error_list[0].codename == 'RATELIMIT'):
         cls = ContentCreationCooldown
     return cls(response=response, errors=error_list)
@@ -217,9 +211,7 @@ def raise_for_variant1_reddit_api_error(resp: Response, data: Mapping[str, Any])
         raise get_variant1_reddit_api_error(resp, error_list)
 
 
-class Variant2RedditAPIError(RedditAPIError):
-    # {"fields": ["title"], "explanation": "this is too long (max: 50)", "message": "Bad Request", "reason": "TOO_LONG"}
-
+class RedditAPIErrorVariant2(RedditAPIError):
     @property
     def codename(self) -> str:
         return self._codename
@@ -241,11 +233,11 @@ class Variant2RedditAPIError(RedditAPIError):
         self.fields = fields
 
 def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
-    if data.keys() == {'fields', 'explanation', 'message', 'reason'}:
+    if data.keys() >= {'fields', 'explanation', 'reason'}:
         codename = data['reason']
         detail = data['explanation']
         fields = data['fields']
-        raise Variant2RedditAPIError(
+        raise RedditAPIErrorVariant2(
             response=resp,
             codename=codename,
             detail=detail,
