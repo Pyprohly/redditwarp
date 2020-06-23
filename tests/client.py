@@ -11,45 +11,45 @@ from redditwarp.http.authorizer_sync import Authorizer, Authorized
 from redditwarp.http.ratelimited_sync import RateLimited
 
 client_credentials = ClientCredentials(
-	os.environ['redditwarp_client_id'],
-	os.environ['redditwarp_client_secret'],
+    os.environ['redditwarp_client_id'],
+    os.environ['redditwarp_client_secret'],
 )
 session = new_session()
 # Disable response compression.
 #session.headers['Accept-Encoding'] = 'identity'
 
 authorizer = Authorizer(
-	None,
-	TokenObtainmentClient(
-		session,
-		TOKEN_OBTAINMENT_URL,
-		client_credentials,
-		ClientCredentialsGrant(),
-	),
+    None,
+    TokenObtainmentClient(
+        session,
+        TOKEN_OBTAINMENT_URL,
+        client_credentials,
+        ClientCredentialsGrant(),
+    ),
 )
 requestor = RateLimited(Authorized(session, authorizer))
 userless_http = HTTPClient(
-	requestor,
-	session,
-	authorizer,
+    requestor,
+    session,
+    authorizer,
 )
 userless_client = redditwarp.Client.from_http(userless_http)
 authorizer.token = redditwarp.auth.token.Token('<ACCESS_TOKEN>')
 
 authorizer = Authorizer(
-	None,
-	TokenObtainmentClient(
-		session,
-		TOKEN_OBTAINMENT_URL,
-		client_credentials,
-		RefreshTokenGrant(os.environ['redditwarp_refresh_token']),
-	),
+    None,
+    TokenObtainmentClient(
+        session,
+        TOKEN_OBTAINMENT_URL,
+        client_credentials,
+        RefreshTokenGrant(os.environ['redditwarp_refresh_token']),
+    ),
 )
 requestor = RateLimited(Authorized(session, authorizer))
 user_http = HTTPClient(
-	requestor,
-	session,
-	authorizer,
+    requestor,
+    session,
+    authorizer,
 )
 user_client = redditwarp.Client.from_http(user_http)
 authorizer.token = redditwarp.auth.token.Token('<ACCESS_TOKEN>')

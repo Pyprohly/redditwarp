@@ -8,9 +8,9 @@ del sys.path[1]
 
 @pytest.fixture(scope='session')
 def userless_client():
-	return client.userless_client
+    return client.userless_client
 
 @pytest.fixture(scope='session')
 def user_client():
-	return client.user_client
+    return client.user_client
 '''

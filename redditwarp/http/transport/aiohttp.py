@@ -5,9 +5,12 @@ from typing import TYPE_CHECKING, Optional, Mapping, Any
 if TYPE_CHECKING:
     from ..request import Request
 
+import sys
 import asyncio
+
 import aiohttp
 
+from ..transporter_info import TransporterInfo
 from ..base_session_async import BaseSession
 from .. import exceptions
 from .. import payload
@@ -25,9 +28,11 @@ _PAYLOAD_DISPATCH_TABLE: Mapping = {
 
 name = 'aiohttp'
 version_string = aiohttp.__version__
+info = TransporterInfo(name, version_string, sys.modules[__name__])
 
 
 class Session(BaseSession):
+    TRANSPORTER = info
     TIMEOUT = 8
 
     def __init__(self,

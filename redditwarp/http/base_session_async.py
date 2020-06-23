@@ -2,15 +2,19 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Optional, Type
+    from typing import ClassVar, Optional, Type
     from types import TracebackType
     from collections.abc import Mapping
     from .request import Request
     from .response import Response
+    from .transporter_info import TransporterInfo
 
+from .transporter_info import blank_transporter
 from .requestor_async import Requestor
 
 class BaseSession(Requestor):
+    TRANSPORTER: ClassVar[TransporterInfo] = blank_transporter
+
     def __init__(self,
         *,
         params: Optional[Mapping[str, str]] = None,

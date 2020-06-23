@@ -14,9 +14,9 @@ from .http.util.json_loads import json_loads_response
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
 from .util.praw_config import get_praw_config
-from .http.transport.requests import new_session
+from .http.transport import default_sync_transporter
 from .auth.token_obtainment_client_sync import TokenObtainmentClient
-from .auth.const import TOKEN_OBTAINMENT_ENDPOINT_URL, RESOURCE_BASE_URL
+from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
 from .core.authorizer_sync import Authorizer, Authorized
 from .core.ratelimited_sync import RateLimited
 from .core.default_headers_predisposed_sync import DefaultHeadersPredisposed
@@ -35,6 +35,7 @@ interactive_mode = not hasattr(__import__('__main__'), '__file__')
 
 class ClientCore:
     """The gateway to interacting with the Reddit API."""
+    default_transporter = default_sync_transporter
 
     T = TypeVar('T', bound='ClientCore')
 
@@ -91,7 +92,7 @@ class ClientCore:
         access_token: str
         """
         token = Token(access_token)
-        session = new_session()
+        session = cls.default_transporter.module.new_session()  # type: ignore[attr-defined]
         authorizer = Authorizer(token, None)
         authorized_requestor = Authorized(session, authorizer)
         requestor = RateLimited(authorized_requestor)
@@ -149,14 +150,14 @@ class ClientCore:
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
         token = None if access_token is None else Token(access_token)
-        session = new_session()
+        session = self.default_transporter.module.new_session()  # type: ignore[attr-defined]
         authorizer = Authorizer(token, None)
         authorized_requestor = Authorized(session, authorizer)
         requestor = RateLimited(authorized_requestor)
         http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
         authorizer.token_client = TokenObtainmentClient(
             DefaultHeadersPredisposed(session, http.default_headers),
-            TOKEN_OBTAINMENT_ENDPOINT_URL,
+            TOKEN_OBTAINMENT_URL,
             ClientCredentials(client_id, client_secret),
             grant,
         )
@@ -182,7 +183,7 @@ class ClientCore:
         self.http.close()
 
     def set_user_agent(self, s: Optional[str]) -> None:
-        ua = self.http.USER_AGENT_STRING_HEAD
+        ua = self.http.user_agent_string_head
         if s is not None:
             ua += ' Bot -- ' + s
         self.http.user_agent = ua
@@ -239,7 +240,7 @@ class ClientCore:
         access_token: str
         """
         if self.http.authorizer is None:
-            raise RuntimeError('The HTTP client does not know of an authorizer instance to assign a token to')
+            raise RuntimeError('The HTTP client does not know of an authorizer instance to assign the token to')
         self.http.authorizer.token = Token(access_token)
 
 ClientMeta = type

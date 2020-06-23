@@ -14,21 +14,13 @@ import sys
 from asyncio import sleep
 
 from .. import auth
-from ..http.transport import transport_reg
 from ..http.request import Request
 from .. import __about__
 from ..http.payload import make_payload
 from .exceptions import handle_auth_response_exception
 
-transport_info = transport_reg['aiohttp']
-
 class RedditHTTPClient:
     TIMEOUT = 8
-    USER_AGENT_STRING_HEAD = (
-        f"{__about__.__title__}/{__about__.__version__} "
-        f"Python/{'{0[0]}.{0[1]}'.format(sys.version_info)} "
-        f"{transport_info.name}/{transport_info.version_string}"
-    )
 
     @property
     def default_headers(self) -> MutableMapping[str, str]:
@@ -65,7 +57,11 @@ class RedditHTTPClient:
         self.requestor = session if requestor is None else requestor
         self._default_headers = {} if default_headers is None else default_headers
         self.authorized_requestor = authorized_requestor
-        self.user_agent = self.USER_AGENT_STRING_HEAD
+        self.user_agent = self.user_agent_string_head = (
+            f"{__about__.__title__}/{__about__.__version__} "
+            f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
+            f"{session.TRANSPORTER.name}/{session.TRANSPORTER.version_string}"
+        )
 
     async def __aenter__(self) -> RedditHTTPClient:
         return self

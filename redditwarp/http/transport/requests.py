@@ -5,8 +5,11 @@ from typing import TYPE_CHECKING, Optional, Mapping, Any
 if TYPE_CHECKING:
     from ..request import Request
 
+import sys
+
 import requests
 
+from ..transporter_info import TransporterInfo
 from ..base_session_sync import BaseSession
 from .. import exceptions
 from .. import payload
@@ -24,9 +27,11 @@ _PAYLOAD_DISPATCH_TABLE: Mapping = {
 
 name = 'requests'
 version_string = requests.__version__
+info = TransporterInfo(name, version_string, sys.modules[__name__])
 
 
 class Session(BaseSession):
+    TRANSPORTER = info
     TIMEOUT = 8
 
     def __init__(self,

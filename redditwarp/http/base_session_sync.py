@@ -2,13 +2,15 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Optional, Type
+    from typing import ClassVar, Optional, Type
     from types import TracebackType
     from collections.abc import Mapping
     from .request import Request
     from .response import Response
+    from .transporter_info import TransporterInfo
 
-from .requestor import Requestor
+from .transporter_info import blank_transporter
+from .requestor_sync import Requestor
 
 class BaseSession(Requestor):
     """
@@ -19,6 +21,7 @@ class BaseSession(Requestor):
     params: Dict[str, Union[str, bytes]]
         Dictionary of querystring data to attach to each Request.
     """
+    TRANSPORTER: ClassVar[TransporterInfo] = blank_transporter
 
     def __init__(self,
         *,
