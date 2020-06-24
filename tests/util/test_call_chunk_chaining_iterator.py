@@ -1,11 +1,11 @@
 
-from typing import List, Callable, Iterable
+from typing import Callable, Iterable
 
-from redditwarp.util.obstinate_call_chunk_chaining_iterator import ObstinateCallChunkChainingIterator
+from redditwarp.util.call_chunk_chaining_iterator import CallChunkChainingIterator
 
 def test_call_chunks_attrib() -> None:
     it = [lambda: [1]]
-    cci = ObstinateCallChunkChainingIterator(it)
+    cci = CallChunkChainingIterator(it)
     assert cci.call_chunks is it
 
 def test_simple_iteration() -> None:
@@ -14,7 +14,7 @@ def test_simple_iteration() -> None:
         lambda: [2, 3],
         lambda: [4, 5, 6],
     ]
-    cci = ObstinateCallChunkChainingIterator(it)
+    cci = CallChunkChainingIterator(it)
     assert list(cci) == [1,2,3,4,5,6]
 
 def test_current_iter() -> None:
@@ -23,7 +23,7 @@ def test_current_iter() -> None:
     c1 = lambda: l1
     c2 = lambda: l2
     it = [c1, c2]
-    cci = ObstinateCallChunkChainingIterator(it)
+    cci = CallChunkChainingIterator(it)
 
     assert next(cci) == 0
     assert list(cci.current_iter) == [1, 2]
@@ -38,19 +38,19 @@ def test_exception_during_iteration() -> None:
     class throw_on_first_call_then_return:
         def __init__(self) -> None:
             self.call_count = 0
-        def __call__(self) -> List[int]:
+        def __call__(self) -> Iterable[int]:
             self.call_count += 1
             if self.call_count == 1:
                 raise RuntimeError
             return [2]
 
     j = throw_on_first_call_then_return()
-    it: List[Callable[[], List[int]]] = [
+    it: Iterable[Callable[[], Iterable[int]]] = [
         lambda: [1],
         j,
         lambda: [3],
     ]
-    cci = ObstinateCallChunkChainingIterator(it)
+    cci = CallChunkChainingIterator(it)
     assert cci.current_callable is None
     assert next(cci) == 1
     assert cci.current_callable is None
@@ -64,8 +64,8 @@ def test_exception_during_iteration() -> None:
     assert next(cci) == 3
 
 def test_current_callable_is_setable() -> None:
-    it: Iterable = ()
-    cci = ObstinateCallChunkChainingIterator(it)
+    it: Iterable[Callable[[], Iterable[int]]] = ()
+    cci = CallChunkChainingIterator(it)
     assert list(cci) == []
     cci.current_callable = lambda: (1,2,3)
     assert list(cci) == [1,2,3]

@@ -8,14 +8,14 @@ if TYPE_CHECKING:
 from ....models.submission import LinkPost, TextPost
 from ....util.base_conversion import to_base36
 from ....util.chunked import chunked
-from ....util.obstinate_call_chunk_chaining_iterator import ObstinateCallChunkChainingIterator
+from ....util.call_chunk_chaining_iterator import CallChunkChainingIterator
 
 T = TypeVar('T')
 
 def _by_ids(
     ids: Iterable[int],
-    by_id36s: Callable[[Iterable[str]], ObstinateCallChunkChainingIterator[T]],
-) -> ObstinateCallChunkChainingIterator[T]:
+    by_id36s: Callable[[Iterable[str]], CallChunkChainingIterator[T]],
+) -> CallChunkChainingIterator[T]:
     id36s = map(to_base36, ids)
     return by_id36s(id36s)
 
@@ -23,7 +23,7 @@ def _by_id36s(
     client: Client,
     id36s: Iterable[str],
     parse_for_submissions: Callable[[Mapping[str, Any]], List[T]],
-) -> ObstinateCallChunkChainingIterator[T]:
+) -> CallChunkChainingIterator[T]:
     t_id36s = map('t3_'.__add__, id36s)
     chunks = chunked(t_id36s, 100)
     strseqs = map(','.join, chunks)
@@ -35,17 +35,17 @@ def _by_id36s(
         return lambda: parse_for_submissions(api_call_func(ids_str, client))
 
     call_chunks = map(call_chunk, strseqs)
-    return ObstinateCallChunkChainingIterator(call_chunks)
+    return CallChunkChainingIterator(call_chunks)
 
 
 class as_textposts:
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, ids: Iterable[int]) -> ObstinateCallChunkChainingIterator[TextPost]:
+    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[TextPost]:
         return _by_ids(ids, self.by_id36s)
 
-    def by_id36s(self, id36s: Iterable[str]) -> ObstinateCallChunkChainingIterator[TextPost]:
+    def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[TextPost]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[TextPost]:
             submissions_data = (child['data'] for child in root['data']['children'])
             output = []
@@ -61,10 +61,10 @@ class as_linkposts:
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, ids: Iterable[int]) -> ObstinateCallChunkChainingIterator[LinkPost]:
+    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[LinkPost]:
         return _by_ids(ids, self.by_id36s)
 
-    def by_id36s(self, id36s: Iterable[str]) -> ObstinateCallChunkChainingIterator[LinkPost]:
+    def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[LinkPost]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[LinkPost]:
             submissions_data = (child['data'] for child in root['data']['children'])
             output = []
@@ -82,10 +82,10 @@ class submissions:
         self.as_textposts = as_textposts(client)
         self.as_linkposts = as_linkposts(client)
 
-    def __call__(self, ids: Iterable[int]) -> ObstinateCallChunkChainingIterator[Submission]:
+    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[Submission]:
         return _by_ids(ids, self.by_id36s)
 
-    def by_id36s(self, id36s: Iterable[str]) -> ObstinateCallChunkChainingIterator[Submission]:
+    def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[Submission]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[Submission]:
             submissions_data = (child['data'] for child in root['data']['children'])
             output = []

@@ -15,7 +15,7 @@ import webbrowser
 from redditwarp.http.transport import default_sync_transporter as transporter
 from redditwarp import auth
 
-new_session = transporter.module.new_session()  # type: ignore[attr-defined]
+new_session = transporter.module.new_session  # type: ignore[attr-defined]
 
 def get_client_id(x: Optional[str]) -> str:
     print('Client ID: ', end='')

@@ -7,7 +7,7 @@ from .unfaltering_chaining_iterator import UnfalteringChainingIterator
 
 T = TypeVar('T')
 
-class ObstinateCallChunkChainingIterator(Generic[T]):
+class CallChunkChainingIterator(Generic[T]):
     """Evaluate call chunks and chain them together."""
 
     @property

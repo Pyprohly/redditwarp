@@ -6,10 +6,10 @@ if TYPE_CHECKING:
 
 import pytest  # type: ignore[import]
 
-from redditwarp.auth.token_revocation_client_sync import TokenRevocationClient
+from redditwarp.auth.token_revocation_client_async import TokenRevocationClient
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.exceptions import HTTPStatusError
-from redditwarp.http.requestor_sync import Requestor
+from redditwarp.http.requestor_async import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 from redditwarp.http.payload import FormData
@@ -25,12 +25,13 @@ class MockRequestor(Requestor):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    def request(self, request: Request, *, timeout: Optional[float] = None,
+    async def request(self, request: Request, *, timeout: Optional[float] = None,
             aux_info: Optional[Mapping] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
-def test_revoke_token() -> None:
+@pytest.mark.asyncio
+async def test_revoke_token() -> None:
     requestor = MockRequestor(
         response_status=200,
         response_headers={},
@@ -43,7 +44,7 @@ def test_revoke_token() -> None:
         uri,
         client_credentials,
     )
-    o.revoke_token('a1', 'a2')
+    await o.revoke_token('a1', 'a2')
 
     assert len(requestor.history) == 1
     req = requestor.history[0]
@@ -52,7 +53,7 @@ def test_revoke_token() -> None:
     assert isinstance(req.payload, FormData)
     assert req.payload.data == {'token': 'a1', 'token_type_hint': 'a2'}
 
-    o.revoke_token('b1', '')
+    await o.revoke_token('b1', '')
     assert len(requestor.history) == 2
     req = requestor.history[1]
     assert req.verb == 'POST'
@@ -60,7 +61,7 @@ def test_revoke_token() -> None:
     assert isinstance(req.payload, FormData)
     assert req.payload.data == {'token': 'b1'}
 
-    o.revoke_token('c1', None)
+    await o.revoke_token('c1', None)
     assert len(requestor.history) == 3
     req = requestor.history[2]
     assert req.verb == 'POST'
@@ -68,7 +69,8 @@ def test_revoke_token() -> None:
     assert isinstance(req.payload, FormData)
     assert req.payload.data == {'token': 'c1'}
 
-def test_revoke_token__exceptions() -> None:
+@pytest.mark.asyncio
+async def test_revoke_token__exceptions() -> None:
     requestor = MockRequestor(
         response_status=502,
         response_headers={},
@@ -79,22 +81,24 @@ def test_revoke_token__exceptions() -> None:
         '', ClientCredentials('cid', 'cse'),
     )
     with pytest.raises(HTTPStatusError):
-        o.revoke_token('', '')
+        await o.revoke_token('', '')
 
-def test_revoke_access_token() -> None:
+@pytest.mark.asyncio
+async def test_revoke_access_token() -> None:
     class MyTokenRevocationClient(TokenRevocationClient):
-        def revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> None:
+        async def revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> None:
             assert token == 'abc'
             assert token_type_hint == 'access_token'
 
     o = MyTokenRevocationClient(Requestor(), '', ClientCredentials('', ''))
-    o.revoke_access_token('abc')
+    await o.revoke_access_token('abc')
 
-def test_revoke_refresh_token() -> None:
+@pytest.mark.asyncio
+async def test_revoke_refresh_token() -> None:
     class MyTokenRevocationClient(TokenRevocationClient):
-        def revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> None:
+        async def revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> None:
             assert token == 'def'
             assert token_type_hint == 'refresh_token'
 
     o = MyTokenRevocationClient(Requestor(), '', ClientCredentials('', ''))
-    o.revoke_refresh_token('def')
+    await o.revoke_refresh_token('def')

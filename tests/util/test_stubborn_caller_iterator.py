@@ -1,5 +1,5 @@
 
-from typing import List, Callable
+from typing import Iterable, Callable
 
 from redditwarp.util.stubborn_caller_iterator import StubbornCallerIterator
 
@@ -27,7 +27,7 @@ def test_exception_during_iteration() -> None:
             return 3
 
     j = throw_on_first_call_then_return()
-    it: List[Callable[[], int]] = [
+    it: Iterable[Callable[[], int]] = [
         lambda: 1,
         lambda: 2,
         j,

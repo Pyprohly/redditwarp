@@ -8,8 +8,8 @@ import pytest  # type: ignore[import]
 
 from redditwarp import auth
 from redditwarp import core
-from redditwarp.core.http_client_sync import HTTPClient
-from redditwarp.http.base_session_sync import BaseSession
+from redditwarp.core.http_client_async import HTTPClient
+from redditwarp.http.base_session_async import BaseSession
 from redditwarp.http.response import Response
 from redditwarp.http.request import Request
 
@@ -25,12 +25,13 @@ class GoodSession(BaseSession):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    def request(self, request: Request, *, timeout: Optional[float] = None,
+    async def request(self, request: Request, *, timeout: Optional[float] = None,
             aux_info: Optional[Mapping] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
-def test_request() -> None:
+@pytest.mark.asyncio
+async def test_request() -> None:
     session = GoodSession(200, {}, b'')
     default_headers = {'cheese': 'bacon', 'fire': 'water'}
     http = HTTPClient(
@@ -41,7 +42,7 @@ def test_request() -> None:
     )
     params = {'water': 'earth'}
     headers = {'fire': 'air'}
-    http.request('DELETE', 'system32', params=params, headers=headers, data={})
+    await http.request('DELETE', 'system32', params=params, headers=headers, data={})
     requ = session.history[0]
     assert requ.verb == 'DELETE'
     assert requ.uri == 'system32'
@@ -58,14 +59,15 @@ class BadSession(BaseSession):
         super().__init__()
         self.exception = exc
 
-    def request(self, request: Request, *, timeout: Optional[float] = None,
+    async def request(self, request: Request, *, timeout: Optional[float] = None,
             aux_info: Optional[Mapping] = None) -> Response:
         raise self.exception
 
 class TestRequestExceptions:
     class TestAuth:
         class TestResponseContentError:
-            def test_UnidentifiedResponseContentError(self) -> None:
+            @pytest.mark.asyncio
+            async def test_UnidentifiedResponseContentError(self) -> None:
                 response = Response(999, {}, b'')
                 exc = auth.exceptions.ResponseContentError(response=response)
                 session = BadSession(exc)
@@ -75,9 +77,10 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.UnidentifiedResponseContentError):
-                    http.request('', '')
+                    await http.request('', '')
 
-            def test_HTMLDocumentResponseContentError(self) -> None:
+            @pytest.mark.asyncio
+            async def test_HTMLDocumentResponseContentError(self) -> None:
                 response = Response(999, {}, b'<!doctype html>')
                 exc = auth.exceptions.ResponseContentError(response=response)
                 session = BadSession(exc)
@@ -87,7 +90,7 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.HTMLDocumentResponseContentError):
-                    http.request('', '')
+                    await http.request('', '')
 
                 request = Request('', '', headers={'User-Agent': 'searchme'})
                 response = Response(
@@ -104,7 +107,7 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.HTMLDocumentResponseContentError) as excinfo:
-                    http.request('', '')
+                    await http.request('', '')
                 assert excinfo.value.exc_msg is not None
 
                 response = Response(999, {}, (b'<!doctype html>' + b'<p>you are not allowed to do that</p>\n\n &mdash; access was denied to this resource.</div>'))
@@ -116,11 +119,12 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.HTMLDocumentResponseContentError) as excinfo:
-                    http.request('', '')
+                    await http.request('', '')
                 assert excinfo.value.exc_msg is None
 
         class TestHTTPStatusError:
-            def test_CredentialsError(self) -> None:
+            @pytest.mark.asyncio
+            async def test_CredentialsError(self) -> None:
                 response = Response(400, {}, b'')
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
@@ -130,7 +134,7 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.CredentialsError):
-                    http.request('', '')
+                    await http.request('', '')
 
                 response = Response(401, {}, b'')
                 exc = auth.exceptions.HTTPStatusError(response=response)
@@ -141,9 +145,10 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.CredentialsError):
-                    http.request('', '')
+                    await http.request('', '')
 
-            def test_InsufficientScope(self) -> None:
+            @pytest.mark.asyncio
+            async def test_InsufficientScope(self) -> None:
                 response = Response(403, {'www-authenticate': 'error="insufficient_scope"'}, b'')
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
@@ -153,7 +158,7 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.InsufficientScope):
-                    http.request('', '')
+                    await http.request('', '')
 
                 response = Response(403, {'www-authenticate': 'error="asdf"'}, b'')
                 exc = auth.exceptions.HTTPStatusError(response=response)
@@ -164,9 +169,10 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(auth.exceptions.HTTPStatusError):
-                    http.request('', '')
+                    await http.request('', '')
 
-            def test_FaultyUserAgent(self) -> None:
+            @pytest.mark.asyncio
+            async def test_FaultyUserAgent(self) -> None:
                 request = Request('', '', headers={'User-Agent': 'curl'})
                 response = Response(429, {}, b'', request=request)
                 exc = auth.exceptions.HTTPStatusError(response=response)
@@ -177,4 +183,4 @@ class TestRequestExceptions:
                     authorized_requestor=None,
                 )
                 with pytest.raises(core.exceptions.FaultyUserAgent):
-                    http.request('', '')
+                    await http.request('', '')

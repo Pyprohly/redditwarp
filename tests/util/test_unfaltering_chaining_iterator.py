@@ -1,5 +1,5 @@
 
-from typing import Iterable, Iterator, List
+from typing import Iterable, Iterator
 
 from redditwarp.util.unfaltering_chaining_iterator import UnfalteringChainingIterator
 
@@ -30,7 +30,7 @@ def test_exception_during_iteration() -> None:
             yield from (-2, -3)
 
     j = throw_on_first_call_then_return()
-    it: List[Iterable[int]] = [
+    it: Iterable[Iterable[int]] = [
         (0, 1),
         j,
         (4, 5),

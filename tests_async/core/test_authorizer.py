@@ -4,12 +4,12 @@ from typing import Optional
 
 import pytest  # type: ignore[import]
 
-from redditwarp.core.authorizer_sync import Authorizer
+from redditwarp.core.authorizer_async import Authorizer
 from redditwarp.auth.token import ResponseToken
-from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
+from redditwarp.auth.token_obtainment_client_async import TokenObtainmentClient
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.core.exceptions import UnknownTokenType
-from redditwarp.http.requestor_sync import Requestor
+from redditwarp.http.requestor_async import Requestor
 
 class MyTokenObtainmentClient(TokenObtainmentClient):
     def __init__(self, my_token: ResponseToken) -> None:
@@ -21,7 +21,7 @@ class MyTokenObtainmentClient(TokenObtainmentClient):
         )
         self.my_token = my_token
 
-    def fetch_token(self) -> ResponseToken:
+    async def fetch_token(self) -> ResponseToken:
         return self.my_token
 
 class MyAuthorizer(Authorizer):
@@ -29,7 +29,8 @@ class MyAuthorizer(Authorizer):
         return 10
 
 
-def test_renew_token() -> None:
+@pytest.mark.asyncio
+async def test_renew_token() -> None:
     def get_response_token(expires_in: Optional[int]) -> ResponseToken:
         return ResponseToken(
             access_token='a',
@@ -49,27 +50,29 @@ def test_renew_token() -> None:
 
     o.expiry_time = 9999
     o.expires_in_fallback = None
-    token = o.renew_token()
+    token = await o.renew_token()
     assert token is my_token
     assert o.expiry_time is None
 
     o.expiry_time = 9999
     token_client.my_token = get_response_token(expires_in=234)
     o.expires_in_fallback = None
-    o.renew_token()
+    await o.renew_token()
     assert o.expiry_time == int(o.current_time()) + token_client.my_token.expires_in - o.expiry_skew
 
     o.expiry_time = 9999
     token_client.my_token = get_response_token(expires_in=None)
     o.expires_in_fallback = 125
-    o.renew_token()
+    await o.renew_token()
     assert o.expiry_time == int(o.current_time()) + o.expires_in_fallback - o.expiry_skew
 
-def test_renew_token__no_token_client_exception() -> None:
+@pytest.mark.asyncio
+async def test_renew_token__no_token_client_exception() -> None:
     with pytest.raises(RuntimeError):
-        Authorizer(token=None, token_client=None).renew_token()
+        await Authorizer(token=None, token_client=None).renew_token()
 
-def test_renew_token__unknown_token_Type() -> None:
+@pytest.mark.asyncio
+async def test_renew_token__unknown_token_Type() -> None:
     def get_token(token_type: str) -> ResponseToken:
         return ResponseToken(
             access_token='a',
@@ -81,14 +84,14 @@ def test_renew_token__unknown_token_Type() -> None:
 
     token_client = MyTokenObtainmentClient(get_token('bearer'))
     o = Authorizer(token=None, token_client=token_client)
-    o.renew_token()
+    await o.renew_token()
 
     token_client.my_token = get_token('Bearer')
-    o.renew_token()
+    await o.renew_token()
 
     token_client.my_token = get_token('bEaReR')
-    o.renew_token()
+    await o.renew_token()
 
     token_client.my_token = get_token('bear')
     with pytest.raises(UnknownTokenType):
-        o.renew_token()
+        await o.renew_token()

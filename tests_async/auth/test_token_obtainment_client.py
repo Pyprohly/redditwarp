@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 import pytest  # type: ignore[import]
 
-from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
+from redditwarp.auth.token_obtainment_client_async import TokenObtainmentClient
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.util import basic_auth
 from redditwarp.auth.exceptions import (
@@ -15,7 +15,7 @@ from redditwarp.auth.exceptions import (
     HTTPStatusError,
     UnrecognizedOAuth2ResponseError,
 )
-from redditwarp.http.requestor_sync import Requestor
+from redditwarp.http.requestor_async import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 from redditwarp.http.payload import FormData
@@ -31,12 +31,13 @@ class MockRequestor(Requestor):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    def request(self, request: Request, *, timeout: Optional[float] = None,
+    async def request(self, request: Request, *, timeout: Optional[float] = None,
             aux_info: Optional[Mapping] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
-def test_fetch_json_dict() -> None:
+@pytest.mark.asyncio
+async def test_fetch_json_dict() -> None:
     requestor = MockRequestor(
         response_status=200,
         response_headers={'Content-Type': 'application/json'},
@@ -51,7 +52,7 @@ def test_fetch_json_dict() -> None:
         client_credentials,
         grant,
     )
-    resp_json = o.fetch_json_dict()
+    resp_json = await o.fetch_json_dict()
 
     assert resp_json == {'a': 100, "some": "text"}
     assert len(requestor.history) == 1
@@ -62,7 +63,8 @@ def test_fetch_json_dict() -> None:
     assert req.payload.data == {'grant_type': 'epyt_tnarg', 'data1': 'blah'}
     assert req.headers['Authorization'] == basic_auth(client_credentials)
 
-def test_fetch_json_dict__exceptions() -> None:
+@pytest.mark.asyncio
+async def test_fetch_json_dict__exceptions() -> None:
     requestor = MockRequestor(
         response_status=502,
         response_headers={},
@@ -73,7 +75,7 @@ def test_fetch_json_dict__exceptions() -> None:
         '', ClientCredentials('cid', 'cse'), {},
     )
     with pytest.raises(ResponseContentError):
-        o.fetch_json_dict()
+        await o.fetch_json_dict()
 
     o.requestor = MockRequestor(
         response_status=502,
@@ -81,7 +83,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(InvalidClient):
-        o.fetch_json_dict()
+        await o.fetch_json_dict()
 
     o.requestor = MockRequestor(
         response_status=502,
@@ -89,7 +91,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "bogus"}',
     )
     with pytest.raises(HTTPStatusError):
-        o.fetch_json_dict()
+        await o.fetch_json_dict()
 
     o.requestor = MockRequestor(
         response_status=200,
@@ -97,11 +99,12 @@ def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "bogus"}',
     )
     with pytest.raises(UnrecognizedOAuth2ResponseError):
-        o.fetch_json_dict()
+        await o.fetch_json_dict()
 
-def test_fetch_token() -> None:
+@pytest.mark.asyncio
+async def test_fetch_token() -> None:
     class MyTokenObtainmentClient(TokenObtainmentClient):
-        def fetch_json_dict(self) -> Mapping[str, Any]:
+        async def fetch_json_dict(self) -> Mapping[str, Any]:
             return {
                 'access_token': 'aoeu',
                 'token_type': ';qjk',
@@ -110,7 +113,7 @@ def test_fetch_token() -> None:
                 'scope': 'zxcv',
             }
 
-    tk = MyTokenObtainmentClient(
+    tk = await MyTokenObtainmentClient(
         Requestor(),
         '',
         ClientCredentials('', ''),
