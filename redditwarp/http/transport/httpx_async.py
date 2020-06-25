@@ -1,4 +1,3 @@
-"""Transport adapter for aiohttp."""
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping
@@ -6,9 +5,9 @@ if TYPE_CHECKING:
     from ..request import Request
 
 import sys
-import asyncio
 
-import aiohttp
+import httpx
+import httpcore
 
 from ..transporter_info import TransporterInfo
 from ..base_session_async import BaseSession
@@ -37,8 +36,8 @@ def _request_kwargs(r: Request) -> Mapping[str, object]:
     return kwargs
 
 
-name = aiohttp.__name__
-version = aiohttp.__version__
+name = httpx.__name__
+version = httpx.__version__
 info = TransporterInfo(name, version, sys.modules[__name__])
 
 
@@ -47,58 +46,50 @@ class Session(BaseSession):
     TIMEOUT = 5
 
     def __init__(self,
-        session: aiohttp.ClientSession,
+        client: httpx.AsyncClient,
         *,
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
     ) -> None:
         super().__init__(params=params, headers=headers)
-        self.session = session
+        self.client = client
 
     async def request(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         self._prepare_request(request)
 
+        t: Optional[float] = timeout
         if timeout < 0:
-            timeout = self.TIMEOUT
-        aiohttp_client_timeout_kwargs = {
-            'total': 5*60,
-            'connect': timeout,
-            'sock_connect': timeout,
-            'sock_read': timeout,
-        }
-        if timeout == 0:
-            aiohttp_client_timeout_kwargs.clear()
+            t = self.TIMEOUT
+        elif timeout == 0:
+            t = None
 
-        kwargs: MutableMapping[str, object] = {
-            'timeout': aiohttp.ClientTimeout(**aiohttp_client_timeout_kwargs),
-        }
+        kwargs: MutableMapping[str, object] = {'timeout': t}
         kwargs.update(_request_kwargs(request))
 
         try:
-            async with self.session.request(**kwargs) as resp:
-                content = await resp.content.read()
-        except asyncio.TimeoutError as e:
+            resp = await self.client.request(**kwargs)
+        except httpcore.TimeoutException as e:
             raise exceptions.TimeoutError from e
         except Exception as e:
             raise exceptions.TransportError from e
 
         return Response(
-            status=resp.status,
+            status=resp.status_code,
             headers=resp.headers,
-            data=content,
+            data=resp.content,
             request=request,
             underlying_object=resp,
         )
 
     async def close(self) -> None:
-        await self.session.close()
+        await self.client.aclose()
 
 
 def new_session(*,
     params: Optional[Mapping[str, str]] = None,
     headers: Optional[Mapping[str, str]] = None,
 ) -> Session:
-    connector = aiohttp.TCPConnector(limit=20)
-    se = aiohttp.ClientSession(connector=connector)
-    return Session(se, params=params, headers=headers)
+    limits = httpx.PoolLimits(max_connections=20)
+    cl = httpx.AsyncClient(pool_limits=limits)
+    return Session(cl, params=params, headers=headers)

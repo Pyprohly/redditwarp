@@ -13,7 +13,7 @@ class DefaultHeadersPredisposed(RequestorDecorator):
         super().__init__(requestor)
         self.headers = headers
 
-    async def request(self, request: Request, *, timeout: Optional[float] = None,
+    async def request(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         if self.headers:
             h = request.headers

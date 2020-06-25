@@ -25,7 +25,7 @@ class RateLimited(RequestorDecorator):
         self._last_request = time.monotonic()
         self._lock = asyncio.Lock()
 
-    async def request(self, request: Request, *, timeout: Optional[float] = None,
+    async def request(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         s = 0.
         if self.remaining:

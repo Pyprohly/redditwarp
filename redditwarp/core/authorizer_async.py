@@ -81,7 +81,7 @@ class Authorized(RequestorDecorator):
         self._valve.set()
         self._futures: List[asyncio.Future] = []
 
-    async def request(self, request: Request, *, timeout: Optional[float] = None,
+    async def request(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         await self._valve.wait()
 

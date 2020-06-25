@@ -24,27 +24,26 @@ _PAYLOAD_DISPATCH_TABLE: Mapping = {
     payload.JSON: lambda y: {'json': y.json},
 }
 
-def _get_request_kwargs(r: Request, extra: Mapping[str, object]) -> Mapping[str, object]:
+def _request_kwargs(r: Request) -> Mapping[str, object]:
     kwargs: MutableMapping[str, object] = {
         'method': r.verb,
         'url': r.uri,
         'params': r.params,
         'headers': r.headers,
-        **extra,
     }
     d = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
     kwargs.update(d)
     return kwargs
 
 
-name = 'requests'
-version_string = requests.__version__
-info = TransporterInfo(name, version_string, sys.modules[__name__])
+name = requests.__name__
+version = requests.__version__
+info = TransporterInfo(name, version, sys.modules[__name__])
 
 
 class Session(BaseSession):
     TRANSPORTER = info
-    TIMEOUT = 8
+    TIMEOUT = 5
 
     def __init__(self,
         session: requests.Session,
@@ -55,16 +54,18 @@ class Session(BaseSession):
         super().__init__(params=params, headers=headers)
         self.session = session
 
-    def request(self, request: Request, *, timeout: Optional[float] = TIMEOUT,
+    def request(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         self._prepare_request(request)
 
-        if timeout is None:
-            timeout = self.TIMEOUT
-        elif timeout < 0:
-            timeout = None
+        t: Optional[float] = timeout
+        if timeout < 0:
+            t = self.TIMEOUT
+        elif timeout == 0:
+            t = None
 
-        kwargs = _get_request_kwargs(request, {'timeout': timeout})
+        kwargs: MutableMapping[str, object] = {'timeout': t}
+        kwargs.update(_request_kwargs(request))
 
         try:
             resp = self.session.request(**kwargs)
@@ -89,7 +90,7 @@ def new_session(*,
     params: Optional[Mapping[str, str]] = None,
     headers: Optional[Mapping[str, str]] = None,
 ) -> Session:
-    retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
     se = requests.Session()
+    retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
     se.mount('https://', retry_adapter)
     return Session(se, params=params, headers=headers)

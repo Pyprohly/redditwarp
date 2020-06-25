@@ -5,7 +5,7 @@ from types import ModuleType
 @dataclass
 class TransporterInfo:
     name: str
-    version_string: str
+    version: str
     module: ModuleType
 
 blank_transporter = TransporterInfo('', '', ModuleType(''))

@@ -110,7 +110,7 @@ print('''Step 3. Exchange the authorization code.\n''')
 
 ua = (
     f'RedditWarp/{redditwarp.__version__} '
-    f'{transporter.name}/{transporter.version_string} '
+    f'{transporter.name}/{transporter.version} '
     'redditwarp.cli.refresh_token'
 )
 session = new_session(headers={'User-Agent': ua})

@@ -60,7 +60,7 @@ class RedditHTTPClient:
         self.user_agent = self.user_agent_string_head = (
             f"{__about__.__title__}/{__about__.__version__} "
             f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
-            f"{session.TRANSPORTER.name}/{session.TRANSPORTER.version_string}"
+            f"{session.TRANSPORTER.name}/{session.TRANSPORTER.version}"
         )
 
     def __enter__(self) -> RedditHTTPClient:
