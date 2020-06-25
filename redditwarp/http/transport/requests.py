@@ -1,7 +1,7 @@
 """Transport adapter for Requests."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, Any
+from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping
 if TYPE_CHECKING:
     from ..request import Request
 
@@ -23,6 +23,18 @@ _PAYLOAD_DISPATCH_TABLE: Mapping = {
     payload.Text: lambda y: {'data': y.text},
     payload.JSON: lambda y: {'json': y.json},
 }
+
+def _get_request_kwargs(r: Request, extra: Mapping[str, object]) -> Mapping[str, object]:
+    kwargs: MutableMapping[str, object] = {
+        'method': r.verb,
+        'url': r.uri,
+        'params': r.params,
+        'headers': r.headers,
+        **extra,
+    }
+    d = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
+    kwargs.update(d)
+    return kwargs
 
 
 name = 'requests'
@@ -52,16 +64,7 @@ class Session(BaseSession):
         elif timeout < 0:
             timeout = None
 
-        r = request
-        kwargs: Any = {
-            'method': r.verb,
-            'url': r.uri,
-            'params': r.params,
-            'headers': r.headers,
-            'timeout': timeout,
-        }
-        kwargs_x = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
-        kwargs.update(kwargs_x)
+        kwargs = _get_request_kwargs(request, {'timeout': timeout})
 
         try:
             resp = self.session.request(**kwargs)
@@ -74,7 +77,7 @@ class Session(BaseSession):
             status=resp.status_code,
             headers=resp.headers,
             data=resp.content,
-            request=r,
+            request=request,
             underlying_object=resp,
         )
 

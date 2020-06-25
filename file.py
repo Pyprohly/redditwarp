@@ -1,7 +1,6 @@
 
-import sys  # noqa
 import os
-from pprint import pprint  # noqa
+from pprint import pprint
 
 import redditwarp
 
@@ -12,23 +11,11 @@ def main():
 			os.environ['redditwarp_client_secret'],
 			os.environ['redditwarp_refresh_token'],
 		)
-		client.set_user_agent("console:u_Pyprohly/v0 (by u/Pyprohly)")
-		# possibly backlisted: 'searchme' 'scraping'
-		# Too many requests: 'curl'
-		# redditwarp.user_agent.BotUserAgent(platform.system(), 'u_Pyprohly', 'v1.3.5', 'u/Pyprohly')
-		#client.http.user_agent = 'Mozilla/5.0 (compatible; Charlotte/1.1; http://www.searchme.com/support/)'
-		#client.http.user_agent = 'console:myapp:v0 by /u/Pyprohly'
-		#client.http.user_agent = 'PyprohlyBot by /u/Pyprohly PRAW/6.5.1 prawcore/1.0.1'
+		client.set_user_agent("u_Pyprohly/v0 (by u/Pyprohly)")
 		print(client.http.user_agent)
 		with client:
-			'''
-			response = client.http.request('POST', '/api/lock')
-			pprint(response.status)
-			pprint(response.data)
-			'''
 			data = client.request('GET', '/api/v1/me')
 			pprint(data)
-			'''#'''
 
 	finally:
 		globals().update(locals())

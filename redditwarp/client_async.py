@@ -14,7 +14,7 @@ from .http.util.json_loads import json_loads_response
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
 from .util.praw_config import get_praw_config
-from .http.transport import default_async_transporter
+from .http.transport import TransporterInfo, get_default_async_transporter
 from .auth.token_obtainment_client_async import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
 from .core.authorizer_async import Authorizer, Authorized
@@ -34,9 +34,17 @@ AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional
 interactive_mode = not hasattr(__import__('__main__'), '__file__')
 
 class ClientCore:
-    default_transporter = default_async_transporter
+    default_transporter = get_default_async_transporter()
 
     T = TypeVar('T', bound='ClientCore')
+
+    @classmethod
+    def get_default_transporter(cls: Type[T]) -> TransporterInfo:
+        if cls.default_transporter is None:
+            cls.default_transporter = get_default_async_transporter()
+            if cls.default_transporter is None:
+                raise ModuleNotFoundError('An async HTTP transport library needs to be installed.')
+        return cls.default_transporter
 
     @classmethod
     def from_http(cls: Type[T], http: HTTPClient) -> T:
@@ -73,7 +81,7 @@ class ClientCore:
     @classmethod
     def from_access_token(cls: Type[T], access_token: str) -> T:
         token = Token(access_token)
-        session = cls.default_transporter.module.new_session()  # type: ignore[attr-defined]
+        session = cls.get_default_transporter().module.new_session()  # type: ignore[attr-defined]
         authorizer = Authorizer(token, None)
         authorized_requestor = Authorized(session, authorizer)
         requestor = RateLimited(authorized_requestor)
@@ -95,7 +103,7 @@ class ClientCore:
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
         token = None if access_token is None else Token(access_token)
-        session = self.default_transporter.module.new_session()  # type: ignore[attr-defined]
+        session = self.get_default_transporter().module.new_session()  # type: ignore[attr-defined]
         authorizer = Authorizer(token, None)
         authorized_requestor = Authorized(session, authorizer)
         requestor = RateLimited(authorized_requestor)

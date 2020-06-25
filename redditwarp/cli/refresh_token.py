@@ -2,7 +2,7 @@
 """Retrieve OAuth2 tokens from the Reddit API via the Authorization Code flow."""
 
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Mapping
 
 import os
 import re
@@ -12,28 +12,22 @@ import socket
 import urllib.parse
 import webbrowser
 
-from redditwarp.http.transport import default_sync_transporter as transporter
-from redditwarp import auth
+import redditwarp
 
-new_session = transporter.module.new_session  # type: ignore[attr-defined]
+def get_client_cred_input(prompt: str, env: str, x: Optional[str]) -> str:
+    print(prompt, end='')
+    if x is None:
+        x = input()
+    if x == '.':
+        x = os.environ[env]
+    print(x)
+    return x
 
 def get_client_id(x: Optional[str]) -> str:
-    print('Client ID: ', end='')
-    if x is None:
-        x = input()
-    if x == '.':
-        x = os.environ['redditwarp_client_id']
-    print(x)
-    return x
+    return get_client_cred_input('Client ID: ', 'redditwarp_client_id', x)
 
 def get_client_secret(x: Optional[str]) -> str:
-    print('Client secret: ', end='')
-    if x is None:
-        x = input()
-    if x == '.':
-        x = os.environ['redditwarp_client_secret']
-    print(x)
-    return x
+    return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', x)
 
 parser = argparse.ArgumentParser(description=__doc__)
 add_arg = parser.add_argument
@@ -41,53 +35,58 @@ add_arg('client_id', nargs='?')
 add_arg('--client-id', dest='client_id_opt')
 add_arg('client_secret', nargs='?')
 add_arg('--client-secret', dest='client_secret_opt')
-add_arg('--scopes', default='*')
+add_arg('--scope', default='*')
 add_arg('--redirect-uri', default='http://localhost:8080')
 add_arg('--duration', choices=('temporary', 'permanent'), default='permanent')
 add_arg('--no-web-browser', action='store_true')
 args = parser.parse_args()
 
+transporter = redditwarp.http.transport.get_default_sync_transporter()
+if transporter is None:
+    raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
+new_session = transporter.module.new_session  # type: ignore[attr-defined]
+
 print('Reddit OAuth2 Authorization Code flow\n')
 
-client_id: str = get_client_id(args.client_id_opt or args.client_id)
-client_secret: str = get_client_secret(args.client_secret_opt or args.client_secret)
-scopes: str = args.scopes
+client_id = get_client_id(args.client_id_opt or args.client_id)
+client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
+scope: str = args.scope
 redirect_uri: str = args.redirect_uri
 duration: str = args.duration
 no_web_browser: bool = args.no_web_browser
 state = str(uuid.uuid4())
 
-print("\nStep 1. Build the authorization URL and direct the user to the authorization server.")
+print()
+print('''Step 1. Build the authorization URL and direct the user to the authorization server.\n''')
 
-params = {
+params: Mapping[str, str] = {
     'response_type': 'code',
     'client_id': client_id,
     'redirect_uri': redirect_uri,
-    'scope': scopes,
+    'scope': scope,
     'state': state,
     'duration': duration,
 }
-url = f'{auth.const.AUTHORIZATION_URL}?{urllib.parse.urlencode(params)}'
-
+url = f'{redditwarp.auth.const.AUTHORIZATION_URL}?{urllib.parse.urlencode(params)}'
 print(url)
 print()
-
 if not no_web_browser:
     webbrowser.open(url)
 
-print("Step 2. The authorization server sends a response to the redirect URI.")
+print('''Step 2. The authorization server responds to the redirect URI.\n''')
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(('127.0.0.1', 8080))
     server.listen(1)
     client, addr = server.accept()
-print(f"Connection: {addr}")
+    print(f"Incoming: {addr}")
+
 with client:
     data = client.recv(8192)
     client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-print(f"Recieved: \\\n{data!r}\n")
+print(f"Received: {data!r}\n")
 decoded = data.decode()
 print(f"@```\n{decoded}\n```@\n")
 
@@ -96,30 +95,34 @@ if not m:
     raise Exception
 query = m[1]
 d = urllib.parse.parse_qs(query)
-response_uri_params = {k: v[0] for k, v in d.items()}
+response_uri_params: Mapping[str, str] = {k: v[0] for k, v in d.items()}
 
-response_state: str = response_uri_params['state']
+response_state = response_uri_params['state']
 if response_state != state:
-    raise Exception('state did not match: ' + response_state)
+    raise Exception(f'state did not match: {(response_state, state)}')
 
 try:
-    code: str = response_uri_params['code']
+    code = response_uri_params['code']
 except KeyError:
     raise Exception('The user declined authorization.') from None
 
-print("Step 3. Exchange the authorization code.")
+print('''Step 3. Exchange the authorization code.\n''')
 
-session = new_session(headers={'User-Agent': 'RedditWarp redditwarp.cli.refresh_token'})
-token_client = auth.TokenObtainmentClient(
+ua = (
+    f'RedditWarp/{redditwarp.__version__} '
+    f'{transporter.name}/{transporter.version_string} '
+    'redditwarp.cli.refresh_token'
+)
+session = new_session(headers={'User-Agent': ua})
+token_client = redditwarp.auth.TokenObtainmentClient(
     session,
-    auth.const.TOKEN_OBTAINMENT_URL,
-    auth.ClientCredentials(client_id, client_secret),
-    auth.grants.AuthorizationCodeGrant(code, redirect_uri),
+    redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
+    redditwarp.auth.ClientCredentials(client_id, client_secret),
+    redditwarp.auth.grants.AuthorizationCodeGrant(code, redirect_uri),
 )
 
-print('Exchanging the authorization code for a token...', end='')
+print('Obtaining tokens from the token server...', end='')
 token = token_client.fetch_token()
-print(' Done.')
-print()
+print(' Done.\n')
 print(f"Refresh token : {token.refresh_token}")
 print(f" Access token : {token.access_token}")
