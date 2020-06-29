@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableMapping, Dict, cast, Union
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableMapping, cast, Union
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
@@ -207,7 +207,7 @@ class ClientCore:
         headers: Optional[MutableMapping[str, str]] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping] = None,
-    ) -> Dict[str, Any]:
+    ) -> Any:
         uri = self.resource_base_url + path
         try:
             resp = self.http.request(verb, uri, params=params, payload=payload,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Retrieve OAuth2 tokens from the Reddit API via the Authorization Code flow."""
+"""Step through the Authorization Code flow to obtain a refresh token."""
 
 from __future__ import annotations
 from typing import Optional, Mapping
@@ -32,12 +32,12 @@ def get_client_secret(x: Optional[str]) -> str:
 parser = argparse.ArgumentParser(description=__doc__)
 add_arg = parser.add_argument
 add_arg('client_id', nargs='?')
-add_arg('--client-id', dest='client_id_opt')
+add_arg('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
 add_arg('client_secret', nargs='?')
-add_arg('--client-secret', dest='client_secret_opt')
+add_arg('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 add_arg('--scope', default='*')
 add_arg('--redirect-uri', default='http://localhost:8080')
-add_arg('--duration', choices=('temporary', 'permanent'), default='permanent')
+add_arg('--duration', choices=('temporary', 'permanent'), default='permanent', help=argparse.SUPPRESS)
 add_arg('--no-web-browser', action='store_true')
 args = parser.parse_args()
 
@@ -46,7 +46,7 @@ if transporter is None:
     raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
 new_session = transporter.module.new_session  # type: ignore[attr-defined]
 
-print('Reddit OAuth2 Authorization Code flow\n')
+print("Reddit OAuth2 Authorization Code flow\n")
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
@@ -67,30 +67,29 @@ params: Mapping[str, str] = {
     'state': state,
     'duration': duration,
 }
-url = f'{redditwarp.auth.const.AUTHORIZATION_URL}?{urllib.parse.urlencode(params)}'
+url = f"{redditwarp.auth.const.AUTHORIZATION_URL}?{urllib.parse.urlencode(params)}"
 print(url)
 print()
 if not no_web_browser:
     webbrowser.open(url)
 
-print('''Step 2. The authorization server responds to the redirect URI.\n''')
+print('''Step 2. The authorization server responds to the redirect URI. Extract the authorization code.\n''')
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(('127.0.0.1', 8080))
     server.listen(1)
     client, addr = server.accept()
-    print(f"Incoming: {addr}")
+    print(addr)
 
 with client:
     data = client.recv(8192)
     client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-print(f"Received: {data!r}\n")
-decoded = data.decode()
+decoded = data.decode().strip()
 print(f"@```\n{decoded}\n```@\n")
 
-m = re.match(r"^GET /\?([^ ]*) HTTP", data.decode())
+m = re.match(r"^GET /\?([^ ]*) HTTP", decoded)
 if not m:
     raise Exception
 query = m[1]
@@ -121,8 +120,7 @@ token_client = redditwarp.auth.TokenObtainmentClient(
     redditwarp.auth.grants.AuthorizationCodeGrant(code, redirect_uri),
 )
 
-print('Obtaining tokens from the token server...', end='')
+print('Obtaining tokens from the token server...\n')
 token = token_client.fetch_token()
-print(' Done.\n')
-print(f"Refresh token : {token.refresh_token}")
 print(f" Access token : {token.access_token}")
+print(f"Refresh token : {token.refresh_token}")
