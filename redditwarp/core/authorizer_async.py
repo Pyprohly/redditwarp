@@ -33,7 +33,7 @@ class Authorizer:
     def can_renew_token(self) -> bool:
         return self.token_client is not None
 
-    async def renew_token(self) -> Token:
+    async def renew_token(self) -> None:
         if self.token_client is None:
             raise RuntimeError('a new token was requested but no token client is assigned')
 
@@ -50,12 +50,9 @@ class Authorizer:
         else:
             self.expiry_time = int(self.current_time()) + tk.expires_in - self.expiry_skew
 
-        return tk
-
-    async def maybe_renew_token(self) -> Optional[Token]:
+    async def maybe_renew_token(self) -> None:
         if (self.token is None) or self.token_expired():
-            return await self.renew_token()
-        return None
+            await self.renew_token()
 
     def prepare_request(self, request: Request) -> None:
         tk = self.token

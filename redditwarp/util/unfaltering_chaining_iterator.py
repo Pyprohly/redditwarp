@@ -11,8 +11,8 @@ class UnfalteringChainingIterator(Generic[T]):
     Also has a `self.current_iter` attribute.
     """
 
-    def __init__(self, iterable: Iterable[Iterable[T]]) -> None:
-        self._iterator = iter(iterable)
+    def __init__(self, source: Iterable[Iterable[T]]) -> None:
+        self._iterator = iter(source)
         self.current_iter: Iterator[T] = iter(())
 
     def __iter__(self) -> Iterator[T]:

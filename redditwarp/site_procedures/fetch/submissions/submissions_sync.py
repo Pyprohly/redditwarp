@@ -7,15 +7,15 @@ if TYPE_CHECKING:
 
 from ....models.submission import LinkPost, TextPost
 from ....util.base_conversion import to_base36
-from ....util.chunked import chunked
-from ....util.call_chunk_chaining_iterator import CallChunkChainingIterator
+from ....util.chunking_iterator import ChunkingIterator
+from ....util.call_chunk_chaining_iterator import ChunkSizeAdjustableCallChunkChainingIterator
 
 T = TypeVar('T')
 
 def _by_ids(
     ids: Iterable[int],
-    by_id36s: Callable[[Iterable[str]], CallChunkChainingIterator[T]],
-) -> CallChunkChainingIterator[T]:
+    by_id36s: Callable[[Iterable[str]], ChunkSizeAdjustableCallChunkChainingIterator[T]],
+) -> ChunkSizeAdjustableCallChunkChainingIterator[T]:
     id36s = map(to_base36, ids)
     return by_id36s(id36s)
 
@@ -23,29 +23,32 @@ def _by_id36s(
     client: Client,
     id36s: Iterable[str],
     parse_for_submissions: Callable[[Mapping[str, Any]], List[T]],
-) -> CallChunkChainingIterator[T]:
+) -> ChunkSizeAdjustableCallChunkChainingIterator[T]:
     t_id36s = map('t3_'.__add__, id36s)
-    chunks = chunked(t_id36s, 100)
-    strseqs = map(','.join, chunks)
+    chunk_iter = ChunkingIterator(t_id36s, 100)
+    strseqs = map(','.join, chunk_iter)
 
     def api_call_func(ids_str: str, client: Client) -> Dict[str, Any]:
         return client.request('GET', '/api/info', params={'id': ids_str})
 
     def call_chunk(ids_str: str, client: Client = client) -> Callable[[], List[T]]:
-        return lambda: parse_for_submissions(api_call_func(ids_str, client))
+        def f() -> List[T]:
+            return parse_for_submissions(api_call_func(ids_str, client))
+        return f
+        #return lambda: parse_for_submissions(api_call_func(ids_str, client))
 
-    call_chunks = map(call_chunk, strseqs)
-    return CallChunkChainingIterator(call_chunks)
+    call_chunks: Iterable[Callable[[], Iterable[T]]] = map(call_chunk, strseqs)
+    return ChunkSizeAdjustableCallChunkChainingIterator(call_chunks, chunk_iter)
 
 
 class as_textposts:
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[TextPost]:
+    def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[TextPost]:
         return _by_ids(ids, self.by_id36s)
 
-    def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[TextPost]:
+    def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[TextPost]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[TextPost]:
             submissions_data = (child['data'] for child in root['data']['children'])
             output = []
@@ -61,10 +64,10 @@ class as_linkposts:
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[LinkPost]:
+    def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[LinkPost]:
         return _by_ids(ids, self.by_id36s)
 
-    def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[LinkPost]:
+    def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[LinkPost]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[LinkPost]:
             submissions_data = (child['data'] for child in root['data']['children'])
             output = []
@@ -82,10 +85,10 @@ class submissions:
         self.as_textposts = as_textposts(client)
         self.as_linkposts = as_linkposts(client)
 
-    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[Submission]:
+    def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[Submission]:
         return _by_ids(ids, self.by_id36s)
 
-    def by_id36s(self, id36s: Iterable[str]) -> CallChunkChainingIterator[Submission]:
+    def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[Submission]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[Submission]:
             submissions_data = (child['data'] for child in root['data']['children'])
             output = []

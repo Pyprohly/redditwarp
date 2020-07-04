@@ -5,14 +5,8 @@ from typing import TypeVar, AsyncIterable, Generic, AsyncIterator
 T = TypeVar('T')
 
 class UnfalteringChainingAsyncIterator(Generic[T]):
-    """Like `itertools.chain.from_iterable()` but is able to continue when
-    an exception occurs during iteration.
-
-    Also has a `self.current_iter` attribute.
-    """
-
-    def __init__(self, iterable: AsyncIterable[AsyncIterable[T]]) -> None:
-        self._iterator = iterable.__aiter__()
+    def __init__(self, source: AsyncIterable[AsyncIterable[T]]) -> None:
+        self._iterator = source.__aiter__()
         async def f() -> AsyncIterator[T]:
             return
             yield

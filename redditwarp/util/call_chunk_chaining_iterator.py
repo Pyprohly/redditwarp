@@ -1,6 +1,8 @@
 
 from __future__ import annotations
-from typing import TypeVar, Generic, Optional, Callable, Iterable, Iterator
+from typing import TYPE_CHECKING, TypeVar, Generic, Optional, Callable, Iterable, Iterator, Any
+if TYPE_CHECKING:
+    from .chunking_iterator import ChunkingIterator
 
 from .stubborn_caller_iterator import StubbornCallerIterator
 from .unfaltering_chaining_iterator import UnfalteringChainingIterator
@@ -36,3 +38,19 @@ class CallChunkChainingIterator(Generic[T]):
 
     def __next__(self) -> T:
         return next(self._chain_iter)
+
+class ChunkSizeAdjustableCallChunkChainingIterator(CallChunkChainingIterator[T]):
+    @property
+    def chunk_size(self) -> int:
+        return self._chunk_iter.size
+
+    @chunk_size.setter
+    def chunk_size(self, value: int) -> None:
+        self._chunk_iter.size = value
+
+    def __init__(self,
+        call_chunks: Iterable[Callable[[], Iterable[T]]],
+        chunk_iter: ChunkingIterator[Any],
+    ) -> None:
+        super().__init__(call_chunks)
+        self._chunk_iter = chunk_iter

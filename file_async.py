@@ -18,6 +18,8 @@ async def main():
 			data = await client.request('GET', '/api/v1/me')
 			pprint(data)
 
+	except Exception:
+		print(client.last_response.data.decode())
 	finally:
 		globals().update(locals())
 

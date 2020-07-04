@@ -93,10 +93,9 @@ def get_response_content_error(resp: Response) -> Exception:
         return HTMLDocumentReceivedError(msg, response=resp)
     return UnidentifiedResponseContentError(response=resp)
 
-def raise_for_json_layout_content_error(resp: Response, json_data: Any) -> None:
-    if isinstance(json_data, Mapping):
-        if {'jquery', 'success'} <= json_data.keys():
-            raise UnacceptableJSONLayoutResponseContentError(response=resp, json=json_data)
+def raise_for_json_layout_content_error(resp: Response, data: Mapping[str, Any]) -> None:
+    if {'jquery', 'success'} <= data.keys():
+        raise UnacceptableJSONLayoutResponseContentError(response=resp, json=data)
 
 
 
@@ -206,11 +205,10 @@ def get_variant1_reddit_api_error(response: Response, error_list: List[RedditErr
         cls = ContentCreationCooldown
     return cls(response=response, errors=error_list)
 
-def raise_for_variant1_reddit_api_error(resp: Response, json_data: Any) -> None:
-    if isinstance(json_data, Mapping):
-        error_list = try_parse_reddit_error_items(json_data)
-        if error_list is not None:
-            raise get_variant1_reddit_api_error(resp, error_list)
+def raise_for_variant1_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
+    error_list = try_parse_reddit_error_items(data)
+    if error_list is not None:
+        raise get_variant1_reddit_api_error(resp, error_list)
 
 
 class RedditAPIErrorVariant2(RedditAPIError):
@@ -234,15 +232,14 @@ class RedditAPIErrorVariant2(RedditAPIError):
         self._field = fields[0] if fields else ''
         self.fields = fields
 
-def raise_for_variant2_reddit_api_error(resp: Response, json_data: Any) -> None:
-    if isinstance(json_data, Mapping):
-        if json_data.keys() >= {'fields', 'explanation', 'reason'}:
-            codename = json_data['reason']
-            detail = json_data['explanation']
-            fields = json_data['fields']
-            raise RedditAPIErrorVariant2(
-                response=resp,
-                codename=codename,
-                detail=detail,
-                fields=fields,
-            )
+def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
+    if data.keys() >= {'fields', 'explanation', 'reason'}:
+        codename = data['reason']
+        detail = data['explanation']
+        fields = data['fields']
+        raise RedditAPIErrorVariant2(
+            response=resp,
+            codename=codename,
+            detail=detail,
+            fields=fields,
+        )

@@ -222,20 +222,21 @@ class ClientCore:
             raise
 
         try:
-            data = json_loads_response(resp)
+            json_data = json_loads_response(resp)
         except ValueError:
             raise get_response_content_error(resp) from None
 
-        raise_for_json_layout_content_error(resp, data)
-        raise_for_variant1_reddit_api_error(resp, data)
-        raise_for_variant2_reddit_api_error(resp, data)
+        if isinstance(json_data, Mapping):
+            raise_for_json_layout_content_error(resp, json_data)
+            raise_for_variant1_reddit_api_error(resp, json_data)
+            raise_for_variant2_reddit_api_error(resp, json_data)
 
         try:
             resp.raise_for_status()
         except http.exceptions.StatusCodeException as e:
             raise HTTPStatusError(response=resp) from e
 
-        return data
+        return json_data
 
     def set_access_token(self, access_token: str) -> None:
         """Manually set the access token.

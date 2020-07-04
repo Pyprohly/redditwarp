@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Step through the Authorization Code flow to obtain a refresh token."""
+"""Step through the Authorization Code flow to obtain a refresh token.
+
+If you ever accidentally expose your refresh token or access token,
+run this tool to completion to fetch new tokens and the old tokens
+will expire and you will be safe.
+"""
 
 from __future__ import annotations
 from typing import Optional, Mapping

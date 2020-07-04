@@ -49,8 +49,8 @@ def test_renew_token() -> None:
 
     o.expiry_time = 9999
     o.expires_in_fallback = None
-    token = o.renew_token()
-    assert token is my_token
+    o.renew_token()
+    assert o.token is my_token
     assert o.expiry_time is None
 
     o.expiry_time = 9999
