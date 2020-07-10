@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 
 from ....models.submission import LinkPost, TextPost
 from ....util.base_conversion import to_base36
-from ....util.chunking_iterator import ChunkingIterator
-from ....util.call_chunk_chaining_iterator import ChunkSizeAdjustableCallChunkChainingIterator
+from ....iterators.chunking_iterator import ChunkingIterator
+from ....iterators.call_chunk_chaining_iterator import ChunkSizeAdjustableCallChunkChainingIterator
 
 T = TypeVar('T')
 

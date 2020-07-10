@@ -13,6 +13,7 @@ def chunked(src: Iterable[T], size: int) -> Iterator[Sequence[T]]:
             break
         yield chunk
 
+
 class ChunkingIterator(Generic[T]):
     """Control chunk size during iteration."""
 
