@@ -5,11 +5,11 @@ import asyncio
 
 import pytest  # type: ignore[import]
 
-from redditwarp.util.call_chunk_chaining_async_iterator import (
+from redditwarp.iterators.call_chunk_chaining_async_iterator import (
     CallChunkChainingAsyncIterator,
     ChunkSizeAdjustableCallChunkChainingAsyncIterator,
 )
-from redditwarp.util.chunking_iterator import ChunkingIterator
+from redditwarp.iterators.chunking_iterator import ChunkingIterator
 
 T = TypeVar('T')
 TSource = TypeVar('TSource')

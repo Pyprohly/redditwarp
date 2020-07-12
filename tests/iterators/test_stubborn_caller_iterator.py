@@ -1,7 +1,7 @@
 
 from typing import Iterable, Callable
 
-from redditwarp.util.stubborn_caller_iterator import StubbornCallerIterator
+from redditwarp.iterators.stubborn_caller_iterator import StubbornCallerIterator
 
 def test_iteration() -> None:
     it = [

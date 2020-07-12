@@ -25,7 +25,7 @@ class RateLimited(RequestorDecorator):
         self._last_request = time.monotonic()
         self._lock = asyncio.Lock()
 
-    async def request(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         s = 0.
         if self.remaining:
@@ -51,7 +51,7 @@ class RateLimited(RequestorDecorator):
         self._prev_request = self._last_request
         self._last_request = time.monotonic()
 
-        response = await self.requestor.request(request, timeout=timeout, aux_info=aux_info)
+        response = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
 
         self.scan_ratelimit_headers(response.headers)
         return response

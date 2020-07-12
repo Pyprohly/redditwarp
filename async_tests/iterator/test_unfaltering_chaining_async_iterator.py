@@ -3,7 +3,7 @@ from typing import TypeVar, Iterable, AsyncIterable, AsyncIterator
 
 import pytest  # type: ignore[import]
 
-from redditwarp.util.unfaltering_chaining_async_iterator import UnfalteringChainingAsyncIterator
+from redditwarp.iterators.unfaltering_chaining_async_iterator import UnfalteringChainingAsyncIterator
 
 T = TypeVar('T')
 

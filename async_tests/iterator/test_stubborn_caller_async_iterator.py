@@ -5,7 +5,7 @@ import asyncio
 
 import pytest  # type: ignore[import]
 
-from redditwarp.util.stubborn_caller_async_iterator import StubbornCallerAsyncIterator
+from redditwarp.iterators.stubborn_caller_async_iterator import StubbornCallerAsyncIterator
 
 T = TypeVar('T')
 

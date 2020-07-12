@@ -1,7 +1,7 @@
 
 import pytest  # type: ignore[import]
 
-from redditwarp.util.chunking_iterator import chunked, ChunkingIterator
+from redditwarp.iterators.chunking_iterator import chunked, ChunkingIterator
 
 class TestChunked:
     def test_basics(self) -> None:

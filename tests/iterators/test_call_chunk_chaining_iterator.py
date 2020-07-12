@@ -1,11 +1,11 @@
 
 from typing import Callable, Iterable
 
-from redditwarp.util.call_chunk_chaining_iterator import (
+from redditwarp.iterators.call_chunk_chaining_iterator import (
     CallChunkChainingIterator,
     ChunkSizeAdjustableCallChunkChainingIterator,
 )
-from redditwarp.util.chunking_iterator import ChunkingIterator
+from redditwarp.iterators.chunking_iterator import ChunkingIterator
 
 class TestCallChunkChainingIterator:
     def test_call_chunks_attrib(self) -> None:

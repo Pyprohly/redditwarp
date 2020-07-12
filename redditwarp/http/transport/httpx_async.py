@@ -54,7 +54,7 @@ class Session(BaseSession):
         super().__init__(params=params, headers=headers)
         self.client = client
 
-    async def request(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         self._prepare_request(request)
 

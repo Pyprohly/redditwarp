@@ -14,7 +14,7 @@ from redditwarp.http.base_session_async import BaseSession
 from redditwarp.http.response import Response
 
 class MySession(BaseSession):
-    async def request(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         return Response(0, {}, b'')
 

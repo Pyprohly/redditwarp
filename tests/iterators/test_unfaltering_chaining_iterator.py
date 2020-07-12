@@ -1,7 +1,7 @@
 
 from typing import Iterable, Iterator
 
-from redditwarp.util.unfaltering_chaining_iterator import UnfalteringChainingIterator
+from redditwarp.iterators.unfaltering_chaining_iterator import UnfalteringChainingIterator
 
 def test_simple_iteration() -> None:
     it = [[62, 43, 13], [12, 38]]

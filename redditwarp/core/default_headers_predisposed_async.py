@@ -13,9 +13,9 @@ class DefaultHeadersPredisposed(RequestorDecorator):
         super().__init__(requestor)
         self.headers = headers
 
-    async def request(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         if self.headers:
             h = request.headers
             h.update({**self.headers, **h})
-        return await self.requestor.request(request, timeout=timeout, aux_info=aux_info)
+        return await self.requestor.send(request, timeout=timeout, aux_info=aux_info)

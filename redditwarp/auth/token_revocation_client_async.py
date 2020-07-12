@@ -26,7 +26,7 @@ class TokenRevocationClient:
         r = Request('POST', self.uri, payload=FormData(data))
         apply_basic_auth(r, self.client_credentials)
 
-        resp = await self.requestor.request(r)
+        resp = await self.requestor.send(r)
 
         try:
             resp.raise_for_status()

@@ -48,7 +48,7 @@ class BaseSession(Requestor):
         p = request.params
         p.update({**self.params, **p})
 
-    def request(self, request: Request, *, timeout: float = -1,
+    def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         """
         Parameters

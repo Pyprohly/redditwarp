@@ -40,7 +40,7 @@ class BaseSession(Requestor):
         p = request.params
         p.update({**self.params, **p})
 
-    async def request(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         raise NotImplementedError
 

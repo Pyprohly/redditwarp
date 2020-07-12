@@ -74,6 +74,24 @@ class RedditHTTPClient:
         self.close()
         return None
 
+    def send(self,
+        request: Request,
+        timeout: float = TIMEOUT,
+        aux_info: Optional[Mapping] = None,
+    ) -> Response:
+        for i in range(5):
+            try:
+                resp = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+
+            except auth.exceptions.ResponseException as e:
+                handle_auth_response_exception(e)
+
+            if resp.status in (500, 502):
+                sleep(i**2)
+                continue
+            break
+        return resp
+
     def request(self,
         verb: str,
         uri: str,
@@ -95,20 +113,7 @@ class RedditHTTPClient:
         headers.update({**self.default_headers, **headers})
 
         r = Request(verb, uri, params=params, payload=payload, headers=headers)
-
-        for i in range(5):
-            try:
-                resp = self.requestor.request(r, timeout=timeout, aux_info=aux_info)
-
-            except auth.exceptions.ResponseException as e:
-                handle_auth_response_exception(e)
-
-            if resp.status in (500, 502):
-                sleep(i**2)
-                continue
-            break
-
-        return resp
+        return self.send(r, timeout=timeout, aux_info=aux_info)
 
     def close(self) -> None:
         self.session.close()

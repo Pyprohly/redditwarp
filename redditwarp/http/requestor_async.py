@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from .response import Response
 
 class Requestor:
-    async def request(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
         raise NotImplementedError
 
@@ -14,6 +14,6 @@ class RequestorDecorator(Requestor):
     def __init__(self, requestor: Requestor) -> None:
         self.requestor = requestor
 
-    async def request(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
-        return await self.requestor.request(request, timeout=timeout, aux_info=aux_info)
+        return await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
