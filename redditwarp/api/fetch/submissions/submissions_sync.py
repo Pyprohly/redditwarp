@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from ....client_sync import Client
     from ....models.submission import Submission
 
+from ...load.submission import load_submission, try_load_linkpost, try_load_textpost
 from ....models.submission import LinkPost, TextPost
 from ....util.base_conversion import to_base36
 from ....iterators.chunking_iterator import ChunkingIterator
@@ -50,13 +51,12 @@ class as_textposts:
 
     def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[TextPost]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[TextPost]:
-            submissions_data = (child['data'] for child in root['data']['children'])
-            output = []
-            for data in submissions_data:
-                is_textpost = data['is_self']
-                if is_textpost:
-                    output.append(TextPost(data))
-            return output
+            data = root['data']
+            return [
+                m for m in
+                (try_load_textpost(d) for d in data['children'])
+                if m is not None
+            ]
 
         return _by_id36s(self._client, id36s, parse_for_submissions)
 
@@ -69,13 +69,12 @@ class as_linkposts:
 
     def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[LinkPost]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[LinkPost]:
-            submissions_data = (child['data'] for child in root['data']['children'])
-            output = []
-            for data in submissions_data:
-                is_textpost = data['is_self']
-                if not is_textpost:
-                    output.append(LinkPost(data))
-            return output
+            data = root['data']
+            return [
+                m for m in
+                (try_load_linkpost(d) for d in data['children'])
+                if m is not None
+            ]
 
         return _by_id36s(self._client, id36s, parse_for_submissions)
 
@@ -90,11 +89,11 @@ class submissions:
 
     def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[Submission]:
         def parse_for_submissions(root: Mapping[str, Any]) -> List[Submission]:
-            submissions_data = (child['data'] for child in root['data']['children'])
-            output = []
-            for data in submissions_data:
-                is_textpost = data['is_self']
-                output.append((TextPost if is_textpost else LinkPost)(data))
-            return output
+            data = root['data']
+            return [
+                m for m in
+                (load_submission(d) for d in data['children'])
+                if m is not None
+            ]
 
         return _by_id36s(self._client, id36s, parse_for_submissions)
