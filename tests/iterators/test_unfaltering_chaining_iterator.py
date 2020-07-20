@@ -9,6 +9,13 @@ def test_simple_iteration() -> None:
     assert list(uci) == [62, 43, 13, 12, 38]
     assert list(UnfalteringChainingIterator(())) == []
 
+def test_empty_link() -> None:
+    it: Iterable[Iterable[int]]
+    it = [[62, 43, 13], [], [12, 38]]
+    uci = UnfalteringChainingIterator(it)
+    assert list(uci) == [62, 43, 13, 12, 38]
+    assert list(UnfalteringChainingIterator(())) == []
+
 def test_current_iter() -> None:
     it = [[62, 43, 13], [12, 38]]
     uci = UnfalteringChainingIterator(it)

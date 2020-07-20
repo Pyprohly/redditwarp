@@ -1,10 +1,10 @@
 
 from __future__ import annotations
-from typing import TypeVar, Iterable, Generic, Iterator
+from typing import TypeVar, Iterable, Iterator
 
 T = TypeVar('T')
 
-class UnfalteringChainingIterator(Generic[T]):
+class UnfalteringChainingIterator(Iterator[T]):
     """Like `itertools.chain.from_iterable()` but is able to continue when
     an exception occurs during iteration.
 
@@ -20,6 +20,6 @@ class UnfalteringChainingIterator(Generic[T]):
 
     def __next__(self) -> T:
         while True:
-            for element in self.current_iter:
-                return element
+            for link in self.current_iter:
+                return link
             self.current_iter = iter(next(self._iterator))

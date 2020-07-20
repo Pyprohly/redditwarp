@@ -1,22 +1,23 @@
 
 from __future__ import annotations
-from typing import TypeVar, AsyncIterable, Generic, AsyncIterator
+from typing import TypeVar, AsyncIterable, Iterable, AsyncIterator, Iterator
 
 T = TypeVar('T')
 
-class UnfalteringChainingAsyncIterator(Generic[T]):
-    def __init__(self, source: AsyncIterable[AsyncIterable[T]]) -> None:
+class UnfalteringChainingAsyncIterator(AsyncIterator[T]):
+    def __init__(self, source: AsyncIterable[Iterable[T]]) -> None:
         self._iterator = source.__aiter__()
-        async def f() -> AsyncIterator[T]:
-            return
-            yield
-        self.current_iter: AsyncIterator[T] = f()
+        self.current_iter: Iterator[T] = iter(())
 
     def __aiter__(self) -> AsyncIterator[T]:
         return self
 
     async def __anext__(self) -> T:
         while True:
-            async for element in self.current_iter:
-                return element
-            self.current_iter = (await self._iterator.__anext__()).__aiter__()
+            for link in self.current_iter:
+                return link
+            it = await self._iterator.__anext__()
+            try:
+                self.current_iter = iter(it)
+            except StopIteration:
+                raise StopAsyncIteration

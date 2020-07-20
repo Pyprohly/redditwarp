@@ -20,16 +20,16 @@ async def test_iteration() -> None:
     async def f3() -> int: return 2
     async def f4() -> int: return 8
     async def f5() -> int: return 5
-    it: AsyncIterable[Callable[[], Awaitable[int]]] = A([
+    it: Iterable[Callable[[], Awaitable[int]]] = [
         f1,
         f2,
         f3,
         f4,
         f5,
-    ])
+    ]
     sci = StubbornCallerAsyncIterator(it)
     assert [i async for i in sci] == [1, 7, 2, 8, 5]
-    it = A([])
+    it = []
     assert [i async for i in StubbornCallerAsyncIterator(it)] == []
 
 @pytest.mark.asyncio
@@ -50,13 +50,13 @@ async def test_exception_during_iteration() -> None:
     async def f2() -> int: return 2
     async def f3() -> int: return 4
     async def f4() -> int: return 5
-    it: AsyncIterable[Callable[[], Awaitable[int]]] = A([
+    it: Iterable[Callable[[], Awaitable[int]]] = [
         f1,
         f2,
         j,
         f3,
         f4,
-    ])
+    ]
     sci = StubbornCallerAsyncIterator(it)
     assert await sci.__anext__() == 1
     assert await sci.__anext__() == 2

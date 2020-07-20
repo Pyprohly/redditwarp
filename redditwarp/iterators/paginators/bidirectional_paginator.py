@@ -1,15 +1,27 @@
 
 from __future__ import annotations
 from typing import TypeVar, Optional
-from typing import Sequence  # noqa: F401
 
 from .paginator import Paginator
 
-P = TypeVar('P', bound='Sequence')
+T = TypeVar('T')
 
-class BidirectionalPaginator(Paginator[P]):
+class BidirectionalPaginator(Paginator[T]):
+    _forward: bool
+    has_prev: bool
+
+    def get_direction(self) -> bool:
+        return self._forward
+
+    def set_direction(self, value: Optional[bool] = None) -> None:
+        if value is None:
+            value = not self._forward
+        if self._forward != value:
+            self._forward = value
+            self.has_next, self.has_prev = self.has_prev, self.has_next
+
     def __init__(self) -> None:
         super().__init__()
-        self.forward = True
+        self._forward = True
         self.back_cursor: Optional[str] = None
         self.has_prev = False

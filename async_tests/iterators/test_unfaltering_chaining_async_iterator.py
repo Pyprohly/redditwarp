@@ -1,5 +1,5 @@
 
-from typing import TypeVar, Iterable, AsyncIterable, AsyncIterator
+from typing import TypeVar, AsyncIterable, Iterable, Iterator
 
 import pytest  # type: ignore[import]
 
@@ -13,7 +13,16 @@ async def A(iterable: Iterable[T]) -> AsyncIterable[T]:
 
 @pytest.mark.asyncio
 async def test_simple_iteration() -> None:
-    it: AsyncIterable[AsyncIterable[int]] = A([A([62, 43, 13]), A([12, 38])])
+    it = A([[62, 43, 13], [12, 38]])
+    uci = UnfalteringChainingAsyncIterator(it)
+    assert [i async for i in uci] == [62, 43, 13, 12, 38]
+    it = A(())
+    assert [i async for i in UnfalteringChainingAsyncIterator(it)] == []
+
+@pytest.mark.asyncio
+async def test_empty_link() -> None:
+    it: AsyncIterable[Iterable[int]]
+    it = A([[62, 43, 13], [], [12, 38]])
     uci = UnfalteringChainingAsyncIterator(it)
     assert [i async for i in uci] == [62, 43, 13, 12, 38]
     it = A(())
@@ -21,32 +30,31 @@ async def test_simple_iteration() -> None:
 
 @pytest.mark.asyncio
 async def test_current_iter() -> None:
-    it = A([A([62, 43, 13]), A([12, 38])])
+    it = A([[62, 43, 13], [12, 38]])
     uci = UnfalteringChainingAsyncIterator(it)
     assert await uci.__anext__() == 62
-    assert [i async for i in uci.current_iter] == [43, 13]
+    assert list(uci.current_iter) == [43, 13]
     assert await uci.__anext__() == 12
-    assert [i async for i in uci.current_iter] == [38]
-    uci.current_iter = A((77,)).__aiter__()
-    assert [i async for i in uci.current_iter] == [77]
+    assert list(uci.current_iter) == [38]
+    uci.current_iter = iter((77,))
+    assert list(uci.current_iter) == [77]
 
 @pytest.mark.asyncio
 async def test_exception_during_iteration() -> None:
     class throw_on_first_call_then_return:
         def __init__(self) -> None:
             self.call_count = 0
-        async def __aiter__(self) -> AsyncIterator[int]:
+        def __iter__(self) -> Iterator[int]:
             self.call_count += 1
             if self.call_count == 1:
                 raise RuntimeError
-            for i in (-2, -3):
-                yield i
+            yield from (-2, -3)
 
     j = throw_on_first_call_then_return()
-    it: AsyncIterable[AsyncIterable[int]] = A([
-        A((0, 1)),
+    it: AsyncIterable[Iterable[int]] = A([
+        (0, 1),
         j,
-        A((4, 5)),
+        (4, 5),
     ])
     uci = UnfalteringChainingAsyncIterator(it)
     assert await uci.__anext__() == 0

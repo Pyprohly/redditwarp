@@ -1,10 +1,10 @@
 
 from __future__ import annotations
-from typing import TypeVar, Generic, Iterable, Callable, Optional, Iterator
+from typing import TypeVar, Iterator, Iterable, Callable, Optional
 
 T = TypeVar('T')
 
-class StubbornCallerIterator(Generic[T]):
+class StubbornCallerIterator(Iterator[T]):
     """Call each callable in the given iterator and return its result.
 
     If a call raises an exception it will propagate normally. Doing

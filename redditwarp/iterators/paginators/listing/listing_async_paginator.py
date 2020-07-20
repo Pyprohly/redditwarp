@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, TypeVar, Any, Dict
 if TYPE_CHECKING:
     from ....client_sync import Client
 
-from ..bidirectional_paginator import BidirectionalPaginator
+from ..bidirectional_async_paginator import BidirectionalAsyncPaginator
 
 T = TypeVar('T')
 
-class ListingPaginator(BidirectionalPaginator[T]):
+class ListingAsyncPaginator(BidirectionalAsyncPaginator[T]):
     def __init__(self, client: Client, uri: str) -> None:
         super().__init__()
         self.count = 0
@@ -17,7 +17,7 @@ class ListingPaginator(BidirectionalPaginator[T]):
         self._client = client
         self._uri = uri
 
-    def _next_page_listing_data(self) -> Dict[str, Any]:
+    async def _next_page_listing_data(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {
             'count': self.count,
             'limit': self.limit,
@@ -32,7 +32,7 @@ class ListingPaginator(BidirectionalPaginator[T]):
         else:
             params['before'] = self.back_cursor
 
-        recv = self._client.request('GET', self._uri, params=params)
+        recv = await self._client.request('GET', self._uri, params=params)
         data = recv['data']
 
         self.cursor = data['after']

@@ -1,10 +1,10 @@
 
 from __future__ import annotations
-from typing import TypeVar, Generic, Callable, Optional, AsyncIterator, Awaitable, Iterable
+from typing import TypeVar, AsyncIterator, Callable, Optional, Awaitable, Iterable
 
 T = TypeVar('T')
 
-class StubbornCallerAsyncIterator(Generic[T]):
+class StubbornCallerAsyncIterator(AsyncIterator[T]):
     def __init__(self, iterable: Iterable[Callable[[], Awaitable[T]]]) -> None:
         self._itr = iter(iterable)
         self.current: Optional[Callable[[], Awaitable[T]]] = None
@@ -14,7 +14,10 @@ class StubbornCallerAsyncIterator(Generic[T]):
 
     async def __anext__(self) -> T:
         if self.current is None:
-            self.current = next(self._itr)
+            try:
+                self.current = next(self._itr)
+            except StopIteration:
+                raise StopAsyncIteration
         value = await self.current()
         self.current = None
         return value
