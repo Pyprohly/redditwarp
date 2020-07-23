@@ -71,7 +71,7 @@ class comments_composite:
     def __init__(self, client: Client):
         self._client = client
 
-class submission:
+class fetch:
     def __init__(self, client: Client):
         self._client = client
         self.as_textpost = as_textpost(client)

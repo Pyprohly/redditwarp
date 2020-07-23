@@ -78,7 +78,7 @@ class as_linkposts:
 
         return _by_id36s(self._client, id36s, parse_for_submissions)
 
-class submissions:
+class bulk_fetch:
     def __init__(self, client: Client):
         self._client = client
         self.as_textposts = as_textposts(client)

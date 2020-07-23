@@ -252,17 +252,15 @@ class ClientCore:
             raise RuntimeError('The HTTP client does not know of an authorizer instance to assign the token to')
         self.http.authorizer.token = Token(access_token)
 
-ClientMeta = type
-if interactive_mode:
-    class ClientMeta(type):  # type: ignore[no-redef]
-        def __call__(cls: type, *args: Any, **kwargs: Any) -> Client:
-            cls = cast(Type[Client], cls)
+class ClientMeta(type):
+    def __call__(cls: type, *args: Any, **kwargs: Any) -> Client:
+        cls = cast(Type[Client], cls)
+        if interactive_mode:
             if len(args) == 1:
-                return cls.from_praw_config(*args, **kwargs)
-            return type.__call__(cls, *args, **kwargs)
+               return cls.from_praw_config(*args, **kwargs)
+        return type.__call__(cls, *args, **kwargs)
 
-class Client(ClientCore, metaclass=ClientMeta):  # type: ignore[misc]
+class Client(ClientCore, metaclass=ClientMeta):
     def _init(self, http: HTTPClient) -> None:
         super()._init(http)
         self.api = SiteProcedures(self)
-        self.fetch = self.api.fetch
