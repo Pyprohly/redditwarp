@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Dict, Any, List, Callable, Mapping, TypeVar
+from typing import TYPE_CHECKING, Iterable, Any, List, Callable, Mapping, TypeVar, Optional, Generic
 if TYPE_CHECKING:
     from ....client_sync import Client
     from ....models.submission import Submission
@@ -13,87 +13,50 @@ from ....iterators.call_chunk_chaining_iterator import ChunkSizeAdjustableCallCh
 
 T = TypeVar('T')
 
-def _by_ids(
-    ids: Iterable[int],
-    by_id36s: Callable[[Iterable[str]], ChunkSizeAdjustableCallChunkChainingIterator[T]],
-) -> ChunkSizeAdjustableCallChunkChainingIterator[T]:
-    id36s = map(to_base36, ids)
-    return by_id36s(id36s)
-
-def _by_id36s(
-    client: Client,
-    id36s: Iterable[str],
-    parse_for_submissions: Callable[[Mapping[str, Any]], List[T]],
-) -> ChunkSizeAdjustableCallChunkChainingIterator[T]:
-    t_id36s = map('t3_'.__add__, id36s)
-    chunk_iter = ChunkingIterator(t_id36s, 100)
-    strseqs = map(','.join, chunk_iter)
-
-    def api_call_func(ids_str: str, client: Client) -> Dict[str, Any]:
-        return client.request('GET', '/api/info', params={'id': ids_str})
-
-    def call_chunk(ids_str: str, client: Client = client) -> Callable[[], List[T]]:
-        def f() -> List[T]:
-            return parse_for_submissions(api_call_func(ids_str, client))
-        return f
-        #return lambda: parse_for_submissions(api_call_func(ids_str, client))
-
-    call_chunks: Iterable[Callable[[], Iterable[T]]] = map(call_chunk, strseqs)
-    return ChunkSizeAdjustableCallChunkChainingIterator(call_chunks, chunk_iter)
-
-
-class as_textposts:
+class _common(Generic[T]):
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[TextPost]:
-        return _by_ids(ids, self.by_id36s)
+    def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[T]:
+        id36s = map(to_base36, ids)
+        return self.by_id36s(id36s)
 
-    def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[TextPost]:
-        def parse_for_submissions(root: Mapping[str, Any]) -> List[TextPost]:
-            data = root['data']
-            return [
-                m for m in
-                (try_load_textpost(d) for d in data['children'])
-                if m is not None
-            ]
+    def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[T]:
+        t_id36s = map('t3_'.__add__, id36s)
+        chunk_iter = ChunkingIterator(t_id36s, 100)
+        strseqs = map(','.join, chunk_iter)
 
-        return _by_id36s(self._client, id36s, parse_for_submissions)
+        def call_chunk(ids_str: str) -> Callable[[], List[T]]:
+            def f() -> List[T]:
+                root = self._client.request('GET', '/api/info', params={'id': ids_str})
+                data = root['data']
+                return [
+                    m for m in
+                    (self._load_object(d) for d in data['children'])
+                    if m is not None
+                ]
+            return f
 
-class as_linkposts:
+        call_chunks = map(call_chunk, strseqs)
+        return ChunkSizeAdjustableCallChunkChainingIterator(call_chunks, chunk_iter)
+
+    def _load_object(self, m: Mapping[str, Any]) -> Optional[T]:
+        raise NotImplementedError
+
+
+class as_linkposts(_common[LinkPost]):
+    def _load_object(self, m: Mapping[str, Any]) -> Optional[LinkPost]:
+        return try_load_linkpost(m)
+
+class as_textposts(_common[TextPost]):
+    def _load_object(self, m: Mapping[str, Any]) -> Optional[TextPost]:
+        return try_load_textpost(m)
+
+class bulk_fetch(_common[Submission]):
     def __init__(self, client: Client):
-        self._client = client
-
-    def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[LinkPost]:
-        return _by_ids(ids, self.by_id36s)
-
-    def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[LinkPost]:
-        def parse_for_submissions(root: Mapping[str, Any]) -> List[LinkPost]:
-            data = root['data']
-            return [
-                m for m in
-                (try_load_linkpost(d) for d in data['children'])
-                if m is not None
-            ]
-
-        return _by_id36s(self._client, id36s, parse_for_submissions)
-
-class bulk_fetch:
-    def __init__(self, client: Client):
-        self._client = client
+        super().__init__(client)
         self.as_textposts = as_textposts(client)
         self.as_linkposts = as_linkposts(client)
 
-    def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[Submission]:
-        return _by_ids(ids, self.by_id36s)
-
-    def by_id36s(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[Submission]:
-        def parse_for_submissions(root: Mapping[str, Any]) -> List[Submission]:
-            data = root['data']
-            return [
-                m for m in
-                (load_submission(d) for d in data['children'])
-                if m is not None
-            ]
-
-        return _by_id36s(self._client, id36s, parse_for_submissions)
+    def _load_object(self, m: Mapping[str, Any]) -> Optional[Submission]:
+        return load_submission(m)

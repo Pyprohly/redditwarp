@@ -8,7 +8,7 @@ T = TypeVar('T')
 
 class Paginator(Iterator[Sequence[T]], ABC):
     def __init__(self) -> None:
-        self.limit = 0
+        self.limit: Optional[int] = None
         self.cursor: Optional[str] = None
         self.has_next = True
 

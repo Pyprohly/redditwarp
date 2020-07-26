@@ -13,25 +13,26 @@ class ListingAsyncPaginator(BidirectionalAsyncPaginator[T]):
         super().__init__()
         self.count = 0
         self.show_all = False
-        self.include_subreddit_data = False
         self._client = client
         self._uri = uri
 
-    async def _next_page_listing_data(self) -> Dict[str, Any]:
+    def _get_next_page_params(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {
             'count': self.count,
             'limit': self.limit,
         }
         if self.show_all:
             params['show'] = 'all'
-        if self.include_subreddit_data:
-            params['sr_detail'] = '1'
 
         if self._forward:
             params['after'] = self.cursor
         else:
             params['before'] = self.back_cursor
 
+        return params
+
+    async def _fetch_next_page_listing_data(self) -> Dict[str, Any]:
+        params = self._get_next_page_params()
         recv = await self._client.request('GET', self._uri, params=params)
         data = recv['data']
 
