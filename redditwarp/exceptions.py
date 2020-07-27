@@ -81,7 +81,7 @@ class UnacceptableJSONLayoutResponseContentError(UnacceptableResponseContentErro
                 '** Please file a bug report with RedditWrap! **'
 
 
-class HTMLDocumentReceivedError(ResponseContentError):
+class UnacceptableHTMLDocumentReceivedError(ResponseContentError):
     pass
 
 
@@ -89,8 +89,8 @@ def get_response_content_error(resp: Response) -> Exception:
     if resp.data.lower().startswith(b'<!doctype html>'):
         msg = None
         if b'>user agent required</' in resp.data:
-            msg = 'the Reddit API is asking you to set a user-agent'
-        return HTMLDocumentReceivedError(msg, response=resp)
+            msg = 'the Reddit API is asking you to set a user agent'
+        return UnacceptableHTMLDocumentReceivedError(msg, response=resp)
     return UnidentifiedResponseContentError(response=resp)
 
 def raise_for_json_layout_content_error(resp: Response, data: Mapping[str, Any]) -> None:

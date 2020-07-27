@@ -62,15 +62,15 @@ class TestRequestExceptions:
             with pytest.raises(exceptions.UnidentifiedResponseContentError):
                 client.request('', '')
 
-        def test_HTMLDocumentReceivedError(self) -> None:
+        def test_UnacceptableHTMLDocumentReceivedError(self) -> None:
             http = MyHTTPClient(200, {}, b'<!DOCTYPE html>')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTMLDocumentReceivedError):
+            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError):
                 client.request('', '')
 
             http = MyHTTPClient(200, {}, b'<!DOCTYPE html>' + b'>user agent required</')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTMLDocumentReceivedError) as exc_info:
+            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
                 client.request('', '')
             assert exc_info.value.exc_msg is not None
 

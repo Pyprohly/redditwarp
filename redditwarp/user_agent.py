@@ -1,14 +1,6 @@
 
 import re
 
-UA_BLACKLIST = [
-    'scraping',
-    'searchme',
-]
-UA_FAULTY_LIST = [
-    'curl',
-]
-
 BOT_USER_AGENT_PATTERN = r'''
 ^(?:(?P<platform>[\w-]+):)?
 

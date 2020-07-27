@@ -42,7 +42,7 @@ class MyHTTPClient(HTTPClient):
 
 class MyListingPaginator(ListingPaginator[str]):
     def __next__(self) -> Sequence[str]:
-        data = self._next_page_listing_data()
+        data = self._fetch_next_page_listing_data()
         return [d['id'] for d in data['children']]
 
 

@@ -44,7 +44,7 @@ class MyHTTPClient(HTTPClient):
 
 class MyListingPaginator(ListingAsyncPaginator[str]):
     async def __anext__(self) -> Sequence[str]:
-        data = await self._next_page_listing_data()
+        data = await self._fetch_next_page_listing_data()
         return [d['id'] for d in data['children']]
 
 

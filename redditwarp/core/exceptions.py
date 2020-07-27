@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from ..auth.token import Token
 
 from .. import auth
-from .. import user_agent
 
 class RootException(Exception):
     pass
@@ -50,8 +49,16 @@ class InsufficientScope(AuthError):
 class ResponseContentError(ResponseException):
     pass
 
+
+class BadUserAgent(ResponseException):
+    pass
+
+class BlacklistedUserAgent(ResponseException):
+    pass
+
 class FaultyUserAgent(ResponseException):
     pass
+
 
 class UnidentifiedResponseContentError(ResponseContentError):
     pass
@@ -59,43 +66,51 @@ class UnidentifiedResponseContentError(ResponseContentError):
 class HTMLDocumentResponseContentError(ResponseContentError):
     pass
 
-def get_exception_for_auth_response_content_error(resp: Response) -> ResponseException:
-    if resp.data.lower().startswith(b'<!doctype html>'):
-        msg = None
-        if (b'<p>you are not allowed to do that</p>\n\n &mdash; access was denied to this resource.</div>' in resp.data):
+def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None:
+    resp = e.response
+    status = resp.status
+
+    if isinstance(e, auth.exceptions.ResponseContentError):
+        if status == 403:
             if resp.request is not None:
                 ua = resp.request.headers['User-Agent']
-                for i in user_agent.UA_BLACKLIST:
-                    if i in ua:
-                        msg = f'{i!r} is a known blacklisted user-agent pattern. Remove it from your user-agent string.'
-                        break
-        return HTMLDocumentResponseContentError(msg, response=resp)
-    return UnidentifiedResponseContentError(response=resp)
+                msg = None
 
-def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None:
-    if isinstance(e, auth.exceptions.ResponseContentError):
-        raise get_exception_for_auth_response_content_error(e.response) from e
+                if ua.startswith('Bot'):
+                    msg = "User agent strings must not start with the string 'Bot'"
+
+                for s in (
+                    'scraping',
+                    'searchme',
+                ):
+                    if s in ua:
+                        msg = f'{s!r} is a known blacklisted user-agent pattern. Remove it from your user-agent string.'
+                        break
+
+                raise BlacklistedUserAgent(msg, response=resp) from e
+
+        if resp.data.lower().startswith(b'<!doctype html>'):
+            raise HTMLDocumentResponseContentError(response=resp) from e
+        raise UnidentifiedResponseContentError(response=resp) from e
 
     elif isinstance(e, auth.exceptions.HTTPStatusError):
-        status = e.response.status
         if status == 400:
-            raise CredentialsError('check your grant credentials', response=e.response) from e
+            raise CredentialsError('check your grant credentials', response=resp) from e
 
         elif status == 401:
-            raise CredentialsError('check your client credentials', response=e.response) from e
+            raise CredentialsError('check your client credentials', response=resp) from e
 
         elif status == 403:
-            if 'insufficient_scope' in e.response.headers.get('www-authenticate', ''):
-                raise InsufficientScope('the request requires higher privileges than provided by your access token', response=e.response) from e
+            if 'insufficient_scope' in resp.headers.get('www-authenticate', ''):
+                raise InsufficientScope('the request requires higher privileges than provided by your access token', response=resp) from e
 
         elif status == 429:
-            if e.response.request is not None:
-                ua = e.response.request.headers['User-Agent']
-                for i in user_agent.UA_FAULTY_LIST:
-                    if i in ua:
-                        raise FaultyUserAgent(
-                            f'using {i!r} in your user-agent string is known to interfere with rate limits. Remove it from your user-agent string.',
-                            response=e.response,
-                        ) from e
+            if resp.request is not None:
+                ua = resp.request.headers['User-Agent']
+                if 'curl' in ua:
+                    raise FaultyUserAgent(
+                        "the pattern 'curl' in your user-agent string is known to interfere with rate limits. Remove it from your user-agent string.",
+                        response=resp,
+                    ) from e
 
     raise

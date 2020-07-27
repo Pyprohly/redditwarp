@@ -65,15 +65,15 @@ class TestRequestExceptions:
                 await client.request('', '')
 
         @pytest.mark.asyncio
-        async def test_HTMLDocumentReceivedError(self) -> None:
+        async def test_UnacceptableHTMLDocumentReceivedError(self) -> None:
             http = MyHTTPClient(200, {}, b'<!DOCTYPE html>')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTMLDocumentReceivedError):
+            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError):
                 await client.request('', '')
 
             http = MyHTTPClient(200, {}, b'<!DOCTYPE html>' + b'>user agent required</')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTMLDocumentReceivedError) as exc_info:
+            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
                 await client.request('', '')
             assert exc_info.value.exc_msg is not None
 

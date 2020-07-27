@@ -56,8 +56,8 @@ def test_bot_user_agent_regex() -> None:
         ('console:u_SuvaBot/v1.3.5', BotUserAgent('console', 'u_SuvaBot', 'v1.3.5', None)),
         ('console:u_SuvaBot:1.3.5 some text', BotUserAgent('console', 'u_SuvaBot', '1.3.5', None)),
         ('console:u_SuvaBot/1.2.0 (by u/Pyprohly)', BotUserAgent('console', 'u_SuvaBot', '1.2.0', 'u/Pyprohly')),
-        ('console:u_SuvaBot:1.0.2 (by u/Pyprohly) some text', BotUserAgent('console', 'u_SuvaBot', '1.0.2', 'u/Pyprohly'))
-        #('console:u_SuvaBot/1.2.0 (by u/Pyprohly)some text', BotUserAgent('console', 'u_SuvaBot', '1.2.0', None))
+        ('console:u_SuvaBot:1.0.2 (by u/Pyprohly) some text', BotUserAgent('console', 'u_SuvaBot', '1.0.2', 'u/Pyprohly')),
+        ('console:u_SuvaBot/1.2.0 (by u/Pyprohly)some text', BotUserAgent('console', 'u_SuvaBot', '1.2.0', None)),
     ]
     for strr, ua in valid:
         assert BotUserAgent.parse(strr) == ua

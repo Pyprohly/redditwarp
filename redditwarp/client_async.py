@@ -1,10 +1,13 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableMapping, cast, Union
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, \
+        MutableMapping, cast, Union, MutableSequence
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
     from .http.response import Response
+
+import collections
 
 from . import http
 from . import auth
@@ -119,6 +122,7 @@ class ClientCore:
     def _init(self, http: HTTPClient) -> None:
         self.http = http
         self.last_response: Optional[Response] = None
+        self.last_responses: MutableSequence[Response] = collections.deque(maxlen=6)
         self.resource_base_url = RESOURCE_BASE_URL
 
     async def __aenter__(self) -> ClientCore:
@@ -158,12 +162,14 @@ class ClientCore:
             resp = await self.http.request(verb, uri, params=params, payload=payload,
                     data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
             self.last_response = resp
+            self.last_responses.append(resp)
         except (
             auth.exceptions.ResponseException,
             http.exceptions.ResponseException,
             core.exceptions.ResponseException,
         ) as e:
             self.last_response = e.response
+            self.last_responses.append(e.response)
             raise
 
         try:
