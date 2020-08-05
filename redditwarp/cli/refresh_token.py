@@ -103,7 +103,7 @@ response_uri_params: Mapping[str, str] = {k: v[0] for k, v in d.items()}
 
 response_state = response_uri_params['state']
 if response_state != state:
-    raise Exception(f'state did not match: {(response_state, state)}')
+    raise Exception(f'state received ({response_state}) did not match sent ({state})')
 
 try:
     code = response_uri_params['code']

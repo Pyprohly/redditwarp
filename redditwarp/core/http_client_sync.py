@@ -13,11 +13,11 @@ if TYPE_CHECKING:
 import sys
 from time import sleep
 
-from .. import auth
-from ..http.request import Request
 from .. import __about__
-from ..http.payload import make_payload
+from .. import auth
 from .exceptions import handle_auth_response_exception
+from ..http.request import Request
+from ..http.payload import make_payload
 
 class RedditHTTPClient:
     TIMEOUT = 8
@@ -96,7 +96,7 @@ class RedditHTTPClient:
         verb: str,
         uri: str,
         *,
-        params: Optional[MutableMapping[str, str]] = None,
+        params: Optional[MutableMapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,
@@ -105,11 +105,14 @@ class RedditHTTPClient:
         aux_info: Optional[Mapping] = None,
     ) -> Response:
         payload = make_payload(payload, data, json)
-        params = {} if params is None else params
-        headers = {} if headers is None else headers
 
+        params = {} if params is None else params
         params.setdefault('raw_json', '1')
         params.setdefault('api_type', 'json')
+        remove_keys = [k for k, v in params.items() if v is NotImplemented]
+        for k in remove_keys: del params[k]
+
+        headers = {} if headers is None else headers
         headers.update({**self.default_headers, **headers})
 
         r = Request(verb, uri, params=params, payload=payload, headers=headers)

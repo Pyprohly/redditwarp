@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Mapping, List, Optional
+    from typing import Mapping, List, Optional, Dict
 
 import pytest  # type: ignore[import]
 
@@ -40,13 +40,12 @@ async def test_request() -> None:
         default_headers=default_headers,
         authorized_requestor=None,
     )
-    params = {'water': 'earth'}
+    params: Dict[str, Optional[str]] = {'water': 'earth'}
     headers = {'fire': 'air'}
     await http.request('DELETE', 'system32', params=params, headers=headers, data={})
     requ = session.history[0]
     assert requ.verb == 'DELETE'
     assert requ.uri == 'system32'
-    assert requ.params is params
     assert requ.params == {'raw_json': '1', 'api_type': 'json', 'water': 'earth'}
     assert requ.headers.pop('User-Agent')
     assert requ.headers == {'cheese': 'bacon', 'fire': 'air'}

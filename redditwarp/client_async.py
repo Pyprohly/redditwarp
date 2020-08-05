@@ -30,7 +30,7 @@ from .exceptions import (
     raise_for_variant1_reddit_api_error,
     raise_for_variant2_reddit_api_error,
 )
-#from .site_procedures import SiteProcedures
+#from .api import SiteProcedures
 
 AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
 
@@ -149,7 +149,7 @@ class ClientCore:
         verb: str,
         path: str,
         *,
-        params: Optional[MutableMapping[str, str]] = None,
+        params: Optional[MutableMapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,

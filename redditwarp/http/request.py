@@ -12,6 +12,6 @@ from dataclasses import dataclass, field
 class Request:
     verb: str
     uri: str
-    params: MutableMapping[str, str] = field(default_factory=dict)
+    params: MutableMapping[str, Optional[str]] = field(default_factory=dict)
     payload: Optional[Payload] = None
     headers: MutableMapping[str, str] = field(default_factory=dict)

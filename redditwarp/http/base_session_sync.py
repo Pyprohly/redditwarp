@@ -25,7 +25,7 @@ class BaseSession(Requestor):
 
     def __init__(self,
         *,
-        params: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
     ) -> None:
         self.params = {} if params is None else params

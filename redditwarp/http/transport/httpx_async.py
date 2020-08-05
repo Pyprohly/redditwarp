@@ -25,6 +25,11 @@ _PAYLOAD_DISPATCH_TABLE: Mapping = {
 }
 
 def _request_kwargs(r: Request) -> Mapping[str, object]:
+    for v in r.params.values():
+        if v is None:
+            msg = f'valueless URL params is not supported by this HTTP transport library ({info.name}); the params mapping cannot contain None'
+            raise RuntimeError(msg)
+
     kwargs: MutableMapping[str, object] = {
         'method': r.verb,
         'url': r.uri,
@@ -48,7 +53,7 @@ class Session(BaseSession):
     def __init__(self,
         client: httpx.AsyncClient,
         *,
-        params: Optional[Mapping[str, str]] = None,
+        params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
     ) -> None:
         super().__init__(params=params, headers=headers)

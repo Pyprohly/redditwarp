@@ -35,7 +35,7 @@ class MyHTTPClient(HTTPClient):
         verb: str,
         uri: str,
         *,
-        params: Optional[MutableMapping[str, str]] = None,
+        params: Optional[MutableMapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,
