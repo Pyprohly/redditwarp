@@ -8,7 +8,6 @@ if TYPE_CHECKING:
     from ..http.response import Response
 
 import time
-from time import sleep
 
 from ..http.requestor_sync import RequestorDecorator
 from .token_bucket import TokenBucket
@@ -16,9 +15,9 @@ from .token_bucket import TokenBucket
 class RateLimited(RequestorDecorator):
     def __init__(self, requestor: Requestor) -> None:
         super().__init__(requestor)
-        self.reset = 0.
-        self.remaining = 0.
-        self.used = 0.
+        self.reset = 0
+        self.remaining = 0
+        self.used = 0
         self._burst_control_tb = TokenBucket(6, .5)
         self._prev_request = 0.
         self._last_request = time.monotonic()
@@ -35,7 +34,7 @@ class RateLimited(RequestorDecorator):
             # if the API didn't want us to wait for more than a second.
             s = 0
 
-        sleep(s)
+        self.sleep(s)
 
         self._prev_request = self._last_request
         self._last_request = time.monotonic()
@@ -47,12 +46,10 @@ class RateLimited(RequestorDecorator):
 
     def scan_ratelimit_headers(self, headers: Mapping[str, str]) -> None:
         if 'x-ratelimit-reset' in headers:
-            self.reset = float(headers['x-ratelimit-reset'])
-            self.remaining = float(headers['x-ratelimit-remaining'])
-            self.used = float(headers['x-ratelimit-used'])
-            return
-
-        if self.reset > 0:
+            self.reset = int(headers['x-ratelimit-reset'])
+            self.remaining = int(float(headers['x-ratelimit-remaining']))
+            self.used = int(headers['x-ratelimit-used'])
+        elif self.reset > 0:
             self.reset -= int(self._last_request - self._prev_request)
             self.remaining -= 1
             self.used += 1
@@ -60,3 +57,6 @@ class RateLimited(RequestorDecorator):
             self.reset = 100
             self.remaining = 200
             self.used = 0
+
+    def sleep(self, s: float) -> None:
+        time.sleep(s)
