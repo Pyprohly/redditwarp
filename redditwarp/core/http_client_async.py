@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from ..http.payload import Payload
 
 import sys
-from asyncio import sleep
 
 from .. import __about__
 from .. import auth
@@ -79,17 +78,10 @@ class RedditHTTPClient:
         timeout: float = TIMEOUT,
         aux_info: Optional[Mapping] = None,
     ) -> Response:
-        for i in range(5):
-            try:
-                resp = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
-
-            except auth.exceptions.ResponseException as e:
-                handle_auth_response_exception(e)
-
-            if resp.status in (500, 502):
-                await sleep(i**2)
-                continue
-            break
+        try:
+            resp = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+        except auth.exceptions.ResponseException as e:
+            handle_auth_response_exception(e)
         return resp
 
     async def request(self,

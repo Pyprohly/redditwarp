@@ -3,7 +3,7 @@ import os
 
 import pytest  # type: ignore[import]
 
-from redditwarp.util.data_members_namespace import DataMembersNamespace, DataMembersMapping
+from redditwarp.util.data_members_namespace import DataMembersNamespace, DataMembersNamespaceMapping
 
 class A:
     def __init__(self) -> None:
@@ -65,10 +65,10 @@ class TestDataAttributeNamespace:
 
 class TestDataMembersMapping:
     def test_general(self) -> None:
-        assert issubclass(DataMembersMapping, DataMembersNamespace)
+        assert issubclass(DataMembersNamespaceMapping, DataMembersNamespace)
 
     def test_getitem(self) -> None:
-        d = DataMembersMapping(C())
+        d = DataMembersNamespaceMapping(C())
         assert d['aaa'] == 1
         assert d['bbb'] == 2
         assert d['ddd'] == 4

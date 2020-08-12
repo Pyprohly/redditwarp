@@ -105,7 +105,7 @@ class DataMembersNamespace(Collection[str]):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined] # noqa
 
 
-class DataMembersMapping(DataMembersNamespace):
+class DataMembersNamespaceMapping(DataMembersNamespace):
     def __getitem__(self, key: str) -> Any:
         try:
             value = getattr(self._instance, key)

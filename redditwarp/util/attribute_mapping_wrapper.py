@@ -1,25 +1,14 @@
 
 from __future__ import annotations
-from typing import Any, TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO, Generic, cast
+from typing import Any, TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO
 
 from pprint import PrettyPrinter
 
 V = TypeVar('V')
 
-class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
-    """Wrap a mapping to expose its keys though attributes.
-
-    MutableMapping methods (`.update()`, `.clear()`, etc.) take
-    precedence over arbitrary attribute access. Indexing should instead
-    be used to access the values of those names to avoid the collision.
-
-    There are no restrictions on the key name. If a key can't be get/set
-    as an attribute then indexing should be used.
-
-    The underlying mapping object can be retrieved with `abs(self)`.
-    """
+class AttributeMappingWrapper(Mapping[str, V]):
     __slots__ = ('_store',)
-    _store: Mapping[str, V]
+    _mstore: Mapping[str, V]
 
     def __init__(self, data: Mapping[str, V]) -> None:
         object.__setattr__(self, '_store', data)
@@ -45,12 +34,6 @@ class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
     def __getitem__(self, key: str) -> V:
         return self._store[key]
 
-    def __setitem__(self, key: str, value: V) -> None:
-        cast(MutableMapping[str, V], self._store)[key] = value
-
-    def __delitem__(self, key: str) -> None:
-        del cast(MutableMapping[str, V], self._store)[key]
-
     def __getattr__(self,
         name: str,
     ) -> Any:
@@ -66,13 +49,6 @@ class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
             return type(self)(attr)
         return attr
 
-    #__setattr__ = __setitem__
-    # Do it the long way. Make mypy happy.
-    def __setattr__(self, name: str, value: V) -> None:
-        return self.__setitem__(name, value)
-
-    __delattr__ = __delitem__
-
     def __getstate__(self) -> Mapping[str, V]:
         return self._store
 
@@ -82,11 +58,11 @@ class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: Mapping,
+        obj: Mapping[object, object],
         stream: IO[str],
         indent: int,
         allowance: int,
-        context: Mapping,
+        context: Mapping[object, object],
         level: int,
     ) -> None:
         cls_name = obj.__class__.__name__
@@ -103,3 +79,35 @@ class AttributeMappingWrapper(Generic[V], MutableMapping[str, V]):
 
     if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined] # noqa
+
+
+class MutableAttributeMappingWrapper(AttributeMappingWrapper[V], MutableMapping[str, V]):
+    """Wrap a mapping to expose its keys though attributes.
+
+    MutableMapping methods (`.update()`, `.clear()`, etc.) take
+    precedence over arbitrary attribute access. Indexing should instead
+    be used to access the values of those names to avoid the collision.
+
+    There are no restrictions on the key name. If a key can't be get/set
+    as an attribute then indexing should be used.
+
+    The underlying mapping object can be retrieved with `abs(self)`.
+    """
+    _mutable_store: MutableMapping[str, V]
+
+    def __init__(self, data: MutableMapping[str, V]) -> None:
+        super().__init__(data)
+        object.__setattr__(self, '_mutable_store', data)
+
+    def __setitem__(self, key: str, value: V) -> None:
+        self._mutable_store[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self._mutable_store[key]
+
+    # Have to do it the long way to make mypy notice this method.
+    #__setattr__ = __setitem__
+    def __setattr__(self, name: str, value: V) -> None:
+        return self.__setitem__(name, value)
+
+    __delattr__ = __delitem__
