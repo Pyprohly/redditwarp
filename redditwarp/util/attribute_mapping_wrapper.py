@@ -99,13 +99,16 @@ class MutableAttributeMappingWrapper(AttributeMappingWrapper[V], MutableMapping[
         super().__init__(data)
         object.__setattr__(self, '_mutable_store', data)
 
+    def __abs__(self) -> MutableMapping[str, V]:
+        return self._mutable_store
+
     def __setitem__(self, key: str, value: V) -> None:
         self._mutable_store[key] = value
 
     def __delitem__(self, key: str) -> None:
         del self._mutable_store[key]
 
-    # Have to do it the long way to make mypy notice this method.
+    # Have to write it the long way to make mypy notice this method.
     #__setattr__ = __setitem__
     def __setattr__(self, name: str, value: V) -> None:
         return self.__setitem__(name, value)

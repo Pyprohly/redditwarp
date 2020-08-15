@@ -81,6 +81,7 @@ __url__ = __uri__
 
 #__version__ = '.'.join(map(str, version_info[:3]))
 __version__ = 'alpha'
+__version_info__ = version_info
 
 __author__ = 'u/Pyprohly'
 
