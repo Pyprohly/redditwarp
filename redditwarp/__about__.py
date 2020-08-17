@@ -53,10 +53,11 @@ __all__ = (
     '__uri__',
     '__url__',
     '__version__',
+    '__version_info__',
+    'version_info',
     '__author__',
     '__license__',
     '__copyright__',
-    'version_info',
 )
 
 class VersionInfo(NamedTuple):

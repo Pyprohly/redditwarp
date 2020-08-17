@@ -2,13 +2,13 @@
 """Step through the Authorization Code flow to obtain a refresh token.
 
 If you ever accidentally expose your refresh token or access token,
-run this tool to completion to fetch new tokens and the old tokens
-will expire and you will be safe.
+fetch new tokens with this tool and the old tokens will be invalidated.
 """
 
 from __future__ import annotations
-from typing import Optional, Mapping
+from typing import Optional, Any
 
+import sys
 import os
 import re
 import argparse
@@ -16,6 +16,7 @@ import uuid
 import socket
 import urllib.parse
 import webbrowser
+import signal
 
 import redditwarp
 
@@ -34,6 +35,12 @@ def get_client_id(x: Optional[str]) -> str:
 def get_client_secret(x: Optional[str]) -> str:
     return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', x)
 
+def handler(signal: int, frame: Any) -> None:
+    print('KeyboardInterrupt', file=sys.stderr)
+    raise SystemExit(1)
+
+signal.signal(signal.SIGINT, handler)
+
 parser = argparse.ArgumentParser(description=__doc__)
 add_arg = parser.add_argument
 add_arg('client_id', nargs='?')
@@ -41,7 +48,7 @@ add_arg('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.
 add_arg('client_secret', nargs='?')
 add_arg('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 add_arg('--scope', default='*')
-add_arg('--redirect-uri', default='http://localhost:8080')
+add_arg('--redirect-uri', default='http://localhost')
 add_arg('--duration', choices=('temporary', 'permanent'), default='permanent', help=argparse.SUPPRESS)
 add_arg('--no-web-browser', action='store_true')
 args = parser.parse_args()
@@ -64,7 +71,7 @@ state = str(uuid.uuid4())
 print()
 print('''Step 1. Build the authorization URL and direct the user to the authorization server.\n''')
 
-params: Mapping[str, str] = {
+params = {
     'response_type': 'code',
     'client_id': client_id,
     'redirect_uri': redirect_uri,
@@ -99,11 +106,11 @@ if not m:
     raise Exception
 query = m[1]
 d = urllib.parse.parse_qs(query)
-response_uri_params: Mapping[str, str] = {k: v[0] for k, v in d.items()}
+response_uri_params = {k: v[0] for k, v in d.items()}
 
 response_state = response_uri_params['state']
 if response_state != state:
-    raise Exception(f'state received ({response_state}) did not match sent ({state})')
+    raise Exception(f'received state ({response_state}) did not match sent string ({state})')
 
 try:
     code = response_uri_params['code']

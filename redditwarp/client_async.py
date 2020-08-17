@@ -56,17 +56,27 @@ class ClientCore:
         return self
 
     @classmethod
+    def from_access_token(cls: Type[T], access_token: str) -> T:
+        token = Token(access_token)
+        session = cls.get_default_transporter().module.new_session()  # type: ignore[attr-defined]
+        authorizer = Authorizer(token, None)
+        authorized_requestor = Authorized(session, authorizer)
+        requestor = RateLimited(authorized_requestor)
+        http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
+        return cls.from_http(http)
+
+    @classmethod
     def from_praw_config(cls: Type[T], site_name: str = '') -> T:
         config = get_praw_config()
         section_name = site_name or config.default_section  # type: ignore[attr-defined]
         try:
             section = config[section_name]
         except KeyError:
+            empty = not any(s.values() for s in config.values())
+            msg = f"No section {section_name!r} in{' empty' if empty else ''} config"
             class StrReprStr(str):
                 def __repr__(self) -> str:
                     return str(self)
-            empty = not any(s.values() for s in config.values())
-            msg = f"No section {section_name!r} in{' empty' if empty else ''} config"
             raise KeyError(StrReprStr(msg)) from None
 
         get = section.get
@@ -81,22 +91,12 @@ class ClientCore:
             self.set_user_agent(get('user_agent'))
         return self
 
-    @classmethod
-    def from_access_token(cls: Type[T], access_token: str) -> T:
-        token = Token(access_token)
-        session = cls.get_default_transporter().module.new_session()  # type: ignore[attr-defined]
-        authorizer = Authorizer(token, None)
-        authorized_requestor = Authorized(session, authorizer)
-        requestor = RateLimited(authorized_requestor)
-        http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
-        return cls.from_http(http)
-
     def __init__(self,
             client_id: str, client_secret: str,
             refresh_token: Optional[str] = None,
             access_token: Optional[str] = None, *,
             username: Optional[str] = None, password: Optional[str] = None,
-            grant: Optional[AuthorizationGrant] = None):
+            grant: Optional[AuthorizationGrant] = None) -> None:
         grant_creds = (refresh_token, username, password)
         if grant is None:
             grant = auto_grant_factory(*grant_creds)
@@ -107,16 +107,17 @@ class ClientCore:
 
         token = None if access_token is None else Token(access_token)
         session = self.get_default_transporter().module.new_session()  # type: ignore[attr-defined]
-        authorizer = Authorizer(token, None)
-        authorized_requestor = Authorized(session, authorizer)
-        requestor = RateLimited(authorized_requestor)
-        http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
-        authorizer.token_client = TokenObtainmentClient(
-            DefaultHeadersPredisposed(session, http.default_headers),
+        token_client = TokenObtainmentClient(
+            session,
             TOKEN_OBTAINMENT_URL,
             ClientCredentials(client_id, client_secret),
             grant,
         )
+        authorizer = Authorizer(token, token_client)
+        authorized_requestor = Authorized(session, authorizer)
+        requestor = RateLimited(authorized_requestor)
+        http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
+        token_client.requestor = DefaultHeadersPredisposed(session, http.default_headers)
         self._init(http)
 
     def _init(self, http: HTTPClient) -> None:

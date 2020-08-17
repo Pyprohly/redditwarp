@@ -42,7 +42,7 @@ class RedditHTTPClient:
     @authorizer.setter
     def authorizer(self, value: Authorizer) -> None:
         if self.authorized_requestor is None:
-            raise RuntimeError('The client is not configured in a way that knows how update this field.')
+            raise RuntimeError('The client is not configured in a way that knows how to update this field.')
         self.authorized_requestor.authorizer = value
 
     def __init__(self,
