@@ -1,12 +1,12 @@
 
 from __future__ import annotations
-from typing import TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO, Generic, cast, Tuple
+from typing import TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO, cast, Tuple
 
 from pprint import PrettyPrinter
 
 V = TypeVar('V')
 
-class CaseInsensitiveDict(Generic[V], MutableMapping[str, V]):
+class CaseInsensitiveDict(MutableMapping[str, V]):
     __slots__ = ('_store',)
     _store: MutableMapping[str, Tuple[str, V]]
 

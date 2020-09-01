@@ -24,11 +24,11 @@ class BidirectionalAsyncPaginator(AsyncPaginator[T]):
     def change_direction(self) -> None:
         self.set_direction(not self._forward)
 
-    def _set_cursors(self, c1: str, c2: str) -> None:
+    def _set_cursors(self, c1: Optional[str], c2: Optional[str]) -> None:
         self.cursor = c1
         self.back_cursor = c2
 
         if not self._forward:
-            c1, c2 = c1, c2
+            c1, c2 = c2, c1
         self.has_next = bool(c1)
         self.has_prev = bool(c2)

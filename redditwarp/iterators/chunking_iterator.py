@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, Iterable, Iterator, Sequence, Generic
+from typing import TypeVar, Iterable, Iterator, Sequence
 from itertools import islice
 
 T = TypeVar('T')
@@ -13,8 +13,7 @@ def chunked(src: Iterable[T], size: int) -> Iterator[Sequence[T]]:
             break
         yield chunk
 
-
-class ChunkingIterator(Generic[T]):
+class ChunkingIterator(Iterator[Sequence[T]]):
     """Control chunk size during iteration."""
 
     def __init__(self, src: Iterable[T], size: int) -> None:

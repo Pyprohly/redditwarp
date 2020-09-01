@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Generic, Optional, Callable, Iterable, Iterator, Any
+from typing import TYPE_CHECKING, TypeVar, Optional, Callable, Iterable, Iterator, Any
 if TYPE_CHECKING:
     from .chunking_iterator import ChunkingIterator
 
@@ -9,7 +9,7 @@ from .unfaltering_chaining_iterator import UnfalteringChainingIterator
 
 T = TypeVar('T')
 
-class CallChunkChainingIterator(Generic[T]):
+class CallChunkChainingIterator(Iterator[T]):
     """Evaluate call chunks and chain them together."""
 
     @property

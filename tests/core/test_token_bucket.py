@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, Generic, Iterable, Iterator, Tuple
+from typing import TypeVar, Iterable, Iterator, Tuple
 
 import pytest  # type: ignore[import]
 
@@ -8,7 +8,7 @@ from redditwarp.core.token_bucket import TokenBucket
 
 T = TypeVar('T')
 
-class CallIterator(Generic[T]):
+class CallIterator(Iterator[T]):
     """Iterate by calling the object."""
     def __init__(self, iterable: Iterable[T]) -> None:
         self._iterator = iter(iterable)

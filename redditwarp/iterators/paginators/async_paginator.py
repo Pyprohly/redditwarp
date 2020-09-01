@@ -19,6 +19,6 @@ class AsyncPaginator(AsyncIterator[Sequence[T]], ABC):
     async def __anext__(self) -> Sequence[T]:
         raise NotImplementedError
 
-    def _set_cursor(self, c: str) -> None:
+    def _set_cursor(self, c: Optional[str]) -> None:
         self.cursor = c
         self.has_next = bool(c)
