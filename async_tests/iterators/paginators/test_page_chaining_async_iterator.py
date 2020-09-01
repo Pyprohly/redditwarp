@@ -1,7 +1,7 @@
 
 from typing import List
 
-import pytest
+import pytest  # type: ignore[import]
 
 from redditwarp.iterators.paginators.page_chaining_async_iterator import PageChainingAsyncIterator
 from redditwarp.iterators.paginators.async_paginator import AsyncPaginator
@@ -24,7 +24,8 @@ async def test_simple_iteration() -> None:
             except StopIteration:
                 raise StopAsyncIteration
 
-    pci = PageChainingAsyncIterator(MyAsyncPaginator())
+    p = MyAsyncPaginator()
+    pci = PageChainingAsyncIterator(p)
     assert [i async for i in pci] == [1,2,3,4,5,6]
 
 @pytest.mark.asyncio

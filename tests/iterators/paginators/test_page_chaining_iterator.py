@@ -18,7 +18,8 @@ def test_simple_iteration() -> None:
         def __next__(self) -> List[int]:
             return next(self._itr)
 
-    pci = PageChainingIterator(MyPaginator())
+    p = MyPaginator()
+    pci = PageChainingIterator(p)
     assert list(pci) == [1,2,3,4,5,6]
 
 def test_current_iter() -> None:

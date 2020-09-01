@@ -1,5 +1,5 @@
 
-import pytest
+import pytest  # type: ignore[import]
 
 from typing import Sequence, Any, Optional, Mapping, MutableMapping
 from redditwarp.client_async import Client
@@ -32,7 +32,7 @@ class MyHTTPClient(HTTPClient):
         verb: str,
         uri: str,
         *,
-        params: Optional[MutableMapping[str, str]] = None,
+        params: Optional[MutableMapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,
@@ -116,10 +116,10 @@ async def test_direction() -> None:
     assert not lp.has_next and lp.has_prev
     lp.set_direction(False)
     assert not lp.has_next and lp.has_prev
-    lp.set_direction()
+    lp.change_direction()
     assert lp.get_direction()
     assert lp.has_next and not lp.has_prev
-    lp.set_direction()
+    lp.change_direction()
     assert not lp.get_direction()
     assert not lp.has_next and lp.has_prev
 
@@ -159,7 +159,7 @@ async def test_has_next_and_has_prev() -> None:
 @pytest.mark.asyncio
 async def test_has_next_and_has_prev__backwards() -> None:
     lp = MyListingPaginator(client, '/r/redditdev/top')
-    lp.set_direction()
+    lp.change_direction()
     assert not lp.has_next and lp.has_prev
 
     http.response_data = b'''\

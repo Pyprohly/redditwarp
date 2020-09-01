@@ -16,7 +16,7 @@ class PageChainingAsyncIterator(AsyncIterator[E]):
     def current_iter(self, value: Iterator[E]) -> None:
         self._chain_iter.current_iter = value
 
-    def __init__(self, paginator: AsyncPaginator, amount: Optional[int] = None) -> None:
+    def __init__(self, paginator: AsyncPaginator[E], amount: Optional[int] = None) -> None:
         self.amount = amount
         self.count = 0
         self._chain_iter: UnfalteringChainingAsyncIterator[E] = UnfalteringChainingAsyncIterator(paginator)

@@ -162,16 +162,16 @@ class ClientCore:
         try:
             resp = await self.http.request(verb, uri, params=params, payload=payload,
                     data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
-            self.last_response = resp
-            self.last_responses.append(resp)
         except (
             auth.exceptions.ResponseException,
             http.exceptions.ResponseException,
             core.exceptions.ResponseException,
         ) as e:
-            self.last_response = e.response
-            self.last_responses.append(e.response)
+            resp = e.response
             raise
+        finally:
+            self.last_response = resp
+            self.last_responses.append(resp)
 
         try:
             json_data = json_loads_response(resp)
