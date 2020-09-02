@@ -66,13 +66,21 @@ async def test_fetch_json_dict() -> None:
 @pytest.mark.asyncio
 async def test_fetch_json_dict__exceptions() -> None:
     requestor = MockRequestor(
-        response_status=502,
-        response_headers={},
-        response_data=b'{"error": "invalid_client"}',
+        response_status=200,
+        response_headers={'Content-Type': 'application/json'},
+        response_data=b'["hi"]',
     )
     o = TokenObtainmentClient(
         requestor,
         '', ClientCredentials('cid', 'cse'), {},
+    )
+    with pytest.raises(ResponseContentError):
+        await o.fetch_json_dict()
+
+    o.requestor = MockRequestor(
+        response_status=502,
+        response_headers={},
+        response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(ResponseContentError):
         await o.fetch_json_dict()
@@ -88,7 +96,7 @@ async def test_fetch_json_dict__exceptions() -> None:
     o.requestor = MockRequestor(
         response_status=502,
         response_headers={'Content-Type': 'application/json'},
-        response_data=b'{"error": "bogus"}',
+        response_data=b'{"error": "asdf"}',
     )
     with pytest.raises(HTTPStatusError):
         await o.fetch_json_dict()
@@ -96,7 +104,7 @@ async def test_fetch_json_dict__exceptions() -> None:
     o.requestor = MockRequestor(
         response_status=200,
         response_headers={'Content-Type': 'application/json'},
-        response_data=b'{"error": "bogus"}',
+        response_data=b'{"error": "asdf"}',
     )
     with pytest.raises(UnrecognizedOAuth2ResponseError):
         await o.fetch_json_dict()

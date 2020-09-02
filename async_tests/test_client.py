@@ -56,6 +56,21 @@ async def test_request() -> None:
     assert client.last_response is not None
 
 class TestRequestExceptions:
+    class TestHTTPStatusError:
+        @pytest.mark.asyncio
+        async def test_json_decode_failed(self) -> None:
+            http = MyHTTPClient(414, {'Content-Type': 'text/plain'}, b'Error: URI Too Long')
+            client = Client.from_http(http)
+            with pytest.raises(exceptions.HTTPStatusError):
+                await client.request('', '')
+
+        @pytest.mark.asyncio
+        async def test_json_decode_suceeded(self) -> None:
+            http = MyHTTPClient(404, {'Content-Type': 'application/json; charset=UTF-8'}, b'{"message": "Not Found", "error": 404}')
+            client = Client.from_http(http)
+            with pytest.raises(exceptions.HTTPStatusError):
+                await client.request('', '')
+
     class TestResponseContentError:
         @pytest.mark.asyncio
         async def test_UnidentifiedResponseContentError(self) -> None:
@@ -66,12 +81,12 @@ class TestRequestExceptions:
 
         @pytest.mark.asyncio
         async def test_UnacceptableHTMLDocumentReceivedError(self) -> None:
-            http = MyHTTPClient(200, {}, b'<!DOCTYPE html>')
+            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'<!DOCTYPE html>')
             client = Client.from_http(http)
             with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError):
                 await client.request('', '')
 
-            http = MyHTTPClient(200, {}, b'<!DOCTYPE html>' + b'>user agent required</')
+            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'<!DOCTYPE html>' + b'>user agent required</')
             client = Client.from_http(http)
             with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
                 await client.request('', '')

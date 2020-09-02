@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Any, Dict
+    from typing import Any, Mapping
     from ..http.response import Response
 
 from typing import Type, TypeVar, ClassVar
@@ -52,7 +52,7 @@ class OAuth2ResponseError(ResponseException):
     T = TypeVar('T', bound='OAuth2ResponseError')
 
     @classmethod
-    def from_json_dict(cls: Type[T], response: Response, json_dict: Dict[str, Any]) -> T:
+    def from_json_dict(cls: Type[T], response: Response, json_dict: Mapping[str, Any]) -> T:
         return cls(
             response=response,
             error_name=json_dict.get('error', ''),

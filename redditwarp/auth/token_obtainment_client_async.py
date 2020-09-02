@@ -34,9 +34,13 @@ class TokenObtainmentClient:
 
         resp = await self.requestor.send(r)
 
+        resp_json = None
         try:
             resp_json = json_loads_response(resp)
         except ValueError:
+            pass
+
+        if resp_json is None or not isinstance(resp_json, Mapping):
             raise ResponseContentError(response=resp) from None
 
         error = resp_json.get('error')

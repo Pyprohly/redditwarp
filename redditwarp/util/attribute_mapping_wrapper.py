@@ -8,7 +8,7 @@ V = TypeVar('V')
 
 class AttributeMappingWrapper(Mapping[str, V]):
     __slots__ = ('_store',)
-    _mstore: Mapping[str, V]
+    _store: Mapping[str, V]
 
     def __init__(self, data: Mapping[str, V]) -> None:
         object.__setattr__(self, '_store', data)

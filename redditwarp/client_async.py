@@ -25,7 +25,8 @@ from .core.ratelimited_async import RateLimited
 from .core.default_headers_predisposed_async import DefaultHeadersPredisposed
 from .exceptions import (
     HTTPStatusError,
-    get_response_content_error,
+    UnidentifiedResponseContentError,
+    raise_for_response_content_error,
     raise_for_json_layout_content_error,
     raise_for_variant1_reddit_api_error,
     raise_for_variant2_reddit_api_error,
@@ -168,27 +169,40 @@ class ClientCore:
             core.exceptions.ResponseException,
         ) as e:
             resp = e.response
-            raise
-        finally:
             self.last_response = resp
             self.last_responses.append(resp)
+            raise
 
+        self.last_response = resp
+        self.last_responses.append(resp)
+
+        data = None
         try:
-            json_data = json_loads_response(resp)
+            data = json_loads_response(resp)
         except ValueError:
-            raise get_response_content_error(resp) from None
+            pass
 
-        if isinstance(json_data, Mapping):
-            raise_for_json_layout_content_error(resp, json_data)
-            raise_for_variant1_reddit_api_error(resp, json_data)
-            raise_for_variant2_reddit_api_error(resp, json_data)
+        if data is None:
+            raise_for_response_content_error(resp)
+
+            try:
+                resp.raise_for_status()
+            except http.exceptions.StatusCodeException as e:
+                raise HTTPStatusError(response=resp) from e
+
+            raise UnidentifiedResponseContentError(response=resp)
+
+        if isinstance(data, Mapping):
+            raise_for_json_layout_content_error(resp, data)
+            raise_for_variant1_reddit_api_error(resp, data)
+            raise_for_variant2_reddit_api_error(resp, data)
 
         try:
             resp.raise_for_status()
         except http.exceptions.StatusCodeException as e:
             raise HTTPStatusError(response=resp) from e
 
-        return json_data
+        return data
 
     def set_access_token(self, access_token: str) -> None:
         if self.http.authorizer is None:

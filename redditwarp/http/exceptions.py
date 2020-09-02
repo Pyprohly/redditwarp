@@ -70,6 +70,8 @@ class Conflict(ClientErrorResponse):
     STATUS_CODE = 409
 class PayloadTooLarge(ClientErrorResponse):
     STATUS_CODE = 413
+class URITooLong(ClientErrorResponse):
+    STATUS_CODE = 414
 class TooManyRequests(ClientErrorResponse):
     STATUS_CODE = 429
 
@@ -92,6 +94,7 @@ status_code_exception_class_by_status_code = {
         NotFound,
         Conflict,
         PayloadTooLarge,
+        URITooLong,
         TooManyRequests,
 
         # Server errors
