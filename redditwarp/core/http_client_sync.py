@@ -22,16 +22,12 @@ class RedditHTTPClient:
     TIMEOUT = 8
 
     @property
-    def default_headers(self) -> MutableMapping[str, str]:
-        return self._default_headers
-
-    @property
     def user_agent(self) -> str:
-        return self._default_headers['User-Agent']
+        return self.headers['User-Agent']
 
     @user_agent.setter
     def user_agent(self, value: str) -> None:
-        self._default_headers['User-Agent'] = value
+        self.headers['User-Agent'] = value
 
     @property
     def authorizer(self) -> Optional[Authorizer]:
@@ -49,12 +45,12 @@ class RedditHTTPClient:
         session: BaseSession,
         requestor: Optional[Requestor],
         *,
-        default_headers: Optional[MutableMapping[str, str]] = None,
+        headers: Optional[MutableMapping[str, str]] = None,
         authorized_requestor: Optional[Authorized],
     ) -> None:
         self.session = session
         self.requestor = session if requestor is None else requestor
-        self._default_headers = {} if default_headers is None else default_headers
+        self.headers = {} if headers is None else headers
         self.authorized_requestor = authorized_requestor
         self.user_agent = self.user_agent_string_head = (
             f"{__about__.__title__}/{__about__.__version__} "
@@ -105,7 +101,7 @@ class RedditHTTPClient:
         payload = make_payload(payload, data, json)
 
         headers = {} if headers is None else headers
-        headers.update({**self.default_headers, **headers})
+        headers.update({**self.headers, **headers})
 
         r = Request(verb, uri, params=params, payload=payload, headers=headers)
         return self.send(r, timeout=timeout, aux_info=aux_info)

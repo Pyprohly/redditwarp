@@ -101,7 +101,7 @@ class TestRequestExceptions:
 
     class TestRedditAPIError:
         @pytest.mark.asyncio
-        async def test_RedditAPIErrorVariant1(self) -> None:
+        async def test_Variant2RedditAPIError(self) -> None:
             b = b'''\
 {
     "json": {
@@ -114,7 +114,7 @@ class TestRequestExceptions:
 '''
             http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
             client = Client.from_http(http)
-            with pytest.raises(exceptions.RedditAPIErrorVariant1) as exc_info:
+            with pytest.raises(exceptions.Variant2RedditAPIError) as exc_info:
                 await client.request('', '')
             exc = exc_info.value
             assert exc.codename == 'NO_TEXT'
@@ -126,7 +126,24 @@ class TestRequestExceptions:
             ]
 
         @pytest.mark.asyncio
-        async def test_RedditAPIErrorVariant2(self) -> None:
+        async def test_Variant1RedditAPIError(self) -> None:
+            b = b'''\
+{
+    "explanation": "Please log in to do that.",
+    "message": "Forbidden",
+    "reason": "USER_REQUIRED"
+}
+'''
+            http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
+            client = Client.from_http(http)
+            with pytest.raises(exceptions.Variant1RedditAPIError) as exc_info:
+                await client.request('', '')
+            exc = exc_info.value
+            assert exc.codename == "USER_REQUIRED"
+            assert exc.detail == "Please log in to do that."
+            assert exc.field == ""
+            assert not exc.fields
+
             b = b'''\
 {
     "fields": ["title"],
@@ -137,10 +154,10 @@ class TestRequestExceptions:
 '''
             http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
             client = Client.from_http(http)
-            with pytest.raises(exceptions.RedditAPIErrorVariant2) as exc_info:
+            with pytest.raises(exceptions.Variant1RedditAPIError) as exc_info:
                 await client.request('', '')
             exc = exc_info.value
             assert exc.codename == "TOO_LONG"
             assert exc.detail == "this is too long (max: 50)"
             assert exc.field == "title"
-            assert exc.fields == ["title"]
+            assert exc.fields[0] == "title"

@@ -32,11 +32,11 @@ class GoodSession(BaseSession):
 
 def test_request() -> None:
     session = GoodSession(200, {}, b'')
-    default_headers = {'cheese': 'bacon', 'fire': 'water'}
+    headers = {'cheese': 'bacon', 'fire': 'water'}
     http = HTTPClient(
         session=session,
         requestor=session,
-        default_headers=default_headers,
+        headers=headers,
         authorized_requestor=None,
     )
     params: Dict[str, Optional[str]] = {'water': 'earth'}

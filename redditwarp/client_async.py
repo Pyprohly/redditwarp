@@ -22,7 +22,6 @@ from .auth.token_obtainment_client_async import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
 from .core.authorizer_async import Authorizer, Authorized
 from .core.ratelimited_async import RateLimited
-from .core.default_headers_predisposed_async import DefaultHeadersPredisposed
 from .exceptions import (
     HTTPStatusError,
     UnidentifiedResponseContentError,
@@ -58,12 +57,19 @@ class ClientCore:
 
     @classmethod
     def from_access_token(cls: Type[T], access_token: str) -> T:
+        transporter = cls.get_default_transporter()
+        new_session = transporter.module.new_session  # type: ignore[attr-defined]
+        headers: MutableMapping[str, str] = {}
+        session = new_session(headers=headers)
         token = Token(access_token)
-        session = cls.get_default_transporter().module.new_session()  # type: ignore[attr-defined]
         authorizer = Authorizer(token, None)
-        authorized_requestor = Authorized(session, authorizer)
-        requestor = RateLimited(authorized_requestor)
-        http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
+        auth_requestor = Authorized(session, authorizer)
+        requestor = RateLimited(auth_requestor)
+        http = HTTPClient(session,
+            requestor,
+            headers=headers,
+            authorized_requestor=auth_requestor,
+        )
         return cls.from_http(http)
 
     @classmethod
@@ -97,7 +103,7 @@ class ClientCore:
             refresh_token: Optional[str] = None,
             access_token: Optional[str] = None, *,
             username: Optional[str] = None, password: Optional[str] = None,
-            grant: Optional[AuthorizationGrant] = None) -> None:
+            grant: Optional[AuthorizationGrant] = None):
         grant_creds = (refresh_token, username, password)
         if grant is None:
             grant = auto_grant_factory(*grant_creds)
@@ -106,8 +112,11 @@ class ClientCore:
         elif any(grant_creds):
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
+        transporter = self.get_default_transporter()
+        new_session = transporter.module.new_session  # type: ignore[attr-defined]
+        headers: MutableMapping[str, str] = {}
+        session = new_session(headers=headers)
         token = None if access_token is None else Token(access_token)
-        session = self.get_default_transporter().module.new_session()  # type: ignore[attr-defined]
         token_client = TokenObtainmentClient(
             session,
             TOKEN_OBTAINMENT_URL,
@@ -115,10 +124,13 @@ class ClientCore:
             grant,
         )
         authorizer = Authorizer(token, token_client)
-        authorized_requestor = Authorized(session, authorizer)
-        requestor = RateLimited(authorized_requestor)
-        http = HTTPClient(session, requestor, authorized_requestor=authorized_requestor)
-        token_client.requestor = DefaultHeadersPredisposed(session, http.default_headers)
+        auth_requestor = Authorized(session, authorizer)
+        requestor = RateLimited(auth_requestor)
+        http = HTTPClient(session,
+            requestor,
+            headers=headers,
+            authorized_requestor=auth_requestor,
+        )
         self._init(http)
 
     def _init(self, http: HTTPClient) -> None:
@@ -184,15 +196,7 @@ class ClientCore:
 
         if data is None:
             raise_for_response_content_error(resp)
-
-            try:
-                resp.raise_for_status()
-            except http.exceptions.StatusCodeException as e:
-                raise HTTPStatusError(response=resp) from e
-
-            raise UnidentifiedResponseContentError(response=resp)
-
-        if isinstance(data, Mapping):
+        elif isinstance(data, Mapping):
             raise_for_json_layout_content_error(resp, data)
             raise_for_variant1_reddit_api_error(resp, data)
             raise_for_variant2_reddit_api_error(resp, data)
@@ -201,6 +205,9 @@ class ClientCore:
             resp.raise_for_status()
         except http.exceptions.StatusCodeException as e:
             raise HTTPStatusError(response=resp) from e
+
+        if data is None:
+            raise UnidentifiedResponseContentError(response=resp)
 
         return data
 

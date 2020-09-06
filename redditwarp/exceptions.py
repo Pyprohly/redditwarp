@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any, List, Mapping
+from typing import TYPE_CHECKING, Optional, Any, List, Sequence, Mapping
 if TYPE_CHECKING:
     from .http.response import Response
 
@@ -107,62 +107,88 @@ class RedditAPIError(ResponseException):
     out unsuccessfully.
     """
 
-    @property
-    def codename(self) -> str:
-        return ''
-
-    @property
-    def detail(self) -> str:
-        return ''
-
-    @property
-    def field(self) -> str:
-        return ''
+    def __init__(self,
+        exc_msg: object = None, *,
+        response: Response,
+        codename: str,
+        detail: str,
+    ) -> None:
+        super().__init__(exc_msg=exc_msg, response=response)
+        self.codename = codename
+        self.detail = detail
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} ({self.response})>'
 
-    def __str__(self) -> str:
+    def exc_str(self) -> str:
+        return f"{self.codename}: {self.detail}"
+
+class Variant1RedditAPIError(RedditAPIError):
+    def __init__(self,
+        exc_msg: object = None, *,
+        response: Response,
+        codename: str,
+        detail: str,
+        fields: Sequence[str],
+    ):
+        super().__init__(
+            exc_msg=exc_msg,
+            response=response,
+            codename=codename,
+            detail=detail,
+        )
+        self.field = fields[0] if fields else ''
+        self.fields = fields
+
+    def exc_str(self) -> str:
         cn = self.codename
         de = self.detail
         fd = self.field
         return f"{cn}: {de}{fd and f' -> {fd}'}"
 
-class RedditAPIErrorVariant1(RedditAPIError):
+def raise_for_variant1_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
+    if data.keys() >= {'explanation', 'reason'}:
+        codename = data['reason']
+        detail = data['explanation']
+        fields = data.get('fields', ())
+        raise Variant1RedditAPIError(
+            response=resp,
+            codename=codename,
+            detail=detail,
+            fields=fields,
+        )
+
+class Variant2RedditAPIError(RedditAPIError):
     """An error class denoting an error that was indicated in the
     response body of an API request, occurring when the remote API
     wishes to inform the client that a service request was carried
     out unsuccessfully.
     """
 
-    @property
-    def codename(self) -> str:
-        return self.errors[0].codename
-
-    @property
-    def detail(self) -> str:
-        return self.errors[0].detail
-
-    @property
-    def field(self) -> str:
-        return self.errors[0].field
-
-    def __init__(self, exc_msg: object = None, *, response: Response, errors: List[RedditErrorItem]):
+    def __init__(self, exc_msg: object = None, *, response: Response, errors: Sequence[RedditErrorItem]):
         """
         Parameters
         ----------
         response: :class:`.http.Response`
         errors: List[:class:`.RedditErrorItem`]
         """
-        super().__init__(exc_msg=exc_msg, response=response)
-        errors[0]
+        err = errors[0]
+        codename = err.codename
+        detail = err.detail
+        super().__init__(
+            exc_msg=exc_msg,
+            response=response,
+            codename=codename,
+            detail=detail,
+        )
+        self.field = err.field
         self.errors = errors
 
     def __repr__(self) -> str:
         err_names = [err.codename for err in self.errors]
         return f'<{self.__class__.__name__} ({self.response}) {err_names}>'
 
-    def __str__(self) -> str:
+    def exc_str(self) -> str:
         err_count = len(self.errors)
         if err_count > 1:
             return f"multiple ({err_count}) errors encountered:\n" \
@@ -170,15 +196,15 @@ class RedditAPIErrorVariant1(RedditAPIError):
                         f"  {err.codename}: {err.detail}{err.field and f' -> {err.field}'}"
                         for err in self.errors)
 
-        return super().__str__()
+        return super().exc_str()
 
-class ContentCreationCooldown(RedditAPIErrorVariant1):
+class ContentCreationCooldown(Variant2RedditAPIError):
     """Used over RedditAPIError when the error items list contains
     a RATELIMIT error, and it is the only error in the list.
     """
 
-    def __str__(self) -> str:
-        return super().__str__() + '''
+    def exc_str(self) -> str:
+        return super().exc_str() + '''
 
 Looks like you hit a content creation ratelimit. This can happen when
 your account has low karma or no verified email.
@@ -200,47 +226,13 @@ def try_parse_reddit_error_items(data: Mapping[str, Any]) -> Optional[List[Reddi
         return l
     return None
 
-def get_variant1_reddit_api_error(response: Response, error_list: List[RedditErrorItem]) -> RedditAPIErrorVariant1:
-    cls = RedditAPIErrorVariant1
+def get_variant2_reddit_api_error(response: Response, error_list: Sequence[RedditErrorItem]) -> Variant2RedditAPIError:
+    cls = Variant2RedditAPIError
     if (len(error_list) == 1) and (error_list[0].codename == 'RATELIMIT'):
         cls = ContentCreationCooldown
     return cls(response=response, errors=error_list)
 
-def raise_for_variant1_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
+def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
     error_list = try_parse_reddit_error_items(data)
     if error_list is not None:
-        raise get_variant1_reddit_api_error(resp, error_list)
-
-
-class RedditAPIErrorVariant2(RedditAPIError):
-    @property
-    def codename(self) -> str:
-        return self._codename
-
-    @property
-    def detail(self) -> str:
-        return self._detail
-
-    @property
-    def field(self) -> str:
-        return self._field
-
-    def __init__(self, exc_msg: object = None, *, response: Response,
-            codename: str, detail: str, fields: str):
-        super().__init__(exc_msg=exc_msg, response=response)
-        self._codename = codename
-        self._detail = detail
-        self._field = fields[0] if fields else ''
-        self.fields = fields
-
-def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
-    if data.keys() >= {'fields', 'explanation', 'reason'}:
-        codename = data['reason']
-        detail = data['explanation']
-        fields = data['fields']
-        raise RedditAPIErrorVariant2(
-            response=resp,
-            codename=codename,
-            detail=detail,
-            fields=fields,
-        )
+        raise get_variant2_reddit_api_error(resp, error_list)

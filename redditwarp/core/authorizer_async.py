@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, List
+from typing import TYPE_CHECKING, Optional, Mapping, Set
 if TYPE_CHECKING:
     from ..auth.token_obtainment_client_async import TokenObtainmentClient
     from ..auth.token import Token
@@ -76,7 +76,7 @@ class Authorized(RequestorDecorator):
         self._lock = asyncio.Lock()
         self._valve = asyncio.Event()
         self._valve.set()
-        self._futures: List[asyncio.Future] = []
+        self._futures: Set[asyncio.Future] = set()
 
     async def send(self, request: Request, *, timeout: float = -1,
             aux_info: Optional[Mapping] = None) -> Response:
@@ -84,33 +84,35 @@ class Authorized(RequestorDecorator):
 
         async with self._lock:
             await self.authorizer.maybe_renew_token()
+
         self.authorizer.prepare_request(request)
 
         coro = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
         fut = asyncio.ensure_future(coro)
-        self._futures.append(fut)
+        self._futures.add(fut)
         try:
             response = await fut
         finally:
             self._futures.remove(fut)
 
         if response.status == 401 and self.authorizer.can_renew_token():
-            # Need to call `renew_token()`.
-            # Ensure only one task does it
+            # Need to call `renew_token()` ensuring only one task does it.
             if self._valve.is_set():
-                # Stop new requests from being made
+                # Stop new requests. Assume the token we have is invalid.
                 self._valve.clear()
 
-                # Ensure all tasks are past the 401 response status check
-                # and are awaiting on `self._valve.wait()`
-                await asyncio.wait(self._futures)
-
                 await self.authorizer.renew_token()
-                self.authorizer.prepare_request(request)
+
+                # Wait for all other tasks to finish making a request
+                # so that a request that fails on the same old token
+                # doesn't cause another token renewal.
+                await asyncio.wait(self._futures)
 
                 self._valve.set()
             else:
                 await self._valve.wait()
+
+            self.authorizer.prepare_request(request)
 
             response = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
 
