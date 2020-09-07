@@ -37,7 +37,7 @@ AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional
 interactive_mode = not hasattr(__import__('__main__'), '__file__')
 
 class ClientCore:
-    default_transporter = get_default_async_transporter()
+    default_transporter = None
 
     T = TypeVar('T', bound='ClientCore')
 

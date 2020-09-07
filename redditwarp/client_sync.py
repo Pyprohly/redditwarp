@@ -39,7 +39,7 @@ interactive_mode = not hasattr(__import__('__main__'), '__file__')
 class ClientCore:
     """The gateway to interacting with the Reddit API."""
 
-    default_transporter = get_default_sync_transporter()
+    default_transporter = None
 
     T = TypeVar('T', bound='ClientCore')
 
