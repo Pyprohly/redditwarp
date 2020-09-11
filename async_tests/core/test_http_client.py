@@ -34,12 +34,7 @@ class GoodSession(BaseSession):
 async def test_request() -> None:
     session = GoodSession(200, {}, b'')
     headers = {'cheese': 'bacon', 'fire': 'water'}
-    http = HTTPClient(
-        session=session,
-        requestor=session,
-        headers=headers,
-        authorized_requestor=None,
-    )
+    http = HTTPClient(session=session, headers=headers)
     params: Dict[str, Optional[str]] = {'water': 'earth'}
     headers = {'fire': 'air'}
     await http.request('DELETE', 'system32', params=params, headers=headers, data={})
@@ -63,11 +58,7 @@ class BadSession(BaseSession):
         raise self.exception
 
 def _get_http(session: BaseSession) -> HTTPClient:
-    return HTTPClient(
-        session=session,
-        requestor=session,
-        authorized_requestor=None,
-    )
+    return HTTPClient(session=session)
 
 class TestRequestExceptions:
     class TestAuth:

@@ -21,6 +21,8 @@ class ResponseToken(Token):
 
     T = TypeVar('T', bound='ResponseToken')
 
+    d: Mapping[str, Any] = field(repr=False, default_factory=dict)
+
     @classmethod
     def from_dict(cls: Type[T], d: Mapping[str, Any]) -> T:
         return cls(
@@ -31,5 +33,3 @@ class ResponseToken(Token):
             scope=d.get('scope'),
             d=d,
         )
-
-    d: Mapping[str, Any] = field(repr=False, default_factory=dict)

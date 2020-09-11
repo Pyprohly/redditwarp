@@ -10,31 +10,31 @@ from .. import auth
 class RootException(Exception):
     pass
 
-class BasicException(RootException):
-    def __init__(self, exc_msg: object = None) -> None:
+class InfoException(RootException):
+    def __init__(self, arg: object = None) -> None:
         super().__init__()
-        self.exc_msg = exc_msg
+        self.arg = arg
 
     def __str__(self) -> str:
-        if self.exc_msg is None:
-            return self.exc_str()
-        return str(self.exc_msg)
+        if self.arg is None:
+            return self.get_default_message()
+        return str(self.arg)
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return ''
 
 
-class UnknownTokenType(BasicException):
-    def __init__(self, exc_msg: object = None, *, token: Token):
-        super().__init__(exc_msg)
+class UnknownTokenType(InfoException):
+    def __init__(self, arg: object = None, *, token: Token):
+        super().__init__(arg)
         self.token = token
 
-class ResponseException(BasicException):
-    def __init__(self, exc_msg: object = None, *, response: Response) -> None:
-        super().__init__(exc_msg)
+class ResponseException(InfoException):
+    def __init__(self, arg: object = None, *, response: Response) -> None:
+        super().__init__(arg)
         self.response = response
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return str(self.response)
 
 class AuthError(ResponseException):

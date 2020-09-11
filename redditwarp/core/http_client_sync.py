@@ -43,15 +43,13 @@ class RedditHTTPClient:
 
     def __init__(self,
         session: BaseSession,
-        requestor: Optional[Requestor],
         *,
         headers: Optional[MutableMapping[str, str]] = None,
-        authorized_requestor: Optional[Authorized],
     ) -> None:
         self.session = session
-        self.requestor = session if requestor is None else requestor
+        self.requestor: Requestor = session
+        self.authorized_requestor: Optional[Authorized] = None
         self.headers = {} if headers is None else headers
-        self.authorized_requestor = authorized_requestor
         self.user_agent = self.user_agent_string_head = (
             f"{__about__.__title__}/{__about__.__version__} "
             f"Python/{'.'.join(map(str, sys.version_info[:2]))} "

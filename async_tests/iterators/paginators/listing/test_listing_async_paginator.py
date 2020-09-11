@@ -23,7 +23,7 @@ class MyHTTPClient(HTTPClient):
         response_headers: Mapping[str, str],
         response_data: bytes,
     ) -> None:
-        super().__init__(session=self.session, requestor=self.session, authorized_requestor=None)
+        super().__init__(session=self.session)
         self.response_status = response_status
         self.response_headers = response_headers
         self.response_data = response_data

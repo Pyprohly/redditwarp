@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Step through the OAuth2 Authorization Code flow to obtain a refresh token.
+"""
+Step through the OAuth2 Authorization Code flow to obtain bearer tokens.
 
 If your refresh token or access token is ever compromised then just
-fetch new tokens with this tool and the old tokens will be invalidated.
+fetch new tokens with this tool to invalidated the old tokens.
 """
 
 from __future__ import annotations
@@ -34,12 +35,12 @@ import signal
 import redditwarp
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
-    print(prompt, end='')
     if v is None:
-        v = input()
-    if v == '.':
+        v = input(prompt)
+    if v in '.,':
         v = os.environ[env]
-    print(v)
+        if v == '.':
+            print(v)
     return v
 
 def get_client_id(v: Optional[str]) -> str:
@@ -59,8 +60,6 @@ if transporter is None:
     raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
 new_session = transporter.module.new_session  # type: ignore[attr-defined]
 
-print("Reddit OAuth2 Authorization Code flow\n")
-
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
 scope: str = args.scope
@@ -69,7 +68,8 @@ duration: str = args.duration
 no_web_browser: bool = args.no_web_browser
 state = str(uuid.uuid4())
 
-print('''\nStep 1. Build the authorization URL and direct the user to the authorization server.\n''')
+print('~=~ Reddit OAuth2 Authorization Code flow ~=~\n')
+print('Step 1. Build the authorization URL and direct the user to the authorization server.\n')
 
 params = {
     'response_type': 'code',
@@ -86,13 +86,14 @@ print()
 if not no_web_browser:
     webbrowser.open(url)
 
-print('''Step 2. Wait for the authorization server response and extract the authorization code.\n''')
+print('Step 2. Wait for the authorization server response and extract the authorization code.')
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(('127.0.0.1', 8080))
     server.listen(1)
     client, addr = server.accept()
+print()
 print(addr)
 with client:
     data = client.recv(8192)
@@ -105,18 +106,18 @@ if not match:
     raise Exception
 query = match[1]
 d = urllib.parse.parse_qs(query)
-response_uri_params = {k: v[0] for k, v in d.items()}
+response_params = {k: v[0] for k, v in d.items()}
 
-received_state = response_uri_params['state']
+received_state = response_params['state']
 if received_state != state:
     raise Exception(f'sent state ({state}) did not match received ({received_state})')
 
 try:
-    code = response_uri_params['code']
+    code = response_params['code']
 except KeyError:
     raise Exception('The user declined authorization.') from None
 
-print('''Step 3. Exchange the authorization code for an access/refresh token.\n''')
+print('Step 3. Exchange the authorization code for an access/refresh token.\n')
 
 user_agent = (
         f'RedditWarp/{redditwarp.__version__} '

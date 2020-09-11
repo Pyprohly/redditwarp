@@ -41,7 +41,7 @@ class TokenObtainmentClient:
             pass
 
         if resp_json is None or not isinstance(resp_json, Mapping):
-            raise ResponseContentError(response=resp) from None
+            raise ResponseContentError(response=resp)
 
         error = resp_json.get('error')
         if error:

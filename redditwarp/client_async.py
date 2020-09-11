@@ -34,8 +34,6 @@ from .exceptions import (
 
 AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
 
-interactive_mode = not hasattr(__import__('__main__'), '__file__')
-
 class ClientCore:
     default_transporter = None
 
@@ -65,11 +63,9 @@ class ClientCore:
         authorizer = Authorizer(token, None)
         auth_requestor = Authorized(session, authorizer)
         requestor = RateLimited(auth_requestor)
-        http = HTTPClient(session,
-            requestor,
-            headers=headers,
-            authorized_requestor=auth_requestor,
-        )
+        http = HTTPClient(session, headers=headers)
+        http.requestor = requestor
+        http.authorized_requestor = auth_requestor
         return cls.from_http(http)
 
     @classmethod
@@ -80,7 +76,7 @@ class ClientCore:
             section = config[section_name]
         except KeyError:
             empty = not any(s.values() for s in config.values())
-            msg = f"No section {section_name!r} in{' empty' if empty else ''} config"
+            msg = f"No section {section_name!r} in{' empty' if empty else ''} praw.ini config"
             class StrReprStr(str):
                 def __repr__(self) -> str:
                     return str(self)
@@ -126,18 +122,16 @@ class ClientCore:
         authorizer = Authorizer(token, token_client)
         auth_requestor = Authorized(session, authorizer)
         requestor = RateLimited(auth_requestor)
-        http = HTTPClient(session,
-            requestor,
-            headers=headers,
-            authorized_requestor=auth_requestor,
-        )
+        http = HTTPClient(session, headers=headers)
+        http.requestor = requestor
+        http.authorized_requestor = auth_requestor
         self._init(http)
 
     def _init(self, http: HTTPClient) -> None:
         self.http = http
+        self.resource_base_url = RESOURCE_BASE_URL
         self.last_response: Optional[Response] = None
         self.last_responses: MutableSequence[Response] = collections.deque(maxlen=6)
-        self.resource_base_url = RESOURCE_BASE_URL
 
     async def __aenter__(self) -> ClientCore:
         return self
@@ -159,6 +153,9 @@ class ClientCore:
             ua += ' Bot -- ' + s
         self.http.user_agent = ua
 
+    def url_join(self, path: str) -> str:
+        return self.resource_base_url + path
+
     async def request(self,
         verb: str,
         path: str,
@@ -171,9 +168,9 @@ class ClientCore:
         timeout: float = 8,
         aux_info: Optional[Mapping] = None,
     ) -> Any:
-        uri = self.resource_base_url + path
+        url = self.url_join(path)
         try:
-            resp = await self.http.request(verb, uri, params=params, payload=payload,
+            resp = await self.http.request(verb, url, params=params, payload=payload,
                     data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
         except (
             auth.exceptions.ResponseException,
@@ -217,12 +214,13 @@ class ClientCore:
         self.http.authorizer.token = Token(access_token)
 
 class ClientMeta(type):
-    def __call__(cls: type, *args: Any, **kwargs: Any) -> Client:
+    def __call__(cls: type, *args: Any, **kwds: Any) -> Client:
         cls = cast(Type[Client], cls)
+        interactive_mode = not hasattr(__import__('__main__'), '__file__')
         if interactive_mode:
-            if len(args) == 1:
-               return cls.from_praw_config(*args, **kwargs)
-        return type.__call__(cls, *args, **kwargs)
+            if len(args) == 1 and len(kwds) == 0:
+                return cls.from_praw_config(*args, **kwds)
+        return type.__call__(cls, *args, **kwds)
 
 class Client(ClientCore, metaclass=ClientMeta):
     def _init(self, http: HTTPClient) -> None:

@@ -10,26 +10,26 @@ from pprint import pformat
 class RootException(Exception):
     pass
 
-class BasicException(RootException):
-    def __init__(self, exc_msg: object = None) -> None:
+class InfoException(RootException):
+    def __init__(self, arg: object = None) -> None:
         super().__init__()
-        self.exc_msg = exc_msg
+        self.arg = arg
 
     def __str__(self) -> str:
-        if self.exc_msg is None:
-            return self.exc_str()
-        return str(self.exc_msg)
+        if self.arg is None:
+            return self.get_default_message()
+        return str(self.arg)
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return ''
 
 
-class ClientError(BasicException):
+class ClientError(InfoException):
     pass
 
-class ResponseException(BasicException):
-    def __init__(self, exc_msg: object = None, *, response: Response):
-        super().__init__(exc_msg)
+class ResponseException(InfoException):
+    def __init__(self, arg: object = None, *, response: Response):
+        super().__init__(arg)
         self.response = response
 
 class HTTPStatusError(ResponseException):
@@ -44,18 +44,18 @@ class ResponseContentError(ResponseException):
 class UnidentifiedResponseContentError(ResponseContentError):
     """The response body contains data that the client isn't prepared to handle."""
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return '\\\n\n** Please file a bug report with RedditWarp! **'
 
 class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentError):
     # Unused. This will never be raised.
     """The response body contains JSON data that the client isn't prepared to handle."""
 
-    def __init__(self, exc_msg: object = None, *, response: Response, json: Mapping[str, Any]):
-        super().__init__(exc_msg=exc_msg, response=response)
+    def __init__(self, arg: object = None, *, response: Response, json: Mapping[str, Any]):
+        super().__init__(arg=arg, response=response)
         self.json = json
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return f'\\\n{pformat(self.json)}\n\n' \
                 '** Please file a bug report with RedditWarp! **'
 
@@ -65,18 +65,18 @@ class UnacceptableResponseContentError(ResponseContentError):
     to or can't handle.
     """
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return f'\\\n{self.response.data!r}\n\n' \
                 '** Please file a bug report with RedditWarp! **'
 
 class UnacceptableJSONLayoutResponseContentError(UnacceptableResponseContentError):
     """The response body contains JSON data that the client isn't prepared to handle."""
 
-    def __init__(self, exc_msg: object = None, *, response: Response, json: Mapping[str, Any]):
-        super().__init__(exc_msg=exc_msg, response=response)
+    def __init__(self, arg: object = None, *, response: Response, json: Mapping[str, Any]):
+        super().__init__(arg=arg, response=response)
         self.json = json
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return f'\\\n{pformat(self.json)}\n\n' \
                 '** Please file a bug report with RedditWarp! **'
 
@@ -108,31 +108,31 @@ class RedditAPIError(ResponseException):
     """
 
     def __init__(self,
-        exc_msg: object = None, *,
+        arg: object = None, *,
         response: Response,
         codename: str,
         detail: str,
     ) -> None:
-        super().__init__(exc_msg=exc_msg, response=response)
+        super().__init__(arg=arg, response=response)
         self.codename = codename
         self.detail = detail
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} ({self.response})>'
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         return f"{self.codename}: {self.detail}"
 
 class Variant1RedditAPIError(RedditAPIError):
     def __init__(self,
-        exc_msg: object = None, *,
+        arg: object = None, *,
         response: Response,
         codename: str,
         detail: str,
         fields: Sequence[str],
     ):
         super().__init__(
-            exc_msg=exc_msg,
+            arg=arg,
             response=response,
             codename=codename,
             detail=detail,
@@ -140,7 +140,7 @@ class Variant1RedditAPIError(RedditAPIError):
         self.field = fields[0] if fields else ''
         self.fields = fields
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         cn = self.codename
         de = self.detail
         fd = self.field
@@ -165,7 +165,7 @@ class Variant2RedditAPIError(RedditAPIError):
     out unsuccessfully.
     """
 
-    def __init__(self, exc_msg: object = None, *, response: Response, errors: Sequence[RedditErrorItem]):
+    def __init__(self, arg: object = None, *, response: Response, errors: Sequence[RedditErrorItem]):
         """
         Parameters
         ----------
@@ -176,7 +176,7 @@ class Variant2RedditAPIError(RedditAPIError):
         codename = err.codename
         detail = err.detail
         super().__init__(
-            exc_msg=exc_msg,
+            arg=arg,
             response=response,
             codename=codename,
             detail=detail,
@@ -188,7 +188,7 @@ class Variant2RedditAPIError(RedditAPIError):
         err_names = [err.codename for err in self.errors]
         return f'<{self.__class__.__name__} ({self.response}) {err_names}>'
 
-    def exc_str(self) -> str:
+    def get_default_message(self) -> str:
         err_count = len(self.errors)
         if err_count > 1:
             return f"multiple ({err_count}) errors encountered:\n" \
@@ -196,15 +196,15 @@ class Variant2RedditAPIError(RedditAPIError):
                         f"  {err.codename}: {err.detail}{err.field and f' -> {err.field}'}"
                         for err in self.errors)
 
-        return super().exc_str()
+        return super().get_default_message()
 
 class ContentCreationCooldown(Variant2RedditAPIError):
     """Used over RedditAPIError when the error items list contains
     a RATELIMIT error, and it is the only error in the list.
     """
 
-    def exc_str(self) -> str:
-        return super().exc_str() + '''
+    def get_default_message(self) -> str:
+        return super().get_default_message() + '''
 
 Looks like you hit a content creation ratelimit. This can happen when
 your account has low karma or no verified email.

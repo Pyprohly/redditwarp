@@ -26,7 +26,7 @@ class MyHTTPClient(HTTPClient):
         response_headers: Mapping[str, str],
         response_data: bytes,
     ) -> None:
-        super().__init__(session=self.session, requestor=self.session, authorized_requestor=None)
+        super().__init__(session=self.session)
         self.response_status = response_status
         self.response_headers = response_headers
         self.response_data = response_data
@@ -90,7 +90,7 @@ class TestRequestExceptions:
             client = Client.from_http(http)
             with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
                 await client.request('', '')
-            assert exc_info.value.exc_msg is not None
+            assert exc_info.value.arg is not None
 
         @pytest.mark.asyncio
         async def test_UnacceptableResponseContentError(self) -> None:
