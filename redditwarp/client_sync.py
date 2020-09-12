@@ -17,7 +17,7 @@ from .http.util.json_loads import json_loads_response
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
 from .util.praw_config import get_praw_config
-from .http.transport import TransporterInfo, get_default_sync_transporter
+from .http.transport import get_default_sync_transporter_name, new_sync_session_factory
 from .auth.token_obtainment_client_sync import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
 from .core.authorizer_sync import Authorizer, Authorized
@@ -37,17 +37,17 @@ AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional
 class ClientCore:
     """The gateway to interacting with the Reddit API."""
 
-    default_transporter = None
+    default_transporter_name = None
 
     T = TypeVar('T', bound='ClientCore')
 
     @classmethod
-    def get_default_transporter(cls: Type[T]) -> TransporterInfo:
-        if cls.default_transporter is None:
-            cls.default_transporter = get_default_sync_transporter()
-            if cls.default_transporter is None:
+    def get_default_transporter_name(cls: Type[T]) -> str:
+        if cls.default_transporter_name is None:
+            cls.default_transporter_name = get_default_sync_transporter_name()
+            if cls.default_transporter_name is None:
                 raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
-        return cls.default_transporter
+        return cls.default_transporter_name
 
     @classmethod
     def from_http(cls: Type[T], http: HTTPClient) -> T:
@@ -75,17 +75,13 @@ class ClientCore:
         ----------
         access_token: str
         """
-        transporter = cls.get_default_transporter()
-        new_session = transporter.module.new_session  # type: ignore[attr-defined]
+        new_session = new_sync_session_factory(cls.get_default_transporter_name())
         headers: MutableMapping[str, str] = {}
         session = new_session(headers=headers)
-        token = Token(access_token)
-        authorizer = Authorizer(token, None)
-        auth_requestor = Authorized(session, authorizer)
-        requestor = RateLimited(auth_requestor)
         http = HTTPClient(session, headers=headers)
-        http.requestor = requestor
-        http.authorized_requestor = auth_requestor
+        authorizer = Authorizer(Token(access_token), None)
+        http.authorized_requestor = Authorized(session, authorizer)
+        http.requestor = RateLimited(http.authorized_requestor)
         return cls.from_http(http)
 
     @classmethod
@@ -164,23 +160,21 @@ class ClientCore:
         elif any(grant_creds):
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
-        transporter = self.get_default_transporter()
-        new_session = transporter.module.new_session  # type: ignore[attr-defined]
+        new_session = new_sync_session_factory(self.get_default_transporter_name())
         headers: MutableMapping[str, str] = {}
         session = new_session(headers=headers)
-        token = None if access_token is None else Token(access_token)
-        token_client = TokenObtainmentClient(
-            session,
-            TOKEN_OBTAINMENT_URL,
-            ClientCredentials(client_id, client_secret),
-            grant,
-        )
-        authorizer = Authorizer(token, token_client)
-        auth_requestor = Authorized(session, authorizer)
-        requestor = RateLimited(auth_requestor)
         http = HTTPClient(session, headers=headers)
-        http.requestor = requestor
-        http.authorized_requestor = auth_requestor
+        authorizer = Authorizer(
+            (None if access_token is None else Token(access_token)),
+            TokenObtainmentClient(
+                session,
+                TOKEN_OBTAINMENT_URL,
+                ClientCredentials(client_id, client_secret),
+                grant,
+            )
+        )
+        http.authorized_requestor = Authorized(session, authorizer)
+        http.requestor = RateLimited(http.authorized_requestor)
         self._init(http)
 
     def _init(self, http: HTTPClient) -> None:

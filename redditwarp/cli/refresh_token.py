@@ -55,10 +55,10 @@ def signal_handler(signal: int, frame: Any) -> None:
 
 signal.signal(signal.SIGINT, signal_handler)
 
-transporter = redditwarp.http.transport.get_default_sync_transporter()
-if transporter is None:
+transporter_name = redditwarp.http.transport.get_default_sync_transporter_name()
+if transporter_name is None:
     raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
-new_session = transporter.module.new_session  # type: ignore[attr-defined]
+new_session = redditwarp.http.transport.new_sync_session_factory(transporter_name)
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
@@ -119,11 +119,14 @@ except KeyError:
 
 print('Step 3. Exchange the authorization code for an access/refresh token.\n')
 
-user_agent = (
+session = new_session()
+session.headers = {
+    'User-Agent': (
         f'RedditWarp/{redditwarp.__version__} '
-        f'{transporter.name}/{transporter.version} '
-        'redditwarp.cli.refresh_token')
-session = new_session(headers={'User-Agent': user_agent})
+        f'{session.TRANSPORTER_INFO.name}/{session.TRANSPORTER_INFO.version} '
+        'redditwarp.cli.refresh_token'
+    )
+}
 token_client = redditwarp.auth.TokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,

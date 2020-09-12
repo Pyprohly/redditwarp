@@ -15,6 +15,7 @@ from ..base_session_async import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
+from ._init_ import register_async
 
 _PAYLOAD_DISPATCH_TABLE: Mapping = {
     type(None): lambda y: {},
@@ -48,7 +49,7 @@ info = TransporterInfo(name, version, sys.modules[__name__])
 
 
 class Session(BaseSession):
-    TRANSPORTER = info
+    TRANSPORTER_INFO = info
     TIMEOUT = 5
 
     def __init__(self,
@@ -101,9 +102,11 @@ class Session(BaseSession):
 
 
 def new_session(*,
-    params: Optional[Mapping[str, str]] = None,
+    params: Optional[Mapping[str, Optional[str]]] = None,
     headers: Optional[Mapping[str, str]] = None,
 ) -> Session:
     connector = aiohttp.TCPConnector(limit=20)
     se = aiohttp.ClientSession(connector=connector)
     return Session(se, params=params, headers=headers)
+
+register_async(name, info, new_session)

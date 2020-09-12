@@ -1,53 +1,107 @@
 
-from typing import MutableMapping, Optional
-from ..transporter_info import TransporterInfo
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional, MutableMapping, Callable
+if TYPE_CHECKING:
+    from importlib.machinery import ModuleSpec
+    from ..base_session_sync import BaseSession as SyncBaseSession
+    from ..base_session_async import BaseSession as AsyncBaseSession
 
-from contextlib import suppress
+import importlib.util
+from importlib.abc import Loader
+from types import ModuleType
+
+from ._init_ import (  # noqa
+    sync_transporter_info_registry,
+    sync_transporter_session_function_registry,
+    register_sync,
+    async_transporter_info_registry,
+    async_transporter_session_function_registry,
+    register_async,
+)
+
+def load_module_from_spec(spec: ModuleSpec) -> Optional[ModuleType]:
+    if spec.loader is None:
+        raise Exception
+    assert isinstance(spec.loader, Loader)
+
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except ImportError:
+        return None
+    return module
+
+
+m: MutableMapping[str, Optional[ModuleSpec]] = {
+    'requests': importlib.util.find_spec('.requests', __name__),
+    'aiohttp': importlib.util.find_spec('.aiohttp', __name__),
+    'httpx_sync': importlib.util.find_spec('.httpx_sync', __name__),
+    'httpx_async': importlib.util.find_spec('.httpx_async', __name__),
+}
+raw_transporter_module_spec_registry: MutableMapping[str, ModuleSpec] = {k: v for k, v in m.items() if v is not None}
 
 #region sync
 
-sync_transporter_priority = ['httpx_sync', 'requests']
-sync_transporter_registry: MutableMapping[str, Optional[TransporterInfo]] = {}
+sync_transporter_priority = ['httpx', 'requests']
+sync_transporter_module_spec_registry = {
+    'httpx': raw_transporter_module_spec_registry['httpx_sync'],
+    'requests': raw_transporter_module_spec_registry['requests'],
+}
 
-def get_default_sync_transporter() -> Optional[TransporterInfo]:
-    info: Optional[TransporterInfo] = None
-    with suppress(ImportError):
-        from .requests import info  # type: ignore[no-redef]
-    sync_transporter_registry['requests'] = info
+def get_default_sync_transporter_name() -> Optional[str]:
+    for name in sync_transporter_priority:
+        if name in sync_transporter_info_registry:
+            return name
 
-    info = None
-    with suppress(ImportError):
-        from .httpx_sync import info  # type: ignore[no-redef]
-    sync_transporter_registry['httpx_sync'] = info
+    for name in sync_transporter_priority:
+        spec = sync_transporter_module_spec_registry[name]
+        if spec.loader is None:
+            raise Exception
+        assert isinstance(spec.loader, Loader)
 
-    for u in sync_transporter_priority:
-        t = sync_transporter_registry[u]
-        if t is not None:
-            break
-    return t
+        module = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(module)
+        except ImportError:
+            continue
+
+        if name not in sync_transporter_info_registry:
+            raise Exception('the transporter module did not register properly')
+
+        return name
+
+    return None
+
+def new_sync_session_factory(transporter_name: str) -> Callable[..., SyncBaseSession]:
+    return sync_transporter_session_function_registry[transporter_name]
 
 #endregion
 
 #region async
 
-async_transporter_priority = ['httpx_async', 'aiohttp']
-async_transporter_registry: MutableMapping[str, Optional[TransporterInfo]] = {}
+async_transporter_priority = ['httpx', 'aiohttp']
+async_transporter_module_spec_registry = {
+    'httpx': raw_transporter_module_spec_registry['httpx_async'],
+    'aiohttp': raw_transporter_module_spec_registry['aiohttp'],
+}
 
-def get_default_async_transporter() -> Optional[TransporterInfo]:
-    info: Optional[TransporterInfo] = None
-    with suppress(ImportError):
-        from .aiohttp import info  # type: ignore[no-redef]
-    async_transporter_registry['aiohttp'] = info
+def get_default_async_transporter_name() -> Optional[str]:
+    for name in async_transporter_priority:
+        if name in async_transporter_info_registry:
+            return name
 
-    info = None
-    with suppress(ImportError):
-        from .httpx_async import info  # type: ignore[no-redef]
-    async_transporter_registry['httpx_async'] = info
+    for name in async_transporter_priority:
+        spec = async_transporter_module_spec_registry[name]
+        load_module_from_spec(spec)
 
-    for u in async_transporter_priority:
-        t = async_transporter_registry[u]
-        if t is not None:
-            break
-    return t
+        if name not in async_transporter_info_registry:
+            raise Exception('the transporter module did not register properly')
+
+        return name
+
+    return None
+
+def new_async_session_factory(transporter_name: str) -> Callable[..., AsyncBaseSession]:
+    return async_transporter_session_function_registry[transporter_name]
 
 #endregion

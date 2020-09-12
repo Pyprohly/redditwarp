@@ -13,7 +13,7 @@ from .transporter_info import blank_transporter
 from .requestor_async import Requestor
 
 class BaseSession(Requestor):
-    TRANSPORTER: ClassVar[TransporterInfo] = blank_transporter
+    TRANSPORTER_INFO: ClassVar[TransporterInfo] = blank_transporter
 
     def __init__(self,
         *,

@@ -21,7 +21,7 @@ class BaseSession(Requestor):
     params: Dict[str, Union[str, bytes]]
         Dictionary of querystring data to attach to each Request.
     """
-    TRANSPORTER: ClassVar[TransporterInfo] = blank_transporter
+    TRANSPORTER_INFO: ClassVar[TransporterInfo] = blank_transporter
 
     def __init__(self,
         *,
