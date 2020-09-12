@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping
 if TYPE_CHECKING:
     from ..request import Request
 
-import sys
 import asyncio
 
 import aiohttp
@@ -45,7 +44,8 @@ def _request_kwargs(r: Request) -> Mapping[str, object]:
 
 name = aiohttp.__name__
 version = aiohttp.__version__
-info = TransporterInfo(name, version, sys.modules[__name__])
+spec = __spec__  # type: ignore[name-defined]
+info = TransporterInfo(name, version, spec)
 
 
 class Session(BaseSession):

@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping
 if TYPE_CHECKING:
     from ..request import Request
 
-import sys
-
 import requests
 
 from ..transporter_info import TransporterInfo
@@ -44,7 +42,8 @@ def _request_kwargs(r: Request) -> Mapping[str, object]:
 
 name = requests.__name__
 version = requests.__version__
-info = TransporterInfo(name, version, sys.modules[__name__])
+spec = __spec__  # type: ignore[name-defined]
+info = TransporterInfo(name, version, spec)
 
 
 class Session(BaseSession):
