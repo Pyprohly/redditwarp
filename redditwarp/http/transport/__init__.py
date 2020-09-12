@@ -55,14 +55,8 @@ def get_default_sync_transporter_name() -> Optional[str]:
 
     for name in sync_transporter_priority:
         spec = sync_transporter_module_spec_registry[name]
-        if spec.loader is None:
-            raise Exception
-        assert isinstance(spec.loader, Loader)
-
-        module = importlib.util.module_from_spec(spec)
-        try:
-            spec.loader.exec_module(module)
-        except ImportError:
+        module = load_module_from_spec(spec)
+        if module is None:
             continue
 
         if name not in sync_transporter_info_registry:
@@ -92,7 +86,9 @@ def get_default_async_transporter_name() -> Optional[str]:
 
     for name in async_transporter_priority:
         spec = async_transporter_module_spec_registry[name]
-        load_module_from_spec(spec)
+        module = load_module_from_spec(spec)
+        if module is None:
+            continue
 
         if name not in async_transporter_info_registry:
             raise Exception('the transporter module did not register properly')

@@ -2,8 +2,8 @@
 """
 Step through the OAuth2 Authorization Code flow to obtain bearer tokens.
 
-If your refresh token or access token is ever compromised then just
-fetch new tokens with this tool to invalidated the old tokens.
+If your refresh token or access token is ever compromised then you can just fetch
+new tokens with this tool to invalidated the old tokens.
 """
 
 from __future__ import annotations
@@ -37,10 +37,9 @@ import redditwarp
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
         v = input(prompt)
-    if v in '.,':
+    if v == '.':
         v = os.environ[env]
-        if v == '.':
-            print(v)
+        print(v)
     return v
 
 def get_client_id(v: Optional[str]) -> str:

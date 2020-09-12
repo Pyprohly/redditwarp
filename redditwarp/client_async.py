@@ -7,21 +7,21 @@ if TYPE_CHECKING:
     from .http.payload import Payload
     from .http.response import Response
 
-import collections
+from collections import deque
 
 from . import http
-from . import auth
-from . import core
-from .core.http_client_async import HTTPClient
 from .http.util.json_loads import json_loads_response
+from .http.transport import get_default_async_transporter_name, new_async_session_factory
+from . import auth
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
-from .util.praw_config import get_praw_config
-from .http.transport import get_default_async_transporter_name, new_async_session_factory
 from .auth.token_obtainment_client_async import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
+from . import core
+from .core.http_client_async import HTTPClient
 from .core.authorizer_async import Authorizer, Authorized
 from .core.ratelimited_async import RateLimited
+from .util.praw_config import get_praw_config
 from .exceptions import (
     HTTPStatusError,
     UnidentifiedResponseContentError,
@@ -50,15 +50,15 @@ class ClientCore:
     @classmethod
     def from_http(cls: Type[T], http: HTTPClient) -> T:
         self = cls.__new__(cls)
-        self._init(http)
+        self._init_(http)
         return self
 
     @classmethod
     def from_access_token(cls: Type[T], access_token: str) -> T:
         new_session = new_async_session_factory(cls.get_default_transporter_name())
-        headers: MutableMapping[str, str] = {}
-        session = new_session(headers=headers)
-        http = HTTPClient(session, headers=headers)
+        session = new_session()
+        http = HTTPClient(session)
+        session.headers = http.headers
         authorizer = Authorizer(Token(access_token), None)
         http.authorized_requestor = Authorized(session, authorizer)
         http.requestor = RateLimited(http.authorized_requestor)
@@ -100,14 +100,14 @@ class ClientCore:
         if grant is None:
             grant = auto_grant_factory(*grant_creds)
             if grant is None:
-                raise ValueError("couldn't automatically create a grant from the provided credentials")
+                raise ValueError("cannot create an authorization grant from the provided credentials")
         elif any(grant_creds):
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
         new_session = new_async_session_factory(self.get_default_transporter_name())
-        headers: MutableMapping[str, str] = {}
-        session = new_session(headers=headers)
-        http = HTTPClient(session, headers=headers)
+        session = new_session()
+        http = HTTPClient(session)
+        session.headers = http.headers
         authorizer = Authorizer(
             (None if access_token is None else Token(access_token)),
             TokenObtainmentClient(
@@ -119,13 +119,13 @@ class ClientCore:
         )
         http.authorized_requestor = Authorized(session, authorizer)
         http.requestor = RateLimited(http.authorized_requestor)
-        self._init(http)
+        self._init_(http)
 
-    def _init(self, http: HTTPClient) -> None:
+    def _init_(self, http: HTTPClient) -> None:
         self.http = http
         self.resource_base_url = RESOURCE_BASE_URL
         self.last_response: Optional[Response] = None
-        self.last_responses: MutableSequence[Response] = collections.deque(maxlen=6)
+        self.last_response_queue: MutableSequence[Response] = deque(maxlen=6)
 
     async def __aenter__(self) -> ClientCore:
         return self
@@ -173,11 +173,11 @@ class ClientCore:
         ) as e:
             resp = e.response
             self.last_response = resp
-            self.last_responses.append(resp)
+            self.last_response_queue.append(resp)
             raise
 
         self.last_response = resp
-        self.last_responses.append(resp)
+        self.last_response_queue.append(resp)
 
         data = None
         try:
@@ -217,6 +217,6 @@ class ClientMeta(type):
         return type.__call__(cls, *args, **kwds)
 
 class Client(ClientCore, metaclass=ClientMeta):
-    def _init(self, http: HTTPClient) -> None:
-        super()._init(http)
+    def _init_(self, http: HTTPClient) -> None:
+        super()._init_(http)
         self.api = ...#SiteProcedures(self)
