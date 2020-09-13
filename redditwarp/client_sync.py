@@ -45,8 +45,6 @@ class ClientCore:
     def get_default_transporter_name(cls: Type[T]) -> str:
         if cls.default_transporter_name is None:
             cls.default_transporter_name = get_default_sync_transporter_name()
-            if cls.default_transporter_name is None:
-                raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
         return cls.default_transporter_name
 
     @classmethod

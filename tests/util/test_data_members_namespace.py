@@ -1,7 +1,7 @@
 
 import os
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.util.data_members_namespace import DataMembersNamespace, DataMembersNamespaceMapping
 

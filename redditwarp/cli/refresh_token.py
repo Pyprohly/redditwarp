@@ -18,7 +18,7 @@ add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPP
 add('client_secret', nargs='?')
 add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 add('--scope', default='*', help='an OAuth2 scope string')
-add('--redirect-uri', default='http://localhost')
+add('--redirect-uri', default='http://localhost:8080')
 add('--duration', choices=['temporary', 'permanent'], default='permanent', help=argparse.SUPPRESS)
 add('--no-web-browser', action='store_true')
 args = parser.parse_args()
@@ -55,8 +55,6 @@ def signal_handler(signal: int, frame: Any) -> None:
 signal.signal(signal.SIGINT, signal_handler)
 
 transporter_name = redditwarp.http.transport.get_default_sync_transporter_name()
-if transporter_name is None:
-    raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
 new_session = redditwarp.http.transport.new_sync_session_factory(transporter_name)
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
@@ -67,7 +65,7 @@ duration: str = args.duration
 no_web_browser: bool = args.no_web_browser
 state = str(uuid.uuid4())
 
-print('~=~ Reddit OAuth2 Authorization Code flow ~=~\n')
+print('\n-~= Reddit OAuth2 Authorization Code flow =~-\n')
 print('Step 1. Build the authorization URL and direct the user to the authorization server.\n')
 
 params = {
@@ -85,24 +83,25 @@ print()
 if not no_web_browser:
     webbrowser.open(url)
 
-print('Step 2. Wait for the authorization server response and extract the authorization code.')
+print('Step 2. Wait for the authorization server response and extract the authorization code.\n')
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(('127.0.0.1', 8080))
     server.listen(1)
-    client, addr = server.accept()
-print()
-print(addr)
-with client:
-    data = client.recv(8192)
-    client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
+    match = None
+    while match is None:
+        client, addr = server.accept()
+        print(addr)
+        with client:
+            data = client.recv(8192)
+            client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-decoded = data.strip().decode()
-print(f"@```\n{decoded}\n```@\n")
-match = re.match(r"^GET /\?([^ ]*) HTTP", decoded)
-if not match:
-    raise Exception
+        decoded = data.strip().decode()
+        print(f"```\\\n{decoded}\n```\n")
+        match = re.match(r"^GET /\?([^ ]*) HTTP", decoded)
+
+assert match is not None
 query = match[1]
 d = urllib.parse.parse_qs(query)
 response_params = {k: v[0] for k, v in d.items()}
@@ -114,7 +113,7 @@ if received_state != state:
 try:
     code = response_params['code']
 except KeyError:
-    raise Exception('The user declined authorization.') from None
+    raise Exception('authorization declined') from None
 
 print('Step 3. Exchange the authorization code for an access/refresh token.\n')
 

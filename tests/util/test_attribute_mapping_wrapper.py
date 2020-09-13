@@ -4,7 +4,7 @@ from typing import Dict
 from collections.abc import MutableMapping
 import pickle
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.util.attribute_mapping_wrapper import MutableAttributeMappingWrapper
 

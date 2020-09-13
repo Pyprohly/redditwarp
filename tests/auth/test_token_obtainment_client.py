@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Mapping, Optional, Any, List
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
 from redditwarp.auth.client_credentials import ClientCredentials

@@ -1,5 +1,5 @@
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.util.base_conversion import base_digits, to_base, to_base36
 

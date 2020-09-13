@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Mapping, List, Optional, Dict
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp import auth
 from redditwarp import core

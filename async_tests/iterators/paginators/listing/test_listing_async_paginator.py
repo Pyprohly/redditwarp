@@ -1,5 +1,5 @@
 
-import pytest  # type: ignore[import]
+import pytest
 
 from typing import Sequence, Any, Optional, Mapping, MutableMapping
 from redditwarp.client_async import Client

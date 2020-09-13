@@ -1,5 +1,5 @@
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.http.util.json_loads import json_loads_response
 from redditwarp.http.response import Response

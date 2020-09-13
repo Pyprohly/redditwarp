@@ -7,10 +7,7 @@ T = TypeVar('T')
 
 def chunked(src: Iterable[T], size: int) -> Iterator[Sequence[T]]:
     itr = iter(src)
-    while True:
-        chunk = tuple(islice(itr, size))
-        if not chunk:
-            break
+    while chunk := tuple(islice(itr, size)):
         yield chunk
 
 class ChunkingIterator(Iterator[Sequence[T]]):

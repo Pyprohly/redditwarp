@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from redditwarp.http.request import Request
     from redditwarp.http.payload import Payload
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp import exceptions
 from redditwarp.client_sync import Client

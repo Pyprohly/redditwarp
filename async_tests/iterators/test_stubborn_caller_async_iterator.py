@@ -3,7 +3,7 @@ from typing import TypeVar, Iterable, AsyncIterable, Callable, Awaitable
 
 import asyncio
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.iterators.stubborn_caller_async_iterator import StubbornCallerAsyncIterator
 

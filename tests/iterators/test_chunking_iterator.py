@@ -1,5 +1,5 @@
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.iterators.chunking_iterator import chunked, ChunkingIterator
 

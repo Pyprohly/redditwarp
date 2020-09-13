@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Optional
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.core.authorizer_sync import Authorizer
 from redditwarp.auth.token import ResponseToken

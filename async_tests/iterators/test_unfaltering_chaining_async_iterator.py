@@ -1,7 +1,7 @@
 
 from typing import TypeVar, AsyncIterable, Iterable, Iterator
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.iterators.unfaltering_chaining_async_iterator import UnfalteringChainingAsyncIterator
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TypeVar, Iterable, Iterator, Tuple
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.core.token_bucket import TokenBucket
 

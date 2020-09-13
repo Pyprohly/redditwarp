@@ -48,7 +48,7 @@ sync_transporter_module_spec_registry = {
     'requests': raw_transporter_module_spec_registry['requests'],
 }
 
-def get_default_sync_transporter_name() -> Optional[str]:
+def try_get_default_sync_transporter_name() -> Optional[str]:
     for name in sync_transporter_priority:
         if name in sync_transporter_info_registry:
             return name
@@ -66,6 +66,12 @@ def get_default_sync_transporter_name() -> Optional[str]:
 
     return None
 
+def get_default_sync_transporter_name() -> str:
+    name = try_get_default_sync_transporter_name()
+    if name is None:
+        raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
+    return name
+
 def new_sync_session_factory(transporter_name: str) -> Callable[..., SyncBaseSession]:
     return sync_transporter_session_function_registry[transporter_name]
 
@@ -79,7 +85,7 @@ async_transporter_module_spec_registry = {
     'aiohttp': raw_transporter_module_spec_registry['aiohttp'],
 }
 
-def get_default_async_transporter_name() -> Optional[str]:
+def try_get_default_async_transporter_name() -> Optional[str]:
     for name in async_transporter_priority:
         if name in async_transporter_info_registry:
             return name
@@ -96,6 +102,12 @@ def get_default_async_transporter_name() -> Optional[str]:
         return name
 
     return None
+
+def get_default_async_transporter_name() -> str:
+    name = try_get_default_async_transporter_name()
+    if name is None:
+        raise ModuleNotFoundError('An async HTTP transport library needs to be installed.')
+    return name
 
 def new_async_session_factory(transporter_name: str) -> Callable[..., AsyncBaseSession]:
     return async_transporter_session_function_registry[transporter_name]

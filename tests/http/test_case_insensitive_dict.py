@@ -4,7 +4,7 @@ from typing import Dict
 from collections.abc import MutableMapping#, Mapping, MappingView
 import pickle
 
-import pytest  # type: ignore[import]
+import pytest
 
 from redditwarp.http.util.case_insensitive_dict import CaseInsensitiveDict
 

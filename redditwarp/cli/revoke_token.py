@@ -48,8 +48,6 @@ def signal_handler(signal: int, frame: Any) -> None:
 signal.signal(signal.SIGINT, signal_handler)
 
 transporter_name = redditwarp.http.transport.get_default_sync_transporter_name()
-if transporter_name is None:
-    raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
 new_session = redditwarp.http.transport.new_sync_session_factory(transporter_name)
 
 token: str = args.token
