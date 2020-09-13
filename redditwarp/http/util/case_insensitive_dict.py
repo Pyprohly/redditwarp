@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO, cast, Tuple
+from typing import TypeVar, Mapping, MutableMapping, Iterator, IO, cast, Tuple, Optional
 
 from pprint import PrettyPrinter
 
@@ -10,9 +10,11 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
     __slots__ = ('_store',)
     _store: MutableMapping[str, Tuple[str, V]]
 
-    def __init__(self, *args: Iterable, **kwargs: V) -> None:
+    def __init__(self, data: Optional[Mapping[str, V]] = None, **kwargs: V) -> None:
         self._store = {}
-        self.update(dict(*args, **kwargs))
+        if data is None:
+            data = {}
+        self.update(data, **kwargs)
 
     def __repr__(self) -> str:
         if self._store:
@@ -70,4 +72,4 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
         stream.write(')')
 
     if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
-        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined] # noqa
+        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]

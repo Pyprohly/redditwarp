@@ -7,7 +7,9 @@ figure out the token type.
 """
 
 from __future__ import annotations
-from typing import Optional, Any
+from typing import TYPE_CHECKING, Optional
+if TYPE_CHECKING:
+    from types import FrameType
 
 import argparse
 class Formatter(argparse.RawDescriptionHelpFormatter): pass
@@ -41,11 +43,11 @@ def get_client_id(v: Optional[str]) -> str:
 def get_client_secret(v: Optional[str]) -> str:
     return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', v)
 
-def signal_handler(signal: int, frame: Any) -> None:
+def handle_sigint(sig: int, frame: FrameType) -> None:
     print('KeyboardInterrupt', file=sys.stderr)
-    raise SystemExit(1)
+    sys.exit(130)
 
-signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT, handle_sigint)
 
 transporter_name = redditwarp.http.transport.get_default_sync_transporter_name()
 new_session = redditwarp.http.transport.new_sync_session_factory(transporter_name)

@@ -53,16 +53,16 @@ def test_eq() -> None:
     assert CI({'e': 1}) != {'f': 1}
 
 def test_getitem() -> None:
-    d: CaseInsensitiveDict[Dict] = CaseInsensitiveDict({'b': {'bb': 22}})
+    d = CaseInsensitiveDict({'b': {'bb': 22}})
     # Not recursive
     assert type(d['b']) is dict
     assert d['b']['bb'] == 22
 
-    d = CaseInsensitiveDict({'abc': 1})
-    assert d['abc'] == d['ABC'] == d['AbC'] == d['aBC'] == 1
+    d2 = CaseInsensitiveDict({'abc': 1})
+    assert d2['abc'] == d2['ABC'] == d2['AbC'] == d2['aBC'] == 1
 
     with pytest.raises(KeyError):
-        d['z']
+        d2['z']
 
 def test_setitem() -> None:
     d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1})

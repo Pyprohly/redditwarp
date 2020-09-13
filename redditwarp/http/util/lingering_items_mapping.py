@@ -67,4 +67,4 @@ class LingeringItemsMapping(MutableMapping[K, V]):
         stream.write(')')
 
     if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
-        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined] # noqa
+        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]

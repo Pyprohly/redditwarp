@@ -1,16 +1,16 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, MutableMapping, Callable
+from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
-    from ..base_session_sync import BaseSession as SyncBaseSession
-    from ..base_session_async import BaseSession as AsyncBaseSession
 
 import importlib.util
 from importlib.abc import Loader
 from types import ModuleType
 
 from ._init_ import (  # noqa
+    NewSyncSessionFunction,
+    NewAsyncSessionFunction,
     sync_transporter_info_registry,
     sync_transporter_session_function_registry,
     register_sync,
@@ -72,7 +72,7 @@ def get_default_sync_transporter_name() -> str:
         raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
     return name
 
-def new_sync_session_factory(transporter_name: str) -> Callable[..., SyncBaseSession]:
+def new_sync_session_factory(transporter_name: str) -> NewSyncSessionFunction:
     return sync_transporter_session_function_registry[transporter_name]
 
 #endregion
@@ -109,7 +109,7 @@ def get_default_async_transporter_name() -> str:
         raise ModuleNotFoundError('An async HTTP transport library needs to be installed.')
     return name
 
-def new_async_session_factory(transporter_name: str) -> Callable[..., AsyncBaseSession]:
+def new_async_session_factory(transporter_name: str) -> NewAsyncSessionFunction:
     return async_transporter_session_function_registry[transporter_name]
 
 #endregion

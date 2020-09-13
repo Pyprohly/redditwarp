@@ -27,7 +27,7 @@ def neat_repr_dict(d: Dict) -> Dict:
 
 
 ppr = PrettyPrinter()
-ppr_format = ppr._format  # type: ignore[attr-defined] # noqa
+ppr_format = ppr._format  # type: ignore[attr-defined]
 
 def pretty_format(obj: object) -> str:
     # This function ensures `obj`'s pretty-print-formatted string is
@@ -102,7 +102,7 @@ class DataMembersNamespace(Collection[str]):
         )
 
     if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
-        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined] # noqa
+        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
 
 
 class DataMembersNamespaceMapping(DataMembersNamespace):
