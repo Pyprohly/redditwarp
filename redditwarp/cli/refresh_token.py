@@ -2,8 +2,11 @@
 """
 Step through the OAuth2 Authorization Code flow to obtain bearer tokens.
 
-If your refresh token or access token is ever compromised then you can just fetch
-new tokens with this tool to invalidated the old tokens.
+Visit https://www.reddit.com/prefs/apps to create an app for your client.
+Ensure your app's redirect URI *exactly* matches "http://localhost:8080".
+
+Only one refresh token and access token can be active at a time. If either becomes
+leaked, simply fetch new tokens with this tool to invalidate the compromised ones.
 """
 
 from __future__ import annotations
@@ -16,13 +19,13 @@ class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionH
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
 add = parser.add_argument
 add('client_id', nargs='?')
-add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
 add('client_secret', nargs='?')
+add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
 add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 add('--scope', default='*', help='an OAuth2 scope string')
-add('--redirect-uri', default='http://localhost:8080')
+add('--redirect-uri', default='http://localhost:8080', help=' ')
 add('--duration', choices=['temporary', 'permanent'], default='permanent', help=argparse.SUPPRESS)
-add('--no-web-browser', action='store_true')
+add('--no-web-browser', action='store_true', help="don't launch a browser")
 args = parser.parse_args()
 
 import sys
@@ -57,6 +60,7 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 signal.signal(signal.SIGINT, handle_sigint)
 
 transporter_name = redditwarp.http.transport.get_default_sync_transporter_name()
+transporter = redditwarp.http.transport.sync_transporter_info(transporter_name)
 new_session = redditwarp.http.transport.new_sync_session_factory(transporter_name)
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
@@ -67,7 +71,7 @@ duration: str = args.duration
 no_web_browser: bool = args.no_web_browser
 state = str(uuid.uuid4())
 
-print('\n-~= Reddit OAuth2 Authorization Code flow =~-\n')
+print('\n-~=~- Reddit OAuth2 Authorization Code flow -~=~-\n')
 print('Step 1. Build the authorization URL and direct the user to the authorization server.\n')
 
 params = {
@@ -89,10 +93,10 @@ print('Step 2. Wait for the authorization server response and extract the author
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(('127.0.0.1', 8080))
+    server.bind(('localhost', 8080))
     server.listen(1)
     match = None
-    while match is None:
+    while not match:
         client, addr = server.accept()
         print(addr)
         with client:
@@ -119,14 +123,13 @@ except KeyError:
 
 print('Step 3. Exchange the authorization code for an access/refresh token.\n')
 
-session = new_session()
-session.headers = {
-    'User-Agent': (
-        f'RedditWarp/{redditwarp.__version__} '
-        f'{session.TRANSPORTER_INFO.name}/{session.TRANSPORTER_INFO.version} '
-        'redditwarp.cli.refresh_token'
-    )
-}
+user_agent = (
+    f'RedditWarp/{redditwarp.__version__} '
+    f'{transporter.name}/{transporter.version} '
+    'redditwarp.cli.refresh_token'
+)
+headers = {'User-Agent': user_agent}
+session = new_session(headers=headers)
 token_client = redditwarp.auth.TokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,

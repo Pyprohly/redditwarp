@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
+    from ..transporter_info import TransporterInfo
 
 import importlib.util
 from importlib.abc import Loader
@@ -60,8 +61,7 @@ def try_get_default_sync_transporter_name() -> Optional[str]:
             continue
 
         if name not in sync_transporter_info_registry:
-            raise Exception('the transporter module did not register properly')
-
+            raise Exception('the transporter module did not register correctly')
         return name
 
     return None
@@ -74,6 +74,9 @@ def get_default_sync_transporter_name() -> str:
 
 def new_sync_session_factory(transporter_name: str) -> NewSyncSessionFunction:
     return sync_transporter_session_function_registry[transporter_name]
+
+def sync_transporter_info(transporter_name: str) -> TransporterInfo:
+    return sync_transporter_info_registry[transporter_name]
 
 #endregion
 
@@ -97,8 +100,7 @@ def try_get_default_async_transporter_name() -> Optional[str]:
             continue
 
         if name not in async_transporter_info_registry:
-            raise Exception('the transporter module did not register properly')
-
+            raise Exception('the transporter module did not register correctly')
         return name
 
     return None
@@ -111,5 +113,8 @@ def get_default_async_transporter_name() -> str:
 
 def new_async_session_factory(transporter_name: str) -> NewAsyncSessionFunction:
     return async_transporter_session_function_registry[transporter_name]
+
+def async_transporter_info(transporter_name: str) -> TransporterInfo:
+    return async_transporter_info_registry[transporter_name]
 
 #endregion

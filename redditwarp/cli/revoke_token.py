@@ -15,12 +15,14 @@ import argparse
 class Formatter(argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
 add = parser.add_argument
-add('token')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-a', action='store_true', help='hint to the server the token is an access token')
 group.add_argument('-r', action='store_true', help='hint to the server the token is a refresh token')
-add('--client-id', metavar='CLIENT_ID', dest='client_id_opt')
-add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt')
+add('client_id', nargs='?')
+add('client_secret', nargs='?')
+add('token')
+add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
+add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 args = parser.parse_args()
 
 import sys
@@ -50,22 +52,22 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 signal.signal(signal.SIGINT, handle_sigint)
 
 transporter_name = redditwarp.http.transport.get_default_sync_transporter_name()
+transporter = redditwarp.http.transport.sync_transporter_info(transporter_name)
 new_session = redditwarp.http.transport.new_sync_session_factory(transporter_name)
 
 token: str = args.token
-client_id = get_client_id(args.client_id_opt)
-client_secret = get_client_secret(args.client_secret_opt)
+client_id = get_client_id(args.client_id_opt or args.client_id)
+client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
 access_token_needs_revoking: bool = args.a
 refresh_token_needs_revoking: bool = args.r
 
-session = new_session()
-session.headers = {
-    'User-Agent': (
-        f'RedditWarp/{redditwarp.__version__} '
-        f'{session.TRANSPORTER_INFO.name}/{session.TRANSPORTER_INFO.version} '
-        'redditwarp.cli.revoke_token'
-    )
-}
+user_agent = (
+    f'RedditWarp/{redditwarp.__version__} '
+    f'{transporter.name}/{transporter.version} '
+    'redditwarp.cli.revoke_token'
+)
+headers = {'User-Agent': user_agent}
+session = new_session(headers=headers)
 rev_token_client = redditwarp.auth.TokenRevocationClient(
     session,
     redditwarp.auth.const.TOKEN_REVOCATION_URL,
