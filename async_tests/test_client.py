@@ -55,6 +55,15 @@ async def test_request() -> None:
     assert data == {"some": "data"}
     assert client.last_response is not None
 
+@pytest.mark.asyncio
+async def test_zero_data() -> None:
+    # Test None is returned on zero data even when Content-Type is 'application/json'.
+    http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'')
+    client = Client.from_http(http)
+    data = await client.request('', '')
+    assert data is None
+    assert client.last_response is not None
+
 class TestRequestExceptions:
     class TestHTTPStatusError:
         @pytest.mark.asyncio

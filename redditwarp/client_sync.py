@@ -34,6 +34,12 @@ from .api import SiteProcedures
 
 AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
 
+def raise_for_status(resp: Response) -> None:
+    try:
+        resp.raise_for_status()
+    except http.exceptions.StatusCodeException as e:
+        raise HTTPStatusError(response=resp) from e
+
 class ClientCore:
     """The gateway to interacting with the Reddit API."""
 
@@ -233,28 +239,25 @@ class ClientCore:
         self.last_response = resp
         self.last_response_queue.append(resp)
 
-        data = None
-        try:
-            data = json_loads_response(resp)
-        except ValueError:
-            pass
+        json_data = None
+        if resp.data:
+            except_without_context = False
+            try:
+                json_data = json_loads_response(resp)
+            except ValueError:
+                except_without_context = True
+            if except_without_context:
+                raise_for_response_content_error(resp)
+                raise_for_status(resp)
+                raise UnidentifiedResponseContentError(response=resp)
 
-        if data is None:
-            raise_for_response_content_error(resp)
-        elif isinstance(data, Mapping):
-            raise_for_json_layout_content_error(resp, data)
-            raise_for_variant1_reddit_api_error(resp, data)
-            raise_for_variant2_reddit_api_error(resp, data)
+            if isinstance(json_data, Mapping):
+                raise_for_json_layout_content_error(resp, json_data)
+                raise_for_variant1_reddit_api_error(resp, json_data)
+                raise_for_variant2_reddit_api_error(resp, json_data)
 
-        try:
-            resp.raise_for_status()
-        except http.exceptions.StatusCodeException as e:
-            raise HTTPStatusError(response=resp) from e
-
-        if data is None:
-            raise UnidentifiedResponseContentError(response=resp)
-
-        return data
+        raise_for_status(resp)
+        return json_data
 
     def set_access_token(self, access_token: str) -> None:
         """Manually set the access token.

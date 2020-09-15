@@ -54,6 +54,14 @@ def test_request() -> None:
     assert data == {"some": "data"}
     assert client.last_response is not None
 
+def test_zero_data() -> None:
+    # Test None is returned on zero data even when Content-Type is 'application/json'.
+    http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'')
+    client = Client.from_http(http)
+    data = client.request('', '')
+    assert data is None
+    assert client.last_response is not None
+
 class TestRequestExceptions:
     class TestHTTPStatusError:
         def test_json_decode_failed(self) -> None:
