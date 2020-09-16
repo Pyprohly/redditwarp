@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from collections.abc import Mapping
-    from ..http.requestor_sync import Requestor
+    from ..http.requestor_SYNC import Requestor
     from ..http.request import Request
     from ..http.response import Response
 
 import time
 
-from ..http.requestor_sync import RequestorDecorator
+from ..http.requestor_SYNC import RequestorDecorator
 from .token_bucket import TokenBucket
 
 class RateLimited(RequestorDecorator):

@@ -1,3 +1,3 @@
 
-from .ratelimited_sync import RateLimited as SyncRateLimited, RateLimited  # noqa
-from .ratelimited_async import RateLimited as AsyncRateLimited  # noqa
+from .ratelimited_SYNC import RateLimited as SyncRateLimited, RateLimited  # noqa
+from .ratelimited_ASYNC import RateLimited as AsyncRateLimited  # noqa

@@ -2,9 +2,9 @@
 import pytest
 
 from typing import Sequence, Any, Optional, Mapping, MutableMapping
-from redditwarp.client_async import Client
-from redditwarp.core.http_client_async import HTTPClient
-from redditwarp.http.base_session_async import BaseSession
+from redditwarp.client_ASYNC import Client
+from redditwarp.core.http_client_ASYNC import HTTPClient
+from redditwarp.http.base_session_ASYNC import BaseSession
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 from redditwarp.http.payload import Payload

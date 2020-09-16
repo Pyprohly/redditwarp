@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, MutableMapping, Optional, Mapping, Protocol
 if TYPE_CHECKING:
     from ..transporter_info import TransporterInfo
-    from ..base_session_sync import BaseSession as SyncBaseSession
-    from ..base_session_async import BaseSession as AsyncBaseSession
+    from ..base_session_SYNC import BaseSession as SyncBaseSession
+    from ..base_session_ASYNC import BaseSession as AsyncBaseSession
 
 class NewSyncSessionFunction(Protocol):
     def __call__(self, *,

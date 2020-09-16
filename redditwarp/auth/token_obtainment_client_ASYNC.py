@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Any, Optional
 if TYPE_CHECKING:
     from .client_credentials import ClientCredentials
-    from ..http.requestor_sync import Requestor
+    from ..http.requestor_ASYNC import Requestor
 
 from .. import http
 from ..http.request import Request
@@ -19,10 +19,6 @@ from .exceptions import (
 )
 
 class TokenObtainmentClient:
-    """The token client will exchange an authorisation grant
-    for an OAuth2 token.
-    """
-
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials,
             grant: Mapping[str, Optional[str]]) -> None:
@@ -31,12 +27,12 @@ class TokenObtainmentClient:
         self.client_credentials = client_credentials
         self.grant = grant
 
-    def fetch_json_dict(self) -> Mapping[str, Any]:
+    async def fetch_json_dict(self) -> Mapping[str, Any]:
         data = {k: v for k, v in self.grant.items() if v}
         r = Request('POST', self.uri, payload=FormData(data))
         apply_basic_auth(r, self.client_credentials)
 
-        resp = self.requestor.send(r)
+        resp = await self.requestor.send(r)
 
         resp_json = None
         try:
@@ -63,5 +59,5 @@ class TokenObtainmentClient:
 
         return resp_json
 
-    def fetch_token(self) -> ResponseToken:
-        return ResponseToken.from_dict(self.fetch_json_dict())
+    async def fetch_token(self) -> ResponseToken:
+        return ResponseToken.from_dict(await self.fetch_json_dict())

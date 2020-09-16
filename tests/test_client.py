@@ -8,9 +8,9 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp import exceptions
-from redditwarp.client_sync import Client
-from redditwarp.core.http_client_sync import HTTPClient
-from redditwarp.http.base_session_sync import BaseSession
+from redditwarp.client_SYNC import Client
+from redditwarp.core.http_client_SYNC import HTTPClient
+from redditwarp.http.base_session_SYNC import BaseSession
 from redditwarp.http.response import Response
 
 class MySession(BaseSession):

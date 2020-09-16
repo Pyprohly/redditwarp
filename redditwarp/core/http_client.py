@@ -1,3 +1,3 @@
 
-from .http_client_sync import HTTPClient as SyncHTTPClient, HTTPClient  # noqa
-from .http_client_async import HTTPClient as AsyncHTTPClient  # noqa
+from .http_client_SYNC import HTTPClient as SyncHTTPClient, HTTPClient  # noqa
+from .http_client_ASYNC import HTTPClient as AsyncHTTPClient  # noqa

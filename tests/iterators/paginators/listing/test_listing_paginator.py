@@ -1,8 +1,8 @@
 
 from typing import Sequence, Any, Optional, Mapping, MutableMapping
-from redditwarp.client_sync import Client
-from redditwarp.core.http_client_sync import HTTPClient
-from redditwarp.http.base_session_sync import BaseSession
+from redditwarp.client_SYNC import Client
+from redditwarp.core.http_client_SYNC import HTTPClient
+from redditwarp.http.base_session_SYNC import BaseSession
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 from redditwarp.http.payload import Payload

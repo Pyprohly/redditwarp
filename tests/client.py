@@ -5,10 +5,10 @@ import redditwarp
 from redditwarp.auth import ClientCredentials, ClientCredentialsGrant, RefreshTokenGrant
 from redditwarp.http import HTTPClient
 from redditwarp.http.transport.requests import new_session
-from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
+from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
 from redditwarp.auth import TOKEN_OBTAINMENT_URL
-from redditwarp.http.authorizer_sync import Authorizer, Authorized
-from redditwarp.http.ratelimited_sync import RateLimited
+from redditwarp.http.authorizer_SYNC import Authorizer, Authorized
+from redditwarp.http.ratelimited_SYNC import RateLimited
 
 client_credentials = ClientCredentials(
     os.environ['redditwarp_client_id'],

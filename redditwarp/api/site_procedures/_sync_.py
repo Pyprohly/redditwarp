@@ -2,10 +2,10 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...client_sync import Client
+    from ...client_SYNC import Client
 
-from .submission_sync import Submission
-from .subreddit_sync import Subreddit
+from .submission_SYNC import Submission
+from .subreddit_SYNC import Subreddit
 
 class SiteProcedures:
     def __init__(self, client: Client) -> None:

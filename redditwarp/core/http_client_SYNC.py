@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Type, Any, Optional, Mapping, MutableMapping
     from types import TracebackType
-    from ..http.base_session_async import BaseSession
-    from .authorizer_async import Authorizer, Authorized
-    from ..http.requestor_async import Requestor
+    from ..http.base_session_SYNC import BaseSession
+    from .authorizer_SYNC import Authorizer, Authorized
+    from ..http.requestor_SYNC import Requestor
     from ..http.response import Response
     from ..http.payload import Payload
 
@@ -56,29 +56,29 @@ class RedditHTTPClient:
             f"{session.TRANSPORTER_INFO.name}/{session.TRANSPORTER_INFO.version}"
         )
 
-    async def __aenter__(self) -> RedditHTTPClient:
+    def __enter__(self) -> RedditHTTPClient:
         return self
 
-    async def __aexit__(self,
+    def __exit__(self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
-        await self.close()
+        self.close()
         return None
 
-    async def send(self,
+    def send(self,
         request: Request,
         timeout: float = TIMEOUT,
         aux_info: Optional[Mapping] = None,
     ) -> Response:
         try:
-            resp = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+            resp = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
         except auth.exceptions.ResponseException as e:
             handle_auth_response_exception(e)
         return resp
 
-    async def request(self,
+    def request(self,
         verb: str,
         uri: str,
         *,
@@ -102,9 +102,9 @@ class RedditHTTPClient:
         headers.update({**self.headers, **headers})
 
         r = Request(verb, uri, params=params, payload=payload, headers=headers)
-        return await self.send(r, timeout=timeout, aux_info=aux_info)
+        return self.send(r, timeout=timeout, aux_info=aux_info)
 
-    async def close(self) -> None:
-        await self.session.close()
+    def close(self) -> None:
+        self.session.close()
 
 HTTPClient = RedditHTTPClient

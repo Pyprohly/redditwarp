@@ -6,10 +6,10 @@ if TYPE_CHECKING:
 
 import pytest
 
-from redditwarp.auth.token_revocation_client_async import TokenRevocationClient
+from redditwarp.auth.token_revocation_client_ASYNC import TokenRevocationClient
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.exceptions import HTTPStatusError
-from redditwarp.http.requestor_async import Requestor
+from redditwarp.http.requestor_ASYNC import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 from redditwarp.http.payload import FormData

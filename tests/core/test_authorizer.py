@@ -4,12 +4,12 @@ from typing import Optional
 
 import pytest
 
-from redditwarp.core.authorizer_sync import Authorizer
+from redditwarp.core.authorizer_SYNC import Authorizer
 from redditwarp.auth.token import ResponseToken
-from redditwarp.auth.token_obtainment_client_sync import TokenObtainmentClient
+from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
 from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.core.exceptions import UnknownTokenType
-from redditwarp.http.requestor_sync import Requestor
+from redditwarp.http.requestor_SYNC import Requestor
 
 class MyTokenObtainmentClient(TokenObtainmentClient):
     def __init__(self, my_token: ResponseToken) -> None:

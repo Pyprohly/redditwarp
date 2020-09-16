@@ -11,16 +11,16 @@ from collections import deque
 
 from . import http
 from .http.util.json_loads import json_loads_response
-from .http.transport import get_default_sync_transporter_name, new_sync_session_factory
+from .http.transport import get_default_async_transporter_name, new_async_session_factory
 from . import auth
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
-from .auth.token_obtainment_client_sync import TokenObtainmentClient
+from .auth.token_obtainment_client_ASYNC import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
 from . import core
-from .core.http_client_sync import HTTPClient
-from .core.authorizer_sync import Authorizer, Authorized
-from .core.ratelimited_sync import RateLimited
+from .core.http_client_ASYNC import HTTPClient
+from .core.authorizer_ASYNC import Authorizer, Authorized
+from .core.ratelimited_ASYNC import RateLimited
 from .util.praw_config import get_praw_config
 from .exceptions import (
     HTTPStatusError,
@@ -30,7 +30,7 @@ from .exceptions import (
     raise_for_variant1_reddit_api_error,
     raise_for_variant2_reddit_api_error,
 )
-from .api import SiteProcedures
+#from .api import SiteProcedures
 
 AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
 
@@ -41,8 +41,6 @@ def raise_for_status(resp: Response) -> None:
         raise HTTPStatusError(response=resp) from e
 
 class ClientCore:
-    """The gateway to interacting with the Reddit API."""
-
     default_transporter_name = None
 
     T = TypeVar('T', bound='ClientCore')
@@ -50,36 +48,18 @@ class ClientCore:
     @classmethod
     def get_default_transporter_name(cls: Type[T]) -> str:
         if cls.default_transporter_name is None:
-            cls.default_transporter_name = get_default_sync_transporter_name()
+            cls.default_transporter_name = get_default_async_transporter_name()
         return cls.default_transporter_name
 
     @classmethod
     def from_http(cls: Type[T], http: HTTPClient) -> T:
-        """Alternative constructor for testing purposes or advanced uses.
-
-        Parameters
-        ----------
-        http: Optional[:class:`HTTPClient`]
-        """
         self = cls.__new__(cls)
         self._init_(http)
         return self
 
     @classmethod
     def from_access_token(cls: Type[T], access_token: str) -> T:
-        """Construct a Reddit client instance without a token client.
-
-        No token client means `self.http.authorizer.token_client` will be `None`.
-
-        When the token becomes invalid you'll need to deal with the 401 Unauthorized
-        exception that will be thrown upon making requests. You can use the
-        :meth:`set_access_token` instance method to assign a new token.
-
-        Parameters
-        ----------
-        access_token: str
-        """
-        new_session = new_sync_session_factory(cls.get_default_transporter_name())
+        new_session = new_async_session_factory(cls.get_default_transporter_name())
         session = new_session()
         http = HTTPClient(session)
         session.headers = http.headers
@@ -120,42 +100,6 @@ class ClientCore:
             access_token: Optional[str] = None, *,
             username: Optional[str] = None, password: Optional[str] = None,
             grant: Optional[AuthorizationGrant] = None):
-        """
-        Parameters
-        ----------
-        client_id: str
-        client_secret: str
-            If you've registered an installed app (hence using the :class:`~.InstalledClient`
-            grant type) you won't be given a client secret. The Reddit docs say to use an
-            empty string in this case.
-        refresh_token: Optional[str]
-        access_token: Optional[str]
-            Initialize the client :class:`~.Authorizer` with an access token.
-            The token will continue to be used until the server indicates
-            an invalid token, in which case the configured grant will used to
-            exchange for a new access token.
-        username: Optional[str]
-            Reddit account username.
-            Must be used with :param:`password`.
-            Ignored if :param:`refresh_token` is used.
-        password: Optional[str]
-            Reddit account password.
-            Must be used with :param:`username`.
-            Ignored if :param:`refresh_token` is used.
-        grant: Optional[:class:`~.AuthorizationGrant`]
-            Explicitly input a grant. Use this parameter if you need to limit
-            authorization scopes, or if you need to use the Installed Client grant type.
-
-        A :class:`~.ClientCredentialsGrant` grant will be configured if only :param:`client_id`
-        and :param:`client_secret` are specified.
-
-        Raises
-        ------
-        TypeError
-            If grant credential parameters were specified and the `grant` parameter was used.
-        ValueError
-            You used :param:`username` without :param:`password` or vice versa.
-        """
         grant_creds = (refresh_token, username, password)
         if grant is None:
             grant = auto_grant_factory(*grant_creds)
@@ -164,7 +108,7 @@ class ClientCore:
         elif any(grant_creds):
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
-        new_session = new_sync_session_factory(self.get_default_transporter_name())
+        new_session = new_async_session_factory(self.get_default_transporter_name())
         session = new_session()
         http = HTTPClient(session)
         session.headers = http.headers
@@ -187,19 +131,19 @@ class ClientCore:
         self.last_response: Optional[Response] = None
         self.last_response_queue: MutableSequence[Response] = deque(maxlen=6)
 
-    def __enter__(self) -> ClientCore:
+    async def __aenter__(self) -> ClientCore:
         return self
 
-    def __exit__(self,
+    async def __aexit__(self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
-        self.close()
+        await self.close()
         return None
 
-    def close(self) -> None:
-        self.http.close()
+    async def close(self) -> None:
+        await self.http.close()
 
     def set_user_agent(self, s: Optional[str]) -> None:
         ua = self.http.user_agent_string_head
@@ -210,7 +154,7 @@ class ClientCore:
     def url_join(self, path: str) -> str:
         return self.resource_base_url + path
 
-    def request(self,
+    async def request(self,
         verb: str,
         path: str,
         *,
@@ -224,7 +168,7 @@ class ClientCore:
     ) -> Any:
         url = self.url_join(path)
         try:
-            resp = self.http.request(verb, url, params=params, payload=payload,
+            resp = await self.http.request(verb, url, params=params, payload=payload,
                     data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
         except (
             auth.exceptions.ResponseException,
@@ -260,15 +204,6 @@ class ClientCore:
         return json_data
 
     def set_access_token(self, access_token: str) -> None:
-        """Manually set the access token.
-
-        Tip: the currently set access token can be found with
-        `self.http.authorizer.token.access_token`
-
-        Parameters
-        ----------
-        access_token: str
-        """
         if self.http.authorizer is None:
             raise RuntimeError('The HTTP client does not know of an authorizer instance to assign the token to')
         self.http.authorizer.token = Token(access_token)
@@ -285,4 +220,4 @@ class ClientMeta(type):
 class Client(ClientCore, metaclass=ClientMeta):
     def _init_(self, http: HTTPClient) -> None:
         super()._init_(http)
-        self.api = SiteProcedures(self)
+        self.api = ...#SiteProcedures(self)

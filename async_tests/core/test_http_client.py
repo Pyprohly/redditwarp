@@ -8,8 +8,8 @@ import pytest
 
 from redditwarp import auth
 from redditwarp import core
-from redditwarp.core.http_client_async import HTTPClient
-from redditwarp.http.base_session_async import BaseSession
+from redditwarp.core.http_client_ASYNC import HTTPClient
+from redditwarp.http.base_session_ASYNC import BaseSession
 from redditwarp.http.response import Response
 from redditwarp.http.request import Request
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Mapping, Optional, TypeVar, Generic
 if TYPE_CHECKING:
-    from ....client_sync import Client
+    from ....client_SYNC import Client
 
 from ...load.submission import load_submission, try_load_textpost, try_load_linkpost
 from ....models.submission import Submission, LinkPost, TextPost

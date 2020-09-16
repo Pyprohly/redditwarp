@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Any, Dict
 if TYPE_CHECKING:
-    from ....client_async import Client
+    from ....client_ASYNC import Client
 
 from ..bidirectional_async_paginator import BidirectionalAsyncPaginator
 

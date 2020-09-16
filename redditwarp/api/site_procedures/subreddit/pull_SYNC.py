@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-    from ....client_sync import Client
+    from ....client_SYNC import Client
     from ....models.submission import Submission
 
 from ....iterators.paginators.page_chaining_iterator import PaginatorKeepingPageChainingIterator

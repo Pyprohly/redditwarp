@@ -8,7 +8,7 @@ import httpx
 import httpcore
 
 from ..transporter_info import TransporterInfo
-from ..base_session_async import BaseSession
+from ..base_session_ASYNC import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
