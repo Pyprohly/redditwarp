@@ -59,9 +59,9 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 
 signal.signal(signal.SIGINT, handle_sigint)
 
-transporter_name = redditwarp.http.transport.get_default_sync_transporter_name()
-transporter = redditwarp.http.transport.sync_transporter_info(transporter_name)
-new_session = redditwarp.http.transport.new_sync_session_factory(transporter_name)
+transporter_name = redditwarp.http.transport.SYNC.get_default_transporter_name()
+transporter = redditwarp.http.transport.SYNC.transporter_info(transporter_name)
+new_session = redditwarp.http.transport.SYNC.new_session_factory(transporter_name)
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)

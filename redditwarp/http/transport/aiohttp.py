@@ -14,7 +14,7 @@ from ..base_session_ASYNC import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
-from ._init_ import register_async
+from .ASYNC import register
 
 _PAYLOAD_DISPATCH_TABLE: Mapping = {
     type(None): lambda y: {},
@@ -109,4 +109,4 @@ def new_session(*,
     se = aiohttp.ClientSession(connector=connector)
     return Session(se, params=params, headers=headers)
 
-register_async(name, info, new_session)
+register(name, info, new_session)

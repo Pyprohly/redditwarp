@@ -11,7 +11,7 @@ from collections import deque
 
 from . import http
 from .http.util.json_loads import json_loads_response
-from .http.transport import get_default_async_transporter_name, new_async_session_factory
+from .http.transport.ASYNC import get_default_transporter_name, new_session_factory
 from . import auth
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
@@ -48,7 +48,7 @@ class ClientCore:
     @classmethod
     def get_default_transporter_name(cls: Type[T]) -> str:
         if cls.default_transporter_name is None:
-            cls.default_transporter_name = get_default_async_transporter_name()
+            cls.default_transporter_name = get_default_transporter_name()
         return cls.default_transporter_name
 
     @classmethod
@@ -59,7 +59,7 @@ class ClientCore:
 
     @classmethod
     def from_access_token(cls: Type[T], access_token: str) -> T:
-        new_session = new_async_session_factory(cls.get_default_transporter_name())
+        new_session = new_session_factory(cls.get_default_transporter_name())
         session = new_session()
         http = HTTPClient(session)
         session.headers = http.headers
@@ -108,7 +108,7 @@ class ClientCore:
         elif any(grant_creds):
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
-        new_session = new_async_session_factory(self.get_default_transporter_name())
+        new_session = new_session_factory(self.get_default_transporter_name())
         session = new_session()
         http = HTTPClient(session)
         session.headers = http.headers

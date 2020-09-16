@@ -12,7 +12,7 @@ from ..base_session_SYNC import BaseSession
 from .. import exceptions
 from .. import payload
 from ..response import Response
-from ._init_ import register_sync
+from .SYNC import register
 
 _PAYLOAD_DISPATCH_TABLE: Mapping = {
     type(None): lambda y: {},
@@ -100,4 +100,4 @@ def new_session(*,
     se.mount('https://', retry_adapter)
     return Session(se, params=params, headers=headers)
 
-register_sync(name, info, new_session)
+register(name, info, new_session)
