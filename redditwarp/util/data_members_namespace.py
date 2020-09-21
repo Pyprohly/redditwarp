@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Dict, Collection, TypeVar, Iterator, Iterable, Tuple, Mapping, IO, cast
+from typing import Any, Dict, Collection, TypeVar, Iterator, Iterable, Tuple, Mapping, IO, cast, Generic
 
 import inspect
 from ast import literal_eval
@@ -40,9 +40,10 @@ def pretty_format(obj: object) -> str:
 
 T = TypeVar('T')
 
-class DataMembersNamespace(Collection[str]):
+class DataMembersNamespace(Collection[str], Generic[T]):
     def __init__(self, instance: T):
         self._instance = instance
+        self._inst_typ = type(instance)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}({self._instance})>'
@@ -61,19 +62,25 @@ class DataMembersNamespace(Collection[str]):
             value = getattr(self._instance, cast(str, item))
         except AttributeError:
             return False
-        return not inspect.ismethod(value)
+        return self._is_data_member(value)
 
     def __getattr__(self, name: str) -> Any:
         value = getattr(self._instance, name)
-        if inspect.ismethod(value):
+        if not self._is_data_member(value):
             raise AttributeError(f'{self._instance.__class__.__name__!r} has no data attribute {name!r}')
         return value
 
     def __dir__(self) -> Iterable[str]:
         return list(self)
 
+    def __abs__(self) -> T:
+        return self._instance
+
+    def _is_data_member(self, value: object) -> bool:
+        return not inspect.ismethod(value)
+
     def _data_members(self) -> Iterator[Tuple[str, Any]]:
-        for name, value in inspect.getmembers(self._instance, (lambda x: not inspect.ismethod(x))):
+        for name, value in inspect.getmembers(self._instance, self._is_data_member):
             if value is self:
                 continue
             if name.startswith('_'):
@@ -105,7 +112,7 @@ class DataMembersNamespace(Collection[str]):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
 
 
-class DataMembersNamespaceMapping(DataMembersNamespace):
+class DataMembersNamespaceMapping(DataMembersNamespace[T]):
     def __getitem__(self, key: str) -> Any:
         try:
             value = getattr(self._instance, key)

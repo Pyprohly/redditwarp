@@ -20,7 +20,7 @@ group.add_argument('-a', action='store_true', help='hint to the server the token
 group.add_argument('-r', action='store_true', help='hint to the server the token is a refresh token')
 add('client_id', nargs='?')
 add('client_secret', nargs='?')
-add('token')
+add('token', nargs='?')
 add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
 add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 args = parser.parse_args()
@@ -55,9 +55,9 @@ transporter_name = redditwarp.http.transport.SYNC.get_default_transporter_name()
 transporter = redditwarp.http.transport.SYNC.transporter_info(transporter_name)
 new_session = redditwarp.http.transport.SYNC.new_session_factory(transporter_name)
 
-token: str = args.token
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
+token: str = args.token or input('Token: ')
 access_token_needs_revoking: bool = args.a
 refresh_token_needs_revoking: bool = args.r
 

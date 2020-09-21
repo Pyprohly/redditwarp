@@ -30,7 +30,7 @@ from .exceptions import (
     raise_for_variant1_reddit_api_error,
     raise_for_variant2_reddit_api_error,
 )
-#from .api import SiteProcedures
+#from .api.site_procedures.ASYNC import SiteProcedures
 
 AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
 

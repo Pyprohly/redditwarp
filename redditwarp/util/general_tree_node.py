@@ -11,5 +11,5 @@ class Node(Generic[E]):
     value: E
 
 @dataclass
-class GenericTreeNode(Node[E]):
-    children: Sequence[GenericTreeNode[E]]
+class GeneralTreeNode(Node[E]):
+    children: Sequence[GeneralTreeNode[E]]
