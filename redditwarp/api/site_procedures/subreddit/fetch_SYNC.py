@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 
 from ....models.subreddit_SYNC import Subreddit
 from ....util.base_conversion import to_base36
+from .... import exceptions
 
 class Fetch:
     def __init__(self, client: Client):
@@ -27,3 +28,20 @@ class Fetch:
         if children := root['data']['children']:
             return self._load_object(children[0]['data'])
         return None
+
+    def by_name(self, name: str) -> Optional[Subreddit]:
+        try:
+            root = self._client.request('GET', f'/r/{name}/about')
+        except (
+            # A special subreddit name (`all`, `popular`, `friends`, `mod`) was specified.
+            exceptions.HTTPStatusError,
+            # Name contained invalid characters.
+            exceptions.UnacceptableHTMLDocumentReceivedError,
+        ) as e:
+            if e.response.status != 404:
+                raise
+            return None
+        if root['kind'] == 'Listing':
+            # Subreddit was not found.
+            return None
+        return Subreddit(root['data'], self._client)

@@ -186,6 +186,7 @@ class ClientCore:
         self.resource_base_url = RESOURCE_BASE_URL
         self.last_response: Optional[Response] = None
         self.last_response_queue: MutableSequence[Response] = deque(maxlen=6)
+        self.last_value: Any = None
 
     def __enter__(self) -> ClientCore:
         return self
@@ -222,6 +223,8 @@ class ClientCore:
         timeout: float = 8,
         aux_info: Optional[Mapping] = None,
     ) -> Any:
+        self.last_value = None
+
         url = self.url_join(path)
         try:
             resp = self.http.request(verb, url, params=params, payload=payload,
@@ -250,6 +253,8 @@ class ClientCore:
                 raise_for_response_content_error(resp)
                 raise_for_status(resp)
                 raise UnidentifiedResponseContentError(response=resp)
+
+            self.last_value = json_data
 
             if isinstance(json_data, Mapping):
                 raise_for_json_layout_content_error(resp, json_data)

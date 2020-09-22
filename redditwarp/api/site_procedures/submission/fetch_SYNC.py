@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 from ...load.submission_SYNC import load_submission, try_load_textpost, try_load_linkpost
 from ....models.submission_SYNC import Submission, LinkPost, TextPost
 from ....util.base_conversion import to_base36
+from ....util.extract_id36_from_url import extract_id36_from_submission_url
 
 T = TypeVar('T')
 
@@ -30,6 +31,9 @@ class _Common(Generic[T]):
         if children := root['data']['children']:
             return self._load_object(children[0]['data'])
         return None
+
+    def by_url(self, url: str) -> Optional[T]:
+        return self.by_id36(extract_id36_from_submission_url(url))
 
 class Fetch(_Common[Submission]):
     class _AsTextPost(_Common[TextPost]):

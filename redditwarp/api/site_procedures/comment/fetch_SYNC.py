@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 
 from ....models.comment_SYNC import Comment
 from ....util.base_conversion import to_base36
+from ....util.extract_id36_from_url import extract_id36_from_comment_url
 
 class Fetch:
     def __init__(self, client: Client):
@@ -27,3 +28,6 @@ class Fetch:
         if children := root['data']['children']:
             return self._load_object(children[0]['data'])
         return None
+
+    def by_url(self, url: str) -> Optional[Comment]:
+        return self.by_id36(extract_id36_from_comment_url(url))

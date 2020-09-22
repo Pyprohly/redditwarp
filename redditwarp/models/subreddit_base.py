@@ -51,5 +51,5 @@ class SubredditBase(OriginalRedditThingObject):
         self.icon_img: str = d['icon_img']
 
         self.user = None
-        if d['is_moderator'] is not None:
+        if d['user_is_moderator'] is not None:
             self.user = self.User(self, d)
