@@ -93,7 +93,7 @@ class RedditHTTPClient:
         params = {} if params is None else params
         params.setdefault('raw_json', '1')
         params.setdefault('api_type', 'json')
-        remove_keys = (k for k, v in params.items() if v is NotImplemented)
+        remove_keys = [k for k, v in params.items() if v is NotImplemented]
         for k in remove_keys: del params[k]
 
         payload = make_payload(payload, data, json)

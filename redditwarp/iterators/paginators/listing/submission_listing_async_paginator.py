@@ -7,6 +7,6 @@ from ....models.submission_ASYNC import Submission
 from ....api.load.submission_ASYNC import load_submission
 
 class SubmissionListingAsyncPaginator(CommonListingAsyncPaginator[Submission]):
-    async def __anext__(self) -> Sequence[Submission]:
+    async def _next_page(self) -> Sequence[Submission]:
         data = await self._fetch_next_page_listing_data()
-        return [load_submission(d['data'], self._client) for d in data['children']]
+        return [load_submission(d['data'], self.client) for d in data['children']]

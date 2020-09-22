@@ -7,6 +7,6 @@ from ....models.submission_SYNC import Submission
 from ....api.load.submission_SYNC import load_submission
 
 class TimeFilterSubmissionListingPaginator(TimeFilterCommonListingPaginator[Submission]):
-    def __next__(self) -> Sequence[Submission]:
+    def _next_page(self) -> Sequence[Submission]:
         data = self._fetch_next_page_listing_data()
-        return [load_submission(d['data'], self._client) for d in data['children']]
+        return [load_submission(d['data'], self.client) for d in data['children']]

@@ -1,7 +1,7 @@
 
 import pytest
 
-from typing import Sequence, Any, Optional, Mapping, MutableMapping
+from typing import Sequence, Any, Optional, Mapping, MutableMapping, Callable
 from redditwarp.client_ASYNC import Client
 from redditwarp.core.http_client_ASYNC import HTTPClient
 from redditwarp.http.base_session_ASYNC import BaseSession
@@ -43,18 +43,46 @@ class MyHTTPClient(HTTPClient):
         return Response(self.response_status, self.response_headers, self.response_data)
 
 class MyListingPaginator(ListingAsyncPaginator[str]):
-    async def __anext__(self) -> Sequence[str]:
+    def __init__(self,
+        client: Client,
+        uri: str,
+    ):
+        cursor_extractor: Callable[[Any], str] = lambda x: x['name']
+        super().__init__(client, uri, cursor_extractor=cursor_extractor)
+
+    async def _next_page(self) -> Sequence[str]:
         data = await self._fetch_next_page_listing_data()
-        return [d['id'] for d in data['children']]
+        return [d['name'] for d in data['children']]
 
 
 http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'')
 client = Client.from_http(http)
 
 @pytest.mark.asyncio
-async def test_next_iteration_updates_fields() -> None:
-    lp = MyListingPaginator(client, '/r/redditdev/top')
-    assert lp.count == 0
+async def test_stop_iteration() -> None:
+    p = MyListingPaginator(client, '')
+    p.has_next = False
+    http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 2,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": "a"
+    }
+}
+'''
+    with pytest.raises(StopAsyncIteration):
+        await p.__anext__()
+
+@pytest.mark.asyncio
+async def test_return_value_and_count() -> None:
+    p = MyListingPaginator(client, '')
+    assert p.count == 0
 
     http.response_data = b'''\
 {
@@ -62,21 +90,17 @@ async def test_next_iteration_updates_fields() -> None:
     "data": {
         "dist": 2,
         "children": [
-            {"id": "1"},
-            {"id": "2"}
+            {"name": "a"},
+            {"name": "b"}
         ],
-        "after": "123",
-        "before": null
+        "after": "b",
+        "before": "a"
     }
 }
 '''
-    submissions = await lp.__anext__()
-    assert len(submissions) == 2
-    assert lp.cursor == '123'
-    assert lp.back_cursor is None
-    assert lp.has_next
-    assert not lp.has_prev
-    assert lp.count == 2
+    result = await p.__anext__()
+    assert len(result) == 2
+    assert p.count == 2
 
     http.response_data = b'''\
 {
@@ -85,107 +109,250 @@ async def test_next_iteration_updates_fields() -> None:
         "modhash": null,
         "dist": 3,
         "children": [
-            {"id": "3"},
-            {"id": "4"},
-            {"id": "5"}
+            {"name": "c"},
+            {"name": "d"},
+            {"name": "e"}
         ],
-        "after": "abc",
-        "before": "456"
+        "after": "e",
+        "before": "c"
     }
 }
 '''
-    await lp.__anext__()
-    assert lp.cursor == 'abc'
-    assert lp.back_cursor == '456'
-    assert lp.has_next
-    assert lp.has_prev
-    assert lp.count == 5
+    result = await p.__anext__()
+    assert len(result) == 3
+    assert p.count == 5
 
 @pytest.mark.asyncio
-async def test_direction() -> None:
-    lp = MyListingPaginator(client, '/r/redditdev/top')
-    assert lp.get_direction()
-    assert lp.has_next and not lp.has_prev
-    lp.set_direction(True)
-    assert lp.get_direction()
-    assert lp.has_next and not lp.has_prev
-    lp.set_direction(True)
-    assert lp.has_next and not lp.has_prev
-    lp.set_direction(False)
-    assert not lp.get_direction()
-    assert not lp.has_next and lp.has_prev
-    lp.set_direction(False)
-    assert not lp.has_next and lp.has_prev
-    lp.change_direction()
-    assert lp.get_direction()
-    assert lp.has_next and not lp.has_prev
-    lp.change_direction()
-    assert not lp.get_direction()
-    assert not lp.has_next and lp.has_prev
+async def test_cursor() -> None:
+    p = MyListingPaginator(client, '')
+    assert p.cursor is p.back_cursor is None
+
+    for direction in (True, False):
+        p.set_direction(direction)
+
+        p.has_next = True
+        p.cursor = None
+        p.back_cursor = None
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 2,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": "a"
+    }
+}
+'''
+        await p.__anext__()
+        assert p.cursor == 'b'
+        assert p.back_cursor == 'a'
+
+        p.has_next = True
+        p.cursor = None
+        p.back_cursor = None
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 2,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": "a"
+    }
+}
+'''
+        await p.__anext__()
+        assert p.cursor == 'b'
+        assert p.back_cursor == 'a'
+
+        p.has_next = True
+        p.cursor = None
+        p.back_cursor = None
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 2,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": null,
+        "before": "a"
+    }
+}
+'''
+        await p.__anext__()
+        assert p.cursor == 'b'
+        assert p.back_cursor == 'a'
+
+        p.has_next = True
+        p.cursor = None
+        p.back_cursor = None
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 2,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": null
+    }
+}
+'''
+        await p.__anext__()
+        assert p.cursor == 'b'
+        assert p.back_cursor == 'a'
+
+        p.has_next = True
+        p.cursor = None
+        p.back_cursor = None
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 2,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": null,
+        "before": null
+    }
+}
+'''
+        await p.__anext__()
+        assert p.cursor == 'b'
+        assert p.back_cursor == 'a'
+
+        p.has_next = True
+        p.cursor = None
+        p.back_cursor = None
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 2,
+        "children": [
+            {"name": "a"}
+        ],
+        "after": null,
+        "before": null
+    }
+}
+'''
+        await p.__anext__()
+        assert p.cursor == 'a'
+        assert p.back_cursor == 'a'
+
+        p.has_next = True
+        p.cursor = 'cursor1'
+        p.back_cursor = 'cursor2'
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 0,
+        "children": [],
+        "after": null,
+        "before": null
+    }
+}
+'''
+        await p.__anext__()
+        assert p.cursor == 'cursor1'
+        assert p.back_cursor == 'cursor2'
 
 @pytest.mark.asyncio
 async def test_has_next_and_has_prev() -> None:
-    lp = MyListingPaginator(client, '/r/redditdev/top')
-    assert lp.has_next and not lp.has_prev
+    p = MyListingPaginator(client, '')
+    assert p.has_next is not p.has_prev
 
-    http.response_data = b'''\
+    for direction in (True, False):
+        p.set_direction(direction)
+
+        p.has_next = True
+        p.has_prev = False
+        http.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
         "dist": 0,
-        "children": [],
-        "after": "asdf",
-        "before": "zxcv"
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": "a"
     }
 }
 '''
-    await lp.__anext__()
-    assert lp.has_next and lp.has_prev
+        await p.__anext__()
+        assert p.has_next and p.has_prev
 
-    http.response_data = b'''\
+        p.has_next = True
+        p.has_prev = direction
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 0,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": null
+    }
+}
+'''
+        await p.__anext__()
+        assert p.has_next is direction
+        assert p.has_prev is not direction
+
+        p.has_next = True
+        p.has_prev = not direction
+        http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 0,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": null,
+        "before": "a"
+    }
+}
+'''
+        await p.__anext__()
+        assert p.has_next is not direction
+        assert p.has_prev is direction
+
+        p.has_next = True
+        p.has_prev = direction
+        http.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
         "dist": 0,
         "children": [],
         "after": null,
-        "before": "zxcv"
+        "before": null
     }
 }
 '''
-    await lp.__anext__()
-    assert not lp.has_next and lp.has_prev
-
-@pytest.mark.asyncio
-async def test_has_next_and_has_prev__backwards() -> None:
-    lp = MyListingPaginator(client, '/r/redditdev/top')
-    lp.change_direction()
-    assert not lp.has_next and lp.has_prev
-
-    http.response_data = b'''\
-{
-    "kind": "Listing",
-    "data": {
-        "dist": 0,
-        "children": [],
-        "after": "asdf",
-        "before": "zxcv"
-    }
-}
-'''
-    await lp.__anext__()
-    assert lp.has_next and lp.has_prev
-
-    http.response_data = b'''\
-{
-    "kind": "Listing",
-    "data": {
-        "dist": 0,
-        "children": [],
-        "after": null,
-        "before": "zxcv"
-    }
-}
-'''
-    await lp.__anext__()
-    assert lp.has_next and not lp.has_prev
+        await p.__anext__()
+        assert p.has_next is False
+        assert p.has_prev is direction

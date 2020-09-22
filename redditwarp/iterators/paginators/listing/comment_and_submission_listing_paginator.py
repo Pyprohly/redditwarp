@@ -8,7 +8,7 @@ from ....models.original_reddit_thing_object import OriginalRedditThingObject
 from ....api.load.submission_SYNC import load_submission
 
 class CommentAndSubmissionListingPaginator(CommonListingPaginator[OriginalRedditThingObject]):
-    def __next__(self) -> Sequence[OriginalRedditThingObject]:
+    def _next_page(self) -> Sequence[OriginalRedditThingObject]:
         data = self._fetch_next_page_listing_data()
         l = []
         for child in data['children']:
@@ -16,9 +16,9 @@ class CommentAndSubmissionListingPaginator(CommonListingPaginator[OriginalReddit
             data = child['data']
             obj: Optional[OriginalRedditThingObject] = None
             if kind == 't1':
-                obj = Comment(data, self._client)
+                obj = Comment(data, self.client)
             elif kind == 't3':
-                obj = load_submission(data, self._client)
+                obj = load_submission(data, self.client)
             if obj is None:
                 raise ValueError(f'cannot handle kind {kind!r}')
             l.append(obj)

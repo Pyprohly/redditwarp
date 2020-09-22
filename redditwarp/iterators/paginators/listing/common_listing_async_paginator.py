@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Dict, Any
+from typing import TYPE_CHECKING, TypeVar, Dict, Optional
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
@@ -13,7 +13,7 @@ class CommonListingAsyncPaginator(ListingAsyncPaginator[T]):
         super().__init__(client, uri)
         self.include_subreddit_data = False
 
-    def _get_next_page_params(self) -> Dict[str, Any]:
+    def _get_next_page_params(self) -> Dict[str, Optional[str]]:
         params = super()._get_next_page_params()
         if self.include_subreddit_data:
             params['sr_detail'] = '1'
