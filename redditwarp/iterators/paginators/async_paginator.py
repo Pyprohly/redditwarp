@@ -18,3 +18,10 @@ class AsyncPaginator(AsyncIterator[Sequence[T]], ABC):
     @abstractmethod
     async def __anext__(self) -> Sequence[T]:
         raise NotImplementedError
+
+    def resume(self) -> None:
+        self.has_next = True
+
+    def reset(self) -> None:
+        self.has_next = True
+        self.cursor = None

@@ -66,3 +66,7 @@ class ListingPaginator(BidirectionalPaginator[T]):
 
     def _next_page(self) -> Sequence[T]:
         raise NotImplementedError
+
+    def reset(self) -> None:
+        super().reset()
+        self.count = 0

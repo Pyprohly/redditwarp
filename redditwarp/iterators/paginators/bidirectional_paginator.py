@@ -23,3 +23,8 @@ class BidirectionalPaginator(Paginator[T]):
 
     def change_direction(self) -> None:
         self.set_direction(not self._forward)
+
+    def reset(self) -> None:
+        super().reset()
+        self.has_prev = False
+        self.back_cursor = None
