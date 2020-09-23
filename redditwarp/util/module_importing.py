@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from types import ModuleType
     from importlib.machinery import ModuleSpec
@@ -18,25 +18,32 @@ def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
     spec.loader.exec_module(module)
     return module
 
-def lazy_import(name: str) -> ModuleType:
-    try:
-        module = sys.modules[name]
-    except KeyError:
-        spec = importlib.util.find_spec(name)
-        if spec is None:
-            raise ImportError(f'module named {name!r} not found')
-        if spec.loader is None:
-            raise RuntimeError('spec has no loader')
-        assert isinstance(spec.loader, Loader)
-
-        module = importlib.util.module_from_spec(spec)
-        loader = importlib.util.LazyLoader(spec.loader)
-        sys.modules[name] = module
+class _LazyImport:
+    def __call__(self, name: str, package: Optional[str] = None) -> ModuleType:
         try:
-            loader.exec_module(module)
-        except ImportError:
-            del sys.modules[name]
-            raise
+            module = sys.modules[name]
+        except KeyError:
+            spec = importlib.util.find_spec(name, package)
+            if spec is None:
+                raise ImportError(f'module named {name!r} not found')
+            if spec.loader is None:
+                raise RuntimeError('spec has no loader')
+            assert isinstance(spec.loader, Loader)
 
-    globals()[name] = module
-    return module
+            module = importlib.util.module_from_spec(spec)
+            loader = importlib.util.LazyLoader(spec.loader)
+
+            sys.modules[spec.name] = module
+            try:
+                loader.exec_module(module)
+            except ImportError:
+                del sys.modules[spec.name]
+                raise
+
+        globals()[name] = module
+        return module
+
+    def __mod__(self, other: str) -> ModuleType:
+        return self(other)
+
+lazy_import = _LazyImport()
