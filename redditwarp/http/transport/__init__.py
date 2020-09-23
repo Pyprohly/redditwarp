@@ -2,26 +2,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, MutableMapping, Optional, Mapping, TypeVar, Callable, Sequence
 if TYPE_CHECKING:
-    from types import ModuleType
     from importlib.machinery import ModuleSpec
     from ..transporter_info import TransporterInfo
 
 import importlib.util
-from importlib.abc import Loader
+
+from ...util.module_importing import load_module_from_spec
 
 T = TypeVar('T')
-
-def load_module_from_spec(spec: ModuleSpec) -> Optional[ModuleType]:
-    if spec.loader is None:
-        raise RuntimeError('spec has no loader')
-    assert isinstance(spec.loader, Loader)
-
-    module = importlib.util.module_from_spec(spec)
-    try:
-        spec.loader.exec_module(module)
-    except ImportError:
-        return None
-    return module
 
 def register_factory(
     transporter_info_registry: MutableMapping[str, TransporterInfo],
@@ -44,7 +32,10 @@ def try_get_default_transporter_name_factory(
 
         for name in priority:
             spec = module_spec_registry[name]
-            module = load_module_from_spec(spec)
+            try:
+                module = load_module_from_spec(spec)
+            except ImportError:
+                continue
             if module is None:
                 continue
 
