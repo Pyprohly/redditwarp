@@ -6,6 +6,8 @@ if TYPE_CHECKING:
     from ..auth.token import Token
 
 from .. import auth
+from ..auth.const import TOKEN_OBTAINMENT_URL
+from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 
 class RootException(Exception):
     pass
@@ -98,6 +100,11 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None
             raise CredentialsError('check your grant credentials', response=resp) from e
 
         elif status == 401:
+            if resp.request:
+                uri = resp.request.uri
+                if not uri.startswith("https://www.reddit.com"):
+                    e.arg = f'access token URL inaccuracy: got {uri!r}, need {TOKEN_OBTAINMENT_URL!r}'
+                    raise
             raise CredentialsError('check your client credentials', response=resp) from e
 
         elif status == 403:
@@ -112,5 +119,14 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None
                         "the pattern 'curl' in your user-agent string is known to interfere with rate limits. Remove it from your user-agent string.",
                         response=resp,
                     ) from e
+
+    elif isinstance(e, auth.exceptions.UnsupportedGrantType):
+        if resp.request:
+            headers = CaseInsensitiveDict(resp.request.headers)
+            if 'Content-Type' in headers:
+                content_type = resp.request.headers.get('Content-Type', '')
+                expected_content_type = 'application/x-www-form-urlencoded'
+                if not content_type.startswith(expected_content_type):
+                    e.arg = f'bad Content-Type header: got {content_type!r}, need {expected_content_type!r}'
 
     raise

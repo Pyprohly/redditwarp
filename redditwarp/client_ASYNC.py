@@ -23,8 +23,8 @@ from .core.authorizer_ASYNC import Authorizer, Authorized
 from .core.ratelimited_ASYNC import RateLimited
 from .util.praw_config import get_praw_config
 from .exceptions import (
-    HTTPStatusError,
     UnidentifiedResponseContentError,
+    raise_for_status,
     raise_for_response_content_error,
     raise_for_json_layout_content_error,
     raise_for_variant1_reddit_api_error,
@@ -33,12 +33,6 @@ from .exceptions import (
 #from .api.site_procedures.ASYNC import SiteProcedures
 
 AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
-
-def raise_for_status(resp: Response) -> None:
-    try:
-        resp.raise_for_status()
-    except http.exceptions.StatusCodeException as e:
-        raise HTTPStatusError(response=resp) from e
 
 class ClientCore:
     default_transporter_name = None
@@ -167,6 +161,7 @@ class ClientCore:
         timeout: float = 8,
         aux_info: Optional[Mapping] = None,
     ) -> Any:
+        self.last_response = None
         self.last_value = None
 
         url = self.url_join(path)

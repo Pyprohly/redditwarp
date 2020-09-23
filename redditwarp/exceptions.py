@@ -7,6 +7,8 @@ if TYPE_CHECKING:
 from dataclasses import dataclass
 from pprint import pformat
 
+from . import http
+
 class RootException(Exception):
     pass
 
@@ -34,6 +36,13 @@ class ResponseException(InfoException):
 
 class HTTPStatusError(ResponseException):
     pass
+
+def raise_for_status(resp: Response) -> None:
+    try:
+        resp.raise_for_status()
+    except http.exceptions.StatusCodeException as e:
+        raise HTTPStatusError(response=resp) from e
+
 
 class ResponseContentError(ResponseException):
     """A base exception class denoting that something in the response body

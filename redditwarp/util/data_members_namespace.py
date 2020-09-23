@@ -77,7 +77,7 @@ class DataMembersNamespace(Collection[str], Generic[T]):
         return self._instance
 
     def _is_data_member(self, value: object) -> bool:
-        return not inspect.ismethod(value)
+        return not callable(value)
 
     def _data_members(self) -> Iterator[Tuple[str, Any]]:
         for name, value in inspect.getmembers(self._instance, self._is_data_member):
@@ -118,6 +118,6 @@ class DataMembersNamespaceMapping(DataMembersNamespace[T]):
             value = getattr(self._instance, key)
         except AttributeError:
             raise KeyError(key)
-        if inspect.ismethod(value):
+        if not self._is_data_member(value):
             raise KeyError(key)
         return value

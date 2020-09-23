@@ -32,7 +32,6 @@ class TestDataAttributeNamespace:
         assert d.aaa == 1
         assert d.bbb == 2
         assert d.ddd == 4
-        assert d.eee() == 5
 
         with pytest.raises(AttributeError):
             d.ccc
@@ -41,10 +40,10 @@ class TestDataAttributeNamespace:
             d.zzz
 
     def test_iter(self) -> None:
-        assert list(DataMembersNamespace(C())) == ['aaa', 'bbb', 'ddd', 'eee']
+        assert list(DataMembersNamespace(C())) == ['aaa', 'bbb', 'ddd']
 
     def test_len(self) -> None:
-        assert len(DataMembersNamespace(C())) == 4
+        assert len(DataMembersNamespace(C())) == 3
 
     def test_contains(self) -> None:
         d = DataMembersNamespace(C())
@@ -52,11 +51,10 @@ class TestDataAttributeNamespace:
         assert 'bbb' in d
         assert 'ccc' not in d
         assert 'ddd' in d
-        assert 'eee' in d
 
     def test_dir(self) -> None:
         d = DataMembersNamespace(C())
-        assert dir(d) == ['aaa', 'bbb', 'ddd', 'eee']
+        assert dir(d) == ['aaa', 'bbb', 'ddd']
 
     def test_print(self) -> None:
         # Check no exception raised
@@ -72,7 +70,6 @@ class TestDataMembersMapping:
         assert d['aaa'] == 1
         assert d['bbb'] == 2
         assert d['ddd'] == 4
-        assert d['eee']() == 5
 
         with pytest.raises(KeyError):
             d['ccc']

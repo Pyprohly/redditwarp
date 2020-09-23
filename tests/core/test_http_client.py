@@ -88,6 +88,16 @@ class TestRequestExceptions:
                     http.request('', '')
 
         class TestHTTPStatusError:
+            def test_incorrect_access_token_url(self) -> None:
+                request = Request('GET', 'https://reddit.com/api/v1/access_token')
+                response = Response(401, {}, b'', request)
+                exc = auth.exceptions.HTTPStatusError(response=response)
+                session = BadSession(exc)
+                http = _get_http(session)
+                with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
+                    http.request('', '')
+                assert exc_info.value.arg
+
             def test_CredentialsError(self) -> None:
                 response = Response(400, {}, b'')
                 exc = auth.exceptions.HTTPStatusError(response=response)
@@ -126,3 +136,13 @@ class TestRequestExceptions:
                 http = _get_http(session)
                 with pytest.raises(core.exceptions.FaultyUserAgent):
                     http.request('', '')
+
+            def test_UnsupportedGrantType(self) -> None:
+                request = Request('', '', headers={'Content-Type': 'application/json'})
+                response = Response(200, {}, b'', request=request)
+                exc = auth.exceptions.UnsupportedGrantType(response=response)
+                session = BadSession(exc)
+                http = _get_http(session)
+                with pytest.raises(auth.exceptions.UnsupportedGrantType) as exc_info:
+                    http.request('', '')
+                assert exc_info.value.arg

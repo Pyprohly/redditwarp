@@ -24,6 +24,9 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
     def __iter__(self) -> Iterator[str]:
         return (k for k, _ in self._store.values())
 
+    def __len__(self) -> int:
+        return len(self._store)
+
     def __setitem__(self, key: str, value: V) -> None:
         self._store[key.lower()] = (key, value)
 
@@ -32,9 +35,6 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
 
     def __delitem__(self, key: str) -> None:
         del self._store[key.lower()]
-
-    def __len__(self) -> int:
-        return len(self._store)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Mapping):
