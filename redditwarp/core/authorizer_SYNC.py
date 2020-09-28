@@ -19,7 +19,7 @@ class Authorizer:
     def __init__(self,
         token: Optional[Token],
         token_client: Optional[TokenObtainmentClient],
-    ) -> None:
+    ):
         self.token = token
         self.token_client = token_client
         self.expiry_skew = 30

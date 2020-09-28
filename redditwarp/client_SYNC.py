@@ -30,8 +30,9 @@ from .exceptions import (
     raise_for_variant1_reddit_api_error,
     raise_for_variant2_reddit_api_error,
 )
-from redditwarp import lazy_import
-site_procedures_SYNC = lazy_import('.api.site_procedures.SYNC', __package__)
+from .util.module_importing import lazy_import;
+if 0: from .api.site_procedures import SYNC as site_procedures_SYNC
+site_procedures_SYNC = lazy_import('.api.site_procedures.SYNC', __package__)  # noqa: F811
 
 AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
 
@@ -180,7 +181,7 @@ class ClientCore:
         self.http = http
         self.resource_base_url = RESOURCE_BASE_URL
         self.last_response: Optional[Response] = None
-        self.last_response_queue: MutableSequence[Response] = deque(maxlen=6)
+        self.last_response_queue: MutableSequence[Response] = deque(maxlen=12)
         self.last_value: Any = None
 
     def __enter__(self) -> ClientCore:
@@ -247,7 +248,7 @@ class ClientCore:
                 except_without_context = True
             if except_without_context:
                 raise_for_response_content_error(resp)
-                raise_for_status(resp)#`2
+                raise_for_status(resp)#_2
                 raise UnidentifiedResponseContentError(response=resp)
 
             self.last_value = json_data
@@ -257,7 +258,7 @@ class ClientCore:
                 raise_for_variant1_reddit_api_error(resp, json_data)
                 raise_for_variant2_reddit_api_error(resp, json_data)
 
-        raise_for_status(resp)#`1
+        raise_for_status(resp)#_1
         return json_data
 
     def set_access_token(self, access_token: str) -> None:
@@ -286,4 +287,4 @@ class ClientMeta(type):
 class Client(ClientCore, metaclass=ClientMeta):
     def _init_(self, http: HTTPClient) -> None:
         super()._init_(http)
-        self.api = site_procedures_SYNC.SiteProcedures(self)  # type: ignore[attr-defined]
+        self.api = site_procedures_SYNC.SiteProcedures(self)

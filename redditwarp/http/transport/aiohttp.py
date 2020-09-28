@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping
 if TYPE_CHECKING:
     from ..request import Request
 
-from redditwarp import lazy_import
-lazy_import%'asyncio'
+from ...util.module_importing import lazy_import;
 if 0: import asyncio
+lazy_import%'asyncio'
 
 import aiohttp
 

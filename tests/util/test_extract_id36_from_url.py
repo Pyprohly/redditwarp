@@ -6,8 +6,11 @@ from redditwarp.util.extract_id36_from_url import (
 
 def test_extract_id36_from_submission_url() -> None:
     for url in (
+        "redd.it/SUBMISSION_ID36",
         "https://redd.it/SUBMISSION_ID36",
         "https://redd.it/SUBMISSION_ID36/",
+        "reddit.com/SUBMISSION_ID36",
+        "www.reddit.com/SUBMISSION_ID36",
         "https://www.reddit.com/SUBMISSION_ID36",
         "https://www.reddit.com/comments/SUBMISSION_ID36",
         "https://www.reddit.com/r/redditdev/comments/SUBMISSION_ID36",
@@ -20,6 +23,8 @@ def test_extract_id36_from_submission_url() -> None:
 
 def test_extract_id36_from_comment_url() -> None:
     for url in (
+        "reddit.com/comments/SUBMISSION_ID36/_/COMMENT_ID36",
+        "www.reddit.com/comments/SUBMISSION_ID36/_/COMMENT_ID36",
         "https://www.reddit.com/comments/SUBMISSION_ID36/_/COMMENT_ID36",
         "https://www.reddit.com/comments/SUBMISSION_ID36//COMMENT_ID36",
         "https://www.reddit.com/r/redditdev/comments/SUBMISSION_ID36/url_slug/COMMENT_ID36",

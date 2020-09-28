@@ -19,7 +19,7 @@ def test_simple_iteration() -> None:
             return next(self._itr)
 
     p = MyPaginator()
-    pci = PageChainingIterator(p)
+    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(p)
     assert list(pci) == [1,2,3,4,5,6]
 
 def test_current_iter() -> None:
@@ -34,7 +34,7 @@ def test_current_iter() -> None:
         def __next__(self) -> List[int]:
             return next(self._itr)
 
-    pci = PageChainingIterator(MyPaginator())
+    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(MyPaginator())
 
     assert next(pci) == 0
     assert list(pci.current_iter) == [1, 2]
@@ -57,7 +57,7 @@ def test_amount() -> None:
         def __next__(self) -> List[int]:
             return next(self._itr)
 
-    pci = PageChainingIterator(MyPaginator(), 6)
+    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(MyPaginator(), 6)
     assert pci.amount == 6
     assert pci.count == 0
     assert next(pci) == 10
@@ -69,3 +69,25 @@ def test_amount() -> None:
     assert pci.amount is None
     assert list(pci) == [10,20,30,40,50,60,70,80]
     assert pci.count == 8
+
+def test_efficient_pagination_limit() -> None:
+    class MyPaginator(Paginator[int]):
+        def __init__(self) -> None:
+            super().__init__()
+            self._itr = iter([
+                list(range(100)),
+                list(range(23)),
+            ])
+
+        def __next__(self) -> List[int]:
+            return next(self._itr)
+
+    p = MyPaginator()
+    p.limit = 100
+    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(p, 123)
+    for _ in range(100):
+        next(pci)
+    assert pci.count == 100
+    assert p.limit == 100
+    next(pci)
+    assert p.limit == 23

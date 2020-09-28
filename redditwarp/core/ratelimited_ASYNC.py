@@ -7,9 +7,9 @@ if TYPE_CHECKING:
     from ..http.request import Request
     from ..http.response import Response
 
-from redditwarp import lazy_import
-lazy_import%'asyncio'
+from ..util.module_importing import lazy_import;
 if 0: import asyncio
+lazy_import%'asyncio'
 import time
 
 from ..http.requestor_ASYNC import RequestorDecorator

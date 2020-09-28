@@ -40,7 +40,8 @@ class _LazyImport:
                 del sys.modules[spec.name]
                 raise
 
-        globals()[name] = module
+        if '.' not in name:
+            globals()[name] = module
         return module
 
     def __mod__(self, other: str) -> ModuleType:

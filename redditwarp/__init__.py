@@ -1,4 +1,5 @@
 
+from . import SYNC, ASYNC  # noqa
 from .__about__ import __version__  # noqa
 from .util.module_importing import lazy_import  # noqa
 from .client import *  # noqa

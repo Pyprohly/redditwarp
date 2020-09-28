@@ -8,9 +8,9 @@ if TYPE_CHECKING:
     from ..http.request import Request
     from ..http.response import Response
 
-from redditwarp import lazy_import
-lazy_import%'asyncio'
+from ..util.module_importing import lazy_import;
 if 0: import asyncio
+lazy_import%'asyncio'
 import time
 
 from ..http.requestor_ASYNC import RequestorDecorator
@@ -20,7 +20,7 @@ class Authorizer:
     def __init__(self,
         token: Optional[Token],
         token_client: Optional[TokenObtainmentClient],
-    ) -> None:
+    ):
         self.token = token
         self.token_client = token_client
         self.expiry_skew = 30

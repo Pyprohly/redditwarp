@@ -9,7 +9,7 @@ from .comment.SYNC import Comment
 from .subreddit.SYNC import Subreddit
 
 class SiteProcedures:
-    def __init__(self, client: Client) -> None:
+    def __init__(self, client: Client):
         self._client = client
         self.submission = Submission(client)
         self.comment = Comment(client)
