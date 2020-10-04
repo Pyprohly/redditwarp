@@ -3,10 +3,14 @@
 Step through the OAuth2 Authorization Code flow to obtain bearer tokens.
 
 Visit https://www.reddit.com/prefs/apps to create an app for your client.
-Ensure your app's redirect URI *exactly* matches "http://localhost:8080".
+Ensure your app's redirect URI *exactly* matches `http://localhost:8080`.
 
-Only one refresh token and access token can be active at a time. If either becomes
-leaked, simply fetch new tokens with this tool to invalidate the compromised ones.
+Only one refresh token and access token can be active at a time. If either
+becomes leaked, simply fetch new tokens with this tool to invalidate both.
+
+Refresh tokens never expire.
+Access tokens expire after 1 hour.
+Authorization Codes expire after 10 minutes or after use.
 """
 
 from __future__ import annotations

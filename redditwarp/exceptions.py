@@ -97,11 +97,13 @@ class UnacceptableHTMLDocumentReceivedError(ResponseContentError):
 def raise_for_response_content_error(resp: Response) -> None:
     content_type = resp.headers.get('Content-Type', '')
     if content_type.startswith('text/html'):
-        if resp.data.lower().startswith(b'<!doctype html>'):
-            msg = None
-            if b'user agent required' in resp.data:
-                msg = 'the Reddit API wants you to set a user agent'
-            raise UnacceptableHTMLDocumentReceivedError(msg, response=resp)
+        msg = None
+        data = resp.data
+        if b'user agent required' in data:
+            msg = 'the Reddit API wants you to set a user agent'
+        if b'Our CDN was unable to reach our servers' in data:
+            msg = '"Our CDN was unable to reach our servers"'
+        raise UnacceptableHTMLDocumentReceivedError(msg, response=resp)
 
 def raise_for_json_layout_content_error(resp: Response, data: Mapping[str, Any]) -> None:
     if {'jquery', 'success'} <= data.keys():

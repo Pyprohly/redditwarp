@@ -71,12 +71,20 @@ class TestRequestExceptions:
                     http.request('', '')
 
             def test_HTMLDocumentResponseContentError(self) -> None:
-                response = Response(999, {}, b'<!doctype html>')
+                response = Response(999, {'Content-Type': 'text/html'}, b'')
                 exc = auth.exceptions.ResponseContentError(response=response)
                 session = BadSession(exc)
                 http = _get_http(session)
                 with pytest.raises(core.exceptions.HTMLDocumentResponseContentError):
                     http.request('', '')
+
+                response = Response(999, {'Content-Type': 'text/html'}, b'Our CDN was unable to reach our servers')
+                exc = auth.exceptions.ResponseContentError(response=response)
+                session = BadSession(exc)
+                http = _get_http(session)
+                with pytest.raises(core.exceptions.HTMLDocumentResponseContentError) as exc_info:
+                    http.request('', '')
+                assert exc_info.value.arg is not None
 
             def test_BlacklistedUserAgent(self) -> None:
                 request = Request('', '', headers={'User-Agent': 'xscrapingx'})
@@ -96,7 +104,7 @@ class TestRequestExceptions:
                 http = _get_http(session)
                 with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
                     http.request('', '')
-                assert exc_info.value.arg
+                assert exc_info.value.arg is not None
 
             def test_CredentialsError(self) -> None:
                 response = Response(400, {}, b'')
@@ -145,4 +153,4 @@ class TestRequestExceptions:
                 http = _get_http(session)
                 with pytest.raises(auth.exceptions.UnsupportedGrantType) as exc_info:
                     http.request('', '')
-                assert exc_info.value.arg
+                assert exc_info.value.arg is not None

@@ -89,7 +89,57 @@ class TestRequestExceptions:
             with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError):
                 client.request('', '')
 
-            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'<!DOCTYPE html>' + b'>user agent required</')
+            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'>user agent required</')
+            client = Client.from_http(http)
+            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
+                client.request('', '')
+            assert exc_info.value.arg is not None
+
+            sample = b'''
+<!doctype html>
+<html><head><title>Ow! -- reddit.com</title>
+  <script type="text/javascript">
+    // send metric to our internal tracker.
+    function makeRequest(url, data) {
+      var dataString;
+      try {
+        dataString = JSON.stringify(data);
+      } catch (e) {
+        return false;
+      }
+      if (window.XMLHttpRequest) {
+        httpRequest = new XMLHttpRequest();
+      } else if (window.ActiveXObject) {
+        try {
+          httpRequest = new ActiveXObject("Msxml2.XMLHTTP");
+        }
+        catch (e) {
+          try {
+            httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
+          }
+          catch (e) {}
+        }
+      }
+      if (!httpRequest) {
+        return false;
+      }
+      httpRequest.open('POST', url);
+      httpRequest.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+      httpRequest.send(dataString);
+    }
+    makeRequest('https://stats.redditmedia.com', {cdnError:{error50x:1,}});
+  </script>
+<style>
+body{text-align:center;position:absolute;top:50%;margin:0;margin-top:-275px;width:100%}
+h2,h3{color:#555;font:bold 200%/100px sans-serif;margin:0}
+h3{color:#777;font:normal 150% sans-serif}
+</style>
+</head>
+<img src=//redditstatic.s3.amazonaws.com/heavy-load.png alt="">
+<h2>Our CDN was unable to reach our servers</h2>
+Please check <a href="http://www.redditstatus.com/">www.redditstatus.com</a> if you consistently get this error.
+'''
+            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, sample)
             client = Client.from_http(http)
             with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
                 client.request('', '')

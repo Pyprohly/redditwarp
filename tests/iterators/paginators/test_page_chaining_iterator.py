@@ -1,7 +1,7 @@
 
 from typing import List
 
-from redditwarp.iterators.paginators.page_chaining_iterator import PageChainingIterator
+from redditwarp.iterators.paginators.page_chaining_iterator import PaginatorPageChainingIterator
 from redditwarp.iterators.paginators.paginator import Paginator
 
 
@@ -19,7 +19,7 @@ def test_simple_iteration() -> None:
             return next(self._itr)
 
     p = MyPaginator()
-    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(p)
+    pci: PaginatorPageChainingIterator[MyPaginator, int] = PaginatorPageChainingIterator(p)
     assert list(pci) == [1,2,3,4,5,6]
 
 def test_current_iter() -> None:
@@ -34,7 +34,7 @@ def test_current_iter() -> None:
         def __next__(self) -> List[int]:
             return next(self._itr)
 
-    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(MyPaginator())
+    pci: PaginatorPageChainingIterator[MyPaginator, int] = PaginatorPageChainingIterator(MyPaginator())
 
     assert next(pci) == 0
     assert list(pci.current_iter) == [1, 2]
@@ -57,7 +57,7 @@ def test_amount() -> None:
         def __next__(self) -> List[int]:
             return next(self._itr)
 
-    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(MyPaginator(), 6)
+    pci: PaginatorPageChainingIterator[MyPaginator, int] = PaginatorPageChainingIterator(MyPaginator(), 6)
     assert pci.amount == 6
     assert pci.count == 0
     assert next(pci) == 10
@@ -65,7 +65,7 @@ def test_amount() -> None:
     assert list(pci) == [20,30,40,50,60]
     assert pci.count == 6
 
-    pci = PageChainingIterator(MyPaginator())
+    pci = PaginatorPageChainingIterator(MyPaginator())
     assert pci.amount is None
     assert list(pci) == [10,20,30,40,50,60,70,80]
     assert pci.count == 8
@@ -84,7 +84,7 @@ def test_efficient_pagination_limit() -> None:
 
     p = MyPaginator()
     p.limit = 100
-    pci: PageChainingIterator[MyPaginator, int] = PageChainingIterator(p, 123)
+    pci: PaginatorPageChainingIterator[MyPaginator, int] = PaginatorPageChainingIterator(p, 123)
     for _ in range(100):
         next(pci)
     assert pci.count == 100

@@ -95,7 +95,13 @@ class TestRequestExceptions:
             with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError):
                 await client.request('', '')
 
-            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'<!DOCTYPE html>' + b'>user agent required</')
+            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'>user agent required</')
+            client = Client.from_http(http)
+            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
+                await client.request('', '')
+            assert exc_info.value.arg is not None
+
+            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'>Our CDN was unable to reach our servers</')
             client = Client.from_http(http)
             with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
                 await client.request('', '')

@@ -21,7 +21,6 @@ class ChunkingIterator(Iterator[Sequence[T]]):
         return self
 
     def __next__(self) -> Sequence[T]:
-        chunk = tuple(islice(self._itr, self.size))
-        if not chunk:
-            raise StopIteration
-        return chunk
+        if chunk := tuple(islice(self._itr, self.size)):
+            return chunk
+        raise StopIteration

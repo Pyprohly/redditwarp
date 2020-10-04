@@ -8,7 +8,7 @@ E = TypeVar('E')
 Paginator_E = Paginator[E]
 P = TypeVar('P', bound=Paginator_E)
 
-class PageChainingIterator(Iterator[E], Generic[P, E]):
+class PaginatorPageChainingIterator(Iterator[E], Generic[P, E]):
     def __init__(self, paginator: P, amount: Optional[int] = None) -> None:
         self.paginator = paginator
         self.amount = amount
