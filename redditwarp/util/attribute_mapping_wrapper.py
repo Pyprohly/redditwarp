@@ -1,8 +1,8 @@
 
 from __future__ import annotations
-from typing import Any, TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO
+from typing import Any, TypeVar, Mapping, MutableMapping, Iterable, Iterator, IO, Optional, Generic
 
-from pprint import PrettyPrinter
+from pprint import PrettyPrinter, pformat
 
 V = TypeVar('V')
 
@@ -64,8 +64,10 @@ class AttributeMappingWrapper(Mapping[str, V]):
         allowance: int,
         context: Mapping[object, object],
         level: int,
+        *,
+        cls_name: Optional[str] = None,
     ) -> None:
-        cls_name = obj.__class__.__name__
+        cls_name = obj.__class__.__name__ if cls_name is None else cls_name
         stream.write(cls_name + '(')
         printer._format(  # type: ignore[attr-defined]
             dict(obj),
@@ -79,7 +81,6 @@ class AttributeMappingWrapper(Mapping[str, V]):
 
     if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
-
 
 class MutableAttributeMappingWrapper(AttributeMappingWrapper[V], MutableMapping[str, V]):
     """Wrap a mapping to expose its keys though attributes.
@@ -114,3 +115,42 @@ class MutableAttributeMappingWrapper(AttributeMappingWrapper[V], MutableMapping[
         return self.__setitem__(name, value)
 
     __delattr__ = __delitem__
+
+
+class _PrettyPrintingMixin(Generic[V]):
+    _store: Mapping[str, V]
+
+    def __repr__(self) -> str:
+        return f'AttributeMappingWrapper({self._store})'
+
+    def __str__(self) -> str:
+        return pformat(self)
+
+    @staticmethod
+    def _pprint(
+        printer: PrettyPrinter,
+        obj: Mapping[object, object],
+        stream: IO[str],
+        indent: int,
+        allowance: int,
+        context: Mapping[object, object],
+        level: int,
+        *,
+        cls_name: Optional[str] = None,
+    ) -> None:
+        AttributeMappingWrapper._pprint(
+            printer,
+            obj,
+            stream,
+            indent,
+            allowance,
+            context,
+            level,
+            cls_name='AttributeMappingWrapper',
+        )
+
+    if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
+        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
+
+class PrettyPrintingAttributeMappingWrapper(_PrettyPrintingMixin, AttributeMappingWrapper[V]): pass
+class PrettyPrintingMutableAttributeMappingWrapper(_PrettyPrintingMixin, MutableAttributeMappingWrapper[V]): pass

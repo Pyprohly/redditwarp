@@ -129,6 +129,7 @@ print('Step 3. Exchange the authorization code for an access/refresh token.\n')
 
 user_agent = (
     f'RedditWarp/{redditwarp.__version__} '
+    f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
     f'{transporter.name}/{transporter.version} '
     'redditwarp.cli.refresh_token'
 )
