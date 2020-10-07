@@ -1,5 +1,6 @@
 
-from typing import Optional, List
+from __future__ import annotations
+from typing import Optional, List, Callable
 
 import sys
 from os import path as op
@@ -15,7 +16,7 @@ def get_praw_ini_potential_locations() -> List[str]:
         modu = sys.modules[root_package_name]
         package_dir = op.dirname(modu.__file__)
 
-    getenv2 = lambda key: getenv(key, '')
+    getenv2: Callable[[str], str] = lambda key: getenv(key, '')
     return [
         op.join(*components, ini_file_name)
         for components in [

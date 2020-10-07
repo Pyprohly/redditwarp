@@ -1,11 +1,11 @@
 """Transport adapter for Requests."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping
+from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any
 if TYPE_CHECKING:
     from ..request import Request
 
-import requests
+import requests  # type: ignore[import]
 
 from ..transporter_info import TransporterInfo
 from ..base_session_SYNC import BaseSession
@@ -14,7 +14,7 @@ from .. import payload
 from ..response import Response
 from .SYNC import register
 
-_PAYLOAD_DISPATCH_TABLE: Mapping = {
+_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
     type(None): lambda y: {},
     payload.Raw: lambda y: {'data': y.data},
     payload.FormData: lambda y: {'data': y.data},
@@ -60,7 +60,7 @@ class Session(BaseSession):
         self.session = session
 
     def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping] = None) -> Response:
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self._prepare_request(request)
 
         t: Optional[float] = timeout

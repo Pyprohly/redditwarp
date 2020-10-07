@@ -1,7 +1,5 @@
 
-from typing import Dict
-
-from collections.abc import MutableMapping#, Mapping, MappingView
+from collections.abc import MutableMapping
 import pickle
 
 import pytest
@@ -20,8 +18,8 @@ def test_init() -> None:
     assert 'a' not in d2
 
     # Check that the mapping's reference is not stored.
-    mydict: Dict = {'key': 'value'}
-    d: CaseInsensitiveDict[str] = CaseInsensitiveDict(mydict)
+    mydict = {'key': 1}
+    d = CaseInsensitiveDict(mydict)
     mydict.clear()
     assert len(d) == 1
 
@@ -87,31 +85,6 @@ def test_delitem() -> None:
     assert 'B' not in d
     assert len(d) == 1
 
-'''
-def test_repr() -> None:
-    def assert_dict_repr(mydict: Mapping, items: MappingView) -> None:
-        dict_repr = repr(mydict)
-        if not (dict_repr.startswith(type(mydict).__name__ + '({') and dict_repr.endswith('})')):
-            return False
-
-        str_items = ('%r: %r' % (k, v) for k, v in items)
-        return all(item in dict_repr for item in str_items)
-
-    d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'B': 2, 'c': 3})
-    assert assert_dict_repr(d, {'a': 1, 'B': 2, 'c': 3}.items())
-    d.pop('c')
-    assert assert_dict_repr(d, {'a': 1, 'B': 2}.items())
-
-    assert repr(CaseInsensitiveDict()) == \
-            repr(CaseInsensitiveDict({})) == \
-            'CaseInsensitiveDict()'
-
-    d = CaseInsensitiveDict({'a': 1})
-    assert assert_dict_repr(d, {'a': 1}.items())
-    d.pop('a')
-    assert repr(d) == 'CaseInsensitiveDict()'
-'''
-
 def test_update() -> None:
     d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'b': 2, 'c': 3})
     assert len(d) == 3
@@ -129,7 +102,7 @@ def test_clear() -> None:
     assert len(d) == 0
 
 def test_pickle() -> None:
-    mydict: Dict = {
+    mydict = {
         'a': 1,
         'b': 2,
         'c': {'dee': 40, 'eee': {'eff': 'gee', 'hch': 80}},

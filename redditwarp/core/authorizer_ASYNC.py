@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, Set
+from typing import TYPE_CHECKING, Optional, Mapping, Set, Any
 if TYPE_CHECKING:
     from ..auth.token_obtainment_client_ASYNC import TokenObtainmentClient
     from ..auth.token import Token
@@ -78,10 +78,10 @@ class Authorized(RequestorDecorator):
         self._lock = asyncio.Lock()
         self._valve = asyncio.Event()
         self._valve.set()
-        self._futures: Set[asyncio.Future] = set()
+        self._futures: Set[asyncio.Future[Response]] = set()
 
     async def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping] = None) -> Response:
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         await self._valve.wait()
 
         async with self._lock:

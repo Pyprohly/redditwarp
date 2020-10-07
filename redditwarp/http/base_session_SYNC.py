@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import ClassVar, Optional, Type
+    from typing import ClassVar, Optional, Type, Any
     from types import TracebackType
     from collections.abc import Mapping
     from .request import Request
@@ -49,7 +49,7 @@ class BaseSession(Requestor):
         p.update({**self.params, **p})
 
     def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping] = None) -> Response:
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         """
         Parameters
         ----------

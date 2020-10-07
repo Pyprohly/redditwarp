@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from ..http.requestor_SYNC import Requestor
@@ -23,7 +23,7 @@ class RateLimited(RequestorDecorator):
         self._last_request = time.monotonic()
 
     def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping] = None) -> Response:
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         s = 0.
         if self.remaining:
             s = self.reset / self.remaining

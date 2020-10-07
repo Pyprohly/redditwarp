@@ -58,11 +58,11 @@ class AttributeMappingWrapper(Mapping[str, V]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: Mapping[object, object],
+        obj: Mapping[str, V],
         stream: IO[str],
         indent: int,
         allowance: int,
-        context: Mapping[object, object],
+        context: Mapping[int, Any],
         level: int,
         *,
         cls_name: Optional[str] = None,
@@ -129,11 +129,11 @@ class _PrettyPrintingMixin(Generic[V]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: Mapping[object, object],
+        obj: Mapping[str, V],
         stream: IO[str],
         indent: int,
         allowance: int,
-        context: Mapping[object, object],
+        context: Mapping[int, Any],
         level: int,
         *,
         cls_name: Optional[str] = None,
@@ -152,5 +152,5 @@ class _PrettyPrintingMixin(Generic[V]):
     if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
 
-class PrettyPrintingAttributeMappingWrapper(_PrettyPrintingMixin, AttributeMappingWrapper[V]): pass
-class PrettyPrintingMutableAttributeMappingWrapper(_PrettyPrintingMixin, MutableAttributeMappingWrapper[V]): pass
+class PrettyPrintingAttributeMappingWrapper(_PrettyPrintingMixin[V], AttributeMappingWrapper[V]): pass
+class PrettyPrintingMutableAttributeMappingWrapper(_PrettyPrintingMixin[V], MutableAttributeMappingWrapper[V]): pass

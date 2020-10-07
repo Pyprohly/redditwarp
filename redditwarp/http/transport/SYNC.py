@@ -31,7 +31,7 @@ register = register_factory(
 
 transporter_priority = ['httpx', 'requests']
 transporter_module_spec_registry = {
-    'httpx': raw_transporter_module_spec_registry['httpx_sync'],
+    'httpx': raw_transporter_module_spec_registry['httpx_SYNC'],
     'requests': raw_transporter_module_spec_registry['requests'],
 }
 

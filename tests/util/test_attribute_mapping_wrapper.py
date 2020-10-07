@@ -1,5 +1,5 @@
 
-from typing import Dict
+from typing import Dict, Any, cast
 
 from collections.abc import MutableMapping
 import pickle
@@ -13,22 +13,22 @@ def test_subclass() -> None:
     assert issubclass(MutableAttributeMappingWrapper, MutableMapping)
 
 def test_constructor() -> None:
-    d: Dict = {}
+    d: Dict[str, int] = {}
     amw = MutableAttributeMappingWrapper(d)
     assert abs(amw) is d
 
 def test_getitem() -> None:
-    d: Dict = {'a': 1, 'b': {'aa': 3}}
+    d = {'a': 1, 'b': {'aa': 3}}
     amw = MutableAttributeMappingWrapper(d)
     assert amw['a'] == 1
     assert type(amw['b']) is dict
-    assert amw['b']['aa'] == 3
+    assert cast(Dict[str, int], amw['b'])['aa'] == 3
 
     with pytest.raises(KeyError):
         amw['z']
 
 def test_setitem() -> None:
-    d: Dict = {'a': 1, 'b': 2}
+    d: Dict[str, object] = {'a': 1, 'b': 2}
     amw = MutableAttributeMappingWrapper(d)
     assert len(amw) == 2
 
@@ -38,10 +38,10 @@ def test_setitem() -> None:
 
     amw['d'] = {'dd': 4}
     assert type(amw['d']) is dict
-    assert amw['d']['dd'] == 4
+    assert cast(Dict[str, int], amw['d'])['dd'] == 4
 
 def test_delitem() -> None:
-    d: Dict = {'a': 1, 'b': 2, 'c': 3}
+    d = {'a': 1, 'b': 2, 'c': 3}
     amw = MutableAttributeMappingWrapper(d)
     assert len(amw) == 3
     del amw['c']
@@ -49,7 +49,7 @@ def test_delitem() -> None:
     assert len(amw) == 2
 
 def test_getattr() -> None:
-    d: Dict = {'a': 1, 'b': {'bb': 22}}
+    d = {'a': 1, 'b': {'bb': 22}}
     amw = MutableAttributeMappingWrapper(d)
     assert amw.a == 1
 
@@ -60,10 +60,10 @@ def test_getattr() -> None:
     with pytest.raises(AttributeError):
         amw.z
     with pytest.raises(AttributeError):
-        amw['b'].bb
+        cast(MutableAttributeMappingWrapper[int], amw['b']).bb
 
 def test_setattr() -> None:
-    d: Dict = {'a': 1, 'b': 2}
+    d: Dict[str, Any] = {'a': 1, 'b': 2}
     amw = MutableAttributeMappingWrapper(d)
     assert len(amw) == 2
     amw.d = 4
@@ -75,7 +75,7 @@ def test_setattr() -> None:
     assert type(amw.c) is MutableAttributeMappingWrapper
 
 def test_delattr() -> None:
-    d: Dict = {'a': 1, 'b': 2, 'c': 3}
+    d = {'a': 1, 'b': 2, 'c': 3}
     amw = MutableAttributeMappingWrapper(d)
     assert len(amw) == 3
     del amw.c
@@ -86,7 +86,7 @@ def test_iter() -> None:
     assert set(MutableAttributeMappingWrapper({'a': 1, 'b': 2, 'c': 3})) == {'a', 'b', 'c'}
 
 def test_dir() -> None:
-    d: Dict = {'a': 1, 'b': 2, 'c': 3}
+    d = {'a': 1, 'b': 2, 'c': 3}
     amw = MutableAttributeMappingWrapper(d)
     assert dir(amw) == sorted(amw)
 
@@ -99,7 +99,7 @@ def test_abs() -> None:
     assert abs(amw) is d
 
 def test_update() -> None:
-    d: Dict = {'a': 1, 'b': 2, 'c': 3}
+    d = {'a': 1, 'b': 2, 'c': 3}
     amw = MutableAttributeMappingWrapper(d)
     assert len(amw) == 3
     amw.update({'c': 8, 'd': 11})
@@ -130,7 +130,7 @@ def test_pickle() -> None:
         assert amw == other
 
 def test_noclobber_mapping_methods() -> None:
-    d: Dict = {}
+    d: Dict[str, int] = {}
     amw = MutableAttributeMappingWrapper(d)
     update_method = amw.update
     clear_method = amw.clear

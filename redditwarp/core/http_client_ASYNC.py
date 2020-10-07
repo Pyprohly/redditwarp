@@ -70,7 +70,7 @@ class RedditHTTPClient:
     async def send(self,
         request: Request,
         timeout: float = TIMEOUT,
-        aux_info: Optional[Mapping] = None,
+        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         try:
             resp = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
@@ -88,7 +88,7 @@ class RedditHTTPClient:
         json: Any = None,
         headers: Optional[MutableMapping[str, str]] = None,
         timeout: float = TIMEOUT,
-        aux_info: Optional[Mapping] = None,
+        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         params = {} if params is None else params
         params.setdefault('raw_json', '1')

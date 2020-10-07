@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, Mapping, MutableMapping, Iterator, IO, cast, Tuple, Optional
+from typing import TypeVar, Mapping, MutableMapping, Iterator, IO, cast, Tuple, Optional, Any
 
 from pprint import PrettyPrinter
 
@@ -39,7 +39,7 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Mapping):
             if not isinstance(other, self.__class__):
-                other = cast(Mapping, CaseInsensitiveDict(other))
+                other = cast(Mapping[str, V], CaseInsensitiveDict(other))
             return other.items() == self.items()
         return NotImplemented
 
@@ -52,11 +52,11 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: Mapping,
+        obj: Mapping[str, V],
         stream: IO[str],
         indent: int,
         allowance: int,
-        context: Mapping,
+        context: Mapping[int, Any],
         level: int,
     ) -> None:
         cls_name = obj.__class__.__name__

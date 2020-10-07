@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from ..http.requestor_ASYNC import Requestor
@@ -27,7 +27,7 @@ class RateLimited(RequestorDecorator):
         self._lock = asyncio.Lock()
 
     async def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping] = None) -> Response:
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         s = 0.
         if self.remaining:
             # Can't use this for rate limiting because of concurrency.

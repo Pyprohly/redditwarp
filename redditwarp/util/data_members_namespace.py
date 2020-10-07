@@ -19,7 +19,7 @@ class StrReprStr(str):
     def __repr__(self) -> str:
         return str(self)
 
-def neat_repr_dict(d: Dict) -> Dict:
+def neat_repr_dict(d: Dict[Any, Any]) -> Dict[Any, Any]:
     return {
         k: (literal_eval(reprepr(v)) if isinstance(v, str) else StrReprStr(reprepr(v)))
         for k, v in d.items()
@@ -90,11 +90,11 @@ class DataMembersNamespace(Collection[str], Generic[T]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: DataMembersNamespace,
+        obj: DataMembersNamespace[T],
         stream: IO[str],
         indent: int,
         allowance: int,
-        context: Mapping,
+        context: Mapping[int, Any],
         level: int,
     ) -> None:
         leader = 'data members: '

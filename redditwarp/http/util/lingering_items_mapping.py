@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, MutableMapping, Mapping, MutableSet, Optional, Iterator, IO
+from typing import TypeVar, MutableMapping, Mapping, MutableSet, Optional, Iterator, IO, Any
 
 from pprint import PrettyPrinter
 
@@ -47,11 +47,11 @@ class LingeringItemsMapping(MutableMapping[K, V]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: Mapping,
+        obj: Mapping[K, V],
         stream: IO[str],
         indent: int,
         allowance: int,
-        context: Mapping,
+        context: Mapping[int, Any],
         level: int,
     ) -> None:
         cls_name = obj.__class__.__name__

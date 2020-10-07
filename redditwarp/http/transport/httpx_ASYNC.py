@@ -1,11 +1,11 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping
+from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any
 if TYPE_CHECKING:
     from ..request import Request
 
-import httpx
-import httpcore
+import httpx  # type: ignore[import]
+import httpcore  # type: ignore[import]
 
 from ..transporter_info import TransporterInfo
 from ..base_session_ASYNC import BaseSession
@@ -14,7 +14,7 @@ from .. import payload
 from ..response import Response
 from .ASYNC import register
 
-_PAYLOAD_DISPATCH_TABLE: Mapping = {
+_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
     type(None): lambda y: {},
     payload.Raw: lambda y: {'data': y.data},
     payload.FormData: lambda y: {'data': y.data},
@@ -60,7 +60,7 @@ class Session(BaseSession):
         self.client = client
 
     async def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping] = None) -> Response:
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self._prepare_request(request)
 
         t: Optional[float] = timeout
@@ -95,7 +95,7 @@ def new_session(*,
     params: Optional[Mapping[str, Optional[str]]] = None,
     headers: Optional[Mapping[str, str]] = None,
 ) -> Session:
-    limits = httpx.PoolLimits(max_connections=20)
+    limits = httpx.Limits(max_connections=20)
     cl = httpx.AsyncClient(pool_limits=limits)
     return Session(cl, params=params, headers=headers)
 

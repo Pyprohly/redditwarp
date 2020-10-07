@@ -12,7 +12,7 @@ from redditwarp.iterators.paginators.listing.listing_async_paginator import List
 
 class MySession(BaseSession):
     async def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping] = None) -> Response:
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return Response(0, {}, b'')
 
 class MyHTTPClient(HTTPClient):
@@ -38,7 +38,7 @@ class MyHTTPClient(HTTPClient):
         json: Any = None,
         headers: Optional[MutableMapping[str, str]] = None,
         timeout: float = 8,
-        aux_info: Optional[Mapping] = None,
+        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         return Response(self.response_status, self.response_headers, self.response_data)
 

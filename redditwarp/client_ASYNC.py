@@ -161,7 +161,7 @@ class ClientCore:
         json: Any = None,
         headers: Optional[MutableMapping[str, str]] = None,
         timeout: float = 8,
-        aux_info: Optional[Mapping] = None,
+        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
         self.last_response = None
         self.last_value = None

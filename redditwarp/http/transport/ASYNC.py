@@ -31,7 +31,7 @@ register = register_factory(
 
 transporter_priority = ['httpx', 'aiohttp']
 transporter_module_spec_registry = {
-    'httpx': raw_transporter_module_spec_registry['httpx_async'],
+    'httpx': raw_transporter_module_spec_registry['httpx_ASYNC'],
     'aiohttp': raw_transporter_module_spec_registry['aiohttp'],
 }
 
