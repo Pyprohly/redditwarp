@@ -77,7 +77,9 @@ class OAuth2ResponseError(ResponseException):
         self.help_uri = help_uri
 
     def get_default_message(self) -> str:
-        return repr(self.description)
+        if self.description:
+            return repr(self.description)
+        return ''
 
 class InvalidRequest(OAuth2ResponseError):
     ERROR_NAME = 'invalid_request'

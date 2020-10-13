@@ -5,8 +5,8 @@ from typing import TypeVar, AsyncIterator, Iterator, Generic, Optional
 from .async_paginator import AsyncPaginator
 
 E = TypeVar('E')
-AsyncPaginator_E = AsyncPaginator[E]
-P = TypeVar('P', bound=AsyncPaginator_E)  # type: ignore[type-arg]
+__bound = 'AsyncPaginator[E]'
+P = TypeVar('P', bound=AsyncPaginator)  # type: ignore[type-arg]
 
 class PageChainingAsyncIterator(AsyncIterator[E], Generic[P, E]):
     def __init__(self, paginator: P, amount: Optional[int] = None) -> None:

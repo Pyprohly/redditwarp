@@ -11,3 +11,4 @@ class FunBox:
     def __init__(self, d: Mapping[str, Any]):
         self.a = DataMembersNamespaceMapping(self)
         self.b = PrettyPrintingAttributeMappingWrapper(d)
+        self.d = d

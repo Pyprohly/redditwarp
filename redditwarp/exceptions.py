@@ -26,8 +26,24 @@ class InfoException(RootException):
         return ''
 
 
-class ClientError(InfoException):
+class ClientOperationException(InfoException):
     pass
+
+class APIOperationException(ClientOperationException):
+    pass
+
+class ServiceRequestException(APIOperationException):
+    pass
+
+class UnexpectedRequestResultError(ServiceRequestException):
+    pass
+
+class ClientRefusedResultException(ServiceRequestException):
+    pass
+
+class ClientProcessingError(ClientOperationException):
+    pass
+
 
 class ResponseException(InfoException):
     def __init__(self, arg: object = None, *, response: Response):

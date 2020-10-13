@@ -104,7 +104,27 @@ class TestRequestExceptions:
                 http = _get_http(session)
                 with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
                     http.request('', '')
-                assert exc_info.value.arg is not None
+                assert exc_info.match('token URL')
+
+            def test_no_authorization_header(self) -> None:
+                request = Request('GET', 'https://www.reddit.com/api/v1/access_token')
+                response = Response(401, {}, b'', request)
+                exc = auth.exceptions.HTTPStatusError(response=response)
+                session = BadSession(exc)
+                http = _get_http(session)
+                with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
+                    http.request('', '')
+                assert exc_info.match('Authorization')
+
+            def test_authorization_header_no_basic(self) -> None:
+                request = Request('GET', 'https://www.reddit.com/api/v1/access_token', headers={'Authorization': 'asdf'})
+                response = Response(401, {}, b'', request)
+                exc = auth.exceptions.HTTPStatusError(response=response)
+                session = BadSession(exc)
+                http = _get_http(session)
+                with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
+                    http.request('', '')
+                assert exc_info.match('Basic')
 
             def test_CredentialsError(self) -> None:
                 response = Response(400, {}, b'')

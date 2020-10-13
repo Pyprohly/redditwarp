@@ -56,6 +56,7 @@ class TokenObtainmentClient:
         try:
             resp.raise_for_status()
         except http.exceptions.StatusCodeException as e:
+            print(resp)
             raise HTTPStatusError(response=resp) from e
 
         if error:

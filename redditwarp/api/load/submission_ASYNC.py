@@ -2,8 +2,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional, Mapping
 if TYPE_CHECKING:
-    from ...models.submission_ASYNC import Submission
     from ...client_ASYNC import Client
+    from ...models.submission_ASYNC import Submission
 
 from ...models.submission_ASYNC import TextPost, LinkPost
 

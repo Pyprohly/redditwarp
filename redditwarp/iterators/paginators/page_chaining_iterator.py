@@ -5,8 +5,8 @@ from typing import TypeVar, Iterator, Generic, Optional
 from .paginator import Paginator
 
 E = TypeVar('E')
-Paginator_E = Paginator[E]
-P = TypeVar('P', bound=Paginator_E)  # type: ignore[type-arg]
+__bound = 'Paginator[E]'
+P = TypeVar('P', bound=Paginator)  # type: ignore[type-arg]
 
 class PaginatorPageChainingIterator(Iterator[E], Generic[P, E]):
     def __init__(self, paginator: P, amount: Optional[int] = None) -> None:

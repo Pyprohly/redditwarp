@@ -57,8 +57,8 @@ class CommentBase(OriginalRedditThingObject):
         self.score: int = d['score']
         self.score_hidden: bool = d['score_hidden']
 
-        self.rel_permalink: str = AUTHORIZATION_BASE_URL + d['permalink']
-        self.permalink: str = d['permalink']
+        self.rel_permalink: str = d['permalink']
+        self.permalink: str = AUTHORIZATION_BASE_URL + d['permalink']
 
         a: Any = d['edited']
         self.edited = bool(a)
@@ -75,7 +75,7 @@ class CommentBase(OriginalRedditThingObject):
         self.collapsed: bool = d['collapsed']
 
         _parent_id: str = d['parent_id']
-        self.top_level: bool = _parent_id.startswith('t3_')
+        #self.is_top_level: bool = _parent_id.startswith('t3_')
         self.parent_comment_id36: Optional[str] = None
         self.parent_comment_id: Optional[int] = None
         if _parent_id.startswith('t1_'):

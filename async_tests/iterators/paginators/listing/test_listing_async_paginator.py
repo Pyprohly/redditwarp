@@ -1,7 +1,7 @@
 
 import pytest
 
-from typing import Sequence, Any, Optional, Mapping, MutableMapping, Callable
+from typing import Sequence, Any, Optional, Mapping, Callable
 from redditwarp.client_ASYNC import Client
 from redditwarp.core.http_client_ASYNC import HTTPClient
 from redditwarp.http.base_session_ASYNC import BaseSession
@@ -32,11 +32,11 @@ class MyHTTPClient(HTTPClient):
         verb: str,
         uri: str,
         *,
-        params: Optional[MutableMapping[str, Optional[str]]] = None,
+        params: Optional[Mapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,
-        headers: Optional[MutableMapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:

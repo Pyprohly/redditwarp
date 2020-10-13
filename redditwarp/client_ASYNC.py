@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, \
-        MutableMapping, cast, Union, MutableSequence
+        cast, Union, MutableSequence
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
@@ -155,11 +155,11 @@ class ClientCore:
         verb: str,
         path: str,
         *,
-        params: Optional[MutableMapping[str, Optional[str]]] = None,
+        params: Optional[Mapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,
-        headers: Optional[MutableMapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:

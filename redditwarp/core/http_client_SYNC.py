@@ -20,18 +20,18 @@ from ..http.payload import make_payload
 
 class RedditHTTPClient:
     TIMEOUT = 8
-    DEFAULT_PARAMS = {
+    DEFAULT_PARAMS: Mapping[str, str] = {
         'raw_json': '1',
         'api_type': 'json',
     }
 
     @property
     def user_agent(self) -> str:
-        return self.headers['User-Agent']
+            return self.headers['User-Agent']
 
     @user_agent.setter
     def user_agent(self, value: str) -> None:
-        self.headers['User-Agent'] = value
+            self.headers['User-Agent'] = value
 
     @property
     def authorizer(self) -> Optional[Authorizer]:
@@ -48,13 +48,15 @@ class RedditHTTPClient:
     def __init__(self,
         session: BaseSession,
         *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
+        params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
         self.session = session
         self.requestor: Requestor = session
         self.authorized_requestor: Optional[Authorized] = None
-        self.params = self.DEFAULT_PARAMS if params is None else params
+        self.params: MutableMapping[str, Optional[str]]
+        self.params = dict(self.DEFAULT_PARAMS) if params is None else params
+        self.headers: MutableMapping[str, str]
         self.headers = {} if headers is None else headers
         self.user_agent = self.user_agent_string_head = (
             f"{__about__.__title__}/{__about__.__version__} "
@@ -88,11 +90,11 @@ class RedditHTTPClient:
         verb: str,
         uri: str,
         *,
-        params: Optional[MutableMapping[str, Optional[str]]] = None,
+        params: Optional[Mapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,
-        headers: Optional[MutableMapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
         timeout: float = TIMEOUT,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
@@ -100,6 +102,7 @@ class RedditHTTPClient:
         params = {**self.params, **params}
         remove_keys = [k for k, v in params.items() if v is NotImplemented]
         for k in remove_keys: del params[k]
+
         headers = {} if headers is None else headers
         headers = {**self.headers, **headers}
 

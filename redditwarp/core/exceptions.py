@@ -105,10 +105,16 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None
             raise CredentialsError('check your grant credentials', response=resp) from e
 
         elif status == 401:
-            if resp.request:
-                uri = resp.request.uri
-                if not uri.startswith("https://www.reddit.com"):
+            req = resp.request
+            if req:
+                if not (uri := req.uri).startswith("https://www.reddit.com"):
                     e.arg = f'access token URL inaccuracy: got {uri!r}, need {TOKEN_OBTAINMENT_URL!r}'
+                    raise
+                if 'Authorization' not in req.headers:
+                    e.arg = 'Authorization header missing from request'
+                    raise
+                if req.headers['Authorization'][:6].lower() != 'basic ':
+                    e.arg = 'Authorization header value must start with "Basic "'
                     raise
             raise CredentialsError('check your client credentials', response=resp) from e
 
@@ -126,10 +132,11 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None
                     ) from e
 
     elif isinstance(e, auth.exceptions.UnsupportedGrantType):
-        if resp.request:
-            headers = CaseInsensitiveDict(resp.request.headers)
+        req = resp.request
+        if req:
+            headers = CaseInsensitiveDict(req.headers)
             if 'Content-Type' in headers:
-                content_type = resp.request.headers.get('Content-Type', '')
+                content_type = req.headers.get('Content-Type', '')
                 expected_content_type = 'application/x-www-form-urlencoded'
                 if not content_type.startswith(expected_content_type):
                     e.arg = f'bad Content-Type header: got {content_type!r}, need {expected_content_type!r}'

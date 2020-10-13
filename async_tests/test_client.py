@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any
+from typing import TYPE_CHECKING, Optional, Mapping, Any
 if TYPE_CHECKING:
     from redditwarp.http.request import Request
     from redditwarp.http.payload import Payload
@@ -35,11 +35,11 @@ class MyHTTPClient(HTTPClient):
         verb: str,
         uri: str,
         *,
-        params: Optional[MutableMapping[str, Optional[str]]] = None,
+        params: Optional[Mapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
         data: Any = None,
         json: Any = None,
-        headers: Optional[MutableMapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
