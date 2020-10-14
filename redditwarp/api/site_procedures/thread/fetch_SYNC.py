@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ....client_SYNC import Client
-    from ....models.topic_thread_SYNC import TopicThread
+    from ....models.comment_thread_SYNC import CommentThread
 
 from ....util.base_conversion import to_base36
 from ...load.comment_tree_SYNC import load_topic_thread
@@ -20,7 +20,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> Optional[TopicThread]:
+    ) -> Optional[CommentThread]:
         return self.by_id(submission_id, comment_id, sort, limit, depth, context)
 
     def by_id(self,
@@ -30,7 +30,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> Optional[TopicThread]:
+    ) -> Optional[CommentThread]:
         submission_id36 = to_base36(submission_id)
         comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
         return self.by_id36(submission_id36, comment_id36, sort, limit, depth, context)
@@ -42,7 +42,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> Optional[TopicThread]:
+    ) -> Optional[CommentThread]:
         d = {
             'sort': sort,
             'limit': limit,

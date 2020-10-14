@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from .submission_SYNC import Submission
     from .more_comments_SYNC import MoreComments
 
-class TopicThread:
+class CommentThread:
     @property
     def submission(self) -> Submission:
         return self.node.value

@@ -6,8 +6,8 @@ if TYPE_CHECKING:
     from ..client_SYNC import Client
 
 from .more_comments_base import MoreCommentsBase
-from .topic_thread_SYNC import TopicThread
-from ..exceptions import UnexpectedServiceRequestResultError, ClientRefusedResultException
+from .comment_thread_SYNC import CommentThread
+from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
 
 class MoreComments(MoreCommentsBase):
     def __init__(self,
@@ -33,15 +33,15 @@ class ContinueThisThread(MoreComments):
         thread = self.fetch_continued_thread()
         return thread.comments[0].children
 
-    def fetch_thread(self) -> Optional[TopicThread]:
+    def fetch_thread(self) -> Optional[CommentThread]:
         return self.client.api.thread.fetch.by_id36(self.submission_id36, self.comment_id36)
 
-    def fetch_continued_thread(self) -> TopicThread:
+    def fetch_continued_thread(self) -> CommentThread:
         thread = self.fetch_thread()
         if thread is None:
             raise UnexpectedServiceRequestResultError(self)
         if not thread.is_continued():
-            raise ClientRefusedResultException(self)
+            raise ClientRejectedResultException(self)
         return thread
 
 class LoadMoreComments(MoreComments):

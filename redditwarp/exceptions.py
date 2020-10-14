@@ -40,7 +40,7 @@ class ServiceRequestException(ClientAPIOperationException):
 class UnexpectedServiceRequestResultError(ServiceRequestException):
     pass
 
-class ClientRefusedResultException(ServiceRequestException):
+class ClientRejectedResultException(ServiceRequestException):
     pass
 
 class ClientProcessingError(ClientOperationException):

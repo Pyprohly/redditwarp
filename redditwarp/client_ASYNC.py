@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, \
-        cast, Union, MutableSequence
+        Union, MutableSequence
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
@@ -210,16 +210,15 @@ class ClientCore:
             raise RuntimeError('The HTTP client does not know of an authorizer instance to assign the token to')
         self.http.authorizer.token = Token(access_token)
 
-class ClientMeta(type):
-    def __call__(cls: type, *args: Any, **kwds: Any) -> Client:
-        cls = cast(Type[Client], cls)
-        interactive_mode = not hasattr(__import__('__main__'), '__file__')
-        if interactive_mode:
-            if len(args) == 1 and len(kwds) == 0:
-                return cls.from_praw_config(*args, **kwds)
-        return type.__call__(cls, *args, **kwds)
-
-class Client(ClientCore, metaclass=ClientMeta):
+class Client(ClientCore):
     def _init_(self, http: HTTPClient) -> None:
         super()._init_(http)
         self.api = ...#site_procedures_ASYNC.SiteProcedures(self)
+
+
+def c(site_name: str = '') -> Client:
+    interactive_mode = not hasattr(__import__('__main__'), '__file__')
+    if not interactive_mode:
+        raise RuntimeError('function can only be used in interactive mode')
+
+    return Client.from_praw_config(site_name)
