@@ -6,10 +6,10 @@ from .paginator import Paginator
 
 E = TypeVar('E')
 __bound = 'Paginator[E]'
-P = TypeVar('P', bound=Paginator)  # type: ignore[type-arg]
+TPaginator = TypeVar('TPaginator', bound=Paginator)  # type: ignore[type-arg]
 
-class PaginatorPageChainingIterator(Iterator[E], Generic[P, E]):
-    def __init__(self, paginator: P, amount: Optional[int] = None) -> None:
+class PaginatorPageChainingIterator(Iterator[E], Generic[TPaginator, E]):
+    def __init__(self, paginator: TPaginator, amount: Optional[int] = None) -> None:
         self.paginator = paginator
         self.amount = amount
         self.count = 0

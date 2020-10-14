@@ -75,7 +75,7 @@ class CommentBase(OriginalRedditThingObject):
         self.collapsed: bool = d['collapsed']
 
         _parent_id: str = d['parent_id']
-        #self.is_top_level: bool = _parent_id.startswith('t3_')
+        self.is_top_level: bool = _parent_id.startswith('t3_')
         self.parent_comment_id36: Optional[str] = None
         self.parent_comment_id: Optional[int] = None
         if _parent_id.startswith('t1_'):
@@ -90,8 +90,9 @@ class CommentBase(OriginalRedditThingObject):
         self.submission = self.Submission(self, d)
         self.subreddit = self.Subreddit(self, d)
 
-        self.author = None
         s: str = d['author']
+        self.author_name = s
+        self.author = None
         if not s.startswith('['):
             self.author = self.Author(self, d)
 

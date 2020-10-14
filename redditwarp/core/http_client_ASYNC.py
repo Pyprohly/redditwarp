@@ -27,11 +27,11 @@ class RedditHTTPClient:
 
     @property
     def user_agent(self) -> str:
-            return self.headers['User-Agent']
+        return self.headers['User-Agent']
 
     @user_agent.setter
     def user_agent(self, value: str) -> None:
-            self.headers['User-Agent'] = value
+        self.headers['User-Agent'] = value
 
     @property
     def authorizer(self) -> Optional[Authorizer]:

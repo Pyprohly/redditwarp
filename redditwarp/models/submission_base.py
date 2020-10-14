@@ -10,7 +10,6 @@ from ..auth.const import AUTHORIZATION_BASE_URL
 class SubmissionBase(OriginalRedditThingObject):
     class Author:
         def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
-            self._outer = outer
             self.name: str = d['author']
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
@@ -18,7 +17,6 @@ class SubmissionBase(OriginalRedditThingObject):
 
     class Subreddit:
         def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
-            self._outer = outer
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
             self.name: str = d['subreddit']
@@ -30,7 +28,6 @@ class SubmissionBase(OriginalRedditThingObject):
 
     class Moderator:
         def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
-            self._outer = outer
             self.spam: bool = d['spam']
 
             self.approved: bool = d['approved']
@@ -89,8 +86,9 @@ class SubmissionBase(OriginalRedditThingObject):
 
         self.subreddit = self.Subreddit(self, d)
 
-        self.author = None
         s: str = d['author']
+        self.author_name = s
+        self.author = None
         if not s.startswith('['):
             self.author = self.Author(self, d)
 

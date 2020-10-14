@@ -12,7 +12,7 @@ from . import http
 class RootException(Exception):
     pass
 
-class InfoException(RootException):
+class ArgInfoExceptionMixin:
     def __init__(self, arg: object = None) -> None:
         super().__init__()
         self.arg = arg
@@ -25,17 +25,19 @@ class InfoException(RootException):
     def get_default_message(self) -> str:
         return ''
 
-
-class ClientOperationException(InfoException):
+class ArgInfoException(ArgInfoExceptionMixin, RootException):
     pass
 
-class APIOperationException(ClientOperationException):
+class ClientOperationException(ArgInfoException):
     pass
 
-class ServiceRequestException(APIOperationException):
+class ClientAPIOperationException(ClientOperationException):
     pass
 
-class UnexpectedRequestResultError(ServiceRequestException):
+class ServiceRequestException(ClientAPIOperationException):
+    pass
+
+class UnexpectedServiceRequestResultError(ServiceRequestException):
     pass
 
 class ClientRefusedResultException(ServiceRequestException):
@@ -45,7 +47,7 @@ class ClientProcessingError(ClientOperationException):
     pass
 
 
-class ResponseException(InfoException):
+class ResponseException(ArgInfoException):
     def __init__(self, arg: object = None, *, response: Response):
         super().__init__(arg)
         self.response = response

@@ -43,9 +43,6 @@ class Fetch:
         depth: Optional[int] = None,
         context: Optional[int] = None,
     ) -> Optional[TopicThread]:
-        if submission_id36 == '':
-            raise ValueError("`submission_id36` can't be empty")
-
         d = {
             'sort': sort,
             'limit': limit,

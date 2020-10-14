@@ -4,24 +4,16 @@ from typing import TYPE_CHECKING, Type
 if TYPE_CHECKING:
     from .response import Response
 
+from ..exceptions import ArgInfoExceptionMixin
+
 class RootException(Exception):
     pass
 
-class InfoException(RootException):
-    def __init__(self, arg: object = None) -> None:
-        super().__init__()
-        self.arg = arg
-
-    def __str__(self) -> str:
-        if self.arg is None:
-            return self.get_default_message()
-        return str(self.arg)
-
-    def get_default_message(self) -> str:
-        return ''
+class ArgInfoException(ArgInfoExceptionMixin, RootException):
+    pass
 
 
-class TransportError(InfoException):
+class TransportError(ArgInfoException):
     pass
 
 class NetworkError(TransportError):
@@ -31,7 +23,7 @@ class TimeoutError(NetworkError):
     pass
 
 
-class HTTPException(InfoException):
+class HTTPException(ArgInfoException):
     pass
 
 class ResponseException(HTTPException):
@@ -47,41 +39,41 @@ class ResponseException(HTTPException):
 class StatusCodeException(ResponseException):
     STATUS_CODE = 0
 
-class InformationalResponse(StatusCodeException):
+class InformationalResponseException(StatusCodeException):
     STATUS_CODE = -100
-class SuccessfulResponse(StatusCodeException):
+class SuccessfulResponseException(StatusCodeException):
     STATUS_CODE = -200
-class RedirectionResponse(StatusCodeException):
+class RedirectionResponseException(StatusCodeException):
     STATUS_CODE = -300
-class ClientErrorResponse(StatusCodeException):
+class ClientErrorResponseException(StatusCodeException):
     STATUS_CODE = -400
-class ServerErrorResponse(StatusCodeException):
+class ServerErrorResponseException(StatusCodeException):
     STATUS_CODE = -500
 
-class BadRequest(ClientErrorResponse):
+class BadRequest(ClientErrorResponseException):
     STATUS_CODE = 400
-class Unauthorized(ClientErrorResponse):
+class Unauthorized(ClientErrorResponseException):
     STATUS_CODE = 401
-class Forbidden(ClientErrorResponse):
+class Forbidden(ClientErrorResponseException):
     STATUS_CODE = 403
-class NotFound(ClientErrorResponse):
+class NotFound(ClientErrorResponseException):
     STATUS_CODE = 404
-class Conflict(ClientErrorResponse):
+class Conflict(ClientErrorResponseException):
     STATUS_CODE = 409
-class PayloadTooLarge(ClientErrorResponse):
+class PayloadTooLarge(ClientErrorResponseException):
     STATUS_CODE = 413
-class URITooLong(ClientErrorResponse):
+class URITooLong(ClientErrorResponseException):
     STATUS_CODE = 414
-class TooManyRequests(ClientErrorResponse):
+class TooManyRequests(ClientErrorResponseException):
     STATUS_CODE = 429
 
-class InternalServerError(ServerErrorResponse):
+class InternalServerError(ServerErrorResponseException):
     STATUS_CODE = 500
-class BadGateway(ServerErrorResponse):
+class BadGateway(ServerErrorResponseException):
     STATUS_CODE = 502
-class ServiceUnavailable(ServerErrorResponse):
+class ServiceUnavailable(ServerErrorResponseException):
     STATUS_CODE = 503
-class GatewayTimeout(ServerErrorResponse):
+class GatewayTimeout(ServerErrorResponseException):
     STATUS_CODE = 504
 
 status_code_exception_class_by_status_code = {
@@ -110,15 +102,15 @@ def get_status_code_exception_class_by_status_code(n: int) -> Type[StatusCodeExc
     if klass is None:
         klass = StatusCodeException
         if 100 <= n < 200:
-            klass = InformationalResponse
+            klass = InformationalResponseException
         elif 200 <= n < 300:
-            klass = SuccessfulResponse
+            klass = SuccessfulResponseException
         elif 300 <= n < 400:
-            klass = RedirectionResponse
+            klass = RedirectionResponseException
         elif 400 <= n < 500:
-            klass = ClientErrorResponse
+            klass = ClientErrorResponseException
         elif 500 <= n < 600:
-            klass = ServerErrorResponse
+            klass = ServerErrorResponseException
     return klass
 
 def raise_now(resp: Response) -> None:

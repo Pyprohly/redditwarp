@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from .comment_SYNC import Comment
 from .submission_SYNC import Submission
-from ..util.tree_node import GeneralTreeNode
+from ..util.tree_node import GeneralTreeNode, IGeneralTreeNode
 
 E = TypeVar('E')
 
@@ -27,17 +27,30 @@ class TopicThread:
         self.node = node
         self.sort = sort
 
-__bound = 'CommentRepliesTreeNode[TCommentRepliesTreeNode, E]'
-TCommentRepliesTreeNode = TypeVar('TCommentRepliesTreeNode', bound='CommentRepliesTreeNode')  # type: ignore[type-arg]
+    def is_continued(self) -> bool:
+        try:
+            return not self.comments[0].value.is_top_level
+        except IndexError:
+            return False
 
-class CommentRepliesTreeNode(GeneralTreeNode[TCommentRepliesTreeNode, E]):
+
+class ICommentRepliesTreeNode(IGeneralTreeNode):
+    pass
+
+TCommentRepliesTreeNodeInterface = TypeVar('TCommentRepliesTreeNodeInterface', bound=ICommentRepliesTreeNode)
+
+class CommentRepliesTreeNode(ICommentRepliesTreeNode, GeneralTreeNode[TCommentRepliesTreeNodeInterface, E]):
     def __init__(self,
         value: E,
-        children: Sequence[TCommentRepliesTreeNode],
+        children: Sequence[TCommentRepliesTreeNodeInterface],
         more: Optional[MoreComments],
     ):
         super().__init__(value, children)
         self.more = more
+
+__bound = 'CommentRepliesTreeNode[TCommentRepliesTreeNode, E]'
+TCommentRepliesTreeNode = TypeVar('TCommentRepliesTreeNode', bound=CommentRepliesTreeNode)  # type: ignore[type-arg]
+
 
 class CommentTreeNode(CommentRepliesTreeNode['CommentTreeNode', Comment]):
     pass

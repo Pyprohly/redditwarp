@@ -222,4 +222,4 @@ class ClientMeta(type):
 class Client(ClientCore, metaclass=ClientMeta):
     def _init_(self, http: HTTPClient) -> None:
         super()._init_(http)
-        self.api = ...#site_procedures_ASYNC.SiteProcedures(self)  # type: ignore[attr-defined]
+        self.api = ...#site_procedures_ASYNC.SiteProcedures(self)

@@ -8,25 +8,16 @@ if TYPE_CHECKING:
 from typing import Type, TypeVar, ClassVar
 
 from .. import http
+from ..exceptions import ArgInfoExceptionMixin
 
 class RootException(Exception):
     pass
 
-class InfoException(RootException):
-    def __init__(self, arg: object = None) -> None:
-        super().__init__()
-        self.arg = arg
-
-    def __str__(self) -> str:
-        if self.arg is None:
-            return self.get_default_message()
-        return str(self.arg)
-
-    def get_default_message(self) -> str:
-        return ''
+class ArgInfoException(ArgInfoExceptionMixin, RootException):
+    pass
 
 
-class ResponseException(InfoException):
+class ResponseException(ArgInfoException):
     def __init__(self, arg: object = None, *, response: Response) -> None:
         super().__init__(arg)
         self.response = response

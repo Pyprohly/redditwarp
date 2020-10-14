@@ -8,30 +8,21 @@ if TYPE_CHECKING:
 from .. import auth
 from ..auth.const import TOKEN_OBTAINMENT_URL
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
+from ..exceptions import ArgInfoExceptionMixin
 
 class RootException(Exception):
     pass
 
-class InfoException(RootException):
-    def __init__(self, arg: object = None) -> None:
-        super().__init__()
-        self.arg = arg
-
-    def __str__(self) -> str:
-        if self.arg is None:
-            return self.get_default_message()
-        return str(self.arg)
-
-    def get_default_message(self) -> str:
-        return ''
+class ArgInfoException(ArgInfoExceptionMixin, RootException):
+    pass
 
 
-class UnknownTokenType(InfoException):
+class UnknownTokenType(ArgInfoException):
     def __init__(self, arg: object = None, *, token: Token):
         super().__init__(arg)
         self.token = token
 
-class ResponseException(InfoException):
+class ResponseException(ArgInfoException):
     def __init__(self, arg: object = None, *, response: Response) -> None:
         super().__init__(arg)
         self.response = response
