@@ -2,44 +2,38 @@
 from __future__ import annotations
 from typing import TypeVar, Generic, Optional, Sequence
 
-E = TypeVar('E')
+T = TypeVar('T')
+TChild = TypeVar('TChild')
 
-class Node(Generic[E]):
-    def __init__(self, value: E):
+class Node(Generic[T]):
+    def __init__(self, value: T):
         self.value = value
 
-
-class IBinaryTreeNode:
+class TreeNode(Node[T], Generic[T, TChild]):
     pass
 
-TBinaryTreeNodeInterface = TypeVar('TBinaryTreeNodeInterface', bound=IBinaryTreeNode)
 
-class BinaryTreeNode(IBinaryTreeNode, Node[E], Generic[TBinaryTreeNodeInterface, E]):
+class BinaryTreeNode(TreeNode[T, TChild]):
     def __init__(self,
-        value: E,
-        left: Optional[TBinaryTreeNodeInterface],
-        right: Optional[TBinaryTreeNodeInterface],
+        value: T,
+        left: Optional[TChild],
+        right: Optional[TChild],
     ):
         super().__init__(value)
         self.left = left
         self.right = right
 
-__bound = 'BinaryTreeNode[TBinaryTreeNode, E]'
+__bound = 'BinaryTreeNode[T, TBinaryTreeNode]'
 TBinaryTreeNode = TypeVar('TBinaryTreeNode', bound=BinaryTreeNode)  # type: ignore[type-arg]
 
 
-class IGeneralTreeNode:
-    pass
-
-TGeneralTreeNodeInterface = TypeVar('TGeneralTreeNodeInterface', bound=IGeneralTreeNode)
-
-class GeneralTreeNode(IGeneralTreeNode, Node[E], Generic[TGeneralTreeNodeInterface, E]):
+class GeneralTreeNode(TreeNode[T, TChild]):
     def __init__(self,
-        value: E,
-        children: Sequence[TGeneralTreeNodeInterface],
+        value: T,
+        children: Sequence[TChild],
     ):
         super().__init__(value)
         self.children = children
 
-__bound = 'GeneralTreeNode[TGeneralTreeNode, E]'
+__bound = 'GeneralTreeNode[T, TGeneralTreeNode]'
 TGeneralTreeNode = TypeVar('TGeneralTreeNode', bound=GeneralTreeNode)  # type: ignore[type-arg]

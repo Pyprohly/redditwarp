@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ....client_SYNC import Client
-    from ....models.comment_tree_SYNC import TopicThread
+    from ....models.topic_thread_SYNC import TopicThread
 
 from ....util.base_conversion import to_base36
 from ...load.comment_tree_SYNC import load_topic_thread

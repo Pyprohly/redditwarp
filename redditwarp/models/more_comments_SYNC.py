@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ..client_SYNC import Client
 
 from .more_comments_base import MoreCommentsBase
-from .comment_tree_SYNC import TopicThread
+from .topic_thread_SYNC import TopicThread
 from ..exceptions import UnexpectedServiceRequestResultError, ClientRefusedResultException
 
 class MoreComments(MoreCommentsBase):

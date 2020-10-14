@@ -7,7 +7,8 @@ if TYPE_CHECKING:
 
 from .comment_SYNC import load_comment
 from .submission_SYNC import load_submission
-from ...models.comment_tree_SYNC import TopicThread, CommentTreeNode, SubmissionCommentTreeNode
+from ...models.comment_tree_SYNC import CommentTreeNode, SubmissionCommentTreeNode
+from ...models.topic_thread_SYNC import TopicThread
 from ...models.more_comments_SYNC import ContinueThisThread, LoadMoreComments
 
 def load_more_comments(

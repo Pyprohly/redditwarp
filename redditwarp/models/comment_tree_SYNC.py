@@ -6,54 +6,26 @@ if TYPE_CHECKING:
 
 from .comment_SYNC import Comment
 from .submission_SYNC import Submission
-from ..util.tree_node import GeneralTreeNode, IGeneralTreeNode
+from ..util.tree_node import GeneralTreeNode
 
-E = TypeVar('E')
+T = TypeVar('T')
+TChild = TypeVar('TChild')
 
-class TopicThread:
-    @property
-    def submission(self) -> Submission:
-        return self.node.value
-
-    @property
-    def comments(self) -> Sequence[CommentTreeNode]:
-        return self.node.children
-
-    @property
-    def more(self) -> Optional[MoreComments]:
-        return self.node.more
-
-    def __init__(self, node: SubmissionCommentTreeNode, sort: Optional[str]):
-        self.node = node
-        self.sort = sort
-
-    def is_continued(self) -> bool:
-        try:
-            return not self.comments[0].value.is_top_level
-        except IndexError:
-            return False
-
-
-class ICommentRepliesTreeNode(IGeneralTreeNode):
-    pass
-
-TCommentRepliesTreeNodeInterface = TypeVar('TCommentRepliesTreeNodeInterface', bound=ICommentRepliesTreeNode)
-
-class CommentRepliesTreeNode(ICommentRepliesTreeNode, GeneralTreeNode[TCommentRepliesTreeNodeInterface, E]):
+class CommentRepliesTreeNode(GeneralTreeNode[T, TChild]):
     def __init__(self,
-        value: E,
-        children: Sequence[TCommentRepliesTreeNodeInterface],
+        value: T,
+        children: Sequence[TChild],
         more: Optional[MoreComments],
     ):
         super().__init__(value, children)
         self.more = more
 
-__bound = 'CommentRepliesTreeNode[TCommentRepliesTreeNode, E]'
+__bound = 'CommentRepliesTreeNode[T, TCommentRepliesTreeNode]'
 TCommentRepliesTreeNode = TypeVar('TCommentRepliesTreeNode', bound=CommentRepliesTreeNode)  # type: ignore[type-arg]
 
 
-class CommentTreeNode(CommentRepliesTreeNode['CommentTreeNode', Comment]):
+class CommentTreeNode(CommentRepliesTreeNode[Comment, 'CommentTreeNode']):
     pass
 
-class SubmissionCommentTreeNode(CommentRepliesTreeNode[CommentTreeNode, Submission]):
+class SubmissionCommentTreeNode(CommentRepliesTreeNode[Submission, CommentTreeNode]):
     pass
