@@ -39,10 +39,6 @@ class SubmissionBase(OriginalRedditThingObject):
 
             self.removed: bool = d['removed']
             self.removed_by: Optional[str] = d['removed_by']
-            self.removed_ut: Optional[int] = d['removed_at_utc']
-            self.removed_at: Optional[datetime] = None
-            if self.removed_ut is not None:
-                self.removed_at = datetime.fromtimestamp(self.removed_ut, timezone.utc)
 
     THING_PREFIX = 't3'
 

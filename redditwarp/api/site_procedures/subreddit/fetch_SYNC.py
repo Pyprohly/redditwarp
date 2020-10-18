@@ -1,10 +1,11 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Mapping, Optional
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ....client_SYNC import Client
+    from ....models.subreddit_SYNC import Subreddit
 
-from ....models.subreddit_SYNC import Subreddit
+from ...load.subreddit_SYNC import load_subreddit
 from ....util.base_conversion import to_base36
 from .... import exceptions
 
@@ -15,9 +16,6 @@ class Fetch:
     def __call__(self, id: int) -> Optional[Subreddit]:
         return self.by_id(id)
 
-    def _load_object(self, m: Mapping[str, Any]) -> Optional[Subreddit]:
-        return Subreddit(m, self._client)
-
     def by_id(self, id: int) -> Optional[Subreddit]:
         id36 = to_base36(id)
         return self.by_id36(id36)
@@ -26,7 +24,7 @@ class Fetch:
         full_id36 = 't5_' + id36
         root = self._client.request('GET', '/api/info', params={'id': full_id36})
         if children := root['data']['children']:
-            return self._load_object(children[0]['data'])
+            return load_subreddit(children[0]['data'], self._client)
         return None
 
     def by_name(self, name: str) -> Optional[Subreddit]:
@@ -38,10 +36,12 @@ class Fetch:
             # Name contained invalid characters.
             exceptions.UnacceptableHTMLDocumentReceivedError,
         ) as e:
-            if e.response.status != 404:
-                raise
-            return None
+            if e.response.status == 404:
+                return None
+            raise
+
         if root['kind'] == 'Listing':
-            # Subreddit was not found.
+            # The subreddit was not found.
             return None
-        return Subreddit(root['data'], self._client)
+
+        return load_subreddit(root['data'], self._client)

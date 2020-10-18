@@ -11,10 +11,13 @@ T = TypeVar('T')
 class ListingPaginator(CursorBidirectionalPaginator[T]):
     def __init__(self,
         client: Client,
-        uri: str, *,
+        uri: str,
+        *,
+        limit: Optional[int] = 100,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
         super().__init__()
+        self.limit = limit
         self.client = client
         self.uri = uri
         self.cursor_extractor = cursor_extractor

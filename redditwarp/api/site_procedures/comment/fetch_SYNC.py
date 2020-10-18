@@ -1,9 +1,10 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Mapping, Optional
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ....client_SYNC import Client
 
+from ...load.comment_SYNC import load_comment
 from ....models.comment_SYNC import Comment
 from ....util.base_conversion import to_base36
 from ....util.extract_id36_from_url import extract_comment_id36_from_url
@@ -15,9 +16,6 @@ class Fetch:
     def __call__(self, id: int) -> Optional[Comment]:
         return self.by_id(id)
 
-    def _load_object(self, m: Mapping[str, Any]) -> Optional[Comment]:
-        return Comment(m, self._client)
-
     def by_id(self, id: int) -> Optional[Comment]:
         id36 = to_base36(id)
         return self.by_id36(id36)
@@ -26,7 +24,7 @@ class Fetch:
         full_id36 = 't1_' + id36
         root = self._client.request('GET', '/api/info', params={'id': full_id36})
         if children := root['data']['children']:
-            return self._load_object(children[0]['data'])
+            return load_comment(children[0]['data'], self._client)
         return None
 
     def by_url(self, url: str) -> Optional[Comment]:

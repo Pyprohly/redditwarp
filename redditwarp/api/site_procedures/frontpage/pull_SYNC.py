@@ -15,24 +15,19 @@ class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, sort: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailSubmissionListingPaginator, Submission]:
-        p = SubredditDetailSubmissionListingPaginator(self._client, f'/{sort}')
-        p.limit = 100
-        return PaginatorChainingIterator(p, amount)
+    def __call__(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailSubmissionListingPaginator, Submission]:
+        return self.new(amount)
 
     def best(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailSubmissionListingPaginator, Submission]:
         p = SubredditDetailSubmissionListingPaginator(self._client, '/best')
-        p.limit = 100
         return PaginatorChainingIterator(p, amount)
 
     def hot(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailSubmissionListingPaginator, Submission]:
         p = SubredditDetailSubmissionListingPaginator(self._client, '/hot')
-        p.limit = 100
         return PaginatorChainingIterator(p, amount)
 
     def rising(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailSubmissionListingPaginator, Submission]:
         p = SubredditDetailSubmissionListingPaginator(self._client, '/rising')
-        p.limit = 100
         return PaginatorChainingIterator(p, amount)
 
     def top(self,
@@ -40,13 +35,11 @@ class Pull:
         time_filter: Optional[str] = None,
     ) -> PaginatorChainingIterator[TimeFilterSubmissionListingPaginator, Submission]:
         p = TimeFilterSubmissionListingPaginator(self._client, '/top')
-        p.limit = 100
         p.time_filter = time_filter
         return PaginatorChainingIterator(p, amount)
 
     def new(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailSubmissionListingPaginator, Submission]:
         p = SubredditDetailSubmissionListingPaginator(self._client, '/new')
-        p.limit = 100
         return PaginatorChainingIterator(p, amount)
 
     def controversial(self,
@@ -54,11 +47,9 @@ class Pull:
         time_filter: Optional[str] = None,
     ) -> PaginatorChainingIterator[TimeFilterSubmissionListingPaginator, Submission]:
         p = TimeFilterSubmissionListingPaginator(self._client, '/controversial')
-        p.limit = 100
         p.time_filter = time_filter
         return PaginatorChainingIterator(p, amount)
 
     def gilded(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, OriginalRedditThingObject]:
         p = SubredditDetailCommentAndSubmissionListingPaginator(self._client, '/gilded')
-        p.limit = 100
         return PaginatorChainingIterator(p, amount)

@@ -1,9 +1,10 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Any, List, Callable, Mapping, Optional
+from typing import TYPE_CHECKING, Iterable, Any, List, Callable, Mapping
 if TYPE_CHECKING:
     from ....client_SYNC import Client
 
+from ...load.comment_SYNC import load_comment
 from ....models.comment_SYNC import Comment
 from ....util.base_conversion import to_base36
 from ....iterators.chunking_iterator import ChunkingIterator
@@ -16,8 +17,8 @@ class BulkFetch:
     def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[Comment]:
         return self.by_id(ids)
 
-    def _load_object(self, m: Mapping[str, Any]) -> Optional[Comment]:
-        return Comment(m, self._client)
+    def _load_object(self, m: Mapping[str, Any]) -> Comment:
+        return load_comment(m, self._client)
 
     def by_id(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[Comment]:
         id36s = map(to_base36, ids)
@@ -32,11 +33,7 @@ class BulkFetch:
             def f() -> List[Comment]:
                 root = self._client.request('GET', '/api/info', params={'id': ids_str})
                 data = root['data']
-                return [
-                    m for m in
-                    map(self._load_object, data['children'])
-                    if m is not None
-                ]
+                return list(map(self._load_object, data['children']))
             return f
 
         call_chunks = map(call_chunk, strseqs)

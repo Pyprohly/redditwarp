@@ -8,6 +8,10 @@ if TYPE_CHECKING:
 from ...models.submission_SYNC import TextPost, LinkPost
 
 def load_submission(d: Mapping[str, Any], client: Client) -> Submission:
+    if 'is_self' not in d:
+        print(d)
+        print()
+        print()
     if d['is_self']:
         return TextPost(d, client)
     return LinkPost(d, client)

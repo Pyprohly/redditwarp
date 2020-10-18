@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from .comment_SYNC import load_comment
 from .submission_SYNC import load_submission
 from ...models.comment_tree_SYNC import CommentTreeNode, SubmissionCommentTreeNode
-from ...models.comment_thread_SYNC import CommentThread
+from ...models.subreddit_thread_SYNC import SubredditThread
 from ...models.more_comments_SYNC import ContinueThisThread, LoadMoreComments
 
 def load_more_comments(
@@ -37,7 +37,7 @@ def load_more_comments(
         client=client,
     )
 
-def load_topic_thread(d: Any, client: Client, sort: Optional[str]) -> CommentThread:
+def load_topic_thread(d: Any, client: Client, sort: Optional[str]) -> SubredditThread:
     def f(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> CommentTreeNode:
         value = load_comment(d, client)
         nodes = []
@@ -89,7 +89,7 @@ def load_topic_thread(d: Any, client: Client, sort: Optional[str]) -> CommentThr
         nodes.append(node)
 
     root = SubmissionCommentTreeNode(value, nodes, more)
-    return CommentThread(root, sort)
+    return SubredditThread(root, sort)
 
 def load_more_children(d: Any, client: Client, link_id: str, sort: Optional[str]) -> Sequence[CommentTreeNode]:
     roots: List[CommentTreeNode] = []

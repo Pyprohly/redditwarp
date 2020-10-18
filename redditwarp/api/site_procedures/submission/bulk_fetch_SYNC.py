@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Any, List, Callable, Mapping, Optional
+from typing import TYPE_CHECKING, Iterable, Any, List, Callable, Mapping
 if TYPE_CHECKING:
     from ....client_SYNC import Client
     from ....models.submission_SYNC import Submission
@@ -17,7 +17,7 @@ class BulkFetch:
     def __call__(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[Submission]:
         return self.by_id(ids)
 
-    def _load_object(self, m: Mapping[str, Any]) -> Optional[Submission]:
+    def _load_object(self, m: Mapping[str, Any]) -> Submission:
         return load_submission(m, self._client)
 
     def by_id(self, ids: Iterable[int]) -> ChunkSizeAdjustableCallChunkChainingIterator[Submission]:
@@ -33,11 +33,7 @@ class BulkFetch:
             def f() -> List[Submission]:
                 root = self._client.request('GET', '/api/info', params={'id': ids_str})
                 data = root['data']
-                return [
-                    m for m in
-                    map(self._load_object, data['children'])
-                    if m is not None
-                ]
+                return list(map(self._load_object, data['children']))
             return f
 
         call_chunks = map(call_chunk, strseqs)

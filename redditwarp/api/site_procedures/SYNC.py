@@ -9,6 +9,7 @@ from .comment.SYNC import Comment
 from .subreddit.SYNC import Subreddit
 from .thread.SYNC import Thread
 from .frontpage.SYNC import FrontPage
+from .user.SYNC import User
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -18,3 +19,4 @@ class SiteProcedures:
         self.subreddit = Subreddit(client)
         self.thread = Thread(client)
         self.frontpage = FrontPage(client)
+        self.user = User(client)

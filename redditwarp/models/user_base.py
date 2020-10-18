@@ -10,19 +10,17 @@ class UserBase(OriginalRedditThingObject):
     class Subreddit:
         def __init__(self, outer: UserBase, d: Mapping[str, Any]):
             self.name: str = d['display_name']
+            #: One of `public`, `private`, `restricted`, `archived`,
+            #: `employees_only`, `gold_only`, or `gold_restricted`.
+            self.type: str = d['subreddit_type']
             self.subscriber_count: int = d['subscribers']
             self.title: str = d['title']
             self.summary_description: str = d['public_description']
-            self.summary_description_html: str = d['public_description_html']
-            self.nsfw: bool = d['over18']
+            self.nsfw: bool = d['over_18']
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.name: str = d['name']
-
-        #: One of `public`, `private`, `restricted`, `archived`,
-        #: `employees_only`, `gold_only`, or `gold_restricted`.
-        self.type: str = d['subreddit_type']
 
         #: Karma accumulated from posting.
         self.link_karma: int = d['link_karma']
@@ -46,4 +44,4 @@ class UserBase(OriginalRedditThingObject):
 
         self.icon_img: str = d['icon_img']
 
-        self.subreddit = self.Subreddit(self, d)
+        self.subreddit = self.Subreddit(self, d['subreddit'])
