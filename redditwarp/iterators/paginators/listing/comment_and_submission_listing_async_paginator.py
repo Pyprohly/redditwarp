@@ -2,24 +2,24 @@
 from __future__ import annotations
 from typing import Sequence, Optional
 
-from .common_listing_async_paginator import CommonListingAsyncPaginator
-from ....models.comment_ASYNC import Comment
+from .listing_async_paginator import ListingAsyncPaginator
 from ....models.original_reddit_thing_object import OriginalRedditThingObject
+from ....api.load.comment_ASYNC import load_comment
 from ....api.load.submission_ASYNC import load_submission
 
-class CommentAndSubmissionListingAsyncPaginator(CommonListingAsyncPaginator[OriginalRedditThingObject]):
-    async def _next_page(self) -> Sequence[OriginalRedditThingObject]:
-        data = await self._fetch_next_page_listing_data()
+class CommentAndSubmissionListingAsyncPaginator(ListingAsyncPaginator[OriginalRedditThingObject]):
+    async def _fetch_result(self) -> Sequence[OriginalRedditThingObject]:
+        data = await self._fetch_listing_data()
         l = []
         for child in data['children']:
             kind = child['kind']
             data = child['data']
             obj: Optional[OriginalRedditThingObject] = None
             if kind == 't1':
-                obj = Comment(data, self.client)
+                obj = load_comment(data, self.client)
             elif kind == 't3':
                 obj = load_submission(data, self.client)
             if obj is None:
-                raise ValueError(f'cannot handle kind {kind!r}')
+                raise ValueError(f'unexpected kind {kind!r}')
             l.append(obj)
         return l

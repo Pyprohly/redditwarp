@@ -8,6 +8,8 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass, field
 
+from .util.join_params_ import join_params
+
 @dataclass(eq=False)
 class Request:
     verb: str
@@ -15,3 +17,6 @@ class Request:
     params: MutableMapping[str, Optional[str]] = field(default_factory=dict)
     payload: Optional[Payload] = None
     headers: MutableMapping[str, str] = field(default_factory=dict)
+
+    def get_url(self) -> str:
+        return join_params(self.uri, self.params)

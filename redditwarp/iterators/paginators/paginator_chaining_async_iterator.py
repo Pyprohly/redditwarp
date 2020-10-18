@@ -8,7 +8,7 @@ E = TypeVar('E')
 __bound = 'AsyncPaginator[E]'
 TAsyncPaginator = TypeVar('TAsyncPaginator', bound=AsyncPaginator)  # type: ignore[type-arg]
 
-class PageChainingAsyncIterator(AsyncIterator[E], Generic[TAsyncPaginator, E]):
+class PaginatorChainingAsyncIterator(AsyncIterator[E], Generic[TAsyncPaginator, E]):
     def __init__(self, paginator: TAsyncPaginator, amount: Optional[int] = None) -> None:
         self.paginator = paginator
         self.amount = amount

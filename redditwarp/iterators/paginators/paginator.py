@@ -8,20 +8,23 @@ T = TypeVar('T')
 
 class Paginator(Iterator[Sequence[T]], ABC):
     def __init__(self) -> None:
-        self.has_next = True
-        self.cursor: Optional[str] = None
         self.limit: Optional[int] = None
 
     def __iter__(self) -> Iterator[Sequence[T]]:
         return self
 
-    @abstractmethod
     def __next__(self) -> Sequence[T]:
+        if not self.has_next():
+            raise StopIteration
+        return self.next_result()
+
+    @abstractmethod
+    def next_result(self) -> Sequence[T]:
         raise NotImplementedError
 
-    def resume(self) -> None:
-        self.has_next = True
+    def next_page(self) -> Sequence[T]:
+        return self.next_result()
 
-    def reset(self) -> None:
-        self.has_next = True
-        self.cursor = None
+    @abstractmethod
+    def has_next(self) -> bool:
+        raise NotImplementedError

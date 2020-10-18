@@ -8,20 +8,23 @@ T = TypeVar('T')
 
 class AsyncPaginator(AsyncIterator[Sequence[T]], ABC):
     def __init__(self) -> None:
-        self.has_next = True
-        self.cursor: Optional[str] = None
         self.limit: Optional[int] = None
 
-    def __aiter__(self) -> AsyncIterator[Sequence[T]]:
+    def __iter__(self) -> AsyncIterator[Sequence[T]]:
         return self
 
-    @abstractmethod
     async def __anext__(self) -> Sequence[T]:
+        if not self.has_next():
+            raise StopAsyncIteration
+        return await self.next_result()
+
+    @abstractmethod
+    async def next_result(self) -> Sequence[T]:
         raise NotImplementedError
 
-    def resume(self) -> None:
-        self.has_next = True
+    async def next_page(self) -> Sequence[T]:
+        return await self.next_result()
 
-    def reset(self) -> None:
-        self.has_next = True
-        self.cursor = None
+    @abstractmethod
+    def has_next(self) -> bool:
+        raise NotImplementedError

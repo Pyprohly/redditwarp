@@ -65,7 +65,7 @@ class ClientCore:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_config(cls: Type[T], site_name: str = '') -> T:
+    def from_praw_config(cls: Type[T], site_name: str) -> T:
         config = get_praw_config()
         section_name = site_name or config.default_section  # type: ignore[attr-defined]
         try:
@@ -214,11 +214,3 @@ class Client(ClientCore):
     def _init_(self, http: HTTPClient) -> None:
         super()._init_(http)
         self.api = ...#site_procedures_ASYNC.SiteProcedures(self)
-
-
-def c(site_name: str = '') -> Client:
-    interactive_mode = not hasattr(__import__('__main__'), '__file__')
-    if not interactive_mode:
-        raise RuntimeError('function can only be used in interactive mode')
-
-    return Client.from_praw_config(site_name)

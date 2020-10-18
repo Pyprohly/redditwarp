@@ -1,14 +1,14 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Any, Dict, Optional, Callable, Sequence
+from typing import TYPE_CHECKING, TypeVar, Any, Dict, Optional, Callable, Sequence, cast
 if TYPE_CHECKING:
     from ....client_SYNC import Client
 
-from ..bidirectional_paginator import BidirectionalPaginator
+from ..cursor_bidirectional_paginator import CursorBidirectionalPaginator
 
 T = TypeVar('T')
 
-class ListingPaginator(BidirectionalPaginator[T]):
+class ListingPaginator(CursorBidirectionalPaginator[T]):
     def __init__(self,
         client: Client,
         uri: str, *,
@@ -21,51 +21,48 @@ class ListingPaginator(BidirectionalPaginator[T]):
         self.count = 0
         self.show_all = False
 
-    def __next__(self) -> Sequence[T]:
-        if not self.has_next:
-            raise StopIteration
-        return self._next_page()
-
-    def _get_next_page_params(self) -> Dict[str, Optional[str]]:
+    def _get_params(self) -> Dict[str, str]:
         params: Dict[str, Optional[str]] = {
             'count': str(self.count),
             'limit': str(self.limit),
         }
         if self.show_all:
             params['show'] = 'all'
-
-        if self._forward:
-            params['after'] = self.cursor
+        if self.get_direction():
+            params['after'] = self.forward_cursor
         else:
-            params['before'] = self.back_cursor
-
+            params['before'] = self.backward_cursor
         remove_keys = [k for k, v in params.items() if v is None]
         for k in remove_keys: del params[k]
-        return params
+        return cast(Dict[str, str], params)
 
-    def _fetch_next_page_listing_data(self) -> Dict[str, Any]:
-        params = self._get_next_page_params()
+    def _fetch_listing_data(self) -> Dict[str, Any]:
+        params = self._get_params()
         recv = self.client.request('GET', self.uri, params=params)
         data = recv['data']
         self.count += data['dist']
         entries = data['children']
+        after = data['after']
+        before = data['before']
+
         if entries:
-            self.cursor = data['after'] or self.cursor_extractor(entries[-1])
-            self.back_cursor = data['before'] or self.cursor_extractor(entries[0])
+            self.forward_cursor = after
+            self.backward_cursor = before
+            if not self.forward_cursor:
+                self.forward_cursor = self.cursor_extractor(entries[-1])
+            if not self.backward_cursor:
+                self.backward_cursor = self.cursor_extractor(entries[0])
 
-            has_after = bool(data['after'])
-            has_before = bool(data['before'])
-            if not self.get_direction():
-                has_after, has_before = has_before, has_after
-            self.has_next = has_after
-            self.has_prev = has_before
-        else:
-            self.has_next = False
-
+        self.forward_available = bool(after)
+        self.backward_available = bool(before)
         return data
 
-    def _next_page(self) -> Sequence[T]:
+    def _fetch_result(self) -> Sequence[T]:
         raise NotImplementedError
+
+    def next_result(self) -> Sequence[T]:
+        self.resuming = False
+        return self._fetch_result()
 
     def reset(self) -> None:
         super().reset()

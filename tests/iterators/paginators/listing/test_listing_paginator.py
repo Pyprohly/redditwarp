@@ -1,6 +1,4 @@
 
-import pytest
-
 from typing import Sequence, Any, Optional, Mapping, Callable
 from redditwarp.client_SYNC import Client
 from redditwarp.core.http_client_SYNC import HTTPClient
@@ -50,17 +48,34 @@ class MyListingPaginator(ListingPaginator[str]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
-    def _next_page(self) -> Sequence[str]:
-        data = self._fetch_next_page_listing_data()
+    def _fetch_result(self) -> Sequence[str]:
+        data = self._fetch_listing_data()
         return [d['name'] for d in data['children']]
-
 
 http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'')
 client = Client.from_http(http)
 
-def test_stop_iteration() -> None:
+def test_reset() -> None:
     p = MyListingPaginator(client, '')
-    p.has_next = False
+    p.forward_cursor = ''
+    p.forward_available = True
+    p.backward_cursor = ''
+    p.backward_available = True
+    p.reset()
+    assert p.forward_cursor is None
+    assert p.forward_available is None
+    assert p.backward_cursor is None
+    assert p.backward_available is None
+
+def test_resume() -> None:
+    p = MyListingPaginator(client, '')
+    p.resuming = False
+    p.resume()
+    assert p.resuming
+
+def test_resuming() -> None:
+    p = MyListingPaginator(client, '')
+    p.resume()
     http.response_data = b'''\
 {
     "kind": "Listing",
@@ -75,8 +90,9 @@ def test_stop_iteration() -> None:
     }
 }
 '''
-    with pytest.raises(StopIteration):
-        next(p)
+    next(p)
+    assert not p.resuming
+
 
 def test_return_value_and_count() -> None:
     p = MyListingPaginator(client, '')
@@ -122,14 +138,13 @@ def test_return_value_and_count() -> None:
 
 def test_cursor() -> None:
     p = MyListingPaginator(client, '')
-    assert p.cursor is p.back_cursor is None
+    assert p.forward_cursor is p.backward_cursor is None
 
     for direction in (True, False):
         p.set_direction(direction)
 
-        p.has_next = True
-        p.cursor = None
-        p.back_cursor = None
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -145,12 +160,11 @@ def test_cursor() -> None:
 }
 '''
         next(p)
-        assert p.cursor == 'b'
-        assert p.back_cursor == 'a'
+        assert p.forward_cursor == 'b'
+        assert p.backward_cursor == 'a'
 
-        p.has_next = True
-        p.cursor = None
-        p.back_cursor = None
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -166,12 +180,11 @@ def test_cursor() -> None:
 }
 '''
         next(p)
-        assert p.cursor == 'b'
-        assert p.back_cursor == 'a'
+        assert p.forward_cursor == 'b'
+        assert p.backward_cursor == 'a'
 
-        p.has_next = True
-        p.cursor = None
-        p.back_cursor = None
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -187,12 +200,11 @@ def test_cursor() -> None:
 }
 '''
         next(p)
-        assert p.cursor == 'b'
-        assert p.back_cursor == 'a'
+        assert p.forward_cursor == 'b'
+        assert p.backward_cursor == 'a'
 
-        p.has_next = True
-        p.cursor = None
-        p.back_cursor = None
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -208,12 +220,11 @@ def test_cursor() -> None:
 }
 '''
         next(p)
-        assert p.cursor == 'b'
-        assert p.back_cursor == 'a'
+        assert p.forward_cursor == 'b'
+        assert p.backward_cursor == 'a'
 
-        p.has_next = True
-        p.cursor = None
-        p.back_cursor = None
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -229,12 +240,11 @@ def test_cursor() -> None:
 }
 '''
         next(p)
-        assert p.cursor == 'b'
-        assert p.back_cursor == 'a'
+        assert p.forward_cursor == 'b'
+        assert p.backward_cursor == 'a'
 
-        p.has_next = True
-        p.cursor = None
-        p.back_cursor = None
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -249,12 +259,13 @@ def test_cursor() -> None:
 }
 '''
         next(p)
-        assert p.cursor == 'a'
-        assert p.back_cursor == 'a'
+        assert p.forward_cursor == 'a'
+        assert p.backward_cursor == 'a'
 
-        p.has_next = True
-        p.cursor = 'cursor1'
-        p.back_cursor = 'cursor2'
+        p.reset()
+        p.resume()
+        p.forward_cursor = 'no_change1'
+        p.backward_cursor = 'no_change2'
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -267,18 +278,17 @@ def test_cursor() -> None:
 }
 '''
         next(p)
-        assert p.cursor == 'cursor1'
-        assert p.back_cursor == 'cursor2'
+        assert p.forward_cursor == 'no_change1'
+        assert p.backward_cursor == 'no_change2'
 
-def test_has_next_and_has_prev() -> None:
+def test_has_next() -> None:
     p = MyListingPaginator(client, '')
-    assert p.has_next is not p.has_prev
 
     for direction in (True, False):
         p.set_direction(direction)
 
-        p.has_next = True
-        p.has_prev = False
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -294,10 +304,10 @@ def test_has_next_and_has_prev() -> None:
 }
 '''
         next(p)
-        assert p.has_next and p.has_prev
+        assert p.has_next()
 
-        p.has_next = True
-        p.has_prev = direction
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -313,11 +323,10 @@ def test_has_next_and_has_prev() -> None:
 }
 '''
         next(p)
-        assert p.has_next is direction
-        assert p.has_prev is not direction
+        assert p.has_next() is direction
 
-        p.has_next = True
-        p.has_prev = not direction
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -333,11 +342,10 @@ def test_has_next_and_has_prev() -> None:
 }
 '''
         next(p)
-        assert p.has_next is not direction
-        assert p.has_prev is direction
+        assert p.has_next() is not direction
 
-        p.has_next = True
-        p.has_prev = direction
+        p.reset()
+        p.resume()
         http.response_data = b'''\
 {
     "kind": "Listing",
@@ -350,5 +358,4 @@ def test_has_next_and_has_prev() -> None:
 }
 '''
         next(p)
-        assert p.has_next is False
-        assert p.has_prev is direction
+        assert not p.has_next()
