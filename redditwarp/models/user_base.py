@@ -40,7 +40,7 @@ class UserBase(OriginalRedditThingObject):
         #: Whether the user is a friend of the current user.
         self.is_friend: bool = d['is_friend']
         #: Is a moderator of any subreddit.
-        self.subreddit_moderator: bool = d['is_mod']
+        self.is_subreddit_moderator: bool = d['is_mod']
 
         self.icon_img: str = d['icon_img']
 
