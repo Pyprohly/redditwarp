@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 class UserListItem:
     def __init__(self, d: Mapping[str, Any]):
@@ -12,3 +12,7 @@ class UserListItem:
         self.name: str = d['name']
         self.rel_id: str = d['rel_id']
         self.added_ut = int(d['date'])
+
+class FriendUserListItem(UserListItem):
+    def __init__(self, d: Mapping[str, Any]):
+        self.note: Optional[str] = d['note']

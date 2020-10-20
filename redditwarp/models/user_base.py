@@ -23,7 +23,7 @@ class UserBase(OriginalRedditThingObject):
         self.name: str = d['name']
 
         #: Karma accumulated from posting.
-        self.link_karma: int = d['link_karma']
+        self.submission_karma: int = d['link_karma']
         #: Karma accumulated from commenting.
         self.comment_karma: int = d['comment_karma']
         #: Karma accumulated for being awarded.

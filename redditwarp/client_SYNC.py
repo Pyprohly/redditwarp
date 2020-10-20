@@ -1,7 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, \
-        Union, MutableSequence
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableSequence
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
@@ -34,7 +33,7 @@ from .util.module_importing import lazy_import;
 if 0: from .api.site_procedures import SYNC as site_procedures_SYNC
 site_procedures_SYNC = lazy_import('.api.site_procedures.SYNC', __package__)  # noqa: F811
 
-AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
+AuthorizationGrant = Mapping[str, Optional[str]]
 
 class ClientCore:
     """The gateway to interacting with the Reddit API."""

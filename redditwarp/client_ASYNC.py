@@ -1,7 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, \
-        Union, MutableSequence
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableSequence
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
@@ -34,7 +33,7 @@ from .exceptions import (
 #if 0: from .api.site_procedures import ASYNC as site_procedures_ASYNC
 #site_procedures_ASYNC = lazy_import('.api.site_procedures.ASYNC', __package__)  # noqa: F811
 
-AuthorizationGrant = Union[auth.grants.AuthorizationGrant, Mapping[str, Optional[str]]]
+AuthorizationGrant = Mapping[str, Optional[str]]
 
 class ClientCore:
     default_transporter_name = None
