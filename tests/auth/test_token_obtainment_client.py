@@ -76,7 +76,7 @@ def test_fetch_json_dict__exceptions() -> None:
         o.fetch_json_dict()
 
     o.requestor = MockRequestor(
-        response_status=502,
+        response_status=599,
         response_headers={},
         response_data=b'{"error": "invalid_client"}',
     )
@@ -84,7 +84,7 @@ def test_fetch_json_dict__exceptions() -> None:
         o.fetch_json_dict()
 
     o.requestor = MockRequestor(
-        response_status=502,
+        response_status=599,
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"error": "invalid_client"}',
     )
@@ -92,19 +92,19 @@ def test_fetch_json_dict__exceptions() -> None:
         o.fetch_json_dict()
 
     o.requestor = MockRequestor(
-        response_status=502,
-        response_headers={'Content-Type': 'application/json'},
-        response_data=b'{"error": "asdf"}',
-    )
-    with pytest.raises(HTTPStatusError):
-        o.fetch_json_dict()
-
-    o.requestor = MockRequestor(
-        response_status=200,
+        response_status=599,
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"error": "asdf"}',
     )
     with pytest.raises(UnrecognizedOAuth2ResponseError):
+        o.fetch_json_dict()
+
+    o.requestor = MockRequestor(
+        response_status=401,
+        response_headers={'Content-Type': 'application/json'},
+        response_data=b'{"message": "Unauthorized", "error": 401}',
+    )
+    with pytest.raises(HTTPStatusError):
         o.fetch_json_dict()
 
 def test_fetch_token() -> None:

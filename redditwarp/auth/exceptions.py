@@ -1,11 +1,11 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 if TYPE_CHECKING:
-    from typing import Any, Mapping
+    from typing import Mapping, Dict, Optional
     from ..http.response import Response
 
-from typing import Type, TypeVar, ClassVar
+import re
 
 from .. import http
 from ..exceptions import ArgInfoExceptionMixin
@@ -41,24 +41,12 @@ class ResponseContentError(ResponseException):
 class UnrecognizedOAuth2ResponseError(ResponseException):
     pass
 
-
 class OAuth2ResponseError(ResponseException):
     """
     As detailed in the OAuth2 spec. For more information see
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     ERROR_NAME: ClassVar[str] = ''
-
-    T = TypeVar('T', bound='OAuth2ResponseError')
-
-    @classmethod
-    def from_json_dict(cls: Type[T], response: Response, json_dict: Mapping[str, Any]) -> T:
-        return cls(
-            response=response,
-            error_name=json_dict.get('error', ''),
-            description=json_dict.get('error_description', ''),
-            help_uri=json_dict.get('error_uri', ''),
-        )
 
     def __init__(self, arg: object = None, *, response: Response, error_name: str = '',
             description: str = '', help_uri: str = '') -> None:
@@ -90,6 +78,12 @@ class UnsupportedGrantType(OAuth2ResponseError):
 class InvalidScope(OAuth2ResponseError):
     ERROR_NAME = 'invalid_scope'
 
+class InvalidToken(OAuth2ResponseError):
+    ERROR_NAME = 'invalid_token'
+
+class InsufficientScope(OAuth2ResponseError):
+    ERROR_NAME = 'insufficient_scope'
+
 oauth2_response_error_class_by_error_name = {
     cls.ERROR_NAME: cls
     for cls in [
@@ -100,5 +94,33 @@ oauth2_response_error_class_by_error_name = {
         UnauthorizedClient,
         UnsupportedGrantType,
         InvalidScope,
+        InvalidToken,
+        InsufficientScope,
     ]
 }
+
+def raise_for_oauth2_response_error(resp: Response, m: Mapping[str, str]) -> None:
+    error_name = m.get('error')
+    if error_name is None:
+        return
+    cls = oauth2_response_error_class_by_error_name.get(error_name)
+    if cls is None:
+        raise UnrecognizedOAuth2ResponseError(response=resp)
+    raise cls(
+        response=resp,
+        error_name=m.get('error', ''),
+        description=m.get('error_description', ''),
+        help_uri=m.get('error_uri', ''),
+    )
+
+def raise_for_token_server_response(resp: Response, json_dict: Mapping[str, str]) -> None:
+    raise_for_oauth2_response_error(resp, json_dict)
+
+_www_authenticate_auth_param_regex = re.compile(r'(\w+)=\"(.*?)\"')
+
+def raise_for_resource_server_response(resp: Response) -> None:
+    www_authenticate: Optional[str] = resp.headers.get('WWW-Authenticate')
+    if www_authenticate is None:
+        return
+    m: Dict[str, str] = dict(_www_authenticate_auth_param_regex.findall(www_authenticate))
+    raise_for_oauth2_response_error(resp, m)

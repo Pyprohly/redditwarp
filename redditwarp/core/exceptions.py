@@ -36,9 +36,6 @@ class AuthError(ResponseException):
 class CredentialsError(AuthError):
     pass
 
-class InsufficientScope(AuthError):
-    pass
-
 class ResponseContentError(ResponseException):
     pass
 
@@ -108,10 +105,6 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None
                     e.arg = 'Authorization header value must start with "Basic "'
                     raise
             raise CredentialsError('check your client credentials', response=resp) from e
-
-        elif status == 403:
-            if 'insufficient_scope' in resp.headers.get('www-authenticate', ''):
-                raise InsufficientScope('the request requires higher privileges than provided by your access token', response=resp) from e
 
         elif status == 429:
             if resp.request is not None:

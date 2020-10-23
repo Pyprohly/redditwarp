@@ -30,6 +30,17 @@ class GoodSession(BaseSession):
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
+class BadSession(BaseSession):
+    def __init__(self,
+        exc: Exception,
+    ) -> None:
+        super().__init__()
+        self.exception = exc
+
+    def send(self, request: Request, *, timeout: float = -1,
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+        raise self.exception
+
 def test_request() -> None:
     session = GoodSession(200, {}, b'')
     headers = {'cheese': 'bacon', 'fire': 'water'}
@@ -44,21 +55,6 @@ def test_request() -> None:
     assert requ.headers.pop('User-Agent')
     assert requ.headers == {'cheese': 'bacon', 'fire': 'air'}
 
-
-class BadSession(BaseSession):
-    def __init__(self,
-        exc: Exception,
-    ) -> None:
-        super().__init__()
-        self.exception = exc
-
-    def send(self, request: Request, *, timeout: float = -1,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        raise self.exception
-
-def _get_http(session: BaseSession) -> HTTPClient:
-    return HTTPClient(session=session)
-
 class TestRequestExceptions:
     class TestAuth:
         class TestResponseContentError:
@@ -66,7 +62,7 @@ class TestRequestExceptions:
                 response = Response(999, {}, b'')
                 exc = auth.exceptions.ResponseContentError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(core.exceptions.UnidentifiedResponseContentError):
                     http.request('', '')
 
@@ -74,14 +70,14 @@ class TestRequestExceptions:
                 response = Response(999, {'Content-Type': 'text/html'}, b'')
                 exc = auth.exceptions.ResponseContentError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(core.exceptions.HTMLDocumentResponseContentError):
                     http.request('', '')
 
                 response = Response(999, {'Content-Type': 'text/html'}, b'Our CDN was unable to reach our servers')
                 exc = auth.exceptions.ResponseContentError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(core.exceptions.HTMLDocumentResponseContentError) as exc_info:
                     http.request('', '')
                 assert exc_info.value.arg is not None
@@ -91,7 +87,7 @@ class TestRequestExceptions:
                 response = Response(403, {}, b'<!doctype html>', request=request)
                 exc = auth.exceptions.ResponseContentError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(core.exceptions.BlacklistedUserAgent):
                     http.request('', '')
 
@@ -101,7 +97,7 @@ class TestRequestExceptions:
                 response = Response(401, {}, b'', request)
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
                     http.request('', '')
                 assert exc_info.match('token URL')
@@ -111,7 +107,7 @@ class TestRequestExceptions:
                 response = Response(401, {}, b'', request)
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
                     http.request('', '')
                 assert exc_info.match('Authorization')
@@ -121,7 +117,7 @@ class TestRequestExceptions:
                 response = Response(401, {}, b'', request)
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
                     http.request('', '')
                 assert exc_info.match('Basic')
@@ -130,30 +126,21 @@ class TestRequestExceptions:
                 response = Response(400, {}, b'')
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(core.exceptions.CredentialsError):
                     http.request('', '')
 
                 response = Response(401, {}, b'')
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(core.exceptions.CredentialsError):
                     http.request('', '')
 
             def test_InsufficientScope(self) -> None:
-                response = Response(403, {'www-authenticate': 'error="insufficient_scope"'}, b'')
-                exc = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc)
-                http = _get_http(session)
-                with pytest.raises(core.exceptions.InsufficientScope):
-                    http.request('', '')
-
-                response = Response(403, {'www-authenticate': 'error="asdf"'}, b'')
-                exc = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc)
-                http = _get_http(session)
-                with pytest.raises(auth.exceptions.HTTPStatusError):
+                session = GoodSession(403, {'WWW-Authenticate': 'error="insufficient_scope"'}, b'{"message": "Forbidden", "error": 403}')
+                http = HTTPClient(session=session)
+                with pytest.raises(auth.exceptions.InsufficientScope):
                     http.request('', '')
 
             def test_FaultyUserAgent(self) -> None:
@@ -161,7 +148,7 @@ class TestRequestExceptions:
                 response = Response(429, {}, b'', request=request)
                 exc = auth.exceptions.HTTPStatusError(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(core.exceptions.FaultyUserAgent):
                     http.request('', '')
 
@@ -170,7 +157,7 @@ class TestRequestExceptions:
                 response = Response(200, {}, b'', request=request)
                 exc = auth.exceptions.UnsupportedGrantType(response=response)
                 session = BadSession(exc)
-                http = _get_http(session)
+                http = HTTPClient(session=session)
                 with pytest.raises(auth.exceptions.UnsupportedGrantType) as exc_info:
                     http.request('', '')
                 assert exc_info.value.arg is not None

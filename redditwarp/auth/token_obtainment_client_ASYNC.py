@@ -13,9 +13,8 @@ from .token import ResponseToken
 from .util import apply_basic_auth
 from .exceptions import (
     ResponseContentError,
-    UnrecognizedOAuth2ResponseError,
     HTTPStatusError,
-    oauth2_response_error_class_by_error_name,
+    raise_for_token_server_response,
 )
 
 class TokenObtainmentClient:
@@ -40,22 +39,17 @@ class TokenObtainmentClient:
         except ValueError:
             pass
 
-        if resp_json is None or not isinstance(resp_json, Mapping):
+        if not isinstance(resp_json, Mapping):
             raise ResponseContentError(response=resp)
 
         error = resp_json.get('error')
-        if error:
-            clss = oauth2_response_error_class_by_error_name.get(error)
-            if clss is not None:
-                raise clss.from_json_dict(resp, resp_json)
+        if isinstance(error, str):
+            raise_for_token_server_response(resp, resp_json)
 
         try:
             resp.raise_for_status()
         except http.exceptions.StatusCodeException as e:
             raise HTTPStatusError(response=resp) from e
-
-        if error:
-            raise UnrecognizedOAuth2ResponseError(response=resp)
 
         return resp_json
 

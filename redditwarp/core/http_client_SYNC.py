@@ -14,6 +14,7 @@ import sys
 
 from .. import __about__
 from .. import auth
+from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
 from ..http.payload import make_payload
@@ -84,6 +85,7 @@ class RedditHTTPClient:
             resp = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
         except auth.exceptions.ResponseException as e:
             handle_auth_response_exception(e)
+        raise_for_resource_server_response(resp)
         return resp
 
     def request(self,
