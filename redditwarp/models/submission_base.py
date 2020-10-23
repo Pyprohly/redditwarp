@@ -40,7 +40,15 @@ class SubmissionBase(OriginalRedditThingObject):
             self.removed: bool = d['removed']
             self.removed_by: Optional[str] = d['removed_by']
 
-    THING_PREFIX = 't3'
+    class Event:
+        def __init__(self, d: Mapping[str, Any]):
+            self.start_ut = int(d['event_start'])
+            self.start_at = datetime.fromtimestamp(self.start_ut, timezone.utc)
+            self.end_ut = int(d['event_end'])
+            self.end_at = datetime.fromtimestamp(self.end_ut, timezone.utc)
+            self.is_live: bool = d['event_is_live']
+
+    THING_ID = 't3'
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
@@ -74,11 +82,15 @@ class SubmissionBase(OriginalRedditThingObject):
         self.robot_indexable: bool = d['is_robot_indexable']
         self.pinned: bool = d['pinned']
 
+        self.event = None
+        if 'event_start' in d:
+            self.event = self.Event(d)
+
         # User context fields
         #: For clients with no user context this will always be `False`.
         self.saved: bool = d['saved']
         self.hidden: bool = d['hidden']
-        self.inbox_replies: bool = d['send_replies']
+        self.inbox_notifications: bool = d['send_replies']
 
         self.subreddit = self.Subreddit(self, d)
 

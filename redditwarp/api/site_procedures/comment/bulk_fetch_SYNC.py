@@ -32,8 +32,7 @@ class BulkFetch:
         def call_chunk(ids_str: str) -> Callable[[], List[Comment]]:
             def f() -> List[Comment]:
                 root = self._client.request('GET', '/api/info', params={'id': ids_str})
-                data = root['data']
-                return list(map(self._load_object, data['children']))
+                return [self._load_object(i['data']) for i in root['data']['children']]
             return f
 
         call_chunks = map(call_chunk, strseqs)

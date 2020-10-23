@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from .funbox import FunBox
 
 class OriginalRedditThingObject(FunBox):
-    THING_PREFIX = ''
+    THING_ID = ''
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)

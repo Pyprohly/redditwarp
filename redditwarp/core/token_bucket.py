@@ -51,7 +51,7 @@ class TokenBucket:
         return n <= t
 
     def consume_all(self) -> None:
-        """Deplete the token bucket. Like `self.hard_consume(float('inf'))`."""
+        """Empty the token bucket. Like `self.hard_consume(float('inf'))`."""
         self._checkpoint_time()
         self._value = 0
 
@@ -59,8 +59,8 @@ class TokenBucket:
         """Return the duration the client should wait before the consume
         methods will return `True` again.
 
-        There is no "`wait_consume()`" method as this class aims not to be IO-bound so.
-        Here is the logic for implementing such method::
+        There is no "`wait_consume()`" method as this class aims not to be IO-bound so
+        here is the logic for implementing such method::
 
             async with lock:
                 t = 3

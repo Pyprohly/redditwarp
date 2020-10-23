@@ -225,7 +225,10 @@ class Variant2RedditAPIError(RedditAPIError):
                         f"  {err.codename}: {err.detail}{err.field and f' -> {err.field}'}"
                         for err in self.errors)
 
-        return super().get_default_message()
+        cn = self.codename
+        de = self.detail
+        fd = self.field
+        return f"{cn}: {de}{fd and f' -> {fd}'}"
 
 class ContentCreationCooldown(Variant2RedditAPIError):
     """Used over RedditAPIError when the error items list contains

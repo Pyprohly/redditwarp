@@ -5,8 +5,6 @@ from typing import Mapping, Any
 from .original_reddit_thing_object import OriginalRedditThingObject
 
 class UserBase(OriginalRedditThingObject):
-    THING_PREFIX = 't2'
-
     class Subreddit:
         def __init__(self, outer: UserBase, d: Mapping[str, Any]):
             self.name: str = d['display_name']
@@ -17,6 +15,8 @@ class UserBase(OriginalRedditThingObject):
             self.title: str = d['title']
             self.summary_description: str = d['public_description']
             self.nsfw: bool = d['over_18']
+
+    THING_ID = 't2'
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)

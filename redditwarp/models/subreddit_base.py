@@ -16,7 +16,7 @@ class SubredditBase(OriginalRedditThingObject):
             self.sr_flair_enabled: bool = d['user_sr_flair_enabled']
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
 
-    THING_PREFIX = 't5'
+    THING_ID = 't5'
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)

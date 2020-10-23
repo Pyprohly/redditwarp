@@ -40,11 +40,17 @@ class _LazyImport:
                 del sys.modules[spec.name]
                 raise
 
-        if '.' not in name:
-            globals()[name] = module
         return module
 
-    def __mod__(self, other: str) -> ModuleType:
-        return self(other)
+    def __mod__(self, other: str) -> None:
+        if '.' in other:
+            raise ValueError('dot in module name not supported')
+
+        module = self(other)
+        spec = module.__spec__
+        if spec is None:
+            raise RuntimeError('module spec missing')
+        caller_frame = sys._getframe(1)
+        caller_frame.f_globals[spec.name] = module
 
 lazy_import = _LazyImport()

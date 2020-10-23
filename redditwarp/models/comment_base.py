@@ -42,7 +42,7 @@ class CommentBase(OriginalRedditThingObject):
 
             self.removed: bool = d['removed']
 
-    THING_PREFIX = 't1'
+    THING_ID = 't1'
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
@@ -80,7 +80,7 @@ class CommentBase(OriginalRedditThingObject):
         # User context fields
         #: For clients with no user context this will always be `False`.
         self.saved: bool = d['saved']
-        self.inbox_replies: bool = d['send_replies']
+        self.inbox_notifications: bool = d['send_replies']
 
         self.submission = self.Submission(self, d)
         self.subreddit = self.Subreddit(self, d)

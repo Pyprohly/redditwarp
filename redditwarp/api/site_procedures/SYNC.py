@@ -11,6 +11,7 @@ from .thread.SYNC import Thread
 from .frontpage.SYNC import FrontPage
 from .user.SYNC import User
 from .account.SYNC import Account
+from .collection.SYNC import Collection
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -22,3 +23,4 @@ class SiteProcedures:
         self.frontpage = FrontPage(client)
         self.user = User(client)
         self.account = Account(client)
+        self.collection = Collection(client)
