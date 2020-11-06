@@ -11,7 +11,7 @@ from urllib.parse import urlencode
 
 from . import grants
 
-def _authorization_url(  # UNUSED: scrapped idea
+def __authorization_url(  # UNUSED: scrapped idea
     url: str,
     response_type: str,
     client_id: str,

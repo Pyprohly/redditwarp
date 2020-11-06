@@ -1,31 +1,32 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ....client_SYNC import Client
+    from .SYNC import Comment as Outer
 
-from ...load.comment_SYNC import load_comment
 from ....models.comment_SYNC import Comment
 from ....util.base_conversion import to_base36
 from ....util.extract_id36_from_url import extract_comment_id36_from_url
+from ....exceptions import NoResultException
 
 class Fetch:
-    def __init__(self, client: Client):
+    def __init__(self, outer: Outer, client: Client):
+        self._outer = outer
         self._client = client
 
-    def __call__(self, id: int) -> Optional[Comment]:
+    def __call__(self, id: int) -> Comment:
         return self.by_id(id)
 
-    def by_id(self, id: int) -> Optional[Comment]:
+    def by_id(self, id: int) -> Comment:
         id36 = to_base36(id)
         return self.by_id36(id36)
 
-    def by_id36(self, id36: str) -> Optional[Comment]:
-        full_id36 = 't1_' + id36
-        root = self._client.request('GET', '/api/info', params={'id': full_id36})
-        if children := root['data']['children']:
-            return load_comment(children[0]['data'], self._client)
-        return None
+    def by_id36(self, id36: str) -> Comment:
+        v = self._outer.get.by_id36(id36)
+        if v is None:
+            raise NoResultException('target not found')
+        return v
 
-    def by_url(self, url: str) -> Optional[Comment]:
+    def by_url(self, url: str) -> Comment:
         return self.by_id36(extract_comment_id36_from_url(url))

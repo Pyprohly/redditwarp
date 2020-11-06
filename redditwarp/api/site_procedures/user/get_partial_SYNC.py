@@ -9,7 +9,7 @@ from ....models.partial_user import PartialUser
 from ....util.base_conversion import to_base36
 from .... import exceptions
 
-class FetchPartial:
+class GetPartial:
     def __init__(self, client: Client):
         self._client = client
 

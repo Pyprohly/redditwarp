@@ -33,11 +33,11 @@ class ContinueThisThread(MoreComments):
         thread = self.fetch_continued_thread()
         return thread.comments[0].children
 
-    def fetch_thread(self) -> Optional[SubredditThread]:
-        return self.client.api.thread.fetch.by_id36(self.submission_id36, self.comment_id36)
+    def get_thread(self) -> Optional[SubredditThread]:
+        return self.client.api.thread.get.by_id36(self.submission_id36, self.comment_id36)
 
     def fetch_continued_thread(self) -> SubredditThread:
-        thread = self.fetch_thread()
+        thread = self.get_thread()
         if thread is None:
             raise UnexpectedServiceRequestResultError(self)
         if not thread.is_continued():

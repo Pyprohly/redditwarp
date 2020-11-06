@@ -5,14 +5,14 @@ if TYPE_CHECKING:
     from ....client_SYNC import Client
     from ....models.comment_tree_SYNC import CommentTreeNode
 
-from .fetch_SYNC import Fetch
+from .get_SYNC import Get
 from ...load.comment_tree_SYNC import load_more_children
 from ....exceptions import HTTPStatusError
 
 class Thread:
     def __init__(self, client: Client):
         self._client = client
-        self.fetch = Fetch(client)
+        self.get = Get(client)
 
     def more_children(self,
         link_id: str,

@@ -28,22 +28,23 @@ class ArgInfoExceptionMixin:
 class ArgInfoException(ArgInfoExceptionMixin, RootException):
     pass
 
+
 class ClientOperationException(ArgInfoException):
     pass
 
-class ClientAPIOperationException(ClientOperationException):
+class ClientProcessingError(ClientOperationException):
     pass
 
-class ServiceRequestException(ClientAPIOperationException):
+class ServiceRequestException(ClientOperationException):
     pass
 
-class UnexpectedServiceRequestResultError(ServiceRequestException):
+class NoResultException(ServiceRequestException):
     pass
 
 class ClientRejectedResultException(ServiceRequestException):
     pass
 
-class ClientProcessingError(ClientOperationException):
+class UnexpectedServiceRequestResultError(ServiceRequestException):
     pass
 
 

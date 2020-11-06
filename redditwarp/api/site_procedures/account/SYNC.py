@@ -20,7 +20,7 @@ class Account:
         self._client = client
         self.pull_subreddits = PullSubreddits(client)
 
-    def fetch(self) -> MyAccount:
+    def fetch_identity(self) -> MyAccount:
         root = self._client.request('GET', '/api/v1/me')
         if len(root) < 3:
             raise RuntimeError('no user context')

@@ -9,7 +9,7 @@ from ....util.base_conversion import to_base36
 from ...load.comment_tree_SYNC import load_topic_thread
 from ....exceptions import HTTPStatusError
 
-class Fetch:
+class Get:
     def __init__(self, client: Client):
         self._client = client
 
