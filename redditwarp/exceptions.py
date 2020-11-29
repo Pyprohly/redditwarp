@@ -122,6 +122,8 @@ def raise_for_response_content_error(resp: Response) -> None:
             msg = 'the Reddit API wants you to set a user agent'
         if b'Our CDN was unable to reach our servers' in data:
             msg = '"Our CDN was unable to reach our servers"'
+        if b'title>reddit.com: page not found</title' in data:
+            msg = 'page not found'
         raise UnacceptableHTMLDocumentReceivedError(msg, response=resp)
 
 def raise_for_json_layout_content_error(resp: Response, data: Mapping[str, Any]) -> None:

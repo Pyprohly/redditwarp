@@ -9,7 +9,7 @@ from ....api.load.submission_ASYNC import load_submission
 
 class CommentAndSubmissionListingAsyncPaginator(ListingAsyncPaginator[OriginalRedditThingObject]):
     async def _fetch_result(self) -> Sequence[OriginalRedditThingObject]:
-        data = await self._fetch_listing_data()
+        data = await self._fetch_data()
         l = []
         for child in data['children']:
             kind = child['kind']

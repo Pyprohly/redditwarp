@@ -8,5 +8,5 @@ from ....api.load.submission_ASYNC import load_submission
 
 class SubmissionListingAsyncPaginator(ListingAsyncPaginator[Submission]):
     async def _fetch_result(self) -> Sequence[Submission]:
-        data = await self._fetch_listing_data()
+        data = await self._fetch_data()
         return [load_submission(d['data'], self.client) for d in data['children']]

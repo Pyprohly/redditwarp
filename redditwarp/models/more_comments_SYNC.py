@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from .comment_tree_SYNC import CommentTreeNode
     from ..client_SYNC import Client
 
+from .comment_tree_SYNC import MoreCommentsTreeNode
 from .more_comments_base import MoreCommentsBase
 from .subreddit_thread_SYNC import SubredditThread
 from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
@@ -23,15 +24,15 @@ class MoreComments(MoreCommentsBase):
 
     def __call__(self, *,
         depth: Optional[int] = None,
-    ) -> Sequence[CommentTreeNode]:
+    ) -> MoreCommentsTreeNode[None, CommentTreeNode]:
         raise NotImplementedError
 
 class ContinueThisThread(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
-    ) -> Sequence[CommentTreeNode]:
+    ) -> MoreCommentsTreeNode[None, CommentTreeNode]:
         thread = self.fetch_continued_thread()
-        return thread.comments[0].children
+        return MoreCommentsTreeNode(None, thread.comments[0].children, thread.more)
 
     def get_thread(self) -> Optional[SubredditThread]:
         return self.client.api.thread.get.by_id36(self.submission_id36, self.comment_id36)
@@ -62,15 +63,11 @@ class LoadMoreComments(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
         limit_children: bool = False,
-    ) -> Sequence[CommentTreeNode]:
-        link_id = 't3_' + self.submission_id36
-        nodes = self.client.api.thread.more_children(
-            link_id,
+    ) -> MoreCommentsTreeNode[None, CommentTreeNode]:
+        return self.client.api.thread.more_children(
+            self.submission_id36,
             self.children,
             sort=self.sort,
             depth=depth,
             limit_children=limit_children,
         )
-        if nodes is None:
-            return []
-        return nodes

@@ -49,7 +49,7 @@ class MyListingPaginator(ListingPaginator[str]):
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
     def _fetch_result(self) -> Sequence[str]:
-        data = self._fetch_listing_data()
+        data = self._fetch_data()
         return [d['name'] for d in data['children']]
 
 http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'')

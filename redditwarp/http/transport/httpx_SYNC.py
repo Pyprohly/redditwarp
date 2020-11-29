@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     from ..request import Request
 
 import httpx  # type: ignore[import]
-import httpcore  # type: ignore[import]
 
 from ..transporter_info import TransporterInfo
 from ..base_session_SYNC import BaseSession
@@ -74,7 +73,7 @@ class Session(BaseSession):
 
         try:
             resp = self.client.request(**kwargs)
-        except httpcore.TimeoutException as e:
+        except httpx.ReadTimeout as e:
             raise exceptions.TimeoutError from e
         except Exception as e:
             raise exceptions.TransportError from e

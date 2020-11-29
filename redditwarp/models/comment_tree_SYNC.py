@@ -11,7 +11,7 @@ from ..util.tree_node import GeneralTreeNode
 T = TypeVar('T')
 TChild = TypeVar('TChild')
 
-class CommentRepliesTreeNode(GeneralTreeNode[T, TChild]):
+class MoreCommentsTreeNode(GeneralTreeNode[T, TChild]):
     def __init__(self,
         value: T,
         children: Sequence[TChild],
@@ -20,12 +20,8 @@ class CommentRepliesTreeNode(GeneralTreeNode[T, TChild]):
         super().__init__(value, children)
         self.more = more
 
-__bound = 'CommentRepliesTreeNode[T, TCommentRepliesTreeNode]'
-TCommentRepliesTreeNode = TypeVar('TCommentRepliesTreeNode', bound=CommentRepliesTreeNode)  # type: ignore[type-arg]
-
-
-class CommentTreeNode(CommentRepliesTreeNode[Comment, 'CommentTreeNode']):
+class CommentTreeNode(MoreCommentsTreeNode[Comment, 'CommentTreeNode']):
     pass
 
-class SubmissionCommentTreeNode(CommentRepliesTreeNode[Submission, CommentTreeNode]):
+class SubmissionCommentTreeNode(MoreCommentsTreeNode[Submission, CommentTreeNode]):
     pass

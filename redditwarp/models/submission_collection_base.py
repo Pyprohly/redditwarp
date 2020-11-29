@@ -42,7 +42,7 @@ class SubmissionCollectionBase(FunBox):
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
 
 
-class VisualSubmissionCollectionBase(SubmissionCollectionBase):
+class PrimarySubmissionCollectionBase(SubmissionCollectionBase):
     submissions: Optional[Sequence[SubmissionBase]]
 
     def __init__(self, d: Mapping[str, Any]):

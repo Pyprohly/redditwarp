@@ -20,9 +20,7 @@ class CursorBidirectionalPaginator(IResumable, IResettable, BidirectionalPaginat
         if self.resuming:
             return True
         p = self.forward_available if self.get_direction() else self.backward_available
-        if p is None:
-            return False
-        return p
+        return p or False
 
     def resume(self) -> None:
         self.resuming = True

@@ -12,6 +12,7 @@ from .frontpage.SYNC import FrontPage
 from .user.SYNC import User
 from .account.SYNC import Account
 from .collection.SYNC import Collection
+from .flair.SYNC import Flair
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -24,3 +25,4 @@ class SiteProcedures:
         self.user = User(client)
         self.account = Account(client)
         self.collection = Collection(client)
+        self.flair = Flair(client)

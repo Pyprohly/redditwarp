@@ -7,7 +7,7 @@ from .interfaces import IResumable, IResettable
 
 T = TypeVar('T')
 
-class BidirectionalCursorAsyncPaginator(IResumable, IResettable, BidirectionalAsyncPaginator[T]):
+class CursorBidirectionalAsyncPaginator(IResumable, IResettable, BidirectionalAsyncPaginator[T]):
     def __init__(self) -> None:
         super().__init__()
         self.forward_cursor: Optional[str] = None
@@ -20,9 +20,7 @@ class BidirectionalCursorAsyncPaginator(IResumable, IResettable, BidirectionalAs
         if self.resuming:
             return True
         p = self.forward_available if self.get_direction() else self.backward_available
-        if p is None:
-            return False
-        return p
+        return p or False
 
     def resume(self) -> None:
         self.resuming = True

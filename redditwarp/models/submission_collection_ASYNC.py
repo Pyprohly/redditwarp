@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from .submission_collection_base import (
     SubmissionCollectionBase,
-    VisualSubmissionCollectionBase,
+    PrimarySubmissionCollectionBase,
 )
 from ..api.load.submission_ASYNC import load_submission
 
@@ -17,7 +17,7 @@ class SubmissionCollection(SubmissionCollectionBase):
         super().__init__(d)
         self.client = client
 
-class VisualSubmissionCollection(SubmissionCollection, VisualSubmissionCollectionBase):
+class PrimarySubmissionCollection(SubmissionCollection, PrimarySubmissionCollectionBase):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d, client)
         self.submissions: Optional[Sequence[Submission]] = None

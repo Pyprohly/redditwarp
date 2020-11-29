@@ -17,10 +17,7 @@ class CursorPaginator(IResumable, IResettable, Paginator[T]):
     def has_next(self) -> bool:
         if self.resuming:
             return True
-        p = self.available
-        if p is None:
-            return False
-        return p
+        return self.available or False
 
     def resume(self) -> None:
         self.resuming = True

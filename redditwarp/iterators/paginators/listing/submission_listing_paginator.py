@@ -8,5 +8,5 @@ from ....api.load.submission_SYNC import load_submission
 
 class SubmissionListingPaginator(ListingPaginator[Submission]):
     def _fetch_result(self) -> Sequence[Submission]:
-        data = self._fetch_listing_data()
+        data = self._fetch_data()
         return [load_submission(d['data'], self.client) for d in data['children']]

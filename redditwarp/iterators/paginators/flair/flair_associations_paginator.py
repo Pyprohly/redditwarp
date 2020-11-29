@@ -1,36 +1,29 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Any, Dict, Optional, Callable, Sequence, cast
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, cast
 if TYPE_CHECKING:
     from ....client_SYNC import Client
+    from ....models.flair import UserFlairAssociation
 
+from ....api.load.flair import load_user_flair_association
 from ..cursor_bidirectional_paginator import CursorBidirectionalPaginator
 
-T = TypeVar('T')
-
-class ListingPaginator(CursorBidirectionalPaginator[T]):
+class FlairAssociationsPaginator(CursorBidirectionalPaginator[UserFlairAssociation]):
     def __init__(self,
         client: Client,
         uri: str,
         *,
-        limit: Optional[int] = 100,
-        cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
+        limit: Optional[int] = 1000,
     ):
         super().__init__()
         self.limit = limit
         self.client = client
         self.uri = uri
-        self.cursor_extractor = cursor_extractor
-        self.count = 0
-        self.show_all = False
 
     def _get_params(self) -> Dict[str, str]:
         params: Dict[str, Optional[str]] = {
-            'count': str(self.count),
             'limit': str(self.limit),
         }
-        if self.show_all:
-            params['show'] = 'all'
         if self.get_direction():
             params['after'] = self.forward_cursor
         else:
@@ -42,31 +35,22 @@ class ListingPaginator(CursorBidirectionalPaginator[T]):
     def _fetch_data(self) -> Dict[str, Any]:
         params = self._get_params()
         recv = self.client.request('GET', self.uri, params=params)
-        data = recv['data']
-        self.count += data['dist']
-        entries = data['children']
-        after = data['after']
-        before = data['before']
+        entries = recv['users']
+        after = recv.get('after')
+        before = recv.get('before')
 
         if entries:
             self.forward_cursor = after
-            if not self.forward_cursor:
-                self.forward_cursor = self.cursor_extractor(entries[-1])
             self.backward_cursor = before
-            if not self.backward_cursor:
-                self.backward_cursor = self.cursor_extractor(entries[0])
 
         self.forward_available = bool(after)
         self.backward_available = bool(before)
-        return data
+        return recv
 
-    def _fetch_result(self) -> Sequence[T]:
-        raise NotImplementedError
+    def _fetch_result(self) -> Sequence[UserFlairAssociation]:
+        data = self._fetch_data()
+        return [load_user_flair_association(d) for d in data['users']]
 
-    def next_result(self) -> Sequence[T]:
+    def next_result(self) -> Sequence[UserFlairAssociation]:
         self.resuming = False
         return self._fetch_result()
-
-    def reset(self) -> None:
-        super().reset()
-        self.count = 0

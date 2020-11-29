@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableSequence
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableSequence, Union, AnyStr
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.payload import Payload
@@ -156,15 +156,12 @@ class ClientCore:
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
-        data: Any = None,
+        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
         headers: Optional[Mapping[str, str]] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
-        self.last_response = None
-        self.last_value = None
-
         url = self.url_join(path)
         try:
             resp = await self.http.request(verb, url, params=params, payload=payload,

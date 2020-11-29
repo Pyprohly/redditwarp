@@ -23,8 +23,8 @@ class BinaryTreeNode(TreeNode[T, TChild]):
         self.left = left
         self.right = right
 
-__bound = 'BinaryTreeNode[T, TBinaryTreeNode]'
-TBinaryTreeNode = TypeVar('TBinaryTreeNode', bound=BinaryTreeNode)  # type: ignore[type-arg]
+__bound = 'BinaryTreeNode[T, TRecursiveBinaryTreeNode]'
+TRecursiveBinaryTreeNode = TypeVar('TRecursiveBinaryTreeNode', bound=BinaryTreeNode)  # type: ignore[type-arg]
 
 
 class GeneralTreeNode(TreeNode[T, TChild]):
@@ -35,5 +35,5 @@ class GeneralTreeNode(TreeNode[T, TChild]):
         super().__init__(value)
         self.children = children
 
-__bound = 'GeneralTreeNode[T, TGeneralTreeNode]'
-TGeneralTreeNode = TypeVar('TGeneralTreeNode', bound=GeneralTreeNode)  # type: ignore[type-arg]
+__bound = 'GeneralTreeNode[T, TRecursiveGeneralTreeNode]'
+TRecursiveGeneralTreeNode = TypeVar('TRecursiveGeneralTreeNode', bound=GeneralTreeNode)  # type: ignore[type-arg]

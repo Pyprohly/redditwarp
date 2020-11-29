@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ....models.subreddit_thread_SYNC import SubredditThread
 
 from ....util.base_conversion import to_base36
-from ...load.comment_tree_SYNC import load_topic_thread
+from ...load.comment_tree_SYNC import load_subreddit_thread
 from ....exceptions import HTTPStatusError
 
 class Get:
@@ -64,4 +64,4 @@ class Get:
                 return None
             raise
 
-        return load_topic_thread(resp_data, self._client, sort)
+        return load_subreddit_thread(resp_data, self._client, sort)

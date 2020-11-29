@@ -1,5 +1,6 @@
 
-from typing import Optional, Any, Dict
+from __future__ import annotations
+from typing import Optional, Any, Mapping, Union, AnyStr
 
 class Payload:
     CONTENT_TYPE_SUGGESTION = ''
@@ -11,7 +12,7 @@ class Raw(Payload):
 
 class FormData(Payload):
     CONTENT_TYPE_SUGGESTION = 'application/x-www-form-urlencoded'
-    def __init__(self, data: Dict[str, str]):
+    def __init__(self, data: Mapping[str, str]):
         self.data = data
 
 class MultiPart(Payload):
@@ -30,24 +31,24 @@ class JSON(Payload):
         self.json = json
 
 
-def make_payload(payload: Optional[Payload] = None, data: Any = None, json: Any = None) -> Optional[Payload]:
+def make_payload(
+    payload: Optional[Payload] = None,
+    data: Optional[Union[Mapping[str, str], AnyStr]] = None,
+    json: Any = None,
+) -> Optional[Payload]:
     if payload is not None:
         return payload
 
     if data is not None:
-        if isinstance(data, dict):
-            d = {k: str(v) for k, v in data.items()}
-            data.clear()
-            return FormData(d)
+        if isinstance(data, Mapping):
+            return FormData(data)
         if isinstance(data, str):
             return Text(data)
         if isinstance(data, bytes):
             return Raw(data)
-        raise NotImplementedError
+        raise Exception
 
     if json is not None:
-        if isinstance(json, dict):
-            return JSON(json)
-        raise NotImplementedError
+        return JSON(json)
 
     return None

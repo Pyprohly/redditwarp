@@ -51,7 +51,7 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
     async def _fetch_result(self) -> Sequence[str]:
-        data = await self._fetch_listing_data()
+        data = await self._fetch_data()
         return [d['name'] for d in data['children']]
 
 http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'')

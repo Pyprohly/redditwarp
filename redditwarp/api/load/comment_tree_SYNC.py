@@ -1,13 +1,13 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, Mapping, Sequence, Dict, List
+from typing import TYPE_CHECKING, Any, Optional, Mapping, Dict, List
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.more_comments_SYNC import MoreComments
 
 from .comment_SYNC import load_comment
 from .submission_SYNC import load_submission
-from ...models.comment_tree_SYNC import CommentTreeNode, SubmissionCommentTreeNode
+from ...models.comment_tree_SYNC import MoreCommentsTreeNode, CommentTreeNode, SubmissionCommentTreeNode
 from ...models.subreddit_thread_SYNC import SubredditThread
 from ...models.more_comments_SYNC import ContinueThisThread, LoadMoreComments
 
@@ -37,7 +37,7 @@ def load_more_comments(
         client=client,
     )
 
-def load_topic_thread(d: Any, client: Client, sort: Optional[str]) -> SubredditThread:
+def load_subreddit_thread(d: Any, client: Client, sort: Optional[str]) -> SubredditThread:
     def f(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> CommentTreeNode:
         value = load_comment(d, client)
         nodes = []
@@ -91,11 +91,9 @@ def load_topic_thread(d: Any, client: Client, sort: Optional[str]) -> SubredditT
     root = SubmissionCommentTreeNode(value, nodes, more)
     return SubredditThread(root, sort)
 
-def load_more_children(d: Any, client: Client, link_id: str, sort: Optional[str]) -> Sequence[CommentTreeNode]:
-    roots: List[CommentTreeNode] = []
+def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> MoreCommentsTreeNode[None, CommentTreeNode]:
     node_lookup: Dict[str, CommentTreeNode] = {}
-    more_lookup: Dict[str, Optional[MoreComments]] = {}
-    chil_lookup: Dict[str, List[CommentTreeNode]] = {}
+    chilren_lookup: Dict[str, List[CommentTreeNode]] = {}
 
     elements = d['json']['data']['things']
     for m in elements:
@@ -104,29 +102,28 @@ def load_more_children(d: Any, client: Client, link_id: str, sort: Optional[str]
             continue
         data = m['data']
         id_ = data['name']
-        parent_id = data['parent_id']
-
         value = load_comment(data, client)
         children: List[CommentTreeNode] = []
-        node_lookup[id_] = CommentTreeNode(value, children, None)
-        chil_lookup[id_] = children
-        more_lookup[id_] = None
+        node = CommentTreeNode(value, children, None)
+        node_lookup[id_] = node
+        chilren_lookup[id_] = children
 
+    roots: List[CommentTreeNode] = []
+    root_more = None
     for m in elements:
         kind = m['kind']
         data = m['data']
-        id_ = data['name']
         parent_id = data['parent_id']
         if kind == 'more':
-            more_obj = load_more_comments(data, client, link_id, sort)
-            more_lookup[parent_id] = more_obj
+            more = load_more_comments(data, client, submission_id36, sort)
+            try:
+                node_lookup[parent_id].more = more
+            except KeyError:
+                assert root_more is None
+                root_more = more
         else:
+            id_ = data['name']
             node = node_lookup[id_]
-            children = chil_lookup.get(parent_id, roots)
-            children.append(node)
+            chilren_lookup.get(parent_id, roots).append(node)
 
-    for id_, more in more_lookup.items():
-        node = node_lookup[id_]
-        node.more = more
-
-    return roots
+    return MoreCommentsTreeNode(None, roots, root_more)

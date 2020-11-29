@@ -6,6 +6,45 @@ from .original_reddit_thing_object import OriginalRedditThingObject
 
 class SubredditBase(OriginalRedditThingObject):
     class User:
+        class UserFlair:
+            def __init__(self, d: Mapping[str, Any]):
+                self.enabled: bool = d['user_sr_flair_enabled']
+
+                # Ever had a flair before on the subreddit.
+                self.has_had_flair: bool = d['user_flair_text'] is not None
+
+                # empty string:
+                #   * No flair template.
+                # 'transparent':
+                #   * Flair template being used but no background color set.
+                # otherwise:
+                #   * A color hex string, starting with '#'.
+                self.bg_color: str = d['user_flair_background_color'] or ''
+
+                _user_flair_css_class_temp: Optional[str] = d['user_flair_css_class']
+                self.has_had_css_class_when_no_flair_template: bool = _user_flair_css_class_temp is not None
+
+                # `None`:
+                #   * Flair not configured.
+                #   * A flair template is being used and the CSS class was never set before.
+                # empty string:
+                #   * Starts off as empty string if no flair template is being used.
+                #   * CSS class was removed on a flair template.
+                self.css_class: str = _user_flair_css_class_temp or ''
+
+                # Values: `left` or `right`.
+                self.position: str = d['user_flair_position']
+
+                # `None`:
+                #   * Flair not using a template.
+                self.template_uuid: Optional[str] = d['user_flair_template_id']
+
+                self.text: str = d['user_flair_text'] or ''
+                self.text_color: str = d['user_flair_text_color'] or ''
+
+                # Values: `text` or `richtext`.
+                self.type: str = d['user_flair_type']
+
         def __init__(self, outer: SubredditBase, d: Mapping[str, Any]):
             self.has_favorited: bool = d['user_has_favorited']
             self.is_banned: bool = d['user_is_banned']
@@ -13,8 +52,17 @@ class SubredditBase(OriginalRedditThingObject):
             self.is_moderator: bool = d['user_is_moderator']
             self.is_muted: bool = d['user_is_muted']
             self.is_subscriber: bool = d['user_is_subscriber']
-            self.sr_flair_enabled: bool = d['user_sr_flair_enabled']
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
+            self.flair = self.UserFlair(d)
+
+    class SubredditFlair:
+        def __init__(self, outer: SubredditBase, d: Mapping[str, Any]):
+            self.user_flairs_enabled: bool = d['user_flair_enabled_in_sr']
+            self.link_flairs_enabled: bool = d['link_flair_enabled']
+            self.users_can_assign_user_flair: bool = d['can_assign_user_flair']
+            self.users_can_assign_link_flair: bool = d['can_assign_link_flair']
+            self.user_flair_position: str = d['user_flair_position']
+            self.link_flair_position: str = d['link_flair_position']
 
     THING_ID = 't5'
 
@@ -51,5 +99,8 @@ class SubredditBase(OriginalRedditThingObject):
         self.icon_img: str = d['icon_img']
 
         self.user = None
+        # Just checking if a user context is available.
         if d['user_is_moderator'] is not None:
             self.user = self.User(self, d)
+
+        self.flair = self.SubredditFlair(self, d)

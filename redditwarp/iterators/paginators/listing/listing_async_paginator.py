@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, TypeVar, Any, Dict, Optional, Callable, Sequen
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
-from ..bidirectional_cursor_async_paginator import BidirectionalCursorAsyncPaginator
+from ..cursor_bidirectional_async_paginator import CursorBidirectionalAsyncPaginator
 
 T = TypeVar('T')
 
-class ListingAsyncPaginator(BidirectionalCursorAsyncPaginator[T]):
+class ListingAsyncPaginator(CursorBidirectionalAsyncPaginator[T]):
     def __init__(self,
         client: Client,
         uri: str,
@@ -39,7 +39,7 @@ class ListingAsyncPaginator(BidirectionalCursorAsyncPaginator[T]):
         for k in remove_keys: del params[k]
         return cast(Dict[str, str], params)
 
-    async def _fetch_listing_data(self) -> Dict[str, Any]:
+    async def _fetch_data(self) -> Dict[str, Any]:
         params = self._get_params()
         recv = await self.client.request('GET', self.uri, params=params)
         data = recv['data']
@@ -50,9 +50,9 @@ class ListingAsyncPaginator(BidirectionalCursorAsyncPaginator[T]):
 
         if entries:
             self.forward_cursor = after
-            self.backward_cursor = before
             if not self.forward_cursor:
                 self.forward_cursor = self.cursor_extractor(entries[-1])
+            self.backward_cursor = before
             if not self.backward_cursor:
                 self.backward_cursor = self.cursor_extractor(entries[0])
 

@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ....client_SYNC import Client
-    from ....models.submission_collection_SYNC import VisualSubmissionCollection
+    from ....models.submission_collection_SYNC import PrimarySubmissionCollection
 
-from ...load.submission_collection_SYNC import load_visual_submission_collection
+from ...load.submission_collection_SYNC import load_primary_submission_collection
 
 from .get_subreddit_collections_SYNC import GetSubredditCollections
 from .create_SYNC import Create
@@ -22,10 +22,12 @@ class Collection:
         self.remove_post = RemovePost(client)
         self.reorder = Reorder(client)
 
-    def fetch(self, uuid: str, include_posts: bool = True) -> VisualSubmissionCollection:
+    def get(self, uuid: str, include_posts: bool = True) -> Optional[PrimarySubmissionCollection]:
         params = {'collection_id': uuid, 'include_links': '01'[include_posts]}
-        data = self._client.request('GET', '/api/v1/collections/collection', params=params)
-        return load_visual_submission_collection(data, self._client)
+        root = self._client.request('GET', '/api/v1/collections/collection', params=params)
+        if len(root) < 3:
+            return None
+        return load_primary_submission_collection(root, self._client)
 
     def delete(self, uuid: str) -> None:
         params = {'collection_id': uuid}

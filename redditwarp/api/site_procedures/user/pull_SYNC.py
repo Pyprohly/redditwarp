@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ....client_SYNC import Client
-    from ....models.comment_SYNC import Comment
+    from ....models.comment_SYNC import NewComment
     from ....models.submission_SYNC import Submission
     from ....models.original_reddit_thing_object import OriginalRedditThingObject
 
@@ -27,7 +27,7 @@ class Pull:
         p = SubredditDetailSubmissionListingPaginator(self._client, f'/user/{name}/submitted')
         return PaginatorChainingIterator(p, amount)
 
-    def comments(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, Comment]:
+    def comments(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, NewComment]:
         p = CommentListingPaginator(self._client, f'/user/{name}/comments')
         return PaginatorChainingIterator(p, amount)
 

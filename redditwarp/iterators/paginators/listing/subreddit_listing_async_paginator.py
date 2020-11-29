@@ -8,5 +8,5 @@ from ....api.load.subreddit_ASYNC import load_subreddit
 
 class SubredditListingAsyncPaginator(ListingAsyncPaginator[Subreddit]):
     async def _fetch_result(self) -> Sequence[Subreddit]:
-        data = await self._fetch_listing_data()
+        data = await self._fetch_data()
         return [load_subreddit(d['data'], self.client) for d in data['children']]

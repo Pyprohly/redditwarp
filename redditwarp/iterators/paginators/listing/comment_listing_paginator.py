@@ -8,5 +8,5 @@ from ....api.load.comment_SYNC import load_comment
 
 class CommentListingPaginator(ListingPaginator[Comment]):
     def _fetch_result(self) -> Sequence[Comment]:
-        data = self._fetch_listing_data()
+        data = self._fetch_data()
         return [load_comment(d['data'], self.client) for d in data['children']]

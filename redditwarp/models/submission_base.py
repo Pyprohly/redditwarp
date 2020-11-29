@@ -8,12 +8,33 @@ from .original_reddit_thing_object import OriginalRedditThingObject
 from ..auth.const import AUTHORIZATION_BASE_URL
 
 class SubmissionBase(OriginalRedditThingObject):
+    class User:
+        def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
+            # User context fields
+            self.saved: bool = d['saved']  # False if no user context
+            self.hidden: bool = d['hidden']  # False if no user context
+            self.inbox_notifications: bool = d['send_replies']  # False if no user context
+            self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
+
     class Author:
+        class AuthorFlair:
+            def __init__(self, d: Mapping[str, Any]):
+                self.has_had_flair: bool = d['author_flair_text'] is not None
+                self.bg_color: str = d['author_flair_background_color'] or ''
+                _author_flair_css_class_temp: Optional[str] = d['author_flair_css_class']
+                self.has_had_css_class_when_no_flair_template: bool = _author_flair_css_class_temp is not None
+                self.css_class: str = _author_flair_css_class_temp or ''
+                self.template_uuid: Optional[str] = d['author_flair_template_id']
+                self.text: str = d['author_flair_text'] or ''
+                self.text_color: str = d['author_flair_text_color'] or ''
+                self.type: str = d['author_flair_type']
+
         def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
             self.name: str = d['author']
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
             self.has_premium: bool = d['author_premium']
+            self.flair = self.AuthorFlair(d)
 
     class Subreddit:
         def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
@@ -47,6 +68,17 @@ class SubmissionBase(OriginalRedditThingObject):
             self.end_ut = int(d['event_end'])
             self.end_at = datetime.fromtimestamp(self.end_ut, timezone.utc)
             self.is_live: bool = d['event_is_live']
+
+    class Flair:
+        def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
+            self.has_flair: bool = d['link_flair_text'] is not None
+            self.bg_color: str = d['link_flair_background_color']
+            _link_flair_css_class_temp: Optional[str] = d['link_flair_css_class']
+            self.css_class: str = _link_flair_css_class_temp or ''
+            self.template_uuid: Optional[str] = d.get('link_flair_template_id', None)
+            self.text: str = d['link_flair_text'] or ''
+            self.text_color: str = d['link_flair_text_color']
+            self.type: str = d['link_flair_type']
 
     THING_ID = 't3'
 
@@ -86,11 +118,7 @@ class SubmissionBase(OriginalRedditThingObject):
         if 'event_start' in d:
             self.event = self.Event(d)
 
-        # User context fields
-        #: For clients with no user context this will always be `False`.
-        self.saved: bool = d['saved']
-        self.hidden: bool = d['hidden']
-        self.inbox_notifications: bool = d['send_replies']
+        self.user = self.User(self, d)
 
         self.subreddit = self.Subreddit(self, d)
 
@@ -106,6 +134,8 @@ class SubmissionBase(OriginalRedditThingObject):
         # not a moderator of the subreddit (or there’s no user context).
         if 'spam' in d:
             self.mod = self.Moderator(self, d)
+
+        self.flair = self.Flair(self, d)
 
 
 class TextPostBase(SubmissionBase):

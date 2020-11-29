@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Type, Any, Optional, Mapping, MutableMapping
+    from typing import Type, Any, Optional, Mapping, MutableMapping, Union, AnyStr
     from types import TracebackType
     from ..http.base_session_ASYNC import BaseSession
     from .authorizer_ASYNC import Authorizer, Authorized
@@ -94,7 +94,7 @@ class RedditHTTPClient:
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         payload: Optional[Payload] = None,
-        data: Any = None,
+        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
         headers: Optional[Mapping[str, str]] = None,
         timeout: float = TIMEOUT,

@@ -9,7 +9,7 @@ from ....api.load.submission_SYNC import load_submission
 
 class CommentAndSubmissionListingPaginator(ListingPaginator[OriginalRedditThingObject]):
     def _fetch_result(self) -> Sequence[OriginalRedditThingObject]:
-        data = self._fetch_listing_data()
+        data = self._fetch_data()
         l = []
         for child in data['children']:
             kind = child['kind']
