@@ -15,6 +15,7 @@ class SubmissionBase(OriginalRedditThingObject):
             self.hidden: bool = d['hidden']  # False if no user context
             self.inbox_notifications: bool = d['send_replies']  # False if no user context
             self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
+            self.is_following_event: bool = d.get('is_followed', False)  # False if no user context
 
     class Author:
         class AuthorFlair:

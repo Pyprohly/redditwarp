@@ -12,14 +12,14 @@ class PullSubreddits:
     def __init__(self, client: Client):
         self._client = client
 
-    def subscribed(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
+    def subscribed(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         p = SubredditListingPaginator(self._client, '/subreddits/mine/subscriber')
         return PaginatorChainingIterator(p, amount)
 
-    def contributing(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
+    def contributing(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         p = SubredditListingPaginator(self._client, '/subreddits/mine/contributor')
         return PaginatorChainingIterator(p, amount)
 
-    def moderating(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
+    def moderating(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         p = SubredditListingPaginator(self._client, '/subreddits/mine/moderator')
         return PaginatorChainingIterator(p, amount)

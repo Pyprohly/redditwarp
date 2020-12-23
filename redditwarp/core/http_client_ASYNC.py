@@ -88,6 +88,27 @@ class RedditHTTPClient:
         raise_for_resource_server_response(resp)
         return resp
 
+    def make_request(self,
+        verb: str,
+        uri: str,
+        *,
+        params: Optional[Mapping[str, Optional[str]]] = None,
+        payload: Optional[Payload] = None,
+        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
+        json: Any = None,
+        headers: Optional[Mapping[str, str]] = None,
+    ) -> Request:
+        params = {} if params is None else params
+        params = {**self.params, **params}
+        remove_keys = [k for k, v in params.items() if v is NotImplemented]
+        for k in remove_keys: del params[k]
+
+        headers = {} if headers is None else headers
+        headers = {**self.headers, **headers}
+
+        payload = make_payload(payload, data, json)
+        return Request(verb, uri, params=params, payload=payload, headers=headers)
+
     async def request(self,
         verb: str,
         uri: str,
@@ -100,17 +121,8 @@ class RedditHTTPClient:
         timeout: float = TIMEOUT,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
-        params = {} if params is None else params
-        params = {**self.params, **params}
-        remove_keys = [k for k, v in params.items() if v is NotImplemented]
-        for k in remove_keys: del params[k]
-
-        headers = {} if headers is None else headers
-        headers = {**self.headers, **headers}
-
-        payload = make_payload(payload, data, json)
-
-        r = Request(verb, uri, params=params, payload=payload, headers=headers)
+        r = self.make_request(verb, uri, params=params, payload=payload,
+                data=data, json=json, headers=headers)
         return await self.send(r, timeout=timeout, aux_info=aux_info)
 
     async def close(self) -> None:

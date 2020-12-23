@@ -223,7 +223,7 @@ class Variant2RedditAPIError(RedditAPIError):
     def get_default_message(self) -> str:
         err_count = len(self.errors)
         if err_count > 1:
-            return f"multiple ({err_count}) errors encountered:\n" \
+            return "(multiple errors encountered):\n" \
                     + '\n'.join(
                         f"  {err.codename}: {err.detail}{err.field and f' -> {err.field}'}"
                         for err in self.errors)
