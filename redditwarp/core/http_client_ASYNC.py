@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .authorizer_ASYNC import Authorizer, Authorized
     from ..http.requestor_ASYNC import Requestor
     from ..http.response import Response
-    from ..http.payload import Payload
+    from ..http.payload import RequestFiles
 
 import sys
 
@@ -17,7 +17,7 @@ from .. import auth
 from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
-from ..http.payload import make_payload
+from ..http.payload import build_payload
 
 class RedditHTTPClient:
     TIMEOUT = 8
@@ -88,15 +88,15 @@ class RedditHTTPClient:
         raise_for_resource_server_response(resp)
         return resp
 
-    def make_request(self,
+    def build_request(self,
         verb: str,
         uri: str,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
-        payload: Optional[Payload] = None,
+        headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
-        headers: Optional[Mapping[str, str]] = None,
+        files: Optional[RequestFiles] = None,
     ) -> Request:
         params = {} if params is None else params
         params = {**self.params, **params}
@@ -106,7 +106,7 @@ class RedditHTTPClient:
         headers = {} if headers is None else headers
         headers = {**self.headers, **headers}
 
-        payload = make_payload(payload, data, json)
+        payload = build_payload(data, json, files)
         return Request(verb, uri, params=params, payload=payload, headers=headers)
 
     async def request(self,
@@ -114,15 +114,15 @@ class RedditHTTPClient:
         uri: str,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
-        payload: Optional[Payload] = None,
+        headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
-        headers: Optional[Mapping[str, str]] = None,
+        files: Optional[RequestFiles] = None,
         timeout: float = TIMEOUT,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
-        r = self.make_request(verb, uri, params=params, payload=payload,
-                data=data, json=json, headers=headers)
+        r = self.build_request(verb, uri, params=params, headers=headers,
+                data=data, json=json, files=files)
         return await self.send(r, timeout=timeout, aux_info=aux_info)
 
     async def close(self) -> None:

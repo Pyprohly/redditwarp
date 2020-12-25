@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Mapping, Any
 if TYPE_CHECKING:
     from redditwarp.http.request import Request
-    from redditwarp.http.payload import Payload
+    from redditwarp.http.payload import RequestFiles
 
 import pytest
 
@@ -36,10 +36,10 @@ class MyHTTPClient(HTTPClient):
         uri: str,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
-        payload: Optional[Payload] = None,
+        headers: Optional[Mapping[str, str]] = None,
         data: Any = None,
         json: Any = None,
-        headers: Optional[Mapping[str, str]] = None,
+        files: Optional[RequestFiles] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:

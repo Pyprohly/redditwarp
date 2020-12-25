@@ -1,8 +1,9 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any
+from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any, List
 if TYPE_CHECKING:
     from ..request import Request
+    from ..payload import Payload
 
 import httpx  # type: ignore[import]
 
@@ -13,11 +14,44 @@ from .. import payload
 from ..response import Response
 from .SYNC import register
 
+def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
+    if not isinstance(y, payload.Multipart):
+        raise Exception
+
+    text_payloads: List[payload.MultipartTextData] = []
+    file_payloads: List[payload.MultipartFileData] = []
+    for part in y.parts:
+        if part.headers:
+            raise NotImplementedError('multipart body part additional headers not implemented')
+
+        sub_payload = part.payload
+
+        if isinstance(sub_payload, payload.MultipartTextData):
+            text_payloads.append(sub_payload)
+        elif isinstance(sub_payload, payload.MultipartFileData):
+            file_payloads.append(sub_payload)
+        else:
+            raise NotImplementedError('mixed multipart not implemented')
+
+    destructured_file_payloads = {
+        p.name: (
+            (p.filename, p.file)
+            if p.content_type == '.' else
+            (p.filename, p.file, p.content_type)
+        )
+        for p in file_payloads
+    }
+
+    return {
+        'data': {p.name: p.value for p in text_payloads},
+        'files': destructured_file_payloads,
+    }
+
 _PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
     type(None): lambda y: {},
-    payload.Raw: lambda y: {'data': y.data},
+    payload.Bytes: lambda y: {'data': y.data},
     payload.FormData: lambda y: {'data': y.data},
-    payload.MultiPart: lambda y: {'files': y.data},
+    payload.Multipart: _multipart_payload_dispatch,
     payload.Text: lambda y: {'data': y.text},
     payload.JSON: lambda y: {'json': y.json},
 }

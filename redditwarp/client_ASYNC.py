@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableSequence, Union, AnyStr
 if TYPE_CHECKING:
     from types import TracebackType
-    from .http.payload import Payload
     from .http.response import Response
 
 from collections import deque
@@ -155,17 +154,16 @@ class ClientCore:
         path: str,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
-        payload: Optional[Payload] = None,
+        headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
-        headers: Optional[Mapping[str, str]] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
         url = self.url_join(path)
         try:
-            resp = await self.http.request(verb, url, params=params, payload=payload,
-                    data=data, json=json, headers=headers, timeout=timeout, aux_info=aux_info)
+            resp = await self.http.request(verb, url, params=params, headers=headers,
+                    data=data, json=json, timeout=timeout, aux_info=aux_info)
         except (
             auth.exceptions.ResponseException,
             http.exceptions.ResponseException,

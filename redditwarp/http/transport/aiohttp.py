@@ -1,9 +1,10 @@
 """Transport adapter for aiohttp."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any
+from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any, List
 if TYPE_CHECKING:
     from ..request import Request
+    from ..payload import Payload
 
 from ...util.module_importing import lazy_import;
 if 0: import asyncio
@@ -18,11 +19,45 @@ from .. import payload
 from ..response import Response
 from .ASYNC import register
 
+def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
+    if not isinstance(y, payload.Multipart):
+        raise Exception
+
+    text_payloads: List[payload.MultipartTextData] = []
+    file_payloads: List[payload.MultipartFileData] = []
+    for part in y.parts:
+        if part.headers:
+            raise NotImplementedError('multipart body part additional headers not implemented')
+
+        sub_payload = part.payload
+
+        if isinstance(sub_payload, payload.MultipartTextData):
+            text_payloads.append(sub_payload)
+        elif isinstance(sub_payload, payload.MultipartFileData):
+            file_payloads.append(sub_payload)
+        else:
+            raise NotImplementedError('mixed multipart not implemented')
+
+    if not file_payloads:
+        raise NotImplementedError('multipart without file fields not supported')
+
+    formdata = aiohttp.FormData()
+    for ty in text_payloads:
+        formdata.add_field(ty.name, ty.value)
+    for fy in file_payloads:
+        ct = fy.content_type
+        if ct is None:
+            raise NotImplementedError('multipart file none content type not supported')
+        formdata.add_field(fy.name, fy.file, filename=fy.filename,
+                content_type=(None if ct == '.' else ct))
+
+    return {'data': formdata}
+
 _PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
     type(None): lambda y: {},
-    payload.Raw: lambda y: {'data': y.data},
+    payload.Bytes: lambda y: {'data': y.data},
     payload.FormData: lambda y: {'data': y.data},
-    payload.MultiPart: lambda y: {'files': y.data},
+    payload.Multipart: _multipart_payload_dispatch,
     payload.Text: lambda y: {'data': y.text},
     payload.JSON: lambda y: {'json': y.json},
 }

@@ -5,7 +5,7 @@ from redditwarp.core.http_client_SYNC import HTTPClient
 from redditwarp.http.base_session_SYNC import BaseSession
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.http.payload import Payload
+from redditwarp.http.payload import RequestFiles
 from redditwarp.iterators.paginators.listing.listing_paginator import ListingPaginator
 
 class MySession(BaseSession):
@@ -31,10 +31,10 @@ class MyHTTPClient(HTTPClient):
         uri: str,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
-        payload: Optional[Payload] = None,
+        headers: Optional[Mapping[str, str]] = None,
         data: Any = None,
         json: Any = None,
-        headers: Optional[Mapping[str, str]] = None,
+        files: Optional[RequestFiles] = None,
         timeout: float = 8,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
