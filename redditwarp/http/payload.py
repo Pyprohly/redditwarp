@@ -9,9 +9,10 @@ import os.path as op
 
 RequestFiles = Union[
     Mapping[str, Union[IO[str], IO[bytes]]],
-    Mapping[str, Tuple[str, IOBase]],
-    Mapping[str, Tuple[str, IOBase, Optional[str]]],
-    Sequence[Tuple[str, str, IOBase, Optional[str]]],
+    Mapping[str, Tuple[IOBase]],
+    Mapping[str, Tuple[IOBase, str]],
+    Mapping[str, Tuple[IOBase, str, Optional[str]]],
+    Sequence[Tuple[str, IOBase, str, Optional[str]]],
 ]
 
 class Payload:
@@ -71,8 +72,8 @@ class Multipart(CommonContentType):
         self.parts = parts
 
 
-def guess_content_type_from_filename(filename: str) -> str:
-    return mimetypes.guess_type(filename)[0] or Bytes.CONTENT_TYPE_HINT
+def guess_content_type_from_filename(fname: str) -> str:
+    return mimetypes.guess_type(fname)[0] or Bytes.CONTENT_TYPE_HINT
 
 def build_payload(
     data: Optional[Union[Mapping[str, str], AnyStr]] = None,
@@ -84,11 +85,16 @@ def build_payload(
         if isinstance(files, Mapping):
             for key, value in files.items():
                 if isinstance(value, tuple):
-                    if len(value) == 2:
-                        filename, file = cast(Tuple[str, IOBase], value)
+                    length = len(value)
+                    if length == 1:
+                        file, = cast(Tuple[IOBase], value)
+                        filename = key
                         content_type: Optional[str] = guess_content_type_from_filename(filename)
-                    elif len(value) == 3:
-                        filename, file, content_type = cast(Tuple[str, IOBase, Optional[str]], value)
+                    if length == 2:
+                        file, filename = cast(Tuple[IOBase, str], value)
+                        content_type = guess_content_type_from_filename(filename)
+                    elif length == 3:
+                        file, filename, content_type = cast(Tuple[IOBase, str, Optional[str]], value)
                         if content_type == '.':
                             content_type = guess_content_type_from_filename(filename)
                         elif content_type == '..':
@@ -105,7 +111,7 @@ def build_payload(
                 file_parts.append(Multipart.Part(body))
 
         else:
-            for (name, filename, value2, content_type) in files:
+            for (name, value2, filename, content_type) in files:
                 body = MultipartFileData(name, filename, value2, content_type)
                 file_parts.append(Multipart.Part(body))
 

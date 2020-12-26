@@ -2,24 +2,23 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Type, Any, Optional, Mapping, MutableMapping, Union, AnyStr
-    from types import TracebackType
+    from typing import Any, Optional, Mapping, MutableMapping, MutableSequence
     from ..http.base_session_SYNC import BaseSession
     from .authorizer_SYNC import Authorizer, Authorized
-    from ..http.requestor_SYNC import Requestor
     from ..http.response import Response
-    from ..http.payload import RequestFiles
 
 import sys
+from collections import deque
 
 from .. import __about__
 from .. import auth
+from .. import http
 from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
-from ..http.payload import build_payload
+from ..http.base_http_client_SYNC import BaseHTTPClient
 
-class RedditHTTPClient:
+class RedditHTTPClient(BaseHTTPClient):
     TIMEOUT = 8
     DEFAULT_PARAMS: Mapping[str, str] = {
         'raw_json': '1',
@@ -52,29 +51,16 @@ class RedditHTTPClient:
         params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
-        self.session = session
-        self.requestor: Requestor = session
+        params = dict(self.DEFAULT_PARAMS) if params is None else params
+        super().__init__(session, params=params, headers=headers)
         self.authorized_requestor: Optional[Authorized] = None
-        self.params: MutableMapping[str, Optional[str]]
-        self.params = dict(self.DEFAULT_PARAMS) if params is None else params
-        self.headers: MutableMapping[str, str]
-        self.headers = {} if headers is None else headers
         self.user_agent = self.user_agent_string_head = (
             f"{__about__.__title__}/{__about__.__version__} "
             f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
             f"{session.TRANSPORTER_INFO.name}/{session.TRANSPORTER_INFO.version}"
         )
-
-    def __enter__(self) -> RedditHTTPClient:
-        return self
-
-    def __exit__(self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> Optional[bool]:
-        self.close()
-        return None
+        self.last_response: Optional[Response] = None
+        self.last_response_queue: MutableSequence[Response] = deque(maxlen=12)
 
     def send(self,
         request: Request,
@@ -82,50 +68,22 @@ class RedditHTTPClient:
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         try:
-            resp = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
-        except auth.exceptions.ResponseException as e:
-            handle_auth_response_exception(e)
+            resp = super().send(request, timeout=timeout, aux_info=aux_info)
+        except (
+            auth.exceptions.ResponseException,
+            http.exceptions.ResponseException,
+        ) as e:
+            resp = e.response
+            self.last_response = resp
+            self.last_response_queue.append(resp)
+
+            if isinstance(e, auth.exceptions.ResponseException):
+                handle_auth_response_exception(e)
+                raise AssertionError
+            raise
+
+        self.last_response = resp
+        self.last_response_queue.append(resp)
+
         raise_for_resource_server_response(resp)
         return resp
-
-    def build_request(self,
-        verb: str,
-        uri: str,
-        *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
-        headers: Optional[Mapping[str, str]] = None,
-        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
-        json: Any = None,
-        files: Optional[RequestFiles] = None,
-    ) -> Request:
-        params = {} if params is None else params
-        params = {**self.params, **params}
-        remove_keys = [k for k, v in params.items() if v is NotImplemented]
-        for k in remove_keys: del params[k]
-
-        headers = {} if headers is None else headers
-        headers = {**self.headers, **headers}
-
-        payload = build_payload(data, json, files)
-        return Request(verb, uri, params=params, payload=payload, headers=headers)
-
-    def request(self,
-        verb: str,
-        uri: str,
-        *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
-        headers: Optional[Mapping[str, str]] = None,
-        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
-        json: Any = None,
-        files: Optional[RequestFiles] = None,
-        timeout: float = TIMEOUT,
-        aux_info: Optional[Mapping[Any, Any]] = None,
-    ) -> Response:
-        r = self.build_request(verb, uri, params=params, headers=headers,
-                data=data, json=json, files=files)
-        return self.send(r, timeout=timeout, aux_info=aux_info)
-
-    def close(self) -> None:
-        self.session.close()
-
-HTTPClient = RedditHTTPClient

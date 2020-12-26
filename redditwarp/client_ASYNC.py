@@ -5,18 +5,13 @@ if TYPE_CHECKING:
     from types import TracebackType
     from .http.response import Response
 
-from collections import deque
-
-from . import http
 from .http.util.json_loads import json_loads_response
 from .http.transport.ASYNC import get_default_transporter_name, new_session_factory
-from . import auth
 from .auth import ClientCredentials, Token
 from .auth.util import auto_grant_factory
 from .auth.token_obtainment_client_ASYNC import TokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
-from . import core
-from .core.http_client_ASYNC import HTTPClient
+from .core.http_client_ASYNC import RedditHTTPClient
 from .core.authorizer_ASYNC import Authorizer, Authorized
 from .core.ratelimited_ASYNC import RateLimited
 from .util.praw_config import get_praw_config
@@ -46,7 +41,7 @@ class ClientCore:
         return cls.default_transporter_name
 
     @classmethod
-    def from_http(cls: Type[T], http: HTTPClient) -> T:
+    def from_http(cls: Type[T], http: RedditHTTPClient) -> T:
         self = cls.__new__(cls)
         self._init_(http)
         return self
@@ -55,7 +50,7 @@ class ClientCore:
     def from_access_token(cls: Type[T], access_token: str) -> T:
         new_session = new_session_factory(cls.get_default_transporter_name())
         session = new_session()
-        http = HTTPClient(session)
+        http = RedditHTTPClient(session)
         session.headers = http.headers
         authorizer = Authorizer(Token(access_token), None)
         http.authorized_requestor = Authorized(session, authorizer)
@@ -88,6 +83,14 @@ class ClientCore:
             self.set_user_agent(get('user_agent'))
         return self
 
+    @property
+    def last_response(self) -> Optional[Response]:
+        return self.http.last_response
+
+    @property
+    def last_response_queue(self) -> MutableSequence[Response]:
+        return self.http.last_response_queue
+
     def __init__(self,
             client_id: str, client_secret: str,
             refresh_token: Optional[str] = None,
@@ -104,7 +107,7 @@ class ClientCore:
 
         new_session = new_session_factory(self.get_default_transporter_name())
         session = new_session()
-        http = HTTPClient(session)
+        http = RedditHTTPClient(session)
         session.headers = http.headers
         authorizer = Authorizer(
             (None if access_token is None else Token(access_token)),
@@ -119,11 +122,9 @@ class ClientCore:
         http.requestor = RateLimited(http.authorized_requestor)
         self._init_(http)
 
-    def _init_(self, http: HTTPClient) -> None:
+    def _init_(self, http: RedditHTTPClient) -> None:
         self.http = http
         self.resource_base_url = RESOURCE_BASE_URL
-        self.last_response: Optional[Response] = None
-        self.last_response_queue: MutableSequence[Response] = deque(maxlen=12)
         self.last_value: Any = None
 
     async def __aenter__(self) -> ClientCore:
@@ -161,21 +162,8 @@ class ClientCore:
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
         url = self.url_join(path)
-        try:
-            resp = await self.http.request(verb, url, params=params, headers=headers,
-                    data=data, json=json, timeout=timeout, aux_info=aux_info)
-        except (
-            auth.exceptions.ResponseException,
-            http.exceptions.ResponseException,
-            core.exceptions.ResponseException,
-        ) as e:
-            resp = e.response
-            self.last_response = resp
-            self.last_response_queue.append(resp)
-            raise
-
-        self.last_response = resp
-        self.last_response_queue.append(resp)
+        resp = await self.http.request(verb, url, params=params, headers=headers,
+                data=data, json=json, timeout=timeout, aux_info=aux_info)
 
         json_data = None
         if resp.data:
@@ -205,6 +193,6 @@ class ClientCore:
         self.http.authorizer.token = Token(access_token)
 
 class Client(ClientCore):
-    def _init_(self, http: HTTPClient) -> None:
+    def _init_(self, http: RedditHTTPClient) -> None:
         super()._init_(http)
         self.api = ...#site_procedures_ASYNC.SiteProcedures(self)

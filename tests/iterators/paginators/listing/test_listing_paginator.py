@@ -1,7 +1,7 @@
 
 from typing import Sequence, Any, Optional, Mapping, Callable
 from redditwarp.client_SYNC import Client
-from redditwarp.core.http_client_SYNC import HTTPClient
+from redditwarp.core.http_client_SYNC import RedditHTTPClient
 from redditwarp.http.base_session_SYNC import BaseSession
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
@@ -13,7 +13,7 @@ class MySession(BaseSession):
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return Response(0, {}, b'')
 
-class MyHTTPClient(HTTPClient):
+class MyHTTPClient(RedditHTTPClient):
     session = MySession()
 
     def __init__(self,
