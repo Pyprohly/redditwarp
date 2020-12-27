@@ -14,7 +14,7 @@ from redditwarp.http.base_session_ASYNC import BaseSession
 from redditwarp.http.response import Response
 
 class MySession(BaseSession):
-    async def send(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return Response(0, {}, b'')
 
@@ -40,7 +40,7 @@ class MyHTTPClient(RedditHTTPClient):
         data: Any = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
-        timeout: float = 8,
+        timeout: float = 0,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         return Response(self.response_status, self.response_headers, self.response_data)

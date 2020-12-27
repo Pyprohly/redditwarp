@@ -13,8 +13,6 @@ from .request import Request
 from .payload import build_payload
 
 class BaseHTTPClient:
-    TIMEOUT = -1
-
     def __init__(self,
         session: BaseSession,
         *,
@@ -41,7 +39,7 @@ class BaseHTTPClient:
 
     async def send(self,
         request: Request,
-        timeout: float = TIMEOUT,
+        timeout: float = 0,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         return await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
@@ -76,7 +74,7 @@ class BaseHTTPClient:
         data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
-        timeout: float = TIMEOUT,
+        timeout: float = 0,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         r = self.build_request(verb, uri, params=params, headers=headers,

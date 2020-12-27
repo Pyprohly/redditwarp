@@ -82,43 +82,60 @@ info = TransporterInfo(name, version, spec)
 
 class Session(BaseSession):
     TRANSPORTER_INFO = info
-    TIMEOUT = 5
 
     def __init__(self,
         client: httpx.AsyncClient,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
+        timeout: float = 60,
     ) -> None:
-        super().__init__(params=params, headers=headers)
+        super().__init__(params=params, headers=headers, timeout=timeout)
         self.client = client
 
-    async def send(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self._prepare_request(request)
 
-        t: Optional[float] = timeout
-        if timeout < 0:
-            t = self.TIMEOUT
+        client_timeout = httpx.Timeout(
+            connect=timeout,
+            read=None,
+            write=None,
+            pool=None,
+        )
+        if timeout == -1:
+            client_timeout = httpx.Timeout(
+                connect=None,
+                read=None,
+                write=None,
+                pool=None,
+            )
         elif timeout == 0:
-            t = None
+            client_timeout = httpx.Timeout(
+                connect=self.timeout,
+                read=None,
+                write=None,
+                pool=None,
+            )
+        elif timeout < 0:
+            raise ValueError(f'invalid timeout value: {timeout}')
 
-        kwargs: MutableMapping[str, object] = {'timeout': t}
+        kwargs: MutableMapping[str, object] = {'timeout': client_timeout}
         kwargs.update(_request_kwargs(request))
 
         try:
-            resp = await self.client.request(**kwargs)
+            response = await self.client.request(**kwargs)
         except httpcore.TimeoutException as e:
             raise exceptions.TimeoutError from e
         except Exception as e:
             raise exceptions.TransportError from e
 
         return Response(
-            status=resp.status_code,
-            headers=resp.headers,
-            data=resp.content,
+            status=response.status_code,
+            headers=response.headers,
+            data=response.content,
             request=request,
-            underlying_object=resp,
+            underlying_object=response,
         )
 
     async def close(self) -> None:
@@ -128,9 +145,10 @@ class Session(BaseSession):
 def new_session(*,
     params: Optional[Mapping[str, Optional[str]]] = None,
     headers: Optional[Mapping[str, str]] = None,
+    timeout: float = 8,
 ) -> Session:
     limits = httpx.Limits(max_connections=20)
     cl = httpx.AsyncClient(pool_limits=limits)
-    return Session(cl, params=params, headers=headers)
+    return Session(cl, params=params, headers=headers, timeout=timeout)
 
 register(name, info, new_session)

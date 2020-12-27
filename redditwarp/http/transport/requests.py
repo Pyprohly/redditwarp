@@ -82,43 +82,45 @@ info = TransporterInfo(name, version, spec)
 
 class Session(BaseSession):
     TRANSPORTER_INFO = info
-    TIMEOUT = 5
 
     def __init__(self,
         session: requests.Session,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
+        timeout: float = 60,
     ) -> None:
-        super().__init__(params=params, headers=headers)
+        super().__init__(params=params, headers=headers, timeout=timeout)
         self.session = session
 
-    def send(self, request: Request, *, timeout: float = -1,
+    def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self._prepare_request(request)
 
         t: Optional[float] = timeout
-        if timeout < 0:
-            t = self.TIMEOUT
-        elif timeout == 0:
+        if timeout == -1:
             t = None
+        elif timeout == 0:
+            t = self.timeout
+        elif timeout < 0:
+            raise ValueError(f'invalid timeout value: {t}')
 
         kwargs: MutableMapping[str, object] = {'timeout': t}
         kwargs.update(_request_kwargs(request))
 
         try:
-            resp = self.session.request(**kwargs)
+            response = self.session.request(**kwargs)
         except requests.exceptions.ReadTimeout as e:
             raise exceptions.TimeoutError from e
         except Exception as e:
             raise exceptions.TransportError from e
 
         return Response(
-            status=resp.status_code,
-            headers=resp.headers,
-            data=resp.content,
+            status=response.status_code,
+            headers=response.headers,
+            data=response.content,
             request=request,
-            underlying_object=resp,
+            underlying_object=response,
         )
 
     def close(self) -> None:
@@ -128,10 +130,11 @@ class Session(BaseSession):
 def new_session(*,
     params: Optional[Mapping[str, Optional[str]]] = None,
     headers: Optional[Mapping[str, str]] = None,
+    timeout: float = 8,
 ) -> Session:
     se = requests.Session()
     retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
     se.mount('https://', retry_adapter)
-    return Session(se, params=params, headers=headers)
+    return Session(se, params=params, headers=headers, timeout=timeout)
 
 register(name, info, new_session)

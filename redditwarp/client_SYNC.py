@@ -214,7 +214,7 @@ class ClientCore:
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
-        timeout: float = 8,
+        timeout: float = 0,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
         url = self.url_join(path)

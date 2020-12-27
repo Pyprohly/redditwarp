@@ -25,7 +25,7 @@ class GoodSession(BaseSession):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    async def send(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
@@ -37,7 +37,7 @@ class BadSession(BaseSession):
         super().__init__()
         self.exception = exc
 
-    async def send(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         raise self.exception
 

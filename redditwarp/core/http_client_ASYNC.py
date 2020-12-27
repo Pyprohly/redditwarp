@@ -19,7 +19,6 @@ from ..http.request import Request
 from ..http.base_http_client_ASYNC import BaseHTTPClient
 
 class RedditHTTPClient(BaseHTTPClient):
-    TIMEOUT = 8
     DEFAULT_PARAMS: Mapping[str, str] = {
         'raw_json': '1',
         'api_type': 'json',
@@ -64,7 +63,7 @@ class RedditHTTPClient(BaseHTTPClient):
 
     async def send(self,
         request: Request,
-        timeout: float = TIMEOUT,
+        timeout: float = 0,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         try:

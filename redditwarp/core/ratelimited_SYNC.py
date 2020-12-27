@@ -22,7 +22,7 @@ class RateLimited(RequestorDecorator):
         self._prev_request = 0.
         self._last_request = time.monotonic()
 
-    def send(self, request: Request, *, timeout: float = -1,
+    def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         s = 0.
         if self.remaining:

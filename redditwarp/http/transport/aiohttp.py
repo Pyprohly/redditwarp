@@ -87,51 +87,61 @@ info = TransporterInfo(name, version, spec)
 
 class Session(BaseSession):
     TRANSPORTER_INFO = info
-    TIMEOUT = 5
 
     def __init__(self,
         session: aiohttp.ClientSession,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
+        timeout: float = 60,
     ) -> None:
-        super().__init__(params=params, headers=headers)
+        super().__init__(params=params, headers=headers, timeout=timeout)
         self.session = session
 
-    async def send(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self._prepare_request(request)
 
-        if timeout < 0:
-            timeout = self.TIMEOUT
-        aiohttp_client_timeout_kwargs = {
-            'total': 5*60,
-            'connect': timeout,
-            'sock_connect': timeout,
-            'sock_read': timeout,
-        }
-        if timeout == 0:
-            aiohttp_client_timeout_kwargs.clear()
+        client_timeout = aiohttp.ClientTimeout(
+            total=5*60,
+            connect=timeout,
+            sock_connect=timeout,
+            sock_read=timeout,
+        )
+        if timeout == -1:
+            client_timeout = aiohttp.ClientTimeout(
+                total=None,
+                connect=None,
+                sock_connect=None,
+                sock_read=None,
+            )
+        elif timeout == 0:
+            client_timeout = aiohttp.ClientTimeout(
+                total=5*60,
+                connect=self.timeout,
+                sock_connect=self.timeout,
+                sock_read=self.timeout,
+            )
+        elif timeout < 0:
+            raise ValueError(f'invalid timeout value: {timeout}')
 
-        kwargs: MutableMapping[str, object] = {
-            'timeout': aiohttp.ClientTimeout(**aiohttp_client_timeout_kwargs),
-        }
+        kwargs: MutableMapping[str, object] = {'timeout': client_timeout}
         kwargs.update(_request_kwargs(request))
 
         try:
-            async with self.session.request(**kwargs) as resp:
-                content = await resp.content.read()
+            async with self.session.request(**kwargs) as response:
+                content = await response.content.read()
         except asyncio.TimeoutError as e:
             raise exceptions.TimeoutError from e
         except Exception as e:
             raise exceptions.TransportError from e
 
         return Response(
-            status=resp.status,
-            headers=resp.headers,
+            status=response.status,
+            headers=response.headers,
             data=content,
             request=request,
-            underlying_object=resp,
+            underlying_object=response,
         )
 
     async def close(self) -> None:
@@ -141,9 +151,10 @@ class Session(BaseSession):
 def new_session(*,
     params: Optional[Mapping[str, Optional[str]]] = None,
     headers: Optional[Mapping[str, str]] = None,
+    timeout: float = 8,
 ) -> Session:
     connector = aiohttp.TCPConnector(limit=20)
     se = aiohttp.ClientSession(connector=connector)
-    return Session(se, params=params, headers=headers)
+    return Session(se, params=params, headers=headers, timeout=timeout)
 
 register(name, info, new_session)

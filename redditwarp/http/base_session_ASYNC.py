@@ -19,9 +19,11 @@ class BaseSession(Requestor):
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
+        timeout: float = 60,
     ) -> None:
         self.params = {} if params is None else params
         self.headers = {} if headers is None else headers
+        self.timeout = timeout
 
     async def __aenter__(self) -> BaseSession:
         return self
@@ -40,7 +42,7 @@ class BaseSession(Requestor):
         p = request.params
         p.update({**self.params, **p})
 
-    async def send(self, request: Request, *, timeout: float = -1,
+    async def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         raise NotImplementedError
 
