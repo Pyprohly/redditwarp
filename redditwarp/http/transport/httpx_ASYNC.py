@@ -101,21 +101,21 @@ class Session(BaseSession):
             connect=timeout,
             read=None,
             write=None,
-            pool=None,
+            pool=20,
         )
         if timeout == -1:
             client_timeout = httpx.Timeout(
                 connect=None,
                 read=None,
                 write=None,
-                pool=None,
+                pool=20,
             )
         elif timeout == 0:
             client_timeout = httpx.Timeout(
                 connect=self.timeout,
                 read=None,
                 write=None,
-                pool=None,
+                pool=20,
             )
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {timeout}')
@@ -147,8 +147,9 @@ def new_session(*,
     headers: Optional[Mapping[str, str]] = None,
     timeout: float = 8,
 ) -> Session:
-    limits = httpx.Limits(max_connections=20)
-    cl = httpx.AsyncClient(pool_limits=limits)
+    # Waiting on issue https://github.com/encode/httpx/issues/1171
+    #limits = httpx.Limits(max_connections=20)
+    cl = httpx.AsyncClient()#pool_limits=limits)
     return Session(cl, params=params, headers=headers, timeout=timeout)
 
 register(name, info, new_session)

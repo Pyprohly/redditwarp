@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 if TYPE_CHECKING:
     from typing import ClassVar, Optional, Type, Any
     from types import TracebackType
@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 from .transporter_info import blank_transporter
 from .requestor_ASYNC import Requestor
+
+T = TypeVar('T')
 
 class BaseSession(Requestor):
     TRANSPORTER_INFO: ClassVar[TransporterInfo] = blank_transporter
@@ -25,7 +27,7 @@ class BaseSession(Requestor):
         self.headers = {} if headers is None else headers
         self.timeout = timeout
 
-    async def __aenter__(self) -> BaseSession:
+    async def __aenter__(self: T) -> T:
         return self
 
     async def __aexit__(self,

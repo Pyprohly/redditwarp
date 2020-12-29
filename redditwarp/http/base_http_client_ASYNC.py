@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 if TYPE_CHECKING:
     from typing import Type, Any, Optional, Mapping, MutableMapping, Union, AnyStr
     from types import TracebackType
@@ -11,6 +11,8 @@ if TYPE_CHECKING:
 
 from .request import Request
 from .payload import build_payload
+
+T = TypeVar('T')
 
 class BaseHTTPClient:
     def __init__(self,
@@ -26,7 +28,7 @@ class BaseHTTPClient:
         self.headers: MutableMapping[str, str]
         self.headers = {} if headers is None else headers
 
-    async def __aenter__(self) -> BaseHTTPClient:
+    async def __aenter__(self: T) -> T:
         return self
 
     async def __aexit__(self,

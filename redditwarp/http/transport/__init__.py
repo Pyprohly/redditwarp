@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
     from ..transporter_info import TransporterInfo
 
+import sys
 import importlib.util
 
 from ...util.module_importing import load_module_from_spec
@@ -31,13 +32,20 @@ def try_get_default_transporter_name_factory(
                 return name
 
         for name in priority:
+            if name not in sys.modules:
+                continue
+
+            if name in info_registry:
+                return name
+
+        for name in priority:
             try:
                 load_module_from_spec(module_spec_registry[name])
             except ImportError:
                 continue
 
             if name not in info_registry:
-                raise Exception('the transporter module did not register correctly')
+                raise Exception('the HTTP transport library {name!r} is not supported')
             return name
 
         return None

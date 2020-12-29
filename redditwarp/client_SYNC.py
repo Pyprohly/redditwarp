@@ -183,7 +183,7 @@ class ClientCore:
         self.resource_base_url = RESOURCE_BASE_URL
         self.last_value: Any = None
 
-    def __enter__(self) -> ClientCore:
+    def __enter__(self: T) -> T:
         return self
 
     def __exit__(self,

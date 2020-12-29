@@ -127,7 +127,7 @@ class ClientCore:
         self.resource_base_url = RESOURCE_BASE_URL
         self.last_value: Any = None
 
-    async def __aenter__(self) -> ClientCore:
+    async def __aenter__(self: T) -> T:
         return self
 
     async def __aexit__(self,

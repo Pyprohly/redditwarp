@@ -26,6 +26,7 @@ class Authorizer:
         self.expiry_skew = 30
         self.expiry_time: Optional[int] = None
         self.expires_in_fallback: Optional[int] = None
+        self._lock = asyncio.Lock()
 
     def token_expired(self) -> bool:
         if self.expiry_time is None:
@@ -53,8 +54,9 @@ class Authorizer:
             self.expiry_time = int(self.current_time()) + tk.expires_in - self.expiry_skew
 
     async def maybe_renew_token(self) -> None:
-        if (self.token is None) or self.token_expired():
-            await self.renew_token()
+        async with self._lock:
+            if (self.token is None) or self.token_expired():
+                await self.renew_token()
 
     def prepare_request(self, request: Request) -> None:
         tk = self.token
@@ -75,7 +77,6 @@ class Authorized(RequestorDecorator):
     def __init__(self, requestor: Requestor, authorizer: Authorizer) -> None:
         super().__init__(requestor)
         self.authorizer = authorizer
-        self._lock = asyncio.Lock()
         self._valve = asyncio.Event()
         self._valve.set()
         self._futures: Set[asyncio.Future[Response]] = set()
@@ -84,8 +85,7 @@ class Authorized(RequestorDecorator):
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         await self._valve.wait()
 
-        async with self._lock:
-            await self.authorizer.maybe_renew_token()
+        await self.authorizer.maybe_renew_token()
 
         self.authorizer.prepare_request(request)
 
