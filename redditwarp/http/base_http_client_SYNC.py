@@ -22,7 +22,6 @@ class BaseHTTPClient:
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
         self.session = session
-        self.requestor: Requestor = session
         self.params: MutableMapping[str, Optional[str]]
         self.params = {} if params is None else params
         self.headers: MutableMapping[str, str]
@@ -44,7 +43,7 @@ class BaseHTTPClient:
         timeout: float = 0,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
-        return self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+        return self.session.send(request, timeout=timeout, aux_info=aux_info)
 
     def build_request(self,
         verb: str,
@@ -85,3 +84,21 @@ class BaseHTTPClient:
 
     def close(self) -> None:
         self.session.close()
+
+
+class RequestorHTTPClient(BaseHTTPClient):
+    def __init__(self,
+        session: BaseSession,
+        *,
+        params: Optional[MutableMapping[str, Optional[str]]] = None,
+        headers: Optional[MutableMapping[str, str]] = None,
+    ) -> None:
+        super().__init__(session, params=params, headers=headers)
+        self.requestor: Requestor = session
+
+    def send(self,
+        request: Request,
+        timeout: float = 0,
+        aux_info: Optional[Mapping[Any, Any]] = None,
+    ) -> Response:
+        return self.requestor.send(request, timeout=timeout, aux_info=aux_info)

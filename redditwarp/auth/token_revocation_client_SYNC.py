@@ -13,7 +13,7 @@ from .exceptions import HTTPStatusError
 
 class TokenRevocationClient:
     def __init__(self, requestor: Requestor, uri: str,
-            client_credentials: ClientCredentials) -> None:
+            client_credentials: ClientCredentials):
         self.requestor = requestor
         self.uri = uri
         self.client_credentials = client_credentials

@@ -24,17 +24,20 @@ class TokenObtainmentClient:
 
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials,
-            grant: Mapping[str, Optional[str]]) -> None:
+            grant: Mapping[str, Optional[str]]):
         self.requestor = requestor
         self.uri = uri
         self.client_credentials = client_credentials
         self.grant = grant
 
-    def fetch_json_dict(self) -> Mapping[str, Any]:
+    def make_request(self) -> Request:
         data = {k: v for k, v in self.grant.items() if v}
         r = Request('POST', self.uri, payload=FormData(data))
         apply_basic_auth(r, self.client_credentials)
+        return r
 
+    def fetch_json_dict(self) -> Mapping[str, Any]:
+        r = self.make_request()
         resp = self.requestor.send(r)
 
         resp_json = None

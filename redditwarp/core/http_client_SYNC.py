@@ -16,9 +16,9 @@ from .. import http
 from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
-from ..http.base_http_client_SYNC import BaseHTTPClient
+from ..http.base_http_client_SYNC import RequestorHTTPClient
 
-class RedditHTTPClient(BaseHTTPClient):
+class RedditHTTPClient(RequestorHTTPClient):
     DEFAULT_PARAMS: Mapping[str, str] = {
         'raw_json': '1',
         'api_type': 'json',
