@@ -50,10 +50,8 @@ class MyHTTPClient(RedditHTTPClient):
 async def test_request() -> None:
     http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'{"some": "data"}')
     client = Client.from_http(http)
-    assert client.last_response is None
     data = await client.request('', '')
     assert data == {"some": "data"}
-    assert client.last_response is not None
 
 @pytest.mark.asyncio
 async def test_zero_data() -> None:
@@ -62,7 +60,6 @@ async def test_zero_data() -> None:
     client = Client.from_http(http)
     data = await client.request('', '')
     assert data is None
-    assert client.last_response is not None
 
 class TestRequestExceptions:
     class TestHTTPStatusError:

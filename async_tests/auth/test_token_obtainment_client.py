@@ -12,7 +12,6 @@ from redditwarp.auth.util import basic_auth
 from redditwarp.auth.exceptions import (
     ResponseContentError,
     InvalidClient,
-    HTTPStatusError,
     UnrecognizedOAuth2ResponseError,
 )
 from redditwarp.http.requestor_ASYNC import Requestor
@@ -106,7 +105,7 @@ async def test_fetch_json_dict__exceptions() -> None:
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"message": "Unauthorized", "error": 401}',
     )
-    with pytest.raises(HTTPStatusError):
+    with pytest.raises(UnrecognizedOAuth2ResponseError):
         await o.fetch_json_dict()
 
 @pytest.mark.asyncio

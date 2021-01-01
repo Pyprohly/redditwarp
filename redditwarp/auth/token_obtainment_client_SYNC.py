@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Mapping, Any, Optional
 if TYPE_CHECKING:
     from .client_credentials import ClientCredentials
     from ..http.requestor_SYNC import Requestor
+    from ..http.response import Response
 
 from .. import http
 from ..http.request import Request
@@ -30,14 +31,17 @@ class TokenObtainmentClient:
         self.client_credentials = client_credentials
         self.grant = grant
 
-    def make_request(self) -> Request:
+    def _make_request(self) -> Request:
         data = {k: v for k, v in self.grant.items() if v}
         r = Request('POST', self.uri, payload=FormData(data))
         apply_basic_auth(r, self.client_credentials)
         return r
 
+    def _check_response_errors(self, resp: Response, json_dict: Any) -> None:
+        raise_for_token_server_response(resp, json_dict)
+
     def fetch_json_dict(self) -> Mapping[str, Any]:
-        r = self.make_request()
+        r = self._make_request()
         resp = self.requestor.send(r)
 
         resp_json = None
@@ -49,9 +53,7 @@ class TokenObtainmentClient:
         if not isinstance(resp_json, Mapping):
             raise ResponseContentError(response=resp)
 
-        error = resp_json.get('error')
-        if isinstance(error, str):
-            raise_for_token_server_response(resp, resp_json)
+        self._check_response_errors(resp, resp_json)
 
         try:
             resp.raise_for_status()

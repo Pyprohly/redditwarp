@@ -84,19 +84,15 @@ class Session(BaseSession):
     TRANSPORTER_INFO = info
 
     def __init__(self,
-        session: requests.Session,
+        requests_session: requests.Session,
         *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
-        headers: Optional[Mapping[str, str]] = None,
         timeout: float = 60,
     ) -> None:
-        super().__init__(params=params, headers=headers, timeout=timeout)
-        self.session = session
+        super().__init__(timeout=timeout)
+        self.session = requests_session
 
     def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        self._prepare_request(request)
-
         t: Optional[float] = timeout
         if timeout == -1:
             t = None
@@ -128,13 +124,11 @@ class Session(BaseSession):
 
 
 def new_session(*,
-    params: Optional[Mapping[str, Optional[str]]] = None,
-    headers: Optional[Mapping[str, str]] = None,
     timeout: float = 8,
 ) -> Session:
     se = requests.Session()
     retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
     se.mount('https://', retry_adapter)
-    return Session(se, params=params, headers=headers, timeout=timeout)
+    return Session(se, timeout=timeout)
 
 register(name, info, new_session)

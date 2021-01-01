@@ -113,15 +113,14 @@ with socket.socket() as server:
 
 assert match is not None
 query = match[1]
-d = urllib.parse.parse_qs(query)
-response_params = {k: v[0] for k, v in d.items()}
-
-received_state = response_params['state']
+dl = urllib.parse.parse_qs(query)
+resp_params = {k: v[0] for k, v in dl.items()}
+received_state = resp_params['state']
 if received_state != state:
     raise Exception(f'sent state ({state}) did not match received ({received_state})')
 
 try:
-    code = response_params['code']
+    code = resp_params['code']
 except KeyError:
     raise Exception('authorization declined') from None
 
@@ -134,12 +133,13 @@ user_agent = (
     'redditwarp.cli.refresh_token'
 )
 headers = {'User-Agent': user_agent}
-session = new_session(headers=headers)
-token_client = redditwarp.auth.TokenObtainmentClient(
+session = new_session()
+token_client = redditwarp.auth.reddit_token_obtainment_client_SYNC.RedditTokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
     redditwarp.auth.ClientCredentials(client_id, client_secret),
     redditwarp.auth.grants.AuthorizationCodeGrant(code, redirect_uri),
+    headers,
 )
 
 print('Obtaining tokens from the token server...\n')

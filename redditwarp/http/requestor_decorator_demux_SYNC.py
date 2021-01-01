@@ -2,11 +2,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any
 if TYPE_CHECKING:
-    from ..http.request import Request
-    from ..http.response import Response
+    from .request import Request
+    from .response import Response
 
-from ..http.requestor_SYNC import Requestor
-from ..http.requestor_decorator_SYNC import RequestorDecorator
+from .requestor_SYNC import Requestor
+from .requestor_decorator_SYNC import RequestorDecorator
 
 class NoDestinationException(Exception):
     pass

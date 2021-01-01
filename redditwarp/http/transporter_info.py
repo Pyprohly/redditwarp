@@ -10,4 +10,4 @@ class TransporterInfo:
     version: str
     spec: ModuleSpec
 
-blank_transporter = TransporterInfo('', '', ModuleSpec('', None))
+BLANK_TRANSPORTER = TransporterInfo('', '', ModuleSpec('', None))

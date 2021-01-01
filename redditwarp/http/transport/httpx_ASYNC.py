@@ -84,19 +84,15 @@ class Session(BaseSession):
     TRANSPORTER_INFO = info
 
     def __init__(self,
-        client: httpx.AsyncClient,
+        httpx_client: httpx.AsyncClient,
         *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
-        headers: Optional[Mapping[str, str]] = None,
         timeout: float = 60,
     ) -> None:
-        super().__init__(params=params, headers=headers, timeout=timeout)
-        self.client = client
+        super().__init__(timeout=timeout)
+        self.client = httpx_client
 
     async def send(self, request: Request, *, timeout: float = 0,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        self._prepare_request(request)
-
         client_timeout = httpx.Timeout(
             connect=timeout,
             read=None,
@@ -143,13 +139,11 @@ class Session(BaseSession):
 
 
 def new_session(*,
-    params: Optional[Mapping[str, Optional[str]]] = None,
-    headers: Optional[Mapping[str, str]] = None,
     timeout: float = 8,
 ) -> Session:
     # Waiting on issue https://github.com/encode/httpx/issues/1171
     #limits = httpx.Limits(max_connections=20)
     cl = httpx.AsyncClient()#pool_limits=limits)
-    return Session(cl, params=params, headers=headers, timeout=timeout)
+    return Session(cl, timeout=timeout)
 
 register(name, info, new_session)

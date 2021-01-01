@@ -51,7 +51,6 @@ class ClientCore:
         new_session = new_session_factory(cls.get_default_transporter_name())
         session = new_session()
         http = RedditHTTPClient(session)
-        session.headers = http.headers
         authorizer = Authorizer(Token(access_token), None)
         http.authorized_requestor = Authorized(session, authorizer)
         http.requestor = RateLimited(http.authorized_requestor)

@@ -5,22 +5,23 @@ if TYPE_CHECKING:
     from typing import Type, Any, Optional, Mapping, MutableMapping, Union, AnyStr
     from types import TracebackType
     from .base_session_ASYNC import BaseSession
-    from .requestor_ASYNC import Requestor
     from .response import Response
     from .payload import RequestFiles
 
 from .request import Request
 from .payload import build_payload
+from .requestor_decorator_ASYNC import RequestorDecorator
 
 T = TypeVar('T')
 
-class BaseHTTPClient:
+class BaseHTTPClient(RequestorDecorator):
     def __init__(self,
         session: BaseSession,
         *,
         params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
+        super().__init__(session)
         self.session = session
         self.params: MutableMapping[str, Optional[str]]
         self.params = {} if params is None else params
@@ -38,12 +39,9 @@ class BaseHTTPClient:
         await self.close()
         return None
 
-    async def send(self,
-        request: Request,
-        timeout: float = 0,
-        aux_info: Optional[Mapping[Any, Any]] = None,
-    ) -> Response:
-        return await self.session.send(request, timeout=timeout, aux_info=aux_info)
+    async def send(self, request: Request, *, timeout: float = 0,
+            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+        return await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
 
     def build_request(self,
         verb: str,
@@ -84,21 +82,3 @@ class BaseHTTPClient:
 
     async def close(self) -> None:
         await self.session.close()
-
-
-class RequestorHTTPClient(BaseHTTPClient):
-    def __init__(self,
-        session: BaseSession,
-        *,
-        params: Optional[MutableMapping[str, Optional[str]]] = None,
-        headers: Optional[MutableMapping[str, str]] = None,
-    ) -> None:
-        super().__init__(session, params=params, headers=headers)
-        self.requestor: Requestor = session
-
-    async def send(self,
-        request: Request,
-        timeout: float = 0,
-        aux_info: Optional[Mapping[Any, Any]] = None,
-    ) -> Response:
-        return await self.requestor.send(request, timeout=timeout, aux_info=aux_info)

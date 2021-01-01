@@ -1,9 +1,10 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping, Optional, Mapping, Protocol
+from typing import TYPE_CHECKING, MutableMapping, Callable
 if TYPE_CHECKING:
     from ..transporter_info import TransporterInfo
-    from ..base_session_SYNC import BaseSession
+
+from ..base_session_SYNC import BaseSession
 
 from . import (
     raw_transporter_module_spec_registry,
@@ -14,12 +15,7 @@ from . import (
     transporter_info_factory,
 )
 
-class NewSessionFunction(Protocol):
-    def __call__(self, *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
-        headers: Optional[Mapping[str, str]] = None,
-    ) -> BaseSession:
-        pass
+NewSessionFunction = Callable[[], BaseSession]
 
 transporter_info_registry: MutableMapping[str, TransporterInfo] = {}
 transporter_session_function_registry: MutableMapping[str, NewSessionFunction] = {}

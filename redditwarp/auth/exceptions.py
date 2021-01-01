@@ -1,8 +1,8 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Any
 if TYPE_CHECKING:
-    from typing import Mapping, Dict, Optional
+    from typing import Mapping
     from ..http.response import Response
 
 import re
@@ -99,8 +99,8 @@ oauth2_response_error_class_by_error_name = {
     ]
 }
 
-def raise_for_oauth2_response_error(resp: Response, m: Mapping[str, str]) -> None:
-    error_name = m.get('error')
+def raise_for_oauth2_response_error(resp: Response, json_dict: Any) -> None:
+    error_name = json_dict.get('error')
     if error_name is None:
         return
     cls = oauth2_response_error_class_by_error_name.get(error_name)
@@ -108,19 +108,26 @@ def raise_for_oauth2_response_error(resp: Response, m: Mapping[str, str]) -> Non
         raise UnrecognizedOAuth2ResponseError(response=resp)
     raise cls(
         response=resp,
-        error_name=m.get('error', ''),
-        description=m.get('error_description', ''),
-        help_uri=m.get('error_uri', ''),
+        error_name=json_dict.get('error', ''),
+        description=json_dict.get('error_description', ''),
+        help_uri=json_dict.get('error_uri', ''),
     )
 
-def raise_for_token_server_response(resp: Response, json_dict: Mapping[str, str]) -> None:
+def raise_for_token_server_response(resp: Response, json_dict: Any) -> None:
     raise_for_oauth2_response_error(resp, json_dict)
+
+def raise_for_reddit_token_server_response(resp: Response, json_dict: Any) -> None:
+    error = json_dict.get('error')
+    if not isinstance(error, str):
+        return
+    raise_for_token_server_response(resp, json_dict)
 
 _www_authenticate_auth_param_regex = re.compile(r'(\w+)=\"(.*?)\"')
 
 def raise_for_resource_server_response(resp: Response) -> None:
-    www_authenticate: Optional[str] = resp.headers.get('WWW-Authenticate')
-    if www_authenticate is None:
+    try:
+        www_authenticate: str = resp.headers['WWW-Authenticate']
+    except KeyError:
         return
-    m: Dict[str, str] = dict(_www_authenticate_auth_param_regex.findall(www_authenticate))
+    m: Mapping[str, str] = dict(_www_authenticate_auth_param_regex.findall(www_authenticate))
     raise_for_oauth2_response_error(resp, m)
