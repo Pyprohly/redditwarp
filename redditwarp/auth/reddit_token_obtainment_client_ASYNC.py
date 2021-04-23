@@ -18,8 +18,8 @@ class RedditTokenObtainmentClient(TokenObtainmentClient):
         super().__init__(requestor, uri, client_credentials, grant)
         self.headers = headers
 
-    def _make_request(self) -> Request:
-        r = super()._make_request()
+    def _new_request(self) -> Request:
+        r = super()._new_request()
         r.headers.update(self.headers)
         return r
 

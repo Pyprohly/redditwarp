@@ -20,7 +20,7 @@ def load_variant1_flair_template(d: Mapping[str, Any]) -> Variant1FlairTemplate:
 def load_flair_choices(d: Mapping[str, Any]) -> FlairChoices:
     current_data = d['current']
     current = None
-    if current_data.uuid or current_data.text:
+    if 'flair_template_id' in current_data or 'flair_text' in current_data:
         current = CurrentFlairChoice(current_data)
 
     choices_data = d['choices']

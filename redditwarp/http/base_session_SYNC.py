@@ -11,11 +11,14 @@ if TYPE_CHECKING:
 
 from .transporter_info import BLANK_TRANSPORTER
 from .requestor_SYNC import Requestor
+from .request import make_request
 
 T = TypeVar('T')
 
 class BaseSession(Requestor):
     TRANSPORTER_INFO: ClassVar[TransporterInfo] = BLANK_TRANSPORTER
+
+    make_request = staticmethod(make_request)
 
     def __init__(self, *, timeout: float = 60) -> None:
         self.timeout = timeout

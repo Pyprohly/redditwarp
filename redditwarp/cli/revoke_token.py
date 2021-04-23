@@ -69,7 +69,7 @@ user_agent = (
 headers = {'User-Agent': user_agent}
 session = new_session()
 rev_token_client = redditwarp.auth.TokenRevocationClient(
-    session,
+    redditwarp.http.request_update_SYNC.RequestUpdate(session, headers=headers),
     redditwarp.auth.const.TOKEN_REVOCATION_URL,
     redditwarp.auth.ClientCredentials(client_id, client_secret),
 )
@@ -80,5 +80,3 @@ elif access_token_needs_revoking:
     rev_token_client.revoke_access_token(token)
 elif refresh_token_needs_revoking:
     rev_token_client.revoke_refresh_token(token)
-
-print('OK.')

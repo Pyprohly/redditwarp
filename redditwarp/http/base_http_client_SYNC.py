@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from .payload import RequestFiles
 
 from .request import Request
-from .payload import build_payload
+from .payload import make_payload
 from .requestor_decorator_SYNC import RequestorDecorator
 
 T = TypeVar('T')
@@ -43,7 +43,7 @@ class BaseHTTPClient(RequestorDecorator):
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return self.requestor.send(request, timeout=timeout, aux_info=aux_info)
 
-    def build_request(self,
+    def _new_request(self,
         verb: str,
         uri: str,
         *,
@@ -61,8 +61,8 @@ class BaseHTTPClient(RequestorDecorator):
         headers = {} if headers is None else headers
         headers = {**self.headers, **headers}
 
-        payload = build_payload(data, json, files)
-        return Request(verb, uri, params=params, payload=payload, headers=headers)
+        payload = make_payload(data, json, files)
+        return Request(verb, uri, params=params, headers=headers, payload=payload)
 
     def request(self,
         verb: str,
@@ -76,7 +76,7 @@ class BaseHTTPClient(RequestorDecorator):
         timeout: float = 0,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
-        r = self.build_request(verb, uri, params=params, headers=headers,
+        r = self._new_request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files)
         return self.send(r, timeout=timeout, aux_info=aux_info)
 

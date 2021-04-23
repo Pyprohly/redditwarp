@@ -75,7 +75,7 @@ class Multipart(CommonContentType):
 def guess_content_type_from_filename(fname: str) -> str:
     return mimetypes.guess_type(fname)[0] or Bytes.CONTENT_TYPE_HINT
 
-def build_payload(
+def make_payload(
     data: Optional[Union[Mapping[str, str], AnyStr]] = None,
     json: Any = None,
     files: Optional[RequestFiles] = None,

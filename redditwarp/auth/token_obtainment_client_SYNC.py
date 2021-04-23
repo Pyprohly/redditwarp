@@ -31,7 +31,7 @@ class TokenObtainmentClient:
         self.client_credentials = client_credentials
         self.grant = grant
 
-    def _make_request(self) -> Request:
+    def _new_request(self) -> Request:
         data = {k: v for k, v in self.grant.items() if v}
         r = Request('POST', self.uri, payload=FormData(data))
         apply_basic_auth(r, self.client_credentials)
@@ -41,7 +41,7 @@ class TokenObtainmentClient:
         raise_for_token_server_response(resp, json_dict)
 
     def fetch_json_dict(self) -> Mapping[str, Any]:
-        r = self._make_request()
+        r = self._new_request()
         resp = self.requestor.send(r)
 
         resp_json = None

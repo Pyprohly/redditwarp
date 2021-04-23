@@ -12,6 +12,7 @@ import time
 
 from ..http.requestor_decorator_SYNC import RequestorDecorator
 from .exceptions import UnknownTokenType
+from ..auth.grants import RefreshTokenGrant
 
 class Authorizer:
     """Knows how to authorize requests."""
@@ -39,6 +40,9 @@ class Authorizer:
             raise RuntimeError('a new token was requested but no token client is assigned')
 
         self.token = tk = self.token_client.fetch_token()
+
+        if tk.refresh_token is not None:
+            self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
 
         if tk.token_type.lower() != 'bearer':
             raise UnknownTokenType(token=tk)
