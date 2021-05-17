@@ -89,7 +89,7 @@ class Session(BaseSession):
         super().__init__()
         self.client = httpx_client
 
-    async def send(self, request: Request, *, timeout: float = 0,
+    async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         client_timeout = httpx.Timeout(
             connect=timeout,
@@ -97,16 +97,16 @@ class Session(BaseSession):
             write=None,
             pool=20,
         )
-        if timeout == -1:
+        if timeout == -2:
             client_timeout = httpx.Timeout(
-                connect=None,
+                connect=self.default_timeout,
                 read=None,
                 write=None,
                 pool=20,
             )
-        elif timeout == 0:
+        elif timeout == -1:
             client_timeout = httpx.Timeout(
-                connect=self.default_timeout,
+                connect=None,
                 read=None,
                 write=None,
                 pool=20,

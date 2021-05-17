@@ -20,11 +20,11 @@ class TimeoutError(NetworkError):
     pass
 
 
-class UnexpectedMessageTypeException(RootException):
+class MessageTypeMismatchException(RootException):
     pass
 
-class ProtocolViolationError(RootException):
+class ProtocolViolationException(RootException):
     pass
 
-class InvalidState(RootException):
+class InvalidStateException(RootException):
     pass

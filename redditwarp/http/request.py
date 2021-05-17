@@ -29,7 +29,7 @@ def make_request(
     data: Optional[Union[Mapping[str, str], AnyStr]] = None,
     json: Any = None,
     files: Optional[RequestFiles] = None,
-    timeout: float = 0,
+    timeout: float = -2,
     aux_info: Optional[Mapping[Any, Any]] = None,
 ) -> Request:
     params = dict({} if params is None else params)

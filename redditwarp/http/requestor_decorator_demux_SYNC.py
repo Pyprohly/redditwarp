@@ -16,7 +16,7 @@ class RequestorDecoratorDemux(Requestor):
         super().__init__()
         self.selections: MutableMapping[Request, Requestor] = {}
 
-    def send(self, request: Request, *, timeout: float = 0,
+    def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         try:
             sel = self.selections[request]
@@ -35,7 +35,7 @@ class RequestorDecoratorDemuxDestinationSelector(RequestorDecorator):
         self.receiver = receiver
         self.destination = destination
 
-    def send(self, request: Request, *, timeout: float = 0,
+    def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         selections = self.receiver.selections
         selections[request] = self.destination

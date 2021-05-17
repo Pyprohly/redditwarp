@@ -3,25 +3,33 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence
 if TYPE_CHECKING:
     from collections.abc import MutableSequence, Iterator
-    from ..events import Event, Frame
+    from ..events import Frame
 
 # https://pypi.org/project/websocket-client/
 import websocket  # type: ignore[import]
 
-from ..websocket_connection_abstract_base_SYNC import WebSocketConnectionAbstractBase
+from ..websocket_connection_SYNC import WebSocketConnection
 from .. import exceptions
-from .. import events
-from ..const import Opcode, Side
+from ..events import Event, Frame
+from ..const import Opcode, Side, ConnectionState
+from ..util import parse_close
 
-class WebSocketClient(WebSocketConnectionAbstractBase):
+class WebSocketClient(WebSocketConnection):
     side = Side.CLIENT
 
     def __init__(self, ws: websocket.WebSocket):
         super().__init__()
         self.ws = ws
-        self._processing_data_frames = False
-        self._data_frames_are_text = True
-        self._continuation_data_buffer: MutableSequence[bytes] = []
+
+    def _get_necessary_timeout(self, timeout: float = -2) -> Optional[float]:
+        t: Optional[float] = timeout
+        if timeout == -2:
+            t = self.default_timeout
+        elif timeout == -1:
+            t = None
+        elif timeout < 0:
+            raise ValueError(f'invalid timeout value: {t}')
+        return t
 
     def send_frame(self, m: Frame) -> None:
         super().send_frame(m)
@@ -31,15 +39,8 @@ class WebSocketClient(WebSocketConnectionAbstractBase):
         except Exception as e:
             raise exceptions.TransportError from e
 
-    def _load_next_frame(self, *, timeout: float = 0) -> Frame:
-        t: Optional[float] = timeout
-        if timeout == -1:
-            t = None
-        elif timeout == 0:
-            t = self.default_timeout
-        elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {t}')
-
+    def _load_next_frame(self, *, timeout: float = -2) -> Frame:
+        t = self._get_necessary_timeout(timeout)
         self.ws.timeout = t
 
         try:
@@ -52,26 +53,38 @@ class WebSocketClient(WebSocketConnectionAbstractBase):
         fin = bool(frm.fin)
         opcode = frm.opcode
         data = frm.data if isinstance(frm.data, bytes) else frm.data.encode()
-        return events.Frame(
+        return Frame(
             opcode=Opcode(frm.opcode),
             fin=fin,
             data=data,
         )
 
-    def close(self, code: Optional[int] = 1000, reason: str = '', *, timeout: float = 0) -> None:
-        t: Optional[float] = timeout
-        if timeout == -1:
-            t = None
-        elif timeout == 0:
-            t = self.default_timeout
-        elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {t}')
+    def _process_ping(self, m: Frame) -> Iterator[Event]:
+        yield m
 
+    def _process_close(self, m: Frame) -> Iterator[Event]:
+        self.set_state(ConnectionState.CLOSE_RECEIVED)
+        self.close_code, self.close_reason = parse_close(m.data)
+        yield m
+
+    def _process_frame(self, m: Frame) -> Iterator[Event]:
+        yield from super()._process_frame(m)
+
+    def _send_close(self, code: Optional[int] = 1000, reason: str = '') -> None:
         try:
-            self.ws.close(code, reason.encode(), timeout=t)
+            self.ws.send_close(code, reason.encode())
         except Exception as e:
             raise exceptions.TransportError from e
 
+    def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
+        super().close(code, reason, waitfor=waitfor)
+
+    def shutdown(self) -> None:
+        super().shutdown()
+        try:
+            self.ws.shutdown()
+        except Exception as e:
+            raise exceptions.TransportError from e
 
 def connect(url: str, *, subprotocols: Sequence[str] = ()) -> WebSocketClient:
     ws = websocket.create_connection(url, fire_cont_frame=True)

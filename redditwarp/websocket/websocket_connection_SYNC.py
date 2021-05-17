@@ -10,7 +10,7 @@ from . import events
 from .events import Event, Frame, Message, BytesMessage, TextMessage
 from .util import parse_close, serialize_close
 
-class WebSocketConnectionAbstractBase(ABC):
+class WebSocketConnection(ABC):
     side = Side.NONE
 
     def __init__(self) -> None:
@@ -30,15 +30,13 @@ class WebSocketConnectionAbstractBase(ABC):
     @abstractmethod
     def send_frame(self, m: Frame) -> None:
         if self.state != ConnectionState.OPEN:
-            raise exceptions.InvalidState(f'cannot send frame in {self.state.name} state')
+            raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
 
     def send_text(self, data: str) -> None:
-        self.send_frame(
-                Frame.make(Opcode.TEXT, data.encode()))
+        self.send_frame(Frame.make(Opcode.TEXT, data.encode()))
 
     def send_bytes(self, data: bytes) -> None:
-        self.send_frame(
-                Frame.make(Opcode.BINARY, data))
+        self.send_frame(Frame.make(Opcode.BINARY, data))
 
     def send(self, data: Union[str, bytes]) -> None:
         if isinstance(data, str):
@@ -47,49 +45,48 @@ class WebSocketConnectionAbstractBase(ABC):
             self.send_bytes(data)
 
     @abstractmethod
-    def _load_next_frame(self, *, timeout: float = 0) -> Frame:
+    def _load_next_frame(self, *, timeout: float = -2) -> Frame:
         raise NotImplementedError
 
-    def _process_ping(self, m: Frame) -> None:
+    def _process_ping(self, m: Frame) -> Iterator[Event]:
         if self.state not in {ConnectionState.CLOSE_RECEIVED, ConnectionState.CLOSED}:
             pong = Frame.make(Opcode.PONG, m.data)
             self.send_frame(pong)
+        yield m
 
-    def _process_close(self, m: Frame) -> None:
+    def _process_close(self, m: Frame) -> Iterator[Event]:
         self.set_state(ConnectionState.CLOSE_RECEIVED)
-        self.close_code, self.close_reason = parse_close(event.data)
+        self.close_code, self.close_reason = parse_close(m.data)
 
         if self.state == ConnectionState.OPEN:
             close = Frame.make(Opcode.CLOSE, m.data)
             self.send_frame(close)
-
-    def _process_frame(self, m: Frame) -> Iterator[Event]:
-        if m.opcode == Opcode.PING:
-            self._process_ping(m)
-            return
-        if m.opcode == Opcode.CLOSE:
-            self._process_close(m)
-            return
-
         yield m
 
+    def _process_data_frame(self, m: Frame) -> Iterator[Event]:
+        yield m
+        acc = self._accumulator
+        acc.append(m)
         if m.fin:
-            if acc := self._accumulator:
-                acc.append(m)
-                msg = b''.join(m.data for m in acc)
+            msg = b''.join(m.data for m in acc)
 
-                opcode = acc[0].opcode
-                if opcode & Opcode.TEXT:
-                    yield TextMessage(msg.decode())
-                else:
-                    yield BytesMessage(msg)
+            if acc[0].opcode & Opcode.TEXT:
+                yield TextMessage(msg.decode())
+            else:
+                yield BytesMessage(msg)
 
-                acc.clear()
+            acc.clear()
 
-        else:
-            self._accumulator.append(m)
+    @abstractmethod
+    def _process_frame(self, m: Frame) -> Iterator[Event]:
+        if m.opcode == Opcode.PING:
+            yield from self._process_ping(m)
+        elif m.opcode == Opcode.CLOSE:
+            yield from self._process_close(m)
+        elif m.opcode in {Opcode.CONTINUATION, Opcode.TEXT, Opcode.BINARY}:
+            yield from self._process_data_frame(m)
 
-    def pulse(self, *, timeout: float = 0) -> Iterator[Event]:
+    def pulse(self, *, timeout: float = -2) -> Iterator[Event]:
         """Process one frame’s worth of incoming data and possibly generate events for it."""
         frame = self._load_next_frame(timeout=timeout)
         yield from self._process_frame(frame)
@@ -113,56 +110,61 @@ class WebSocketConnectionAbstractBase(ABC):
                 tv -= now - tn
                 tn = now
 
-    def _get_cycle_value_from_timeout(self, timeout: float = 0) -> Optional[float]:
+    def _get_cycle_value(self, timeout: float = -2) -> Optional[float]:
         t: Optional[float] = timeout
-        if timeout == 0:
+        if timeout == -2:
             t = self.default_timeout
         elif timeout == -1:
             t = None
         elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {t}')
+            raise ValueError(f'invalid timeout value: {timeout}')
         return t
 
-    def receive(self, *, timeout: float = 0) -> Message:
-        t = self._get_cycle_value_from_timeout(timeout)
+    def receive(self, *, timeout: float = -2) -> Message:
+        t = self._get_cycle_value(timeout)
         for event in self.cycle(t):
             if isinstance(event, Message):
                 return event
         raise exceptions.TimeoutError
 
-    def recv_bytes(self, *, timeout: float = 0) -> bytes:
+    def recv_bytes(self, *, timeout: float = -2) -> bytes:
         """Receive the next message. If it's a BytesMessage then return its payload,
-        otherwise raise an UnexpectedMessageTypeException exception."""
+        otherwise raise an MessageTypeMismatchException exception."""
         event = self.receive(timeout=timeout)
         if isinstance(event, BytesMessage):
             return event.data
-        raise exceptions.UnexpectedMessageTypeException('string message received')
+        raise exceptions.MessageTypeMismatchException('string message received')
 
-    def recv_text(self, *, timeout: float = 0) -> str:
+    def recv_text(self, *, timeout: float = -2) -> str:
         """Receive the next message. If it's a TextMessage then return its payload,
-        otherwise raise an UnexpectedMessageTypeException exception."""
+        otherwise raise an MessageTypeMismatchException exception."""
         event = self.receive(timeout=timeout)
         if isinstance(event, TextMessage):
             return event.data
-        raise exceptions.UnexpectedMessageTypeException('bytes message received')
+        raise exceptions.MessageTypeMismatchException('bytes message received')
 
     def _send_close(self, code: Optional[int] = 1000, reason: str = '') -> None:
         data = b''
-        if code is None:
-            if reason:
-                raise ValueError('cannot send a reason without a code')
-        else:
+        if code is not None:
             data = serialize_close(code, reason)
 
         close = Frame.make(Opcode.CLOSE, data)
         self.send_frame(close)
+
+    @abstractmethod
+    def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
+        if code is None and reason:
+            raise ValueError('cannot send a reason without a code')
+
+        self._send_close(code, reason)
+
         self.set_state(ConnectionState.CLOSE_SENT)
 
-    # Fix timeout = -2 for give me a default
-    def close(self, code: Optional[int] = 1000, reason: str = '', *, timeout: float = 0) -> None:
-        self._send_close()
+        try:
+            t = self._get_cycle_value(waitfor)
+        except ValueError:
+            raise ValueError(f'invalid waitfor value: {waitfor}') from None
 
-        t = self._get_cycle_value_from_timeout(timeout)
         for event in self.cycle(t):
             if isinstance(event, Frame):
                 if event.opcode == Opcode.CLOSE:
@@ -170,6 +172,7 @@ class WebSocketConnectionAbstractBase(ABC):
 
         self.shutdown()
 
+    @abstractmethod
     def shutdown(self) -> None:
         if self.close_code < 0:
             self.close_code = 1006

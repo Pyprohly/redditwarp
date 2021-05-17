@@ -85,7 +85,7 @@ class Authorized(RequestorDecorator):
         self._valve.set()
         self._futures: Set[asyncio.Future[Response]] = set()
 
-    async def send(self, request: Request, *, timeout: float = 0,
+    async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         await self._valve.wait()
 

@@ -18,5 +18,6 @@ def serialize_close(code: int, reason: str) -> bytes:
     return struct.pack("!H", code) + reason.encode()
 
 def check_close_frame_close_code(code: int) -> None:
-    if not (code in EXTERNAL_CLOSE_CODES or 3000 <= code < 5000):
-        raise exceptions.ProtocolViolationError('invalid close frame close code')
+    codes = const.AUTHORITATIVE_CLOSE_FRAME_CLOSE_CODES
+    if not (code in codes or 3000 <= code < 5000):
+        raise exceptions.ProtocolViolationException('invalid close frame close code')

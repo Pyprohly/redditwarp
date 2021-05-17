@@ -30,7 +30,7 @@ class MockRequestor(Requestor):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    def send(self, request: Request, *, timeout: float = 0,
+    def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)

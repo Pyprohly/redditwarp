@@ -82,7 +82,7 @@ class Authorized(RequestorDecorator):
         super().__init__(requestor)
         self.authorizer = authorizer
 
-    def send(self, request: Request, *, timeout: float = 0,
+    def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         self.authorizer.maybe_renew_token()
         self.authorizer.prepare_request(request)

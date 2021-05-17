@@ -16,7 +16,7 @@ class RequestUpdate(RequestorDecorator):
         self.params = {} if params is None else params
         self.headers = {} if headers is None else headers
 
-    async def send(self, request: Request, *, timeout: float = 0,
+    async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         request.params.update(self.params)
         request.headers.update(self.headers)

@@ -34,7 +34,7 @@ class BaseSession(Requestor):
         self.close()
         return None
 
-    def send(self, request: Request, *, timeout: float = 0,
+    def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         """
         Parameters

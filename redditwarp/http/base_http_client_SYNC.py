@@ -39,7 +39,7 @@ class BaseHTTPClient(RequestorDecorator):
         self.close()
         return None
 
-    def send(self, request: Request, *, timeout: float = 0,
+    def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return self.requestor.send(request, timeout=timeout, aux_info=aux_info)
 
@@ -73,7 +73,7 @@ class BaseHTTPClient(RequestorDecorator):
         data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
-        timeout: float = 0,
+        timeout: float = -2,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         r = self._new_request(verb, uri, params=params, headers=headers,

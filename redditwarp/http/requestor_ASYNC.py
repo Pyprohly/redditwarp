@@ -6,6 +6,6 @@ if TYPE_CHECKING:
     from .response import Response
 
 class Requestor:
-    async def send(self, request: Request, *, timeout: float = 0,
+    async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         raise NotImplementedError

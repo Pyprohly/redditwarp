@@ -88,13 +88,13 @@ class Session(BaseSession):
         super().__init__()
         self.client = httpx_client
 
-    def send(self, request: Request, *, timeout: float = 0,
+    def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         t: Optional[float] = timeout
-        if timeout == -1:
-            t = None
-        elif timeout == 0:
+        if timeout == -2:
             t = self.default_timeout
+        elif timeout == -1:
+            t = None
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {timeout}')
 
