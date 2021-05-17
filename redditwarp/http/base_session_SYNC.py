@@ -20,8 +20,8 @@ class BaseSession(Requestor):
 
     make_request = staticmethod(make_request)
 
-    def __init__(self, *, timeout: float = 60) -> None:
-        self.timeout = timeout
+    def __init__(self) -> None:
+        self.default_timeout: float = 60
 
     def __enter__(self: T) -> T:
         return self

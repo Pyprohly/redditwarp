@@ -84,10 +84,8 @@ class Session(BaseSession):
 
     def __init__(self,
         httpx_client: httpx.Client,
-        *,
-        timeout: float = 60,
     ) -> None:
-        super().__init__(timeout=timeout)
+        super().__init__()
         self.client = httpx_client
 
     def send(self, request: Request, *, timeout: float = 0,
@@ -96,7 +94,7 @@ class Session(BaseSession):
         if timeout == -1:
             t = None
         elif timeout == 0:
-            t = self.timeout
+            t = self.default_timeout
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {timeout}')
 
@@ -123,10 +121,12 @@ class Session(BaseSession):
 
 
 def new_session(*,
-    timeout: float = 8,
+    default_timeout: float = 8,
 ) -> Session:
     limits = httpx.Limits(max_connections=20)
     cl = httpx.Client(pool_limits=limits)
-    return Session(cl, timeout=timeout)
+    sess = Session(cl)
+    sess.default_timeout = default_timeout
+    return sess
 
 register(name, info, new_session)

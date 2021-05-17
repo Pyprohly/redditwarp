@@ -90,10 +90,8 @@ class Session(BaseSession):
 
     def __init__(self,
         aiohttp_client: aiohttp.ClientSession,
-        *,
-        timeout: float = 60,
     ) -> None:
-        super().__init__(timeout=timeout)
+        super().__init__()
         self.session = aiohttp_client
 
     async def send(self, request: Request, *, timeout: float = 0,
@@ -114,9 +112,9 @@ class Session(BaseSession):
         elif timeout == 0:
             client_timeout = aiohttp.ClientTimeout(
                 total=5*60,
-                connect=self.timeout,
-                sock_connect=self.timeout,
-                sock_read=self.timeout,
+                connect=self.default_timeout,
+                sock_connect=self.default_timeout,
+                sock_read=self.default_timeout,
             )
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {timeout}')
@@ -145,10 +143,12 @@ class Session(BaseSession):
 
 
 def new_session(*,
-    timeout: float = 8,
+    default_timeout: float = 8,
 ) -> Session:
     connector = aiohttp.TCPConnector(limit=20)
     se = aiohttp.ClientSession(connector=connector)
-    return Session(se, timeout=timeout)
+    sess = Session(se)
+    sess.default_timeout = default_timeout
+    return sess
 
 register(name, info, new_session)

@@ -85,10 +85,8 @@ class Session(BaseSession):
 
     def __init__(self,
         requests_session: requests.Session,
-        *,
-        timeout: float = 60,
     ) -> None:
-        super().__init__(timeout=timeout)
+        super().__init__()
         self.session = requests_session
 
     def send(self, request: Request, *, timeout: float = 0,
@@ -97,7 +95,7 @@ class Session(BaseSession):
         if timeout == -1:
             t = None
         elif timeout == 0:
-            t = self.timeout
+            t = self.default_timeout
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {t}')
 
@@ -124,11 +122,13 @@ class Session(BaseSession):
 
 
 def new_session(*,
-    timeout: float = 8,
+    default_timeout: float = 8,
 ) -> Session:
     se = requests.Session()
     retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
     se.mount('https://', retry_adapter)
-    return Session(se, timeout=timeout)
+    sess = Session(se)
+    sess.default_timeout = default_timeout
+    return sess
 
 register(name, info, new_session)

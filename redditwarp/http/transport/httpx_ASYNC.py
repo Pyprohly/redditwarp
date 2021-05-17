@@ -85,10 +85,8 @@ class Session(BaseSession):
 
     def __init__(self,
         httpx_client: httpx.AsyncClient,
-        *,
-        timeout: float = 60,
     ) -> None:
-        super().__init__(timeout=timeout)
+        super().__init__()
         self.client = httpx_client
 
     async def send(self, request: Request, *, timeout: float = 0,
@@ -108,7 +106,7 @@ class Session(BaseSession):
             )
         elif timeout == 0:
             client_timeout = httpx.Timeout(
-                connect=self.timeout,
+                connect=self.default_timeout,
                 read=None,
                 write=None,
                 pool=20,
@@ -139,11 +137,13 @@ class Session(BaseSession):
 
 
 def new_session(*,
-    timeout: float = 8,
+    default_timeout: float = 8,
 ) -> Session:
     # Waiting on issue https://github.com/encode/httpx/issues/1171
     #limits = httpx.Limits(max_connections=20)
     cl = httpx.AsyncClient()#pool_limits=limits)
-    return Session(cl, timeout=timeout)
+    sess = Session(cl)
+    sess.default_timeout = default_timeout
+    return sess
 
 register(name, info, new_session)
