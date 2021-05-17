@@ -10,10 +10,10 @@ import pytest
 from redditwarp import exceptions
 from redditwarp.client_ASYNC import Client
 from redditwarp.core.http_client_ASYNC import RedditHTTPClient
-from redditwarp.http.base_session_ASYNC import BaseSession
+from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.response import Response
 
-class MySession(BaseSession):
+class MySession(SessionBase):
     async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return Response(0, {}, b'')

@@ -4,13 +4,13 @@ import pytest
 from typing import Sequence, Any, Optional, Mapping, Callable
 from redditwarp.client_ASYNC import Client
 from redditwarp.core.http_client_ASYNC import RedditHTTPClient
-from redditwarp.http.base_session_ASYNC import BaseSession
+from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 from redditwarp.http.payload import RequestFiles
 from redditwarp.iterators.paginators.listing.listing_async_paginator import ListingAsyncPaginator
 
-class MySession(BaseSession):
+class MySession(SessionBase):
     async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return Response(0, {}, b'')

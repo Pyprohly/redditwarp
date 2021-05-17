@@ -9,11 +9,11 @@ import pytest
 from redditwarp import auth
 from redditwarp import core
 from redditwarp.core.http_client_SYNC import RedditHTTPClient
-from redditwarp.http.base_session_SYNC import BaseSession
+from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.response import Response
 from redditwarp.http.request import Request
 
-class GoodSession(BaseSession):
+class GoodSession(SessionBase):
     def __init__(self,
         response_status: int,
         response_headers: Mapping[str, str],
@@ -30,7 +30,7 @@ class GoodSession(BaseSession):
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
-class BadSession(BaseSession):
+class BadSession(SessionBase):
     def __init__(self,
         exc: Exception,
     ) -> None:

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, MutableMapping, Callable
 if TYPE_CHECKING:
     from ..transporter_info import TransporterInfo
 
-from ..base_session_SYNC import BaseSession
+from ..session_base_SYNC import SessionBase
 
 from . import (
     raw_transporter_module_spec_registry,
@@ -15,7 +15,7 @@ from . import (
     transporter_info_factory,
 )
 
-NewSessionFunction = Callable[[], BaseSession]
+NewSessionFunction = Callable[[], SessionBase]
 
 transporter_info_registry: MutableMapping[str, TransporterInfo] = {}
 transporter_session_function_registry: MutableMapping[str, NewSessionFunction] = {}

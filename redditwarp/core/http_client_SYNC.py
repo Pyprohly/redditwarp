@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any, Optional, Mapping, MutableMapping, MutableSequence
-    from ..http.base_session_SYNC import BaseSession
+    from ..http.session_base_SYNC import SessionBase
     from .authorizer_SYNC import Authorizer, Authorized
     from ..http.response import Response
 
@@ -16,9 +16,9 @@ from .. import http
 from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
-from ..http.base_http_client_SYNC import BaseHTTPClient
+from ..http.http_client_base_SYNC import HTTPClientBase
 
-class RedditHTTPClient(BaseHTTPClient):
+class RedditHTTPClient(HTTPClientBase):
     DEFAULT_PARAMS: Mapping[str, str] = {
         'raw_json': '1',
         'api_type': 'json',
@@ -45,7 +45,7 @@ class RedditHTTPClient(BaseHTTPClient):
         self.authorized_requestor.authorizer = value
 
     def __init__(self,
-        session: BaseSession,
+        session: SessionBase,
         *,
         params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,

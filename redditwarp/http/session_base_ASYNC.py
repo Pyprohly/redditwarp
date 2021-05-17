@@ -15,7 +15,7 @@ from .request import make_request
 
 T = TypeVar('T')
 
-class BaseSession(Requestor):
+class SessionBase(Requestor):
     TRANSPORTER_INFO: ClassVar[TransporterInfo] = BLANK_TRANSPORTER
 
     make_request = staticmethod(make_request)

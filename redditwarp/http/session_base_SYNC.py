@@ -15,7 +15,7 @@ from .request import make_request
 
 T = TypeVar('T')
 
-class BaseSession(Requestor):
+class SessionBase(Requestor):
     TRANSPORTER_INFO: ClassVar[TransporterInfo] = BLANK_TRANSPORTER
 
     make_request = staticmethod(make_request)
@@ -46,7 +46,7 @@ class BaseSession(Requestor):
             A None value will use a default that is specific to the transport
             adaptor. A negative number will wait an infinite amount of time.
         aux_info: Optional[Mapping[Any, Any]]
-            Additional information to be consumed by a custom :class:`BaseSession` class.
+            Additional information to be consumed by a custom :class:`SessionBase` class.
         """
         raise NotImplementedError
 

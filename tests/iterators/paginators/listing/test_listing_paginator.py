@@ -2,13 +2,13 @@
 from typing import Sequence, Any, Optional, Mapping, Callable
 from redditwarp.client_SYNC import Client
 from redditwarp.core.http_client_SYNC import RedditHTTPClient
-from redditwarp.http.base_session_SYNC import BaseSession
+from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 from redditwarp.http.payload import RequestFiles
 from redditwarp.iterators.paginators.listing.listing_paginator import ListingPaginator
 
-class MySession(BaseSession):
+class MySession(SessionBase):
     def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return Response(0, {}, b'')

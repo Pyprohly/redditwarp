@@ -13,7 +13,7 @@ lazy_import%'asyncio'
 import aiohttp  # type: ignore[import]
 
 from ..transporter_info import TransporterInfo
-from ..base_session_ASYNC import BaseSession
+from ..session_base_ASYNC import SessionBase
 from .. import exceptions
 from .. import payload
 from ..response import Response
@@ -85,7 +85,7 @@ spec = __spec__  # type: ignore[name-defined]
 info = TransporterInfo(name, version, spec)
 
 
-class Session(BaseSession):
+class Session(SessionBase):
     TRANSPORTER_INFO = info
 
     def __init__(self,

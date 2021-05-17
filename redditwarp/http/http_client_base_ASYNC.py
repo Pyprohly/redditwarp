@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, TypeVar
 if TYPE_CHECKING:
     from typing import Type, Any, Optional, Mapping, MutableMapping, Union, AnyStr
     from types import TracebackType
-    from .base_session_ASYNC import BaseSession
+    from .session_base_ASYNC import SessionBase
     from .response import Response
     from .payload import RequestFiles
 
@@ -14,9 +14,9 @@ from .requestor_decorator_ASYNC import RequestorDecorator
 
 T = TypeVar('T')
 
-class BaseHTTPClient(RequestorDecorator):
+class HTTPClientBase(RequestorDecorator):
     def __init__(self,
-        session: BaseSession,
+        session: SessionBase,
         *,
         params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,

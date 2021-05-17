@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 import httpx  # type: ignore[import]
 
 from ..transporter_info import TransporterInfo
-from ..base_session_SYNC import BaseSession
+from ..session_base_SYNC import SessionBase
 from .. import exceptions
 from .. import payload
 from ..response import Response
@@ -79,7 +79,7 @@ spec = __spec__  # type: ignore[name-defined]
 info = TransporterInfo(name, version, spec)
 
 
-class Session(BaseSession):
+class Session(SessionBase):
     TRANSPORTER_INFO = info
 
     def __init__(self,
