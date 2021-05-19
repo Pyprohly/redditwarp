@@ -6,7 +6,6 @@ import time
 
 from .const import Opcode, ConnectionState, Side
 from . import exceptions
-from . import events
 from .events import Event, Frame, Message, BytesMessage, TextMessage
 from .util import parse_close, serialize_close
 

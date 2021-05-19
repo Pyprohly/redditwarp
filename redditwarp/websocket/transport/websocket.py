@@ -2,8 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence
 if TYPE_CHECKING:
-    from collections.abc import MutableSequence, Iterator
-    from ..events import Frame
+    from collections.abc import Iterator
 
 # https://pypi.org/project/websocket-client/
 import websocket  # type: ignore[import]
@@ -50,13 +49,10 @@ class WebSocketClient(WebSocketConnection):
         except Exception as e:
             raise exceptions.TransportError from e
 
-        fin = bool(frm.fin)
-        opcode = frm.opcode
-        data = frm.data if isinstance(frm.data, bytes) else frm.data.encode()
         return Frame(
             opcode=Opcode(frm.opcode),
-            fin=fin,
-            data=data,
+            fin=bool(frm.fin),
+            data=(frm.data if isinstance(frm.data, bytes) else frm.data.encode()),
         )
 
     def _process_ping(self, m: Frame) -> Iterator[Event]:

@@ -43,7 +43,7 @@ def auto_grant_factory(
     refresh_token: Optional[str],
     username: Optional[str],
     password: Optional[str],
-) -> Optional[grants.AuthorizationGrant]:
+) -> grants.AuthorizationGrant:
     """Produce a simple non-expiring grant from the provided credentials.
 
     Return either:
@@ -57,5 +57,5 @@ def auto_grant_factory(
     if username and password:
         return grants.ResourceOwnerPasswordCredentialsGrant(username, password)
     if username or password:
-        return None
+        raise ValueError("cannot create an authorization grant from the provided credentials")
     return grants.ClientCredentialsGrant()

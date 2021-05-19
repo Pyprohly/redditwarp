@@ -69,7 +69,8 @@ user_agent = (
 headers = {'User-Agent': user_agent}
 session = new_session()
 rev_token_client = redditwarp.auth.TokenRevocationClient(
-    redditwarp.http.request_update_SYNC.RequestUpdate(session, headers=headers),
+    redditwarp.http.requestor_component_box.apply_params_and_headers_SYNC \
+            .ApplyDefaultParamsAndHeaders(session, headers=headers),
     redditwarp.auth.const.TOKEN_REVOCATION_URL,
     redditwarp.auth.ClientCredentials(client_id, client_secret),
 )

@@ -99,8 +99,6 @@ class ClientCore:
         grant_creds = (refresh_token, username, password)
         if grant is None:
             grant = auto_grant_factory(*grant_creds)
-            if grant is None:
-                raise ValueError("cannot create an authorization grant from the provided credentials")
         elif any(grant_creds):
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
@@ -173,7 +171,7 @@ class ClientCore:
                 except_without_context = True
             if except_without_context:
                 raise_for_response_content_error(resp)
-                raise_for_status(resp)#_2
+                raise_for_status(resp) #2
                 raise UnidentifiedResponseContentError(response=resp)
 
             self.last_value = json_data
@@ -183,7 +181,7 @@ class ClientCore:
                 raise_for_variant1_reddit_api_error(resp, json_data)
                 raise_for_variant2_reddit_api_error(resp, json_data)
 
-        raise_for_status(resp)#_1
+        raise_for_status(resp) #1
         return json_data
 
     def set_access_token(self, access_token: str) -> None:

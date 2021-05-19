@@ -10,18 +10,16 @@ if TYPE_CHECKING:
 
 from .request import Request
 from .payload import make_payload
-from .requestor_decorator_ASYNC import RequestorDecorator
 
 T = TypeVar('T')
 
-class HTTPClientBase(RequestorDecorator):
+class HTTPClientBase:
     def __init__(self,
         session: SessionBase,
         *,
         params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
-        super().__init__(session)
         self.session = session
         self.params: MutableMapping[str, Optional[str]]
         self.params = {} if params is None else params
@@ -41,7 +39,7 @@ class HTTPClientBase(RequestorDecorator):
 
     async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        return await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+        return await self.session.send(request, timeout=timeout, aux_info=aux_info)
 
     def _new_request(self,
         verb: str,

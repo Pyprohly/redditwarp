@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from ..http.session_base_SYNC import SessionBase
     from .authorizer_SYNC import Authorizer, Authorized
     from ..http.response import Response
+    from ..http.requestor_SYNC import Requestor
 
 import sys
 from collections import deque
@@ -52,6 +53,7 @@ class RedditHTTPClient(HTTPClientBase):
     ) -> None:
         params = dict(self.DEFAULT_PARAMS) if params is None else params
         super().__init__(session, params=params, headers=headers)
+        self.requestor: Requestor = session
         self.authorized_requestor: Optional[Authorized] = None
         self.user_agent = self.user_agent_string_head = (
             f"{__about__.__title__}/{__about__.__version__} "
@@ -67,7 +69,7 @@ class RedditHTTPClient(HTTPClientBase):
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         try:
-            resp = super().send(request, timeout=timeout, aux_info=aux_info)
+            resp = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
         except (
             auth.exceptions.ResponseException,
             http.exceptions.ResponseException,
@@ -78,7 +80,6 @@ class RedditHTTPClient(HTTPClientBase):
 
             if isinstance(e, auth.exceptions.ResponseException):
                 handle_auth_response_exception(e)
-                raise AssertionError
             raise
 
         self.last_response = resp
