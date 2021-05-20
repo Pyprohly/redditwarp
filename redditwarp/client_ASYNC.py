@@ -16,14 +16,15 @@ from .core.http_client_ASYNC import RedditHTTPClient
 from .core.authorizer_ASYNC import Authorizer, Authorized
 from .core.rate_limited_ASYNC import RateLimited
 from .util.praw_config import get_praw_config
+from .util.except_without_context_ import except_without_context
 from .exceptions import (
     raise_for_status,
     handle_non_json_response,
     raise_for_json_object_data,
 )
 #from .util.imports import lazy_import;
-#if 0: from .api.site_procedures import ASYNC as site_procedures_ASYNC
-#site_procedures_ASYNC = lazy_import('.api.site_procedures.ASYNC', __package__)  # noqa: F811
+#if 0: from .site_procedures import ASYNC as site_procedures_ASYNC
+#site_procedures_ASYNC = lazy_import('.site_procedures.ASYNC', __package__)  # noqa: F811
 
 class ClientCore:
     default_transporter_name = None
@@ -160,12 +161,9 @@ class ClientCore:
 
         json_data = None
         if resp.data:
-            except_without_context = False
-            try:
+            with except_without_context(ValueError) as xcpt:
                 json_data = json_loads_response(resp)
-            except ValueError:
-                except_without_context = True
-            if except_without_context:
+            if xcpt:
                 raise handle_non_json_response(resp)
 
             self.last_value = json_data
@@ -178,7 +176,7 @@ class ClientCore:
 
     def set_access_token(self, access_token: str) -> None:
         if self.http.authorizer is None:
-            raise RuntimeError('The HTTP client does not know of an authorizer instance to assign the token to')
+            raise RuntimeError('The HTTP client is missing an authorizer')
         self.http.authorizer.token = Token(access_token)
 
 class Client(ClientCore):

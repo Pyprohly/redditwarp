@@ -4,7 +4,7 @@ from typing import Sequence
 
 from .listing_paginator import ListingPaginator
 from ....models.comment_SYNC import Comment
-from ....api.load.comment_SYNC import load_comment
+from ....models.load.comment_SYNC import load_comment
 
 class CommentListingPaginator(ListingPaginator[Comment]):
     def _fetch_result(self) -> Sequence[Comment]:

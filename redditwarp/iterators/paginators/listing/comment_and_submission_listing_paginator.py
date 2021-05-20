@@ -4,8 +4,8 @@ from typing import Sequence, Optional
 
 from .listing_paginator import ListingPaginator
 from ....models.original_reddit_thing_object import OriginalRedditThingObject
-from ....api.load.comment_SYNC import load_comment
-from ....api.load.submission_SYNC import load_submission
+from ....models.load.comment_SYNC import load_comment
+from ....models.load.submission_SYNC import load_submission
 
 class CommentAndSubmissionListingPaginator(ListingPaginator[OriginalRedditThingObject]):
     def _fetch_result(self) -> Sequence[OriginalRedditThingObject]:

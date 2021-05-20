@@ -4,7 +4,7 @@ from typing import Sequence
 
 from .listing_async_paginator import ListingAsyncPaginator
 from ....models.subreddit_ASYNC import Subreddit
-from ....api.load.subreddit_ASYNC import load_subreddit
+from ....models.load.subreddit_ASYNC import load_subreddit
 
 class SubredditListingAsyncPaginator(ListingAsyncPaginator[Subreddit]):
     async def _fetch_result(self) -> Sequence[Subreddit]:

@@ -9,7 +9,7 @@ from .submission_collection_base import (
     SubmissionCollectionBase,
     PrimarySubmissionCollectionBase,
 )
-from ..api.load.submission_SYNC import load_submission
+from .load.submission_SYNC import load_submission
 
 
 class SubmissionCollection(SubmissionCollectionBase):

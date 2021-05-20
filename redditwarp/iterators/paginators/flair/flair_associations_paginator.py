@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ....client_SYNC import Client
     from ....models.flair import UserFlairAssociation
 
-from ....api.load.flair import load_user_flair_association
+from ....models.load.flair import load_user_flair_association
 from ..cursor_bidirectional_paginator import CursorBidirectionalPaginator
 
 class FlairAssociationsPaginator(CursorBidirectionalPaginator[UserFlairAssociation]):

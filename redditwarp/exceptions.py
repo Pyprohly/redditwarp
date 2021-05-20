@@ -73,7 +73,7 @@ class UnidentifiedResponseContentError(ResponseContentError):
     """The response body contains data that the client isn't prepared to handle."""
 
     def get_default_message(self) -> str:
-        return '\\\n\n** Please file a bug report with RedditWarp! **'
+        return '\\\n\n** Please file a bug report! **'
 
 class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentError):
     # Unused. This will never be raised.
@@ -85,7 +85,7 @@ class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentErro
 
     def get_default_message(self) -> str:
         return f'\\\n{pformat(self.json)}\n\n' \
-                '** Please file a bug report with RedditWarp! **'
+                '** Please file a bug report! **'
 
 
 class UnacceptableResponseContentError(ResponseContentError):
@@ -95,7 +95,7 @@ class UnacceptableResponseContentError(ResponseContentError):
 
     def get_default_message(self) -> str:
         return f'\\\n{self.response.data!r}\n\n' \
-                '** Please file a bug report with RedditWarp! **'
+                '** Please file a bug report! **'
 
 class UnacceptableJSONLayoutResponseContentError(UnacceptableResponseContentError):
     """The response body contains JSON data that the client isn't prepared to handle."""
@@ -106,7 +106,7 @@ class UnacceptableJSONLayoutResponseContentError(UnacceptableResponseContentErro
 
     def get_default_message(self) -> str:
         return f'\\\n{pformat(self.json)}\n\n' \
-                '** Please file a bug report with RedditWarp! **'
+                '** Please file a bug report! **'
 
 
 class UnacceptableHTMLDocumentReceivedError(ResponseContentError):
@@ -250,7 +250,7 @@ class ContentCreationCooldown(Variant2RedditAPIError):
     def get_default_message(self) -> str:
         return super().get_default_message() + '''
 
-Looks like you hit a content creation ratelimit. This can happen when
+Looks like you hit a content creation rate limit. This can happen when
 your account has low karma or no verified email.
 '''
 

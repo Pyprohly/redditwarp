@@ -4,7 +4,7 @@ from typing import Sequence
 
 from .listing_paginator import ListingPaginator
 from ....models.submission_SYNC import Submission
-from ....api.load.submission_SYNC import load_submission
+from ....models.load.submission_SYNC import load_submission
 
 class SubmissionListingPaginator(ListingPaginator[Submission]):
     def _fetch_result(self) -> Sequence[Submission]:

@@ -4,7 +4,7 @@ from typing import Sequence
 
 from .listing_async_paginator import ListingAsyncPaginator
 from ....models.submission_ASYNC import Submission
-from ....api.load.submission_ASYNC import load_submission
+from ....models.load.submission_ASYNC import load_submission
 
 class SubmissionListingAsyncPaginator(ListingAsyncPaginator[Submission]):
     async def _fetch_result(self) -> Sequence[Submission]:
