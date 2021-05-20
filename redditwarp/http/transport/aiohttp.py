@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ..request import Request
     from ..payload import Payload
 
-from ...util.module_importing import lazy_import;
+from ...util.imports import lazy_import;
 if 0: import asyncio
 lazy_import%'asyncio'
 

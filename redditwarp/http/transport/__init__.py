@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 import sys
 import importlib.util
 
-from ...util.module_importing import load_module_from_spec
+from ...util.imports import load_module_from_spec
 
 T = TypeVar('T')
 

@@ -21,7 +21,6 @@ class Payload:
 class CommonContentType(Payload):
     CONTENT_TYPE_HINT = ''
 
-
 class Bytes(CommonContentType):
     CONTENT_TYPE_HINT = 'application/octet-stream'
     def __init__(self, data: bytes):

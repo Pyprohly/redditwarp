@@ -7,7 +7,6 @@ import pytest
 from redditwarp.core.authorizer_SYNC import Authorizer
 from redditwarp.auth.token import ResponseToken
 from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
-from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.core.exceptions import UnknownTokenType
 from redditwarp.http.requestor_SYNC import Requestor
 
@@ -16,7 +15,7 @@ class MyTokenObtainmentClient(TokenObtainmentClient):
         super().__init__(
             requestor=Requestor(),
             uri='',
-            client_credentials=ClientCredentials('', ''),
+            client_credentials=('', ''),
             grant={},
         )
         self.my_token = my_token

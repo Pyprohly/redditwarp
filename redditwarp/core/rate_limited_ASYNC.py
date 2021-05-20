@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from ..http.request import Request
     from ..http.response import Response
 
-from ..util.module_importing import lazy_import;
+from ..util.imports import lazy_import;
 if 0: import asyncio
 lazy_import%'asyncio'
 import time

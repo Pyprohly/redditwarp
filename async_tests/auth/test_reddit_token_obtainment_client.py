@@ -4,7 +4,6 @@ from __future__ import annotations
 import pytest
 
 from redditwarp.auth.reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
-from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.exceptions import HTTPStatusError
 
 from .test_token_obtainment_client import MockRequestor
@@ -18,7 +17,7 @@ async def test_fetch_json_dict__exceptions() -> None:
     )
     o = RedditTokenObtainmentClient(
         requestor,
-        '', ClientCredentials('cid', 'cse'), {},
+        '', ('cid', 'cse'), {},
         {},
     )
     with pytest.raises(HTTPStatusError):

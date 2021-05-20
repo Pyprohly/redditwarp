@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional, Mapping
-    from .client_credentials import ClientCredentials
+    from .typedefs import ClientCredentials
     from ..http.request import Request
 
 from base64 import b64encode
@@ -32,8 +32,7 @@ def __authorization_url(  # UNUSED: scrapped idea
     return f'{url}?{urlencode(params)}'
 
 def basic_auth(client_credentials: ClientCredentials) -> str:
-    ci = client_credentials.client_id
-    cs = client_credentials.client_secret
+    ci, cs = client_credentials
     return 'Basic ' + b64encode(f'{ci}:{cs}'.encode()).decode()
 
 def apply_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:

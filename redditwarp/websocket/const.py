@@ -24,12 +24,10 @@ class Opcode(IntEnum):
 
     @staticmethod
     def is_data_frame_opcode(v: int) -> bool:
-        if v == 0: return False
         return (v & 0x8) == 0
 
     @staticmethod
     def is_control_frame_opcode(v: int) -> bool:
-        if v == 0: return False
         return (v & 0x8) != 0
 
 AUTHORITATIVE_CLOSE_FRAME_CLOSE_CODES = {

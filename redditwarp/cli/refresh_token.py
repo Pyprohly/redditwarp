@@ -137,7 +137,7 @@ session = new_session()
 token_client = redditwarp.auth.reddit_token_obtainment_client_SYNC.RedditTokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
-    redditwarp.auth.ClientCredentials(client_id, client_secret),
+    (client_id, client_secret),
     redditwarp.auth.grants.AuthorizationCodeGrant(code, redirect_uri),
     headers,
 )

@@ -32,7 +32,7 @@ def make_request(
     timeout: float = -2,
     aux_info: Optional[Mapping[Any, Any]] = None,
 ) -> Request:
-    params = dict({} if params is None else params)
-    headers = dict({} if headers is None else headers)
+    params = dict(params or {})
+    headers = dict(headers or {})
     payload = make_payload(data, json, files)
     return Request(verb, uri, params=params, headers=headers, payload=payload)

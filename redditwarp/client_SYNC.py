@@ -4,16 +4,17 @@ from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Mutable
 if TYPE_CHECKING:
     from types import TracebackType
     from .http.response import Response
+    from .auth.typedefs import AuthorizationGrant
 
 from .http.util.json_loads import json_loads_response
 from .http.transport.SYNC import get_default_transporter_name, new_session_factory
-from .auth import ClientCredentials, Token
+from .auth import Token
 from .auth.util import auto_grant_factory
 from .auth.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
 from .core.http_client_SYNC import RedditHTTPClient
 from .core.authorizer_SYNC import Authorizer, Authorized
-from .core.ratelimited_SYNC import RateLimited
+from .core.rate_limited_SYNC import RateLimited
 from .util.praw_config import get_praw_config
 from .exceptions import (
     UnidentifiedResponseContentError,
@@ -23,11 +24,9 @@ from .exceptions import (
     raise_for_variant1_reddit_api_error,
     raise_for_variant2_reddit_api_error,
 )
-from .util.module_importing import lazy_import;
+from .util.imports import lazy_import;
 if 0: from .api.site_procedures import SYNC as site_procedures_SYNC
 site_procedures_SYNC = lazy_import('.api.site_procedures.SYNC', __package__)  # noqa: F811
-
-AuthorizationGrant = Mapping[str, Optional[str]]
 
 class ClientCore:
     """The gateway to interacting with the Reddit API."""
@@ -77,7 +76,7 @@ class ClientCore:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_config(cls: Type[T], site_name: str) -> T:
+    def from_praw_ini(cls: Type[T], site_name: str) -> T:
         config = get_praw_config()
         section_name = site_name or config.default_section  # type: ignore[attr-defined]
         try:
@@ -166,7 +165,7 @@ class ClientCore:
             RedditTokenObtainmentClient(
                 session,
                 TOKEN_OBTAINMENT_URL,
-                ClientCredentials(client_id, client_secret),
+                (client_id, client_secret),
                 grant,
                 http.headers,
             )

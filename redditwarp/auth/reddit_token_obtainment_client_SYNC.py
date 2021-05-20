@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Optional, Any
 if TYPE_CHECKING:
-    from .client_credentials import ClientCredentials
+    from .typedefs import ClientCredentials
     from ..http.requestor_SYNC import Requestor
     from ..http.request import Request
     from ..http.response import Response

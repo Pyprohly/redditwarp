@@ -79,7 +79,7 @@ class RedditHTTPClient(HTTPClientBase):
             self.last_response_queue.append(resp)
 
             if isinstance(e, auth.exceptions.ResponseException):
-                handle_auth_response_exception(e)
+                raise handle_auth_response_exception(e)
             raise
 
         self.last_response = resp

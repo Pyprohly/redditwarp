@@ -1,6 +1,6 @@
-from dataclasses import dataclass
 
-@dataclass(frozen=True)
-class ClientCredentials:
+from typing import NamedTuple
+
+class ClientCredentials(NamedTuple):
     client_id: str
     client_secret: str

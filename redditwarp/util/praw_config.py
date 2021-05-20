@@ -16,14 +16,14 @@ def get_praw_ini_potential_locations() -> List[str]:
         modu = sys.modules[root_package_name]
         package_dir = op.dirname(modu.__file__)
 
-    getenv2: Callable[[str], str] = lambda key: getenv(key, '')
+    safe_getenv: Callable[[str], str] = lambda key: getenv(key, '')
     return [
         op.join(*components, ini_file_name)
         for components in [
             (package_dir,),  # Package defaults
-            (getenv2('APPDATA'),),  # Windows
-            (getenv2('HOME'), '.config'),  # Linux and macOS
-            (getenv2('XDG_CONFIG_HOME'),),  # Linux
+            (safe_getenv('APPDATA'),),  # Windows
+            (safe_getenv('HOME'), '.config'),  # Linux and macOS
+            (safe_getenv('XDG_CONFIG_HOME'),),  # Linux
             ('.',),  # Current directory
         ]
         if components[0]

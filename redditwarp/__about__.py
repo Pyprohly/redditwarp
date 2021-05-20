@@ -47,19 +47,6 @@
 
 from typing import NamedTuple
 
-__all__ = (
-    '__title__',
-    '__summary__',
-    '__uri__',
-    '__url__',
-    '__version__',
-    'version_info',
-    '__version_info__',
-    '__author__',
-    '__license__',
-    '__copyright__',
-)
-
 class VersionInfo(NamedTuple):
     major: int
     minor: int

@@ -56,7 +56,7 @@ class UnidentifiedResponseContentError(ResponseContentError):
 class HTMLDocumentResponseContentError(ResponseContentError):
     pass
 
-def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None:
+def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exception:
     resp = e.response
     status = resp.status
 
@@ -125,4 +125,4 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> None
                 if not content_type.startswith(expected_content_type):
                     e.arg = f'bad Content-Type header: got {content_type!r}, need {expected_content_type!r}'
 
-    raise
+    return e

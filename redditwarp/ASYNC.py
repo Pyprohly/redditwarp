@@ -1,2 +1,4 @@
 
-from .client_ASYNC import Client  # noqa
+__all__ = 'Client',
+
+from .client_ASYNC import Client

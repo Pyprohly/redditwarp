@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
-from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.util import basic_auth
 from redditwarp.auth.exceptions import (
     ResponseContentError,
@@ -42,7 +41,7 @@ def test_fetch_json_dict() -> None:
         response_data=b'{"a":100, "some": "text"}',
     )
     uri = 'abcdef'
-    client_credentials = ClientCredentials('cid', 'cse')
+    client_credentials = ('cid', 'cse')
     grant = {'grant_type': 'epyt_tnarg', 'data1': 'blah', 'data2': '', 'data3': None}
     o = TokenObtainmentClient(
         requestor,
@@ -69,7 +68,7 @@ def test_fetch_json_dict__exceptions() -> None:
     )
     o = TokenObtainmentClient(
         requestor,
-        '', ClientCredentials('cid', 'cse'), {},
+        '', ('cid', 'cse'), {},
     )
     with pytest.raises(ResponseContentError):
         o.fetch_json_dict()
@@ -120,7 +119,7 @@ def test_fetch_token() -> None:
     tk = MyTokenObtainmentClient(
         Requestor(),
         '',
-        ClientCredentials('', ''),
+        ('', ''),
         {},
     ).fetch_token()
     assert tk.access_token == 'aoeu'

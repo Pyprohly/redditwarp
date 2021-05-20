@@ -16,12 +16,12 @@ class ResponseToken(Token):
     Attributes
     ----------
     d: Mapping[str, Any]
-        The bare json dictionary object.
+        The JSON object dictionary.
     """
 
-    T = TypeVar('T', bound='ResponseToken')
-
     d: Mapping[str, Any] = field(repr=False, default_factory=dict)
+
+    T = TypeVar('T', bound='ResponseToken')
 
     @classmethod
     def from_dict(cls: Type[T], d: Mapping[str, Any]) -> T:

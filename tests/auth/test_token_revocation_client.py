@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp.auth.token_revocation_client_SYNC import TokenRevocationClient
-from redditwarp.auth.client_credentials import ClientCredentials
 from redditwarp.auth.exceptions import HTTPStatusError
 from redditwarp.http.requestor_SYNC import Requestor
 from redditwarp.http.request import Request
@@ -37,7 +36,7 @@ def test_revoke_token() -> None:
         response_data=b'',
     )
     uri = 'abcdef'
-    client_credentials = ClientCredentials('cid', 'cse')
+    client_credentials = ('cid', 'cse')
     o = TokenRevocationClient(
         requestor,
         uri,
@@ -76,7 +75,7 @@ def test_revoke_token__exceptions() -> None:
     )
     o = TokenRevocationClient(
         requestor,
-        '', ClientCredentials('cid', 'cse'),
+        '', ('cid', 'cse'),
     )
     with pytest.raises(HTTPStatusError):
         o.revoke_token('', '')
@@ -87,7 +86,7 @@ def test_revoke_access_token() -> None:
             assert token == 'abc'
             assert token_type_hint == 'access_token'
 
-    o = MyTokenRevocationClient(Requestor(), '', ClientCredentials('', ''))
+    o = MyTokenRevocationClient(Requestor(), '', ('', ''))
     o.revoke_access_token('abc')
 
 def test_revoke_refresh_token() -> None:
@@ -96,5 +95,5 @@ def test_revoke_refresh_token() -> None:
             assert token == 'def'
             assert token_type_hint == 'refresh_token'
 
-    o = MyTokenRevocationClient(Requestor(), '', ClientCredentials('', ''))
+    o = MyTokenRevocationClient(Requestor(), '', ('', ''))
     o.revoke_refresh_token('def')
