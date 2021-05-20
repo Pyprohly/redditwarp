@@ -130,6 +130,15 @@ def raise_for_json_layout_content_error(resp: Response, data: Mapping[str, Any])
     if {'jquery', 'success'} <= data.keys():
         raise UnacceptableJSONLayoutResponseContentError(response=resp, json=data)
 
+def handle_non_json_response(resp: Response) -> Exception:
+    raise_for_response_content_error(resp)
+    raise_for_status(resp)
+    return UnidentifiedResponseContentError(response=resp)
+
+def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
+    raise_for_json_layout_content_error(resp, data)
+    raise_for_variant1_reddit_api_error(resp, data)
+    raise_for_variant2_reddit_api_error(resp, data)
 
 
 class RedditAPIError(ResponseException):
