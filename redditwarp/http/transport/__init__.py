@@ -35,17 +35,23 @@ def try_get_default_transporter_name_factory(
             if name not in sys.modules:
                 continue
 
-            if name in info_registry:
-                return name
+            try:
+                load_module_from_spec(module_spec_registry[name])
+            except ImportError:
+                continue
+            if name not in info_registry:
+                raise Exception('the HTTP transport library {name!r} did not register correctly')
+
+            return name
 
         for name in priority:
             try:
                 load_module_from_spec(module_spec_registry[name])
             except ImportError:
                 continue
-
             if name not in info_registry:
-                raise Exception('the HTTP transport library {name!r} is not supported')
+                raise Exception('the HTTP transport library {name!r} did not register correctly')
+
             return name
 
         return None
@@ -76,12 +82,12 @@ def transporter_info_factory(
     return _f
 
 
-m: MutableMapping[str, Optional[ModuleSpec]] = {
+_m: MutableMapping[str, Optional[ModuleSpec]] = {
     'requests': importlib.util.find_spec('.requests', __package__),
     'aiohttp': importlib.util.find_spec('.aiohttp', __package__),
-    'httpx_SYNC': importlib.util.find_spec('.httpx_SYNC', __package__),
-    'httpx_ASYNC': importlib.util.find_spec('.httpx_ASYNC', __package__),
+    'httpx_sync': importlib.util.find_spec('.httpx_sync', __package__),
+    'httpx_async': importlib.util.find_spec('.httpx_async', __package__),
 }
 raw_transporter_module_spec_registry: MutableMapping[str, ModuleSpec] = {
-    k: v for k, v in m.items() if v is not None
+    k: v for k, v in _m.items() if v is not None
 }

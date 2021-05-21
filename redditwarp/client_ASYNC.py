@@ -48,7 +48,9 @@ class ClientCore:
         new_session = new_session_factory(cls.get_default_transporter_name())
         session = new_session()
         http = RedditHTTPClient(session)
-        authorizer = Authorizer(Token(access_token), None)
+        token = Token(access_token)
+        token_client = None
+        authorizer = Authorizer(token, token_client)
         http.authorized_requestor = Authorized(session, authorizer)
         http.requestor = RateLimited(http.authorized_requestor)
         return cls.from_http(http)
@@ -102,16 +104,15 @@ class ClientCore:
         new_session = new_session_factory(self.get_default_transporter_name())
         session = new_session()
         http = RedditHTTPClient(session)
-        authorizer = Authorizer(
-            (None if access_token is None else Token(access_token)),
-            RedditTokenObtainmentClient(
-                session,
-                TOKEN_OBTAINMENT_URL,
-                (client_id, client_secret),
-                grant,
-                http.headers,
-            )
+        token = None if access_token is None else Token(access_token)
+        token_client = RedditTokenObtainmentClient(
+            session,
+            TOKEN_OBTAINMENT_URL,
+            (client_id, client_secret),
+            grant,
+            http.headers,
         )
+        authorizer = Authorizer(token, token_client)
         http.authorized_requestor = Authorized(session, authorizer)
         http.requestor = RateLimited(http.authorized_requestor)
         self._init(http)
