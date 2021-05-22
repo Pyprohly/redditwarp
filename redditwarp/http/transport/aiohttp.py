@@ -76,6 +76,8 @@ _PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
 
 
 #region common
+STRUCTURAL_CONFORMITY = True
+
 class Session(SessionBase):
     def __init__(self,
         aiohttp_client: aiohttp.ClientSession,

@@ -9,7 +9,7 @@ Only one refresh token and access token can be active at a time. If either
 becomes leaked, simply fetch new tokens with this tool to invalidate both.
 
 Refresh tokens never expire.
-Access tokens expire after 1 hour.
+Access tokens expire after an hour.
 Authorization Codes expire after 10 minutes or after use.
 """
 
@@ -21,13 +21,14 @@ if TYPE_CHECKING:
 import argparse
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
+parser._optionals.title = __import__('gettext').gettext('named arguments')
 add = parser.add_argument
 add('client_id', nargs='?')
 add('client_secret', nargs='?')
 add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
 add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 add('--scope', default='*', help='an OAuth2 scope string')
-add('--redirect-uri', default='http://localhost:8080', help=' ')
+add('--redirect-uri', default='http://localhost:8080', help='\N{ZERO WIDTH SPACE}')
 add('--duration', choices=['temporary', 'permanent'], default='permanent', help=argparse.SUPPRESS)
 add('--no-web-browser', action='store_true', help="don't launch a browser")
 args = parser.parse_args()
@@ -42,6 +43,12 @@ import webbrowser
 import signal
 
 import redditwarp
+from redditwarp.http.transport.SYNC import (
+    load_transport_module,
+    new_session,
+    get_session_underlying_library_name_and_version,
+)
+from redditwarp.auth.SYNC import RedditTokenObtainmentClient
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -63,7 +70,7 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 
 signal.signal(signal.SIGINT, handle_sigint)
 
-redditwarp.http.transport.SYNC.get_transport_module()
+load_transport_module()
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
@@ -124,9 +131,8 @@ except KeyError:
 
 print('Step 3. Exchange the authorization code for an access/refresh token.\n')
 
-session = redditwarp.http.transport.SYNC.new_session()
-transport_name, transport_version = redditwarp.http.transport.SYNC \
-        .get_session_underlying_library_name_and_version(session)
+session = new_session()
+transport_name, transport_version = get_session_underlying_library_name_and_version(session)
 user_agent = (
     f"RedditWarp/{redditwarp.__version__} "
     f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
@@ -134,7 +140,7 @@ user_agent = (
     "redditwarp.cli.refresh_token"
 )
 headers = {'User-Agent': user_agent}
-token_client = redditwarp.auth.reddit_token_obtainment_client_SYNC.RedditTokenObtainmentClient(
+token_client = RedditTokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
     (client_id, client_secret),

@@ -17,7 +17,7 @@ def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
         raise RuntimeError(f'module spec not found: {name} ({package})')
     return module_spec
 
-def get_transport_module() -> ModuleType:
+def load_transport_module() -> ModuleType:
     itr = iter(transport_registry.items())
     try:
         name, module = next(itr)
@@ -44,7 +44,7 @@ def get_transport_module() -> ModuleType:
 def new_session(*,
     default_timeout: float = 8,
 ) -> SessionBase:
-    module = get_transport_module()
+    module = load_transport_module()
     new_session = module.new_session  # type: ignore[attr-defined]
     return new_session(default_timeout=default_timeout)
 

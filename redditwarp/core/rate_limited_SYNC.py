@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 import time
 
-from ..http.requestor_component_box.requestor_decorator_SYNC import RequestorDecorator
+from ..http.components.requestor_decorator_SYNC import RequestorDecorator
 from .token_bucket import TokenBucket
 
 class RateLimited(RequestorDecorator):

@@ -13,7 +13,7 @@ if 0: import asyncio
 lazy_import%'asyncio'
 import time
 
-from ..http.requestor_component_box.requestor_decorator_ASYNC import RequestorDecorator
+from ..http.components.requestor_decorator_ASYNC import RequestorDecorator
 from .exceptions import UnknownTokenType
 from ..auth.grants import RefreshTokenGrant
 

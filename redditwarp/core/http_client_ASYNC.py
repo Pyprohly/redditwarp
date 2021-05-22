@@ -89,8 +89,11 @@ class RedditHTTPClient(HTTPClientBase):
 def get_http_client_user_agent(session: object) -> str:
     transport_name, transport_version = get_session_underlying_library_name_and_version(session)
     py_version = '.'.join(map(str, sys.version_info[:2]))
+    transport_token = ''
+    if transport_name:
+        transport_token = f"{transport_name}/{transport_version}"
     return (
         f"{__about__.__title__}/{__about__.__version__} "
         f"Python/{py_version} "
-        f"{transport_name}/{transport_version}"
+        f"{transport_token}"
     )
