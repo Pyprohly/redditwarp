@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     from ..http.requestor_ASYNC import Requestor
 
 import sys
-from collections import deque
+import collections
 
 from .. import __about__
 from .. import auth
@@ -18,6 +18,7 @@ from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
 from ..http.http_client_base_ASYNC import HTTPClientBase
+from ..http.transport.ASYNC import get_session_underlying_library_name_and_version
 
 class RedditHTTPClient(HTTPClientBase):
     DEFAULT_PARAMS: Mapping[str, str] = {
@@ -55,13 +56,9 @@ class RedditHTTPClient(HTTPClientBase):
         super().__init__(session, params=params, headers=headers)
         self.requestor: Requestor = session
         self.authorized_requestor: Optional[Authorized] = None
-        self.user_agent = self.user_agent_string_head = (
-            f"{__about__.__title__}/{__about__.__version__} "
-            f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
-            f"{session.TRANSPORTER_INFO.name}/{session.TRANSPORTER_INFO.version}"
-        )
+        self.user_agent = self.user_agent_start = get_http_client_user_agent(session)
         self.last_response: Optional[Response] = None
-        self.last_response_queue: MutableSequence[Response] = deque(maxlen=12)
+        self.last_response_queue: MutableSequence[Response] = collections.deque(maxlen=12)
 
     async def send(self,
         request: Request,
@@ -87,3 +84,13 @@ class RedditHTTPClient(HTTPClientBase):
 
         raise_for_resource_server_response(resp)
         return resp
+
+
+def get_http_client_user_agent(session: object) -> str:
+    transport_name, transport_version = get_session_underlying_library_name_and_version(session)
+    py_version = '.'.join(map(str, sys.version_info[:2]))
+    return (
+        f"{__about__.__title__}/{__about__.__version__} "
+        f"Python/{py_version} "
+        f"{transport_name}/{transport_version}"
+    )

@@ -8,12 +8,10 @@ if TYPE_CHECKING:
 import httpx  # type: ignore[import]
 import httpcore  # type: ignore[import]
 
-from ..transporter_info import TransporterInfo
 from ..session_base_ASYNC import SessionBase
 from .. import exceptions
 from .. import payload
 from ..response import Response
-from .ASYNC import register
 
 def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
     if not isinstance(y, payload.Multipart):
@@ -48,19 +46,10 @@ def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
         'files': destructured_file_payloads,
     }
 
-_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
-    type(None): lambda y: {},
-    payload.Bytes: lambda y: {'data': y.data},
-    payload.FormData: lambda y: {'data': y.data},
-    payload.Multipart: _multipart_payload_dispatch,
-    payload.Text: lambda y: {'data': y.text},
-    payload.JSON: lambda y: {'json': y.json},
-}
-
 def _request_kwargs(r: Request) -> Mapping[str, object]:
     for v in r.params.values():
         if v is None:
-            msg = f'valueless URL params is not supported by this HTTP transport library ({info.name}); the params mapping cannot contain None'
+            msg = f'valueless URL params is not supported by this HTTP transport library ({name}); the params mapping cannot contain None'
             raise RuntimeError(msg)
 
     kwargs: MutableMapping[str, object] = {
@@ -73,16 +62,18 @@ def _request_kwargs(r: Request) -> Mapping[str, object]:
     kwargs.update(d)
     return kwargs
 
+_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
+    type(None): lambda y: {},
+    payload.Bytes: lambda y: {'data': y.data},
+    payload.FormData: lambda y: {'data': y.data},
+    payload.Multipart: _multipart_payload_dispatch,
+    payload.Text: lambda y: {'data': y.text},
+    payload.JSON: lambda y: {'json': y.json},
+}
 
-name = httpx.__name__
-version = httpx.__version__
-spec = __spec__  # type: ignore[name-defined]
-info = TransporterInfo(name, version, spec)
 
-
+#region common
 class Session(SessionBase):
-    TRANSPORTER_INFO = info
-
     def __init__(self,
         httpx_client: httpx.AsyncClient,
     ) -> None:
@@ -135,7 +126,6 @@ class Session(SessionBase):
     async def close(self) -> None:
         await self.client.aclose()
 
-
 def new_session(*,
     default_timeout: float = 8,
 ) -> Session:
@@ -146,4 +136,6 @@ def new_session(*,
     sess.default_timeout = default_timeout
     return sess
 
-register(name, info, new_session)
+name = httpx.__name__
+version = httpx.__version__
+#endregion

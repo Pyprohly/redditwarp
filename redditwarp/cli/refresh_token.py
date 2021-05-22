@@ -63,9 +63,7 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 
 signal.signal(signal.SIGINT, handle_sigint)
 
-transporter_name = redditwarp.http.transport.SYNC.get_default_transporter_name()
-transporter = redditwarp.http.transport.SYNC.transporter_info(transporter_name)
-new_session = redditwarp.http.transport.SYNC.new_session_factory(transporter_name)
+redditwarp.http.transport.SYNC.get_transport_module()
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
@@ -126,14 +124,16 @@ except KeyError:
 
 print('Step 3. Exchange the authorization code for an access/refresh token.\n')
 
+session = redditwarp.http.transport.SYNC.new_session()
+transport_name, transport_version = redditwarp.http.transport.SYNC \
+        .get_session_underlying_library_name_and_version(session)
 user_agent = (
-    f'RedditWarp/{redditwarp.__version__} '
+    f"RedditWarp/{redditwarp.__version__} "
     f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
-    f'{transporter.name}/{transporter.version} '
-    'redditwarp.cli.refresh_token'
+    f"{transport_name}/{transport_version} "
+    "redditwarp.cli.refresh_token"
 )
 headers = {'User-Agent': user_agent}
-session = new_session()
 token_client = redditwarp.auth.reddit_token_obtainment_client_SYNC.RedditTokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,

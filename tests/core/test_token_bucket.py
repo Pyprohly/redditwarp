@@ -9,7 +9,7 @@ from redditwarp.core.token_bucket import TokenBucket
 T = TypeVar('T')
 
 class CallIterator(Iterator[T]):
-    """Iterate by calling the object."""
+    """Get next item by calling the iterator."""
     def __init__(self, iterable: Iterable[T]) -> None:
         self._iterator = iter(iterable)
     def __iter__(self) -> Iterator[T]:
@@ -36,7 +36,6 @@ for _ in range(samples):
         n = tb.get_value()
         concomitants.append((m, n))
     print((capacity, rate, time_values, concomitants))
-
 '''
 @pytest.mark.parametrize(
     "capacity, rate, time_values, concomitants",

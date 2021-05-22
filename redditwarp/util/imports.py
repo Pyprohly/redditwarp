@@ -15,6 +15,7 @@ def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
     assert isinstance(spec.loader, Loader)
 
     module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
 
@@ -34,6 +35,7 @@ class _LazyImport:
             loader = importlib.util.LazyLoader(spec.loader)
 
             sys.modules[spec.name] = module
+
             try:
                 loader.exec_module(module)
             except ImportError:

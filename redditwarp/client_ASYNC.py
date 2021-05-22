@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from .auth.typedefs import AuthorizationGrant
 
 from .http.util.json_loads import json_loads_response
-from .http.transport.ASYNC import get_default_transporter_name, new_session_factory
+from .http.transport.ASYNC import new_session
 from .auth import Token
 from .auth.util import auto_grant_factory
 from .auth.reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
@@ -26,16 +26,8 @@ from .exceptions import (
 #if 0: from .site_procedures import ASYNC as site_procedures_ASYNC
 #site_procedures_ASYNC = lazy_import('.site_procedures.ASYNC', __package__)  # noqa: F811
 
-class ClientCore:
-    default_transporter_name = None
-
-    T = TypeVar('T', bound='ClientCore')
-
-    @classmethod
-    def get_default_transporter_name(cls: Type[T]) -> str:
-        if cls.default_transporter_name is None:
-            cls.default_transporter_name = get_default_transporter_name()
-        return cls.default_transporter_name
+class CoreClient:
+    T = TypeVar('T', bound='CoreClient')
 
     @classmethod
     def from_http(cls: Type[T], http: RedditHTTPClient) -> T:
@@ -45,7 +37,6 @@ class ClientCore:
 
     @classmethod
     def from_access_token(cls: Type[T], access_token: str) -> T:
-        new_session = new_session_factory(cls.get_default_transporter_name())
         session = new_session()
         http = RedditHTTPClient(session)
         token = Token(access_token)
@@ -58,7 +49,7 @@ class ClientCore:
     @classmethod
     def from_praw_ini(cls: Type[T], site_name: str) -> T:
         config = get_praw_config()
-        section_name = site_name or config.default_section  # type: ignore[attr-defined]
+        section_name = site_name or config.default_section
         try:
             section = config[section_name]
         except KeyError:
@@ -101,7 +92,6 @@ class ClientCore:
         elif any(grant_creds):
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
-        new_session = new_session_factory(self.get_default_transporter_name())
         session = new_session()
         http = RedditHTTPClient(session)
         token = None if access_token is None else Token(access_token)
@@ -135,15 +125,6 @@ class ClientCore:
 
     async def close(self) -> None:
         await self.http.close()
-
-    def set_user_agent(self, s: Optional[str]) -> None:
-        ua = self.http.user_agent_string_head
-        if s is not None:
-            ua += ' Bot -- ' + s
-        self.http.user_agent = ua
-
-    def url_join(self, path: str) -> str:
-        return self.resource_base_url + path
 
     async def request(self,
         verb: str,
@@ -180,7 +161,16 @@ class ClientCore:
             raise RuntimeError('The HTTP client is missing an authorizer')
         self.http.authorizer.token = Token(access_token)
 
-class Client(ClientCore):
+    def set_user_agent(self, s: Optional[str]) -> None:
+        ua = self.http.user_agent_start
+        if s is not None:
+            ua += ' Bot -- ' + s
+        self.http.user_agent = ua
+
+    def url_join(self, path: str) -> str:
+        return self.resource_base_url + path
+
+class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
         self.api = ...#site_procedures_ASYNC.SiteProcedures(self)
