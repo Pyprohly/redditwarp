@@ -109,7 +109,7 @@ class WebSocketConnection(ABC):
                 tv -= now - tn
                 tn = now
 
-    def _get_cycle_value(self, timeout: float = -2) -> Optional[float]:
+    def _get_cycle_value_from_timeout(self, timeout: float = -2) -> Optional[float]:
         t: Optional[float] = timeout
         if timeout == -2:
             t = self.default_timeout
@@ -119,8 +119,15 @@ class WebSocketConnection(ABC):
             raise ValueError(f'invalid timeout value: {timeout}')
         return t
 
+    def _get_cycle_value_from_waitfor(self, waitfor: float = -2) -> Optional[float]:
+        try:
+            t = self._get_cycle_value_from_timeout(waitfor)
+        except ValueError:
+            raise ValueError(f'invalid waitfor value: {waitfor}') from None
+        return t
+
     def receive(self, *, timeout: float = -2) -> Message:
-        t = self._get_cycle_value(timeout)
+        t = self._get_cycle_value_from_timeout(timeout)
         for event in self.cycle(t):
             if isinstance(event, Message):
                 return event
@@ -133,6 +140,9 @@ class WebSocketConnection(ABC):
         if isinstance(event, BytesMessage):
             return event.data
         raise exceptions.MessageTypeMismatchException('string message received')
+
+    def recv(self, *, timeout: float = -2) -> bytes:
+        return self.recv_bytes(timeout=timeout)
 
     def recv_text(self, *, timeout: float = -2) -> str:
         """Receive the next message. If it's a TextMessage then return its payload,
@@ -155,14 +165,14 @@ class WebSocketConnection(ABC):
         if code is None and reason:
             raise ValueError('cannot send a reason without a code')
 
+        t = self._get_cycle_value_from_waitfor(waitfor)
+
+        if self.state != ConnectionState.OPEN:
+            return
+
         self._send_close(code, reason)
 
         self.set_state(ConnectionState.CLOSE_SENT)
-
-        try:
-            t = self._get_cycle_value(waitfor)
-        except ValueError:
-            raise ValueError(f'invalid waitfor value: {waitfor}') from None
 
         for event in self.cycle(t):
             if isinstance(event, Frame):
@@ -171,7 +181,6 @@ class WebSocketConnection(ABC):
 
         self.shutdown()
 
-    @abstractmethod
     def shutdown(self) -> None:
         if self.close_code < 0:
             self.close_code = 1006

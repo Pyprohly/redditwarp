@@ -90,13 +90,11 @@ class WebSocketConnection(ABC):
                 yield event
 
     async def pulse(self, *, timeout: float = -2) -> AsyncIterator[Event]:
-        """Process one frame’s worth of incoming data and possibly generate events for it."""
         frame = await self._load_next_frame(timeout=timeout)
         async for event in self._process_frame(frame):
             yield event
 
     async def cycle(self, t: Optional[float] = None) -> AsyncIterator[Event]:
-        """Yield events from `self.pulse()` over `t` seconds."""
         if t is None:
             while True:
                 async for event in self.pulse(timeout=-1):
@@ -116,7 +114,7 @@ class WebSocketConnection(ABC):
                 tv -= now - tn
                 tn = now
 
-    def _get_cycle_value(self, timeout: float = -2) -> Optional[float]:
+    def _get_cycle_value_from_timeout(self, timeout: float = -2) -> Optional[float]:
         t: Optional[float] = timeout
         if timeout == -2:
             t = self.default_timeout
@@ -126,24 +124,30 @@ class WebSocketConnection(ABC):
             raise ValueError(f'invalid timeout value: {timeout}')
         return t
 
+    def _get_cycle_value_from_waitfor(self, waitfor: float = -2) -> Optional[float]:
+        try:
+            t = self._get_cycle_value_from_timeout(waitfor)
+        except ValueError:
+            raise ValueError(f'invalid waitfor value: {waitfor}') from None
+        return t
+
     async def receive(self, *, timeout: float = -2) -> Message:
-        t = self._get_cycle_value(timeout)
+        t = self._get_cycle_value_from_timeout(timeout)
         async for event in self.cycle(t):
             if isinstance(event, Message):
                 return event
         raise exceptions.TimeoutError
 
     async def recv_bytes(self, *, timeout: float = -2) -> bytes:
-        """Receive the next message. If it's a BytesMessage then return its payload,
-        otherwise raise an MessageTypeMismatchException exception."""
         event = await self.receive(timeout=timeout)
         if isinstance(event, BytesMessage):
             return event.data
         raise exceptions.MessageTypeMismatchException('string message received')
 
+    async def recv(self, *, timeout: float = -2) -> bytes:
+        return await self.recv_bytes(timeout=timeout)
+
     async def recv_text(self, *, timeout: float = -2) -> str:
-        """Receive the next message. If it's a TextMessage then return its payload,
-        otherwise raise an MessageTypeMismatchException exception."""
         event = await self.receive(timeout=timeout)
         if isinstance(event, TextMessage):
             return event.data
@@ -162,14 +166,14 @@ class WebSocketConnection(ABC):
         if code is None and reason:
             raise ValueError('cannot send a reason without a code')
 
+        t = self._get_cycle_value_from_waitfor(waitfor)
+
+        if self.state != ConnectionState.OPEN:
+            return
+
         await self._send_close(code, reason)
 
         self.set_state(ConnectionState.CLOSE_SENT)
-
-        try:
-            t = self._get_cycle_value(waitfor)
-        except ValueError:
-            raise ValueError(f'invalid waitfor value: {waitfor}') from None
 
         async for event in self.cycle(t):
             if isinstance(event, Frame):
@@ -178,7 +182,6 @@ class WebSocketConnection(ABC):
 
         await self.shutdown()
 
-    @abstractmethod
     async def shutdown(self) -> None:
         if self.close_code < 0:
             self.close_code = 1006

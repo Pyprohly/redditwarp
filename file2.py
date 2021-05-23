@@ -3,9 +3,9 @@ import sys  # noqa
 import os
 import redditwarp
 
-def main():
+def main() -> None:
     try:
-        client = redditwarp.Client(
+        client = redditwarp.SYNC.Client(
             os.environ['redditwarp_client_id'],
             os.environ['redditwarp_client_secret'],
             username=os.environ['redditwarp_username'],

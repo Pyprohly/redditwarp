@@ -5,8 +5,8 @@ from pprint import pprint
 
 import redditwarp
 
-async def main():
-    client = redditwarp.AsyncClient(
+async def main() -> None:
+    client = redditwarp.ASYNC.Client(
         os.environ['redditwarp_client_id'],
         os.environ['redditwarp_client_secret'],
         os.environ['redditwarp_refresh_token'],
@@ -19,7 +19,9 @@ async def main():
             pprint(data)
 
     except Exception:
-        print(client.last_response.data.decode())
+        last_resp = client.last_response
+        if last_resp is not None:
+            print(last_resp.data.decode())
     finally:
         globals().update(locals())
 

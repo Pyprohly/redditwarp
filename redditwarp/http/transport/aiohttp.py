@@ -6,10 +6,13 @@ if TYPE_CHECKING:
     from ..request import Request
     from ..payload import Payload
 
+import sys
+
 import asyncio
 
 import aiohttp  # type: ignore[import]
 
+from .ASYNC import transport_registry
 from ..session_base_ASYNC import SessionBase
 from .. import exceptions
 from .. import payload
@@ -75,7 +78,7 @@ _PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
 }
 
 
-#region common
+#region
 STRUCTURAL_CONFORMITY = True
 
 class Session(SessionBase):
@@ -143,4 +146,6 @@ def new_session(*,
 
 name = aiohttp.__name__
 version = aiohttp.__version__
+
+transport_registry[__name__] = sys.modules[__name__]
 #endregion

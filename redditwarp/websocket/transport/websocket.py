@@ -41,7 +41,6 @@ class WebSocketClient(WebSocketConnection):
     def _load_next_frame(self, *, timeout: float = -2) -> Frame:
         t = self._get_necessary_timeout(timeout)
         self.ws.timeout = t
-
         try:
             _, frm = self.ws.recv_data_frame(True)
         except websocket.WebSocketTimeoutException as e:
