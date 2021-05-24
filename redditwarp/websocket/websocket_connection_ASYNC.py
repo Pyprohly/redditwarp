@@ -1,7 +1,6 @@
 
 from typing import Union, AsyncIterator, Optional, MutableSequence
 
-from abc import ABC, abstractmethod
 import time
 
 from .const import Opcode, ConnectionState, Side
@@ -9,16 +8,16 @@ from . import exceptions
 from .events import Event, Frame, Message, BytesMessage, TextMessage
 from .util import parse_close, serialize_close
 
-class WebSocketConnection(ABC):
+class WebSocketConnection:
+    DEFAULT_TIMEOUT = 4
     side = Side.NONE
 
     def __init__(self) -> None:
-        self.default_timeout: float = 4
+        self.default_timeout: float = self.DEFAULT_TIMEOUT
         self.state = ConnectionState.OPEN
         self.close_code = -1
         self.close_reason = ''
         self.subprotocol = ''
-        self._accumulator: MutableSequence[Frame] = []
 
     async def __aiter__(self) -> AsyncIterator[Event]:
         async for event in self.cycle():
@@ -27,8 +26,81 @@ class WebSocketConnection(ABC):
     def set_state(self, state: ConnectionState) -> None:
         self.state = state
 
-    @abstractmethod
+    async def recv_bytes(self, *, timeout: float = -2) -> bytes:
+        event = await self.receive(timeout=timeout)
+        if isinstance(event, BytesMessage):
+            return event.data
+        raise exceptions.MessageTypeMismatchException('string message received')
+
+    async def recv(self, *, timeout: float = -2) -> bytes:
+        return await self.recv_bytes(timeout=timeout)
+
+    async def recv_text(self, *, timeout: float = -2) -> str:
+        event = await self.receive(timeout=timeout)
+        if isinstance(event, TextMessage):
+            return event.data
+        raise exceptions.MessageTypeMismatchException('bytes message received')
+
+    async def cycle(self, t: Optional[float] = None) -> AsyncIterator[Event]:
+        if t is None:
+            while True:
+                async for event in self.pulse(timeout=-1):
+                    yield event
+
+        else:
+            tv = t
+            tn = time.monotonic()
+            while tv > 0:
+                try:
+                    async for event in self.pulse(timeout=tv):
+                        yield event
+                except exceptions.TimeoutError:
+                    break
+
+                now = time.monotonic()
+                tv -= now - tn
+                tn = now
+
+    async def shutdown(self) -> None:
+        if self.close_code < 0:
+            self.close_code = 1006
+
+        self.set_state(ConnectionState.CLOSED)
+
     async def send_frame(self, m: Frame) -> None:
+        raise NotImplementedError
+
+    async def send_text(self, data: str) -> None:
+        raise NotImplementedError
+
+    async def send_bytes(self, data: bytes) -> None:
+        raise NotImplementedError
+
+    async def send(self, data: Union[str, bytes]) -> None:
+        raise NotImplementedError
+
+    async def pulse(self, *, timeout: float = -2) -> AsyncIterator[Event]:
+        raise NotImplementedError
+        yield
+
+    async def receive(self, *, timeout: float = -2) -> Message:
+        raise NotImplementedError
+
+    async def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
+        raise NotImplementedError
+
+
+class HalfImplementedWebSocketConnection(WebSocketConnection):
+    def __init__(self) -> None:
+        super().__init__()
+        self._accumulator: MutableSequence[Frame] = []
+
+    def set_state(self, state: ConnectionState) -> None:
+        self.state = state
+
+    async def send_frame(self, m: Frame) -> None:
+        if self.state == ConnectionState.CLOSED:
+            raise exceptions.ConnectionClosedException
         if self.state != ConnectionState.OPEN:
             raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
 
@@ -43,10 +115,6 @@ class WebSocketConnection(ABC):
             await self.send_text(data)
         else:
             await self.send_bytes(data)
-
-    @abstractmethod
-    async def _load_next_frame(self, *, timeout: float = -2) -> Frame:
-        raise NotImplementedError
 
     async def _process_ping(self, m: Frame) -> AsyncIterator[Event]:
         if self.state not in {ConnectionState.CLOSE_RECEIVED, ConnectionState.CLOSED}:
@@ -77,7 +145,6 @@ class WebSocketConnection(ABC):
 
             acc.clear()
 
-    @abstractmethod
     async def _process_frame(self, m: Frame) -> AsyncIterator[Event]:
         if m.opcode == Opcode.PING:
             async for event in self._process_ping(m):
@@ -89,30 +156,17 @@ class WebSocketConnection(ABC):
             async for event in self._process_data_frame(m):
                 yield event
 
+    async def _load_next_frame(self, *, timeout: float = -2) -> Frame:
+        if self.state == ConnectionState.CLOSED:
+            raise exceptions.ConnectionClosedException
+        if self.state != ConnectionState.OPEN:
+            raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
+        raise NotImplementedError
+
     async def pulse(self, *, timeout: float = -2) -> AsyncIterator[Event]:
         frame = await self._load_next_frame(timeout=timeout)
         async for event in self._process_frame(frame):
             yield event
-
-    async def cycle(self, t: Optional[float] = None) -> AsyncIterator[Event]:
-        if t is None:
-            while True:
-                async for event in self.pulse(timeout=-1):
-                    yield event
-
-        else:
-            tv = t
-            tn = time.monotonic()
-            while tv > 0:
-                try:
-                    async for event in self.pulse(timeout=tv):
-                        yield event
-                except exceptions.TimeoutError:
-                    break
-
-                now = time.monotonic()
-                tv -= now - tn
-                tn = now
 
     def _get_cycle_value_from_timeout(self, timeout: float = -2) -> Optional[float]:
         t: Optional[float] = timeout
@@ -138,21 +192,6 @@ class WebSocketConnection(ABC):
                 return event
         raise exceptions.TimeoutError
 
-    async def recv_bytes(self, *, timeout: float = -2) -> bytes:
-        event = await self.receive(timeout=timeout)
-        if isinstance(event, BytesMessage):
-            return event.data
-        raise exceptions.MessageTypeMismatchException('string message received')
-
-    async def recv(self, *, timeout: float = -2) -> bytes:
-        return await self.recv_bytes(timeout=timeout)
-
-    async def recv_text(self, *, timeout: float = -2) -> str:
-        event = await self.receive(timeout=timeout)
-        if isinstance(event, TextMessage):
-            return event.data
-        raise exceptions.MessageTypeMismatchException('bytes message received')
-
     async def _send_close(self, code: Optional[int] = 1000, reason: str = '') -> None:
         data = b''
         if code is not None:
@@ -161,7 +200,6 @@ class WebSocketConnection(ABC):
         close = Frame.make(Opcode.CLOSE, data)
         await self.send_frame(close)
 
-    @abstractmethod
     async def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         if code is None and reason:
             raise ValueError('cannot send a reason without a code')
@@ -181,9 +219,3 @@ class WebSocketConnection(ABC):
                     break
 
         await self.shutdown()
-
-    async def shutdown(self) -> None:
-        if self.close_code < 0:
-            self.close_code = 1006
-
-        self.set_state(ConnectionState.CLOSED)

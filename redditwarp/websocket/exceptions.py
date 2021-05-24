@@ -28,3 +28,6 @@ class ProtocolViolationException(RootException):
 
 class InvalidStateException(RootException):
     pass
+
+class ConnectionClosedException(RootException):
+    pass

@@ -1,44 +1,51 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, cast, Union
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
 import asyncio
 import time
 
-# https://pypi.org/project/websockets/
-import websockets  # type: ignore[import]
-import websockets.legacy.client
+import aiohttp  # type: ignore[import]
 
 from ..websocket_connection_ASYNC import WebSocketConnection
 from .. import exceptions
 from ..events import Event, Frame, Message, TextMessage, BytesMessage
-from ..const import Opcode, Side, ConnectionState
+from ..const import Side, ConnectionState
 
 class WebSocketClient(WebSocketConnection):
     side = Side.CLIENT
 
-    def __init__(self, ws: websockets.legacy.client.WebSocketClientProtocol):
+    def __init__(self, ws: aiohttp.ClientWebSocketResponse, session: aiohttp.ClientSession):
         super().__init__()
         self.ws = ws
+        self.session = session
 
     async def send_frame(self, m: Frame) -> None:
+        raise RuntimeError('operation not supported')
+
+    async def send_text(self, data: str) -> None:
         if self.state == ConnectionState.CLOSED:
             raise exceptions.ConnectionClosedException
         if self.state != ConnectionState.OPEN:
             raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
 
         try:
-            await self.ws.write_frame(opcode=m.opcode, data=m.data, fin=m.fin)
+            await self.ws.send_str(data)
         except Exception as e:
             raise exceptions.TransportError from e
 
-    async def send_text(self, data: str) -> None:
-        await self.send_frame(Frame.make(Opcode.TEXT, data.encode()))
-
     async def send_bytes(self, data: bytes) -> None:
-        await self.send_frame(Frame.make(Opcode.BINARY, data))
+        if self.state == ConnectionState.CLOSED:
+            raise exceptions.ConnectionClosedException
+        if self.state != ConnectionState.OPEN:
+            raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
+
+        try:
+            await self.ws.send_bytes(data)
+        except Exception as e:
+            raise exceptions.TransportError from e
 
     async def send(self, data: Union[str, bytes]) -> None:
         if isinstance(data, str):
@@ -64,44 +71,48 @@ class WebSocketClient(WebSocketConnection):
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {t}')
 
+        def _accept(wsm: aiohttp.WSMessage) -> Optional[Message]:
+            if wsm.type == aiohttp.WSMsgType.TEXT:
+                return TextMessage(wsm.data)
+            elif wsm.type == aiohttp.WSMsgType.BINARY:
+                return BytesMessage(wsm.data)
+            elif wsm.type in {aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING}:
+                raise exceptions.ConnectionClosedException
+            elif wsm.type == aiohttp.WSMsgType.ERROR:
+                raise exceptions.TransportError
+            return None
+
         if t is None:
             while True:
                 try:
-                    data = await self.ws.recv()
+                    wsm = await self.ws.receive(timeout=t)
                 except Exception as e:
                     raise exceptions.TransportError from e
 
-                if isinstance(data, str):
-                    return TextMessage(data)
-                else:
-                    return BytesMessage(data)
+                if (v := _accept(wsm)) is not None:
+                    return v
 
         else:
             tv = t
             tn = time.monotonic()
             while tv > 0:
-                coro = self.ws.recv()
                 try:
-                    data = await asyncio.wait_for(coro, t)
-                except asyncio.TimeoutError as e:
-                    raise exceptions.TimeoutError from e
+                    wsm = await self.ws.receive(timeout=t)
                 except Exception as e:
                     raise exceptions.TransportError from e
+
+                if (v := _accept(wsm)) is not None:
+                    return v
 
                 now = time.monotonic()
                 tv -= now - tn
                 tn = now
 
-                if isinstance(data, str):
-                    return TextMessage(data)
-                else:
-                    return BytesMessage(data)
-
             raise exceptions.TimeoutError
 
     async def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         if code is None:
-            raise RuntimeError('the websockets library does not support closing without a code')
+            raise RuntimeError('code=None not supported with aiohttp websockets')
 
         t: Optional[float] = waitfor
         if waitfor == -2:
@@ -109,18 +120,20 @@ class WebSocketClient(WebSocketConnection):
         elif waitfor == -1:
             t = None
         elif waitfor < 0:
-            raise ValueError(f'invalid waitfor value: {waitfor}')
+            raise ValueError(f'invalid waitfor value: {t}')
 
-        if t is None:
-            raise RuntimeError('the websockets library does not support infinite waitfor')
-
-        self.ws.close_timeout = t
+        coro = self.ws.close(code=code, message=reason.encode())
         try:
-            await self.ws.close(code, reason)
+            await asyncio.wait_for(coro, t)
+        except asyncio.TimeoutError:
+            pass
         except Exception as e:
             raise exceptions.TransportError from e
 
-        self.set_state(ConnectionState.CLOSE_SENT)
+        await self.session.close()
+
+        if self.ws.close_code:
+            self.close_code = self.ws.close_code
 
         await self.shutdown()
 
@@ -134,11 +147,12 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
     elif timeout < 0:
         raise ValueError(f'invalid timeout value: {timeout}')
 
-    subp = cast(Optional[Sequence[websockets.typing.Subprotocol]], subprotocols)
-    coro = websockets.legacy.client.connect(url, subprotocols=subp)
+    session = aiohttp.ClientSession()
+    coro = session.ws_connect(url)
     try:
         ws = await asyncio.wait_for(coro, t)
     except asyncio.TimeoutError:
+        await session.close()
         raise exceptions.TimeoutError
 
-    return WebSocketClient(ws)
+    return WebSocketClient(ws, session)

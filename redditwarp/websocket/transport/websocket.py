@@ -7,13 +7,13 @@ if TYPE_CHECKING:
 # https://pypi.org/project/websocket-client/
 import websocket  # type: ignore[import]
 
-from ..websocket_connection_SYNC import WebSocketConnection
+from ..websocket_connection_SYNC import HalfImplementedWebSocketConnection
 from .. import exceptions
 from ..events import Event, Frame
 from ..const import Opcode, Side, ConnectionState
 from ..util import parse_close
 
-class WebSocketClient(WebSocketConnection):
+class WebSocketClient(HalfImplementedWebSocketConnection):
     side = Side.CLIENT
 
     def __init__(self, ws: websocket.WebSocket):
@@ -27,7 +27,7 @@ class WebSocketClient(WebSocketConnection):
         elif timeout == -1:
             t = None
         elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {t}')
+            raise ValueError(f'invalid timeout value: {timeout}')
         return t
 
     def send_frame(self, m: Frame) -> None:
@@ -45,6 +45,8 @@ class WebSocketClient(WebSocketConnection):
             _, frm = self.ws.recv_data_frame(True)
         except websocket.WebSocketTimeoutException as e:
             raise exceptions.TimeoutError from e
+        except websocket.WebSocketConnectionClosedException as e:
+            raise exceptions.ConnectionClosedException from e
         except Exception as e:
             raise exceptions.TransportError from e
 
@@ -81,6 +83,18 @@ class WebSocketClient(WebSocketConnection):
         except Exception as e:
             raise exceptions.TransportError from e
 
-def connect(url: str, *, subprotocols: Sequence[str] = ()) -> WebSocketClient:
-    ws = websocket.create_connection(url, fire_cont_frame=True)
+
+def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketClient:
+    t: Optional[float] = timeout
+    if timeout == -2:
+        t = HalfImplementedWebSocketConnection.DEFAULT_TIMEOUT
+    elif timeout == -1:
+        t = None
+    elif timeout < 0:
+        raise ValueError(f'invalid timeout value: {timeout}')
+
+    try:
+        ws = websocket.create_connection(url, fire_cont_frame=True, timeout=t)
+    except websocket.WebSocketTimeoutException:
+        raise exceptions.TimeoutError
     return WebSocketClient(ws)
