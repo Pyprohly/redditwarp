@@ -19,6 +19,6 @@ class RecordResponses(RequestorDecorator):
     def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         resp = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
-        self.responses.append(resp)
         self.last_response = resp
+        self.responses.append(resp)
         return resp

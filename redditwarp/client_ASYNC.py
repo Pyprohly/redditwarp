@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from types import TracebackType
     from .http.response import Response
     from .auth.typedefs import AuthorizationGrant
+    from .http.payload import RequestFiles
 
 from .http.util.json_loads import json_loads_response
 from .http.transport.ASYNC import new_session
@@ -134,12 +135,13 @@ class CoreClient:
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], AnyStr]] = None,
         json: Any = None,
+        files: Optional[RequestFiles] = None,
         timeout: float = -2,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
         url = self.url_join(path)
         resp = await self.http.request(verb, url, params=params, headers=headers,
-                data=data, json=json, timeout=timeout, aux_info=aux_info)
+                data=data, json=json, files=files, timeout=timeout, aux_info=aux_info)
 
         json_data = None
         if resp.data:

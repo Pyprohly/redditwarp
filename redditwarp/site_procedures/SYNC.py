@@ -13,6 +13,7 @@ from .user.SYNC import User
 from .account.SYNC import Account
 from .collection.SYNC import Collection
 from .flair.SYNC import Flair
+#from .flair_emoji.SYNC import FlairEmoji
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -26,3 +27,4 @@ class SiteProcedures:
         self.account = Account(client)
         self.collection = Collection(client)
         self.flair = Flair(client)
+        #self.flair_emoji = FlairEmoji(client)

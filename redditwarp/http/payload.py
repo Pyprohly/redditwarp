@@ -71,8 +71,9 @@ class Multipart(CommonContentType):
         self.parts = parts
 
 
-def guess_content_type_from_filename(fname: str) -> str:
-    return mimetypes.guess_type(fname)[0] or Bytes.CONTENT_TYPE_HINT
+def guess_mimetype_from_filename(fname: str) -> str:
+    y = mimetypes.guess_type(fname, strict=False)[0]
+    return y or 'application/octet-stream'
 
 def make_payload(
     data: Optional[Union[Mapping[str, str], AnyStr]] = None,
@@ -88,23 +89,19 @@ def make_payload(
                     if length == 1:
                         file, = cast(Tuple[FileObjectType], value)
                         filename = key
-                        content_type: Optional[str] = guess_content_type_from_filename(filename)
+                        content_type: Optional[str] = guess_mimetype_from_filename(filename)
                     if length == 2:
                         file, filename = cast(Tuple[FileObjectType, str], value)
-                        content_type = guess_content_type_from_filename(filename)
+                        content_type = guess_mimetype_from_filename(filename)
                     elif length == 3:
                         file, filename, content_type = cast(Tuple[FileObjectType, str, Optional[str]], value)
-                        if content_type == '.':
-                            content_type = guess_content_type_from_filename(filename)
-                        elif content_type == '..':
-                            content_type = '.'
                     else:
                         raise Exception
 
                     body = MultipartFileData(key, filename, file, content_type)
                 else:
                     filename = op.basename(value.name)
-                    content_type = guess_content_type_from_filename(filename)
+                    content_type = guess_mimetype_from_filename(filename)
                     body = MultipartFileData(key, filename, value, content_type)
 
                 file_parts.append(Multipart.Part(body))
