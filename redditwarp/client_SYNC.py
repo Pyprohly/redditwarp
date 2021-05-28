@@ -30,6 +30,8 @@ site_procedures_SYNC = lazy_import('.site_procedures.SYNC', __package__)  # noqa
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
 
+    USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR = ' Bot !-- '
+
     T = TypeVar('T', bound='CoreClient')
 
     @classmethod
@@ -97,9 +99,17 @@ class CoreClient:
     def last_response(self) -> Optional[Response]:
         return self.http.last_response
 
+    @last_response.setter
+    def last_response(self, value: Response) -> None:
+        self.http.last_response = value
+
     @property
     def last_response_queue(self) -> MutableSequence[Response]:
         return self.http.last_response_queue
+
+    @last_response_queue.setter
+    def last_response_queue(self, value: MutableSequence[Response]) -> None:
+        self.http.last_response_queue = value
 
     def __init__(self,
             client_id: str, client_secret: str,
@@ -231,7 +241,7 @@ class CoreClient:
     def set_user_agent(self, s: Optional[str]) -> None:
         ua = self.http.user_agent_start
         if s is not None:
-            ua += ' Bot -- ' + s
+            ua += self.USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR + s
         self.http.user_agent = ua
 
     def url_join(self, path: str) -> str:

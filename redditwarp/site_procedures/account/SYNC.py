@@ -1,19 +1,22 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Tuple
+from typing import TYPE_CHECKING, Optional, Sequence, Tuple, Mapping, Any
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.account_SYNC import MyAccount
-    from ...models.user_list_item import UserListItem, FriendUserListItem
+    from ...models.user_list_entry import UserListEntry, FriendUserListEntry
     from ...models.trophy import Trophy
-    from ...models.karma_breakdown_item import KarmaBreakdownItem
+    from ...models.karma_breakdown_entry import KarmaBreakdownEntry
+
+from functools import cached_property
 
 from .pull_subreddits_SYNC import PullSubreddits
 from ...models.load.account_SYNC import load_account
-from ...models.load.user_list_item import load_user_list_item, load_friend_user_list_item
-from ...models.load.karma_breakdown_item import load_karma_breakdown_item
+from ...models.load.user_list_entry import load_user_list_entry, load_friend_user_list_entry
+from ...models.load.karma_breakdown_entry import load_karma_breakdown_entry
 from ...models.load.trophy import load_trophy
 from ... import exceptions
+from ...util.base_conversion import to_base36
 
 class Account:
     def __init__(self, client: Client):
@@ -26,65 +29,112 @@ class Account:
             raise RuntimeError('no user context')
         return load_account(root, self._client)
 
-    def friends(self) -> Sequence[UserListItem]:
-        root = self._client.request('GET', '/api/v1/me/friends')
-        entries = root['data']['children']
-        return [load_user_list_item(d) for d in entries]
+    def get_preferences(self) -> Mapping[str, Any]:
+        return self._client.request('GET', '/api/v1/me/prefs')
 
-    def blocked(self) -> Sequence[UserListItem]:
-        root = self._client.request('GET', '/prefs/blocked')
-        entries = root['data']['children']
-        return [load_user_list_item(d) for d in entries]
+    def set_preferences(self, json_dict: Mapping[str, Any]) -> Mapping[str, Any]:
+        return self._client.request('PATCH', '/api/v1/me/prefs', json=json_dict)
 
-    def trusted(self) -> Sequence[UserListItem]:
-        root = self._client.request('GET', '/prefs/trusted')
-        entries = root['data']['children']
-        return [load_user_list_item(d) for d in entries]
-
-    def messaging(self) -> Tuple[Sequence[UserListItem], Sequence[UserListItem]]:
-        root = self._client.request('GET', '/prefs/messaging')
-        blocked_entries = root[0]['data']['children']
-        trusted_entries = root[1]['data']['children']
-        return (
-            [load_user_list_item(d) for d in blocked_entries],
-            [load_user_list_item(d) for d in trusted_entries],
-        )
-
-    def get_karma_breakdown(self) -> Sequence[KarmaBreakdownItem]:
+    def get_karma_breakdown(self) -> Sequence[KarmaBreakdownEntry]:
         root = self._client.request('GET', '/api/v1/me/karma')
         entries = root['data']
-        return [load_karma_breakdown_item(d) for d in entries]
+        return [load_karma_breakdown_entry(d) for d in entries]
 
     def get_trophies(self) -> Sequence[Trophy]:
         root = self._client.request('GET', '/api/v1/me/trophies')
         kind_data = root['data']['trophies']
         return [load_trophy(d['data']) for d in kind_data]
 
-    def get_friend(self, name: str) -> Optional[UserListItem]:
+    def get_friend(self, name: str) -> Optional[UserListEntry]:
         try:
             root = self._client.request('GET', f'/api/v1/me/friends/{name}')
-        except exceptions.Variant1RedditAPIError as e:
+        except exceptions.RedditAPIError as e:
             if e.codename == 'USER_DOESNT_EXIST':
                 return None
             raise
-        return load_user_list_item(root)
+        return load_user_list_entry(root)
 
-    def add_friend(self, name: str, note: Optional[str] = None) -> FriendUserListItem:
+    def friends(self) -> Sequence[UserListEntry]:
+        root = self._client.request('GET', '/api/v1/me/friends')
+        entries = root['data']['children']
+        return [load_user_list_entry(d) for d in entries]
+
+    def add_friend(self, name: str, note: Optional[str] = None) -> FriendUserListEntry:
         json_data = {} if note is None else {'note': note}
         root = self._client.request('PUT', f'api/v1/me/friends/{name}', json=json_data)
-        return load_friend_user_list_item(root)
+        return load_friend_user_list_entry(root)
 
-    def delete_friend(self, name: str) -> bool:
+    def remove_friend(self, name: str) -> bool:
         try:
             self._client.request('DELETE', f'/api/v1/me/friends/{name}')
-        except exceptions.Variant1RedditAPIError as e:
+        except exceptions.RedditAPIError as e:
             if e.codename == 'NOT_FRIEND':
                 return False
             raise
         return True
+
+    def blocked(self) -> Sequence[UserListEntry]:
+        root = self._client.request('GET', '/prefs/blocked')
+        entries = root['data']['children']
+        return [load_user_list_entry(d) for d in entries]
+
+    @cached_property
+    class block_user:
+        def __init__(self, outer: Account) -> None:
+            self._client = outer._client
+
+        def __call__(self, name: str) -> None:
+            self.by_name(name)
+
+        def by_name(self, name: str) -> None:
+            self._client.request('POST', '/api/block_user', data={'name': name})
+
+        def by_id(self, id: int) -> None:
+            self.by_id36(to_base36(id))
+
+        def by_id36(self, id36: str) -> None:
+            self._client.request('POST', '/api/block_user', data={'account_id': id36})
+
+    @cached_property
+    class unblock_user:
+        def __init__(self, outer: Account) -> None:
+            self._client = outer._client
+
+        def __call__(self, agent_id: int, target_name: str) -> None:
+            self.by_target_name(agent_id, target_name)
+
+        def by_target_name(self, agent_id: int, target_name: str) -> None:
+            data = {
+                'type': 'enemy',
+                'container': 't2_' + to_base36(agent_id),
+                'name': target_name,
+            }
+            self._client.request('POST', '/api/unfriend', data=data)
+
+        def by_target_id(self, agent_id: int, target_id: int) -> None:
+            data = {
+                'type': 'enemy',
+                'container': 't2_' + to_base36(agent_id),
+                'id': 't2_' + to_base36(target_id),
+            }
+            self._client.request('POST', '/api/unfriend', data=data)
+
+    def trusted(self) -> Sequence[UserListEntry]:
+        root = self._client.request('GET', '/prefs/trusted')
+        entries = root['data']['children']
+        return [load_user_list_entry(d) for d in entries]
 
     def add_trusted_user(self, name: str) -> None:
         self._client.request('POST', '/api/add_whitelisted', params={'name': name})
 
     def remove_trusted_user(self, name: str) -> None:
         self._client.request('POST', '/api/remove_whitelisted', params={'name': name})
+
+    def messaging(self) -> Tuple[Sequence[UserListEntry], Sequence[UserListEntry]]:
+        root = self._client.request('GET', '/prefs/messaging')
+        blocked_entries = root[0]['data']['children']
+        trusted_entries = root[1]['data']['children']
+        return (
+            [load_user_list_entry(d) for d in blocked_entries],
+            [load_user_list_entry(d) for d in trusted_entries],
+        )
