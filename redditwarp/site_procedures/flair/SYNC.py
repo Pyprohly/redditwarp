@@ -275,20 +275,19 @@ class Flair:
 
     def configure_subreddit_flair_settings(self,
         *,
-        u_enabled: Optional[bool],
-        u_position: Optional[str],
-        u_self_assign: Optional[bool],
-        #,
-        p_position: Optional[str],
-        p_self_assign: Optional[bool],
+        uf_enabled: Optional[bool],
+        uf_position: Optional[str],
+        uf_self_assign: Optional[bool],
+        pf_position: Optional[str],
+        pf_self_assign: Optional[bool],
     ) -> None:
         d = {}
         for k, v in {
-            'flair_enabled': None if u_enabled is None else '01'[u_enabled],
-            'flair_position': u_position,
-            'flair_self_assign_enabled': None if u_self_assign is None else '01'[u_self_assign],
-            'link_flair_position': p_position,
-            'link_flair_self_assign_enabled': None if p_self_assign is None else '01'[p_self_assign],
+            'flair_enabled': None if uf_enabled is None else '01'[uf_enabled],
+            'flair_position': uf_position,
+            'flair_self_assign_enabled': None if uf_self_assign is None else '01'[uf_self_assign],
+            'link_flair_position': pf_position,
+            'link_flair_self_assign_enabled': None if pf_self_assign is None else '01'[pf_self_assign],
         }.items():
             if v is not None:
                 d[k] = v

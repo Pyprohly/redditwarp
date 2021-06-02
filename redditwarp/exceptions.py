@@ -141,7 +141,10 @@ def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
     raise_for_variant2_reddit_api_error(resp, data)
 
 
-class RedditAPIError(ResponseException):
+class ApplicationException(ResponseException):
+    pass
+
+class RedditAPIError(ApplicationException):
     """An error class denoting an error that was indicated in the
     response body of an API request, occurring when the remote API
     wishes to inform the client that a service request was carried

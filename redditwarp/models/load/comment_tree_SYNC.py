@@ -126,4 +126,6 @@ def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optio
             node = node_lookup[id_]
             chilren_lookup.get(parent_id, roots).append(node)
 
+    # Use `None` for the node's value here. It is important that we don't
+    # allow any node of the tree to appear more than once.
     return MoreCommentsTreeNode(None, roots, root_more)

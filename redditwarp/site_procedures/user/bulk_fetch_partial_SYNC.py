@@ -24,19 +24,17 @@ class BulkFetchPartial:
 
     def by_id36(self, id36s: Iterable[str]) -> ChunkSizeAdjustableCallChunkChainingIterator[PartialUser]:
         full_id36s = map('t2_'.__add__, id36s)
-        chunk_iter = ChunkingIterator(full_id36s, 500)
+        chunk_iter = ChunkingIterator(full_id36s, 300)
         strseqs = map(','.join, chunk_iter)
 
         def call_chunk(ids_str: str) -> Callable[[], List[PartialUser]]:
             def f() -> List[PartialUser]:
                 try:
-                    root = self._client.request('GET', '/api/user_data_by_account_ids',
-                            params={'ids': ids_str})
+                    root = self._client.request('GET', '/api/user_data_by_account_ids', params={'ids': ids_str})
                 except exceptions.HTTPStatusError as e:
                     if e.response.status == 404:
                         return []
                     raise
-
                 return [load_partial_user(v, k) for k, v in root.items()]
             return f
 

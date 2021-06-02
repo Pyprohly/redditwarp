@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 """
-Step through the OAuth2 Authorization Code Flow to obtain OAuth2 tokens.
+Step through the OAuth2 Implicit Flow to obtain an access token.
 
 Visit <https://www.reddit.com/prefs/apps> to create an app for your client.
+This flow requires an 'installed app' app type.
 
 Your app's redirect URI must *exactly* match `http://localhost:8080`.
 
-Only one refresh token and access token can be active at a time. If either
-becomes leaked, simply fetch new tokens with this tool to invalidate both.
-
-Refresh tokens never expire.
 Access tokens expire after one hour.
-Authorization codes expire after 10 minutes or after use.
 """
 
 from __future__ import annotations
@@ -37,7 +33,6 @@ args = parser.parse_args()
 
 import sys
 import os
-import re
 import uuid
 import socket
 import urllib.parse
@@ -47,10 +42,7 @@ import signal
 import redditwarp
 from redditwarp.http.transport.SYNC import (
     load_transport_module,
-    new_session,
-    get_session_underlying_library_name_and_version,
 )
-from redditwarp.auth.SYNC import RedditTokenObtainmentClient
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -63,9 +55,6 @@ def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
 def get_client_id(v: Optional[str]) -> str:
     return get_client_cred_input('Client ID: ', 'redditwarp_client_id', v)
 
-def get_client_secret(v: Optional[str]) -> str:
-    return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', v)
-
 def handle_sigint(sig: int, frame: FrameType) -> None:
     print('KeyboardInterrupt', file=sys.stderr)
     sys.exit(130)
@@ -75,7 +64,6 @@ signal.signal(signal.SIGINT, handle_sigint)
 load_transport_module()
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
-client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
 scope: str = args.scope
 redirect_uri: str = args.redirect_uri
 duration: str = args.duration
@@ -85,16 +73,15 @@ state = str(uuid.uuid4())
 
 browser = webbrowser.get(web_browser_name)
 
-print('\n        -~=~- Reddit OAuth2 Authorization Code Flow -~=~-\n')
+print('\n        -~=~- Reddit OAuth2 Implicit Flow -~=~-\n')
 print('Step 1. Build the authorization URL and direct the user to the authorization server.\n')
 
 params = {
-    'response_type': 'code',
+    'response_type': 'token',
     'client_id': client_id,
     'redirect_uri': redirect_uri,
     'scope': scope,
     'state': state,
-    'duration': duration,
 }
 url = f"{redditwarp.auth.const.AUTHORIZATION_URL}?{urllib.parse.urlencode(params)}"
 print(url)
@@ -109,51 +96,27 @@ with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(('localhost', 8080))
     server.listen(1)
-    match = None
-    while not match:
-        client, addr = server.accept()
-        print(addr)
-        with client:
-            data = client.recv(8192)
-            client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-        decoded = data.strip().decode()
-        print(f"```\\\n{decoded}\n```\n")
-        match = re.match(r"^GET /\?([^ ]*) HTTP", decoded)
+    client, addr = server.accept()
+    with client:
+        data = client.recv(8192)
+        client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-assert match is not None
-query = match[1]
-dl = urllib.parse.parse_qs(query)
+prompt = '> Enter the address bar URL: \\\n'
+while not (redirected_url := input(prompt)):
+    pass
+
+urlparts = urllib.parse.urlparse(redirected_url)
+dl = urllib.parse.parse_qs(urlparts.fragment)
 response_params = {k: v[0] for k, v in dl.items()}
+
+if state and 'state' not in response_params:
+    raise Exception('no state value received')
 
 received_state = response_params['state']
 if received_state != state:
     raise Exception(f'sent state ({state}) did not match received ({received_state})')
 
-code = response_params.get('code', '')
-if not code:
-    raise Exception('authorization declined')
-
-print('Step 3. Exchange the authorization code for an access/refresh token.\n')
-
-session = new_session()
-transport_name, transport_version = get_session_underlying_library_name_and_version(session)
-user_agent = (
-    f"RedditWarp/{redditwarp.__version__} "
-    f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
-    f"{transport_name}/{transport_version} "
-    "redditwarp.cli.refresh_token"
-)
-headers = {'User-Agent': user_agent}
-token_client = RedditTokenObtainmentClient(
-    session,
-    redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
-    (client_id, client_secret),
-    redditwarp.auth.grants.AuthorizationCodeGrant(code, redirect_uri),
-    headers,
-)
-
-print('Obtaining tokens from the token server...\n')
-token = token_client.fetch_token()
-print(f" Access token : {token.access_token}")
-print(f"Refresh token : {token.refresh_token}")
+print()
+access_token = response_params['access_token']
+print(f'Access token: {access_token}')
