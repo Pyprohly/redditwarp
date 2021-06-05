@@ -5,11 +5,11 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ..more_comments_SYNC import MoreComments
 
+from ..comment_tree_SYNC import CommentSubtreeTreeNode, CommentTreeNode, SubmissionTreeNode
+from ..submission_comment_thread_SYNC import SubmissionCommentThread
+from ..more_comments_SYNC import ContinueThisThread, LoadMoreComments
 from .comment_SYNC import load_comment
 from .submission_SYNC import load_submission
-from ..comment_tree_SYNC import MoreCommentsTreeNode, CommentTreeNode, SubmissionCommentTreeNode
-from ..subreddit_thread_SYNC import SubredditThread
-from ..more_comments_SYNC import ContinueThisThread, LoadMoreComments
 
 def load_more_comments(
     d: Mapping[str, Any],
@@ -37,7 +37,7 @@ def load_more_comments(
         client=client,
     )
 
-def load_subreddit_thread(d: Any, client: Client, sort: Optional[str]) -> SubredditThread:
+def load_subreddit_thread(d: Any, client: Client, sort: Optional[str]) -> SubmissionCommentThread:
     def f(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> CommentTreeNode:
         value = load_comment(d, client)
         nodes = []
@@ -88,10 +88,10 @@ def load_subreddit_thread(d: Any, client: Client, sort: Optional[str]) -> Subred
         node = f(comment_data, client, submission_id36, sort)
         nodes.append(node)
 
-    root = SubmissionCommentTreeNode(value, nodes, more)
-    return SubredditThread(root, sort)
+    root = SubmissionTreeNode(value, nodes, more)
+    return SubmissionCommentThread(root, sort)
 
-def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> MoreCommentsTreeNode[None, CommentTreeNode]:
+def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> CommentSubtreeTreeNode[None]:
     node_lookup: Dict[str, CommentTreeNode] = {}
     chilren_lookup: Dict[str, List[CommentTreeNode]] = {}
 
@@ -128,4 +128,4 @@ def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optio
 
     # Use `None` for the node's value here. It is important that we don't
     # allow any node of the tree to appear more than once.
-    return MoreCommentsTreeNode(None, roots, root_more)
+    return CommentSubtreeTreeNode(None, roots, root_more)

@@ -2,13 +2,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Sequence, Optional, Mapping, Any
 if TYPE_CHECKING:
-    from .comment_tree_SYNC import CommentTreeNode
     from ..client_SYNC import Client
 
-from .comment_tree_SYNC import MoreCommentsTreeNode
-from .more_comments_base import MoreCommentsBase
-from .subreddit_thread_SYNC import SubredditThread
 from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
+from .comment_tree_SYNC import CommentSubtreeTreeNode
+from .more_comments_base import MoreCommentsBase
+from .submission_comment_thread_SYNC import SubmissionCommentThread
 
 class MoreComments(MoreCommentsBase):
     def __init__(self,
@@ -24,20 +23,21 @@ class MoreComments(MoreCommentsBase):
 
     def __call__(self, *,
         depth: Optional[int] = None,
-    ) -> MoreCommentsTreeNode[None, CommentTreeNode]:
+    ) -> CommentSubtreeTreeNode[None]:
         raise NotImplementedError
 
 class ContinueThisThread(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
-    ) -> MoreCommentsTreeNode[None, CommentTreeNode]:
+    ) -> CommentSubtreeTreeNode[None]:
         thread = self.fetch_continued_thread()
-        return MoreCommentsTreeNode(None, thread.comments[0].children, thread.more)
+        node = thread.node
+        return CommentSubtreeTreeNode(None, node.children[0].children, node.more)
 
-    def get_thread(self) -> Optional[SubredditThread]:
+    def get_thread(self) -> Optional[SubmissionCommentThread]:
         return self.client.api.thread.get.by_id36(self.submission_id36, self.comment_id36)
 
-    def fetch_continued_thread(self) -> SubredditThread:
+    def fetch_continued_thread(self) -> SubmissionCommentThread:
         thread = self.get_thread()
         if thread is None:
             raise UnexpectedServiceRequestResultError(self)
@@ -50,23 +50,23 @@ class LoadMoreComments(MoreComments):
         submission_id36: str,
         comment_id36: str,
         sort: Optional[str],
-        children: Sequence[str],
+        children_id36: Sequence[str],
         count: int,
         *,
         d: Mapping[str, Any],
         client: Client,
     ):
         super().__init__(submission_id36, comment_id36, sort, d=d, client=client)
-        self.children = children
+        self.children_id36 = children_id36
         self.count = count
 
     def __call__(self, *,
         depth: Optional[int] = None,
         limit_children: bool = False,
-    ) -> MoreCommentsTreeNode[None, CommentTreeNode]:
+    ) -> CommentSubtreeTreeNode[None]:
         return self.client.api.thread.more_children(
             self.submission_id36,
-            self.children,
+            self.children_id36,
             sort=self.sort,
             depth=depth,
             limit_children=limit_children,
