@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...models.submission_comment_thread_SYNC import SubmissionCommentThread
 
 from ...util.base_conversion import to_base36
-from ...models.load.comment_tree_SYNC import load_subreddit_thread
+from ...models.load.comment_tree_SYNC import load_submission_comment_thread
 from ...exceptions import HTTPStatusError
 
 class Get:
@@ -16,7 +16,7 @@ class Get:
     def __call__(self,
         submission_id: int,
         comment_id: Optional[int] = None,
-        sort: Optional[str] = None,
+        sort: Optional[str] = 'confidence',
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
@@ -26,7 +26,7 @@ class Get:
     def by_id(self,
         submission_id: int,
         comment_id: Optional[int] = None,
-        sort: Optional[str] = None,
+        sort: Optional[str] = 'confidence',
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
@@ -38,7 +38,7 @@ class Get:
     def by_id36(self,
         submission_id36: str,
         comment_id36: Optional[str] = None,
-        sort: Optional[str] = None,
+        sort: Optional[str] = 'confidence',
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
@@ -64,4 +64,4 @@ class Get:
                 return None
             raise
 
-        return load_subreddit_thread(resp_data, self._client, sort)
+        return load_submission_comment_thread(resp_data, self._client, sort)

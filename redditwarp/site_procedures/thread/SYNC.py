@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Sequence, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.comment_tree_SYNC import CommentSubtreeTreeNode
+    from ...models.comment_tree_SYNC import MoreCommentsTreeNode
 
 from ...models.load.comment_tree_SYNC import load_more_children
 from .get_SYNC import Get
@@ -21,7 +21,7 @@ class Thread:
         sort: Optional[str] = None,
         depth: Optional[int] = None,
         limit_children: bool = False,
-    ) -> CommentSubtreeTreeNode[None]:
+    ) -> MoreCommentsTreeNode:
         params = {
             'link_id': 't3_' + submission_id36,
             'children': ','.join(children_id36),

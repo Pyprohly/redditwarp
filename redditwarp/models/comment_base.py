@@ -104,8 +104,10 @@ class CommentBase(OriginalRedditThingObject):
 
         s: str = d['author']
         self.author_name = s
+        self.u_author_name = s
         self.author = None
         if not s.startswith('['):
+            self.u_author_name = f'u/{s}'
             self.author = self.Author(d)
 
         self.mod = None

@@ -22,6 +22,9 @@ class CommentSubtreeTreeNode(ICommentSubtreeTreeNode, GeneralTreeNode[T, 'Commen
         super().__init__(value, children)
         self.more = more
 
+class MoreCommentsTreeNode(CommentSubtreeTreeNode[None]):
+    pass
+
 class CommentTreeNode(CommentSubtreeTreeNode[Comment]):
     pass
 

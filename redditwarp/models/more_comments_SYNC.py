@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ..client_SYNC import Client
 
 from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
-from .comment_tree_SYNC import CommentSubtreeTreeNode
+from .comment_tree_SYNC import MoreCommentsTreeNode
 from .more_comments_base import MoreCommentsBase
 from .submission_comment_thread_SYNC import SubmissionCommentThread
 
@@ -23,16 +23,16 @@ class MoreComments(MoreCommentsBase):
 
     def __call__(self, *,
         depth: Optional[int] = None,
-    ) -> CommentSubtreeTreeNode[None]:
+    ) -> MoreCommentsTreeNode:
         raise NotImplementedError
 
 class ContinueThisThread(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
-    ) -> CommentSubtreeTreeNode[None]:
+    ) -> MoreCommentsTreeNode:
         thread = self.fetch_continued_thread()
-        node = thread.node
-        return CommentSubtreeTreeNode(None, node.children[0].children, node.more)
+        o = thread.node
+        return MoreCommentsTreeNode(None, o.children[0].children, o.more)
 
     def get_thread(self) -> Optional[SubmissionCommentThread]:
         return self.client.api.thread.get.by_id36(self.submission_id36, self.comment_id36)
@@ -63,7 +63,7 @@ class LoadMoreComments(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
         limit_children: bool = False,
-    ) -> CommentSubtreeTreeNode[None]:
+    ) -> MoreCommentsTreeNode:
         return self.client.api.thread.more_children(
             self.submission_id36,
             self.children_id36,

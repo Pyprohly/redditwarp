@@ -42,6 +42,7 @@ class SubmissionBase(OriginalRedditThingObject):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
             self.name: str = d['subreddit']
+            self.r_name = 'r/' + self.name
             #: One of `public`, `private`, `restricted`, `archived`,
             #: `employees_only`, `gold_only`, or `gold_restricted`.
             self.type: str = d['subreddit_type']
@@ -125,8 +126,10 @@ class SubmissionBase(OriginalRedditThingObject):
 
         s: str = d['author']
         self.author_name = s
+        self.u_author_name = s
         self.author = None
         if not s.startswith('['):
+            self.u_author_name = f'u/{s}'
             self.author = self.Author(self, d)
 
         self.mod = None
