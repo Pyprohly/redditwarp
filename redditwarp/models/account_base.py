@@ -6,7 +6,7 @@ from .original_reddit_thing_object import OriginalRedditThingObject
 
 class MyAccountBase(OriginalRedditThingObject):
     class Subreddit:
-        def __init__(self, outer: MyAccountBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
             #: One of `public`, `private`, `restricted`, `archived`,
             #: `employees_only`, `gold_only`, or `gold_restricted`.
@@ -27,4 +27,4 @@ class MyAccountBase(OriginalRedditThingObject):
         self.is_suspended: bool = d['is_suspended']
         self.nsfw: bool = d['over_18']
 
-        self.subreddit = self.Subreddit(self, d['subreddit'])
+        self.subreddit = self.Subreddit(d['subreddit'])

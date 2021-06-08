@@ -6,7 +6,7 @@ from .original_reddit_thing_object import OriginalRedditThingObject
 
 class UserBase(OriginalRedditThingObject):
     class Subreddit:
-        def __init__(self, outer: UserBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
             #: One of `public`, `private`, `restricted`, `archived`,
             #: `employees_only`, `gold_only`, or `gold_restricted`.
@@ -44,4 +44,4 @@ class UserBase(OriginalRedditThingObject):
 
         self.icon_img: str = d['icon_img']
 
-        self.subreddit = self.Subreddit(self, d['subreddit'])
+        self.subreddit = self.Subreddit(d['subreddit'])

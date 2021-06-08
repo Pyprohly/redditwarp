@@ -9,7 +9,7 @@ from ..auth.const import AUTHORIZATION_BASE_URL
 
 class SubmissionBase(OriginalRedditThingObject):
     class User:
-        def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             # User context fields
             self.saved: bool = d['saved']  # False if no user context
             self.hidden: bool = d['hidden']  # False if no user context
@@ -30,7 +30,7 @@ class SubmissionBase(OriginalRedditThingObject):
                 self.text_color: str = d['author_flair_text_color'] or ''
                 self.type: str = d['author_flair_type']
 
-        def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['author']
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
@@ -38,7 +38,7 @@ class SubmissionBase(OriginalRedditThingObject):
             self.flair = self.AuthorFlair(d)
 
     class Subreddit:
-        def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
             self.name: str = d['subreddit']
@@ -50,7 +50,7 @@ class SubmissionBase(OriginalRedditThingObject):
             self.subscriber_count: int = d['subreddit_subscribers']
 
     class Moderator:
-        def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.spam: bool = d['spam']
 
             self.approved: bool = d['approved']
@@ -72,7 +72,7 @@ class SubmissionBase(OriginalRedditThingObject):
             self.is_live: bool = d['event_is_live']
 
     class Flair:
-        def __init__(self, outer: SubmissionBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.has_flair: bool = d['link_flair_text'] is not None
             self.bg_color: str = d['link_flair_background_color']
             _link_flair_css_class_temp: Optional[str] = d['link_flair_css_class']
@@ -120,9 +120,9 @@ class SubmissionBase(OriginalRedditThingObject):
         if 'event_start' in d:
             self.event = self.Event(d)
 
-        self.user = self.User(self, d)
+        self.user = self.User(d)
 
-        self.subreddit = self.Subreddit(self, d)
+        self.subreddit = self.Subreddit(d)
 
         s: str = d['author']
         self.author_name = s
@@ -130,16 +130,16 @@ class SubmissionBase(OriginalRedditThingObject):
         self.author = None
         if not s.startswith('['):
             self.u_author_name = f'u/{s}'
-            self.author = self.Author(self, d)
+            self.author = self.Author(d)
 
         self.mod = None
         # `spam`, `ignore_reports`, `approved`, `removed`, and `rte_mode`
         # are all fields that aren't available when the current user is
         # not a moderator of the subreddit (or there’s no user context).
         if 'spam' in d:
-            self.mod = self.Moderator(self, d)
+            self.mod = self.Moderator(d)
 
-        self.flair = self.Flair(self, d)
+        self.flair = self.Flair(d)
 
 
 class TextPostBase(SubmissionBase):

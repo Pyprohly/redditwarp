@@ -106,7 +106,7 @@ if not no_web_browser:
 
 print('* Step 2. Wait for the authorization server response and extract the authorization code.\n')
 
-print('Press Ctrl+C to abort if the authorization request was rejected.\n')
+print('Press Ctrl+C to abort the script if the authorization request was rejected.\n')
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

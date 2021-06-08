@@ -1,8 +1,8 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableSequence, Generic, cast, Iterator, TypeVar
+from typing import TYPE_CHECKING, MutableSequence, cast, Iterator
 if TYPE_CHECKING:
-    from redditwarp.models.comment_tree_SYNC import ICommentSubtreeTreeNode, CommentSubtreeTreeNode, T, SubmissionTreeNode
+    from redditwarp.models.comment_tree_SYNC import ICommentSubtreeTreeNode, CommentSubtreeTreeNode, T
 
 from collections import deque
 
@@ -37,9 +37,6 @@ access_token: str = args.access_token
 base: int = args.base
 chosen_algo: str = args.algo
 comment_sort: str = args.comment_sort
-
-def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
-    raise Exception
 
 algo = ALGO_CHOICES[chosen_algo]
 if algo == 'recursive-depth-first-search':

@@ -45,7 +45,7 @@ class SubredditBase(OriginalRedditThingObject):
                 # Values: `text` or `richtext`.
                 self.type: str = d['user_flair_type']
 
-        def __init__(self, outer: SubredditBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.has_favorited: bool = d['user_has_favorited']
             self.is_banned: bool = d['user_is_banned']
             self.is_contributor: bool = d['user_is_contributor']
@@ -56,7 +56,7 @@ class SubredditBase(OriginalRedditThingObject):
             self.flair = self.UserFlair(d)
 
     class SubredditFlair:
-        def __init__(self, outer: SubredditBase, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]):
             self.user_flairs_enabled: bool = d['user_flair_enabled_in_sr']
             self.link_flairs_enabled: bool = d['link_flair_enabled']
             self.users_can_assign_user_flair: bool = d['can_assign_user_flair']
@@ -101,6 +101,6 @@ class SubredditBase(OriginalRedditThingObject):
         self.user = None
         # Just checking if a user context is available.
         if d['user_is_moderator'] is not None:
-            self.user = self.User(self, d)
+            self.user = self.User(d)
 
-        self.flair = self.SubredditFlair(self, d)
+        self.flair = self.SubredditFlair(d)
