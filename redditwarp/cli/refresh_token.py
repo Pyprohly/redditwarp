@@ -46,11 +46,7 @@ import signal
 from pprint import pp
 
 import redditwarp
-from redditwarp.http.transport.SYNC import (
-    load_transport_module,
-    new_session,
-    get_session_underlying_library_name_and_version,
-)
+from redditwarp.http.transport.SYNC import load_transport
 from redditwarp.auth.SYNC import RedditTokenObtainmentClient
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
@@ -73,7 +69,7 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 
 signal.signal(signal.SIGINT, handle_sigint)
 
-load_transport_module()
+ti = load_transport()
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
@@ -146,12 +142,11 @@ print('Authorization grant:')
 pp(dict(grant))
 print()
 
-session = new_session()
-transport_name, transport_version = get_session_underlying_library_name_and_version(session)
+session = ti.new_session()
 user_agent = (
     f"RedditWarp/{redditwarp.__version__} "
     f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
-    f"{transport_name}/{transport_version} "
+    f"{ti.name}/{ti.version} "
     "redditwarp.cli.refresh_token"
 )
 headers = {'User-Agent': user_agent}

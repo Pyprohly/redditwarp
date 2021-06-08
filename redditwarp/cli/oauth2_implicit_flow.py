@@ -40,9 +40,7 @@ import webbrowser
 import signal
 
 import redditwarp
-from redditwarp.http.transport.SYNC import (
-    load_transport_module,
-)
+from redditwarp.http.transport.SYNC import load_transport
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -61,7 +59,7 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 
 signal.signal(signal.SIGINT, handle_sigint)
 
-load_transport_module()
+load_transport()
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 scope: str = args.scope

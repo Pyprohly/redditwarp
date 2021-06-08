@@ -18,7 +18,7 @@ from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
 from ..http.http_client_base_ASYNC import HTTPClientBase
-from ..http.transport.ASYNC import get_session_underlying_library_name_and_version
+from ..http.transport.ASYNC import transport_info_registry
 
 class RedditHTTPClient(HTTPClientBase):
     DEFAULT_PARAMS: Mapping[str, str] = {
@@ -56,7 +56,7 @@ class RedditHTTPClient(HTTPClientBase):
         super().__init__(session, params=params, headers=headers)
         self.requestor: Requestor = session
         self.authorized_requestor: Optional[Authorized] = None
-        self.user_agent = self.user_agent_start = get_http_client_user_agent(session)
+        self.user_agent = self.user_agent_start = get_user_agent(session)
         self.last_response: Optional[Response] = None
         self.last_response_queue: MutableSequence[Response] = collections.deque(maxlen=12)
 
@@ -86,14 +86,15 @@ class RedditHTTPClient(HTTPClientBase):
         return resp
 
 
-def get_http_client_user_agent(session: object) -> str:
-    transport_name, transport_version = get_session_underlying_library_name_and_version(session)
-    py_version = '.'.join(map(str, sys.version_info[:2]))
+def get_user_agent(session: object) -> str:
     transport_token = ''
-    if transport_name:
-        transport_token = f"{transport_name}/{transport_version}"
+    ti = transport_info_registry.get(session.__module__)
+    if ti is not None:
+        transport_token = f" {ti.name}/{ti.version}"
+
+    py_version = '.'.join(map(str, sys.version_info[:2]))
     return (
-        f"{__about__.__title__}/{__about__.__version__} "
-        f"Python/{py_version} "
+        f"{__about__.__title__}/{__about__.__version__}"
+        f" Python/{py_version}"
         f"{transport_token}"
     )

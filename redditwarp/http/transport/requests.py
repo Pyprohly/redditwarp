@@ -6,11 +6,9 @@ if TYPE_CHECKING:
     from ..request import Request
     from ..payload import Payload
 
-import sys
-
 import requests  # type: ignore[import]
 
-from .SYNC import transport_registry
+from .SYNC import register
 from ..session_base_SYNC import SessionBase
 from .. import exceptions
 from .. import payload
@@ -75,9 +73,6 @@ _PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
 }
 
 
-#region
-STRUCTURAL_CONFORMITY = True
-
 class Session(SessionBase):
     def __init__(self,
         requests_session: requests.Session,
@@ -128,6 +123,9 @@ def new_session(*,
 
 name = requests.__name__
 version = requests.__version__
-
-transport_registry[__name__] = sys.modules[__name__]
-#endregion
+register(
+    __name__,
+    new_session,
+    name,
+    version,
+)

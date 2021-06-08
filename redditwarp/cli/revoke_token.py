@@ -30,11 +30,7 @@ import os
 import signal
 
 import redditwarp
-from redditwarp.http.transport.SYNC import (
-    load_transport_module,
-    new_session,
-    get_session_underlying_library_name_and_version,
-)
+from redditwarp.http.transport.SYNC import load_transport
 from redditwarp.auth.SYNC import TokenRevocationClient
 from redditwarp.http.components.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
 
@@ -58,7 +54,7 @@ def handle_sigint(sig: int, frame: FrameType) -> None:
 
 signal.signal(signal.SIGINT, handle_sigint)
 
-load_transport_module()
+ti = load_transport()
 
 client_id = get_client_id(args.client_id_opt or args.client_id)
 client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
@@ -66,11 +62,10 @@ token: str = args.token or input('Token: ')
 access_token_needs_revoking: bool = args.a
 refresh_token_needs_revoking: bool = args.r
 
-session = new_session()
-transport_name, transport_version = get_session_underlying_library_name_and_version(session)
+session = ti.new_session()
 user_agent = (
     f"RedditWarp/{redditwarp.__version__} "
-    f"{transport_name}/{transport_version} "
+    f"{ti.name}/{ti.version} "
     "redditwarp.cli.revoke_token"
 )
 headers = {'User-Agent': user_agent}
