@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, MutableSequence, cast, Iterator
 if TYPE_CHECKING:
     from redditwarp.models.comment_tree_SYNC import ICommentSubtreeTreeNode, CommentSubtreeTreeNode, T
 
+import shutil
 from collections import deque
 
 import redditwarp
@@ -121,5 +122,9 @@ print(f'''\
 Submitted at {subm.created_at.astimezone().ctime()}{' *' if subm.edited else ''}
 ''')
 
+columns, lines = shutil.get_terminal_size()
+
 for depth, comment in traversal(thread.node):
-    print(f"{depth*'.'} <{comment.id36}> {comment.u_author_name} | {repr(comment.body[:50])}")
+    body_text = repr(comment.body)
+    line = f"{depth*'.'} <{comment.id36}> {comment.u_author_name} | {body_text}"
+    print(line[:columns])

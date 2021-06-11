@@ -40,7 +40,7 @@ class Get:
                 return None
             raise
 
-        if root['kind'] == 'Listing':
+        if root['kind'] != 't5':
             # The subreddit was not found.
             return None
 

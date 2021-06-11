@@ -12,7 +12,7 @@ class CommentBase(OriginalRedditThingObject):
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
             self.saved: bool = d['saved']  # False if no user context
-            self.inbox_notifications: bool = d['send_replies']  # False if no user context
+            self.reply_notifications: bool = d['send_replies']  # False if no user context
             self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
 
     class Author:

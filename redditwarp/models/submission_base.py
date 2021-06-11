@@ -13,7 +13,7 @@ class SubmissionBase(OriginalRedditThingObject):
             # User context fields
             self.saved: bool = d['saved']  # False if no user context
             self.hidden: bool = d['hidden']  # False if no user context
-            self.inbox_notifications: bool = d['send_replies']  # False if no user context
+            self.reply_notifications: bool = d['send_replies']  # False if no user context
             self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
             self.is_following_event: bool = d.get('is_followed', False)  # False if no user context
 
@@ -42,7 +42,6 @@ class SubmissionBase(OriginalRedditThingObject):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
             self.name: str = d['subreddit']
-            self.r_name = 'r/' + self.name
             #: One of `public`, `private`, `restricted`, `archived`,
             #: `employees_only`, `gold_only`, or `gold_restricted`.
             self.type: str = d['subreddit_type']

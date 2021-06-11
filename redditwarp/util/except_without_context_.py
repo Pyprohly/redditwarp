@@ -1,13 +1,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Type
+from typing import TYPE_CHECKING, Optional, Type, ContextManager
 if TYPE_CHECKING:
     from types import TracebackType
 
-from contextlib import AbstractContextManager
-
-class except_without_context(AbstractContextManager[bool]):
+class except_without_context(ContextManager[bool]):
     def __init__(self, *exceptions: Type[BaseException]):
         self._exceptions = exceptions
         self.yes = False

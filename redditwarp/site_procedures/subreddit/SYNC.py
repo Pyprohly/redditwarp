@@ -23,6 +23,12 @@ class Subreddit:
         self.pull = Pull(client)
         self.take = Take(client)
 
-    def pull_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, NewComment]:
+    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, NewComment]:
         p = CommentListingPaginator(self._client, f'/r/{sr}/comments')
         return PaginatorChainingIterator(p, amount)
+
+    def submit(self) -> None:
+        ...
+
+    def subscribe(self) -> None:
+        ...

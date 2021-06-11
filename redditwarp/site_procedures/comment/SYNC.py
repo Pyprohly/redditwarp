@@ -27,10 +27,6 @@ class Comment:
         result = self._client.request('POST', '/api/comment', data=data)
         return load_comment(result, self._client)
 
-    def delete(self, comment_id: int) -> None:
-        data = {'id': 't1_' + to_base36(comment_id)}
-        self._client.request('POST', '/api/del', data=data)
-
     def edit_body(self, comment_id: int, text: str) -> CommentModel:
         data = {
             'thing_id': 't1_' + to_base36(comment_id),
@@ -39,6 +35,10 @@ class Comment:
         }
         result = self._client.request('POST', '/api/editusertext', data=data)
         return load_comment(result, self._client)
+
+    def delete(self, comment_id: int) -> None:
+        data = {'id': 't1_' + to_base36(comment_id)}
+        self._client.request('POST', '/api/del', data=data)
 
     def lock(self, comment_id: int) -> None:
         data = {'id': 't1_' + to_base36(comment_id)}
@@ -67,13 +67,20 @@ class Comment:
         data = {'id': 't1_' + to_base36(comment_id)}
         self._client.request('POST', '/api/unsave', data=data)
 
-    def distinguish(self, comment_id: int, *, sticky: bool = False) -> CommentModel:
+    def distinguish(self, comment_id: int) -> CommentModel:
         data = {
             'id': 't1_' + to_base36(comment_id),
             'how': 'yes',
         }
-        if sticky:
-            data['sticky'] = '1'
+        root = self._client.request('POST', '/api/distinguish', data=data)
+        return load_comment(root['json']['data']['things'][0]['data'], self._client)
+
+    def distinguish_and_sticky(self, comment_id: int) -> CommentModel:
+        data = {
+            'id': 't1_' + to_base36(comment_id),
+            'how': 'yes',
+            'sticky': '1',
+        }
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
@@ -85,14 +92,14 @@ class Comment:
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    def enable_inbox_replies(self, comment_id: int) -> None:
+    def enable_reply_notifications(self, comment_id: int) -> None:
         data = {
             'id': 't1_' + to_base36(comment_id),
             'state': '1'
         }
         self._client.request('POST', '/api/sendreplies', data=data)
 
-    def disable_inbox_replies(self, comment_id: int) -> None:
+    def disable_reply_notifications(self, comment_id: int) -> None:
         data = {
             'id': 't1_' + to_base36(comment_id),
             'state': '0'
