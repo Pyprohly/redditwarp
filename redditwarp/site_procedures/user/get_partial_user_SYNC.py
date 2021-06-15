@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
 
-from ...models.load.partial_user import load_partial_user
 from ...models.partial_user import PartialUser
+from ...models.load.partial_user import load_partial_user
 from ...util.base_conversion import to_base36
 from ... import exceptions
 
-class GetPartial:
+class GetPartialUser:
     def __init__(self, client: Client):
         self._client = client
 

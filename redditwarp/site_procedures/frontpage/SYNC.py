@@ -15,6 +15,6 @@ class FrontPage:
         self._client = client
         self.pull = Pull(client)
 
-    def pull_comments(self, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, NewComment]:
+    def pull_new_comments(self, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, NewComment]:
         p = CommentListingPaginator(self._client, '/comments')
         return PaginatorChainingIterator(p, amount)

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
 from ...iterators.paginators.listing.subreddit_listing_paginator import SubredditListingPaginator
 
-class Take:
+class Grab:
     def __init__(self, client: Client) -> None:
         self._client = client
 

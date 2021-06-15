@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Iterable, List, Sequence, Tuple, Callable
+from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.flair import Variant2FlairTemplate, Variant1FlairTemplate, FlairChoices, UserFlairAssociation
@@ -11,8 +11,9 @@ import csv
 from io import StringIO
 
 from ...util.base_conversion import to_base36
-from ...iterators.chunking_iterator import ChunkingIterator
-from ...iterators.call_chunk_chaining_iterator import ChunkSizeAdjustableCallChunkChainingIterator
+from ...iterators.chunking import chunked
+from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
+from ...iterators.call_chunk_SYNC import CallChunk
 from ...models.load.flair import (
     load_variant2_flair_template,
     load_variant1_flair_template,
@@ -48,20 +49,19 @@ class Flair:
         full_id36 = 't3_' + to_base36(submission_id)
         self._client.request('POST', f'/r/{sr_name}/api/flair', data=dict(link=full_id36))
 
-    def bulk_update_user_flairs(self, sr_name: str, data: Iterable[Tuple[str, str, str]]) -> Iterable[bool]:
-        chunk_iter = ChunkingIterator(data, 100)
+    def bulk_update_user_flairs(self,
+        sr_name: str,
+        data: Iterable[Tuple[str, str, str]],
+    ) -> CallChunkChainingIterator[Tuple[str, str, str], bool]:
+        def bulk_update_user_flairs_operation(data: Sequence[Tuple[str, str, str]]) -> Sequence[bool]:
+            sio = StringIO()
+            csv.writer(sio).writerows(data)
+            s = sio.getvalue()
+            root = self._client.request('POST', f'/r/{sr_name}/api/flaircsv', data={'flair_csv': s})
+            return [i['ok'] for i in root]
 
-        def call_chunk(data_chunk: Iterable[Tuple[str, str, str]]) -> Callable[[], List[bool]]:
-            def f() -> List[bool]:
-                sio = StringIO()
-                csv.writer(sio).writerows(data_chunk)
-                s = sio.getvalue()
-                root = self._client.request('POST', f'/r/{sr_name}/api/flaircsv', data={'flair_csv': s})
-                return [i['ok'] for i in root]
-            return f
-
-        call_chunks = map(call_chunk, chunk_iter)
-        return ChunkSizeAdjustableCallChunkChainingIterator(call_chunks, chunk_iter)
+        itr = map(lambda items: CallChunk(bulk_update_user_flairs_operation, items), chunked(data, 100))
+        return CallChunkChainingIterator(itr)
 
     def _create_or_update_flair_template(self,
         sr_name: str,

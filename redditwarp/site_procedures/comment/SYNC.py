@@ -1,22 +1,34 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import Comment as CommentModel
 
 from ...models.load.comment_SYNC import load_comment
 from ...util.base_conversion import to_base36
+from ...iterators.chunking import chunked
+from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
+from ...iterators.call_chunk_SYNC import CallChunk
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
-from .bulk_fetch_SYNC import BulkFetch
 
 class Comment:
     def __init__(self, client: Client):
         self._client = client
         self.fetch = Fetch(self, client)
         self.get = Get(client)
-        self.bulk_fetch = BulkFetch(client)
+
+    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[int, CommentModel]:
+        def mass_fetch(ids: Sequence[int]) -> Sequence[CommentModel]:
+            id36s = map(to_base36, ids)
+            full_id36s = map('t1_'.__add__, id36s)
+            ids_str = ','.join(full_id36s)
+            root = self._client.request('GET', '/api/info', params={'id': ids_str})
+            return [load_comment(i['data'], self._client) for i in root['data']['children']]
+
+        return CallChunkChainingIterator(
+                CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
     def reply(self, comment_id: int, text: str) -> CommentModel:
         data = {

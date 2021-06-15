@@ -62,8 +62,9 @@ class FlairEmoji:
             bucket_server_url = 'https:' + upload_lease['action']
             data = {field['name']: field['value'] for field in upload_lease['fields']}
             files = {'file': file}
-            req = self._client.http.session.make_request('POST', bucket_server_url, data=data, files=files)
-            resp = self._client.http.session.send(req)
+            session = self._client.http.session
+            req = session.make_request('POST', bucket_server_url, data=data, files=files)
+            resp = session.send(req)
             resp.raise_for_status()
             return upload_lease['fields']['key']
 
