@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Optional, Iterable, Iterator, Generic
+from typing import Optional, Iterable, Iterator, Generic, Sequence
 
 from .stubborn_caller_iterator import StubbornCallerIterator
 from .unfaltering_chaining_iterator import UnfalteringChainingIterator
@@ -10,14 +10,14 @@ class CallChunkChainingIterator(Iterator[TOutput], Generic[TInput, TOutput]):
     """Evaluate call chunks and chain them together."""
 
     @property
-    def current(self) -> Optional[CallChunk[TInput, TOutput]]:
+    def current(self) -> Optional[CallChunk[Sequence[TInput], Sequence[TOutput]]]:
         c = self._call_iter.current
         if c is not None and not isinstance(c, CallChunk):
             raise RuntimeError('type is not CallChunk')
         return c
 
     @current.setter
-    def current(self, value: Optional[CallChunk[TInput, TOutput]]) -> None:
+    def current(self, value: Optional[CallChunk[Sequence[TInput], Sequence[TOutput]]]) -> None:
         self._call_iter.current = value
 
     @property
@@ -28,7 +28,7 @@ class CallChunkChainingIterator(Iterator[TOutput], Generic[TInput, TOutput]):
     def current_iter(self, value: Iterator[TOutput]) -> None:
         self._chain_iter.current_iter = value
 
-    def __init__(self, chunks: Iterable[CallChunk[TInput, TOutput]]) -> None:
+    def __init__(self, chunks: Iterable[CallChunk[Sequence[TInput], Sequence[TOutput]]]) -> None:
         self.chunks = chunks
         self._call_iter = StubbornCallerIterator(chunks)
         self._chain_iter = UnfalteringChainingIterator(self._call_iter)

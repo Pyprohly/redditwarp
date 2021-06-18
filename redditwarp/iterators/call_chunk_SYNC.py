@@ -6,14 +6,20 @@ TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
 
 class CallChunk(Generic[TInput, TOutput]):
-    """Call me to perform `.operation` on `.items` to produce products."""
+    """Call me to perform `.operation` on `.data` to produce products."""
 
     def __init__(self,
-        operation: Callable[[Sequence[TInput]], Sequence[TOutput]],
-        items: Sequence[TInput],
+        operation: Callable[[TInput], TOutput],
+        data: TInput,
     ) -> None:
         self.operation = operation
-        self.items = items
+        self.data = data
 
-    def __call__(self) -> Sequence[TOutput]:
-        return self.operation(self.items)
+    def __call__(self) -> TOutput:
+        return self.operation(self.data)
+
+def new_call_chunk_of_sequences(
+    operation: Callable[[Sequence[TInput]], Sequence[TOutput]],
+    data: Sequence[TInput],
+) -> CallChunk[Sequence[TInput], Sequence[TOutput]]:
+    return CallChunk(operation, data)

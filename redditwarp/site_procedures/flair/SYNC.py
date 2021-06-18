@@ -13,7 +13,7 @@ from io import StringIO
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from ...iterators.call_chunk_SYNC import CallChunk
+from ...iterators.call_chunk_SYNC import new_call_chunk_of_sequences
 from ...models.load.flair import (
     load_variant2_flair_template,
     load_variant1_flair_template,
@@ -60,7 +60,10 @@ class Flair:
             root = self._client.request('POST', f'/r/{sr_name}/api/flaircsv', data={'flair_csv': s})
             return [i['ok'] for i in root]
 
-        itr = map(lambda items: CallChunk(bulk_update_user_flairs_operation, items), chunked(data, 100))
+        itr = map(
+            lambda items: new_call_chunk_of_sequences(bulk_update_user_flairs_operation, items),
+            chunked(data, 100),
+        )
         return CallChunkChainingIterator(itr)
 
     def _create_or_update_flair_template(self,

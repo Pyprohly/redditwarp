@@ -77,7 +77,27 @@ class Submission:
     def unhide(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
         self._client.request('POST', '/api/unhide', data=data)
+    '''
+    def bulk_hide(self, submission_ids: Sequence[int]) -> CallChunkChainingIterator[int, None]:
+        def mass_hide(ids: Sequence[int]) -> Sequence[SubmissionModel]:
+            id36s = map(to_base36, ids)
+            full_id36s = map('t3_'.__add__, id36s)
+            ids_str = ','.join(full_id36s)
+            root = self._client.request('POST', '/api/hide', params={'id': ids_str})
+            return [load_submission(i['data'], self._client) for i in root['data']['children']]
 
+        return CallChunkChainingIterator(
+                CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
+
+
+
+        data = {'id': 't3_' + to_base36(submission_id)}
+        self._client.request('POST', '/api/hide', data=data)
+
+    def bulk_unhide(self, submission_ids: Sequence[int]) -> None:
+        data = {'id': 't3_' + to_base36(submission_id)}
+        self._client.request('POST', '/api/unhide', data=data)
+    '''
     def mark_nsfw(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
         self._client.request('POST', '/api/marknsfw', data=data)
