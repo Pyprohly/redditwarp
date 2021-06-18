@@ -9,6 +9,7 @@ import time
 
 import aiohttp  # type: ignore[import]
 
+from .ASYNC import register
 from ..websocket_connection_ASYNC import WebSocketConnection
 from .. import exceptions
 from ..events import Event, Frame, Message, TextMessage, BytesMessage
@@ -156,3 +157,13 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
         raise exceptions.TimeoutError
 
     return WebSocketClient(ws, session)
+
+
+name = aiohttp.__name__
+version = aiohttp.__version__
+register(
+    adaptor_module_name=__name__,
+    name=name,
+    version=version,
+    connect=connect,
+)

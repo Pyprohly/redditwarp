@@ -142,8 +142,8 @@ def new_session(*,
 name = aiohttp.__name__
 version = aiohttp.__version__
 register(
-    __name__,
-    new_session,
-    name,
-    version,
+    adaptor_module_name=__name__,
+    name=name,
+    version=version,
+    new_session=new_session,
 )

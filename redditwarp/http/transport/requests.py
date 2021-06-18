@@ -124,8 +124,8 @@ def new_session(*,
 name = requests.__name__
 version = requests.__version__
 register(
-    __name__,
-    new_session,
-    name,
-    version,
+    adaptor_module_name=__name__,
+    name=name,
+    version=version,
+    new_session=new_session,
 )

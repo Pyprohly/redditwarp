@@ -19,9 +19,9 @@ class NewSessionFunction(Protocol):
 @dataclass
 class TransportInfo:
     adaptor_module_name: str
-    new_session: NewSessionFunction
     name: str
     version: str
+    new_session: NewSessionFunction
 
 def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
     module_spec = find_spec(name, package)
@@ -55,10 +55,10 @@ def register(
     version: str,
 ) -> None:
     info = TransportInfo(
-        adaptor_module_name,
-        new_session,
-        name,
-        version,
+        adaptor_module_name=adaptor_module_name,
+        name=name,
+        version=version,
+        new_session=new_session,
     )
     transport_info_registry[adaptor_module_name] = info
 

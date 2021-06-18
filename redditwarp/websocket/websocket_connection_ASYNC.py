@@ -95,9 +95,6 @@ class HalfImplementedWebSocketConnection(WebSocketConnection):
         super().__init__()
         self._accumulator: MutableSequence[Frame] = []
 
-    def set_state(self, state: ConnectionState) -> None:
-        self.state = state
-
     async def send_frame(self, m: Frame) -> None:
         if self.state == ConnectionState.CLOSED:
             raise exceptions.ConnectionClosedException

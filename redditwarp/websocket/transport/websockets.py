@@ -11,6 +11,7 @@ import time
 import websockets  # type: ignore[import]
 import websockets.legacy.client
 
+from .ASYNC import register
 from ..websocket_connection_ASYNC import WebSocketConnection
 from .. import exceptions
 from ..events import Event, Frame, Message, TextMessage, BytesMessage
@@ -142,3 +143,13 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
         raise exceptions.TimeoutError
 
     return WebSocketClient(ws)
+
+
+name = websockets.__name__
+version = websockets.__version__  # type: ignore[attr-defined]
+register(
+    adaptor_module_name=__name__,
+    name=name,
+    version=version,
+    connect=connect,
+)

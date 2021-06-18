@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 # https://pypi.org/project/websocket-client/
 import websocket  # type: ignore[import]
 
+from .SYNC import register
 from ..websocket_connection_SYNC import HalfImplementedWebSocketConnection
 from .. import exceptions
 from ..events import Event, Frame
@@ -98,3 +99,13 @@ def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) 
     except websocket.WebSocketTimeoutException:
         raise exceptions.TimeoutError
     return WebSocketClient(ws)
+
+
+name = websocket.__name__
+version = websocket.__version__
+register(
+    adaptor_module_name=__name__,
+    name=name,
+    version=version,
+    connect=connect,
+)

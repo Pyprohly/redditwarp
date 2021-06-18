@@ -1,15 +1,27 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping, Optional, Sequence
+from typing import TYPE_CHECKING, MutableMapping, Optional, Sequence, Protocol
 if TYPE_CHECKING:
-    from types import ModuleType
     from importlib.machinery import ModuleSpec
 
-import sys
 from importlib.util import find_spec
+from dataclasses import dataclass
 
 from ...util.imports import load_module_from_spec
 from ..websocket_connection_SYNC import WebSocketConnection
+
+class ConnectFunction(Protocol):
+    def __call__(self, url: str, *,
+        subprotocols: Sequence[str] = (), timeout: float = -2
+    ) -> WebSocketConnection:
+        pass
+
+@dataclass
+class TransportInfo:
+    adaptor_module_name: str
+    name: str
+    version: str
+    connect: ConnectFunction
 
 def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
     module_spec = find_spec(name, package)
@@ -17,37 +29,39 @@ def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
         raise RuntimeError(f'module spec not found: {name} ({package})')
     return module_spec
 
-def load_transport_module() -> ModuleType:
-    itr = iter(transport_registry.items())
-    try:
-        name, module = next(itr)
-    except StopIteration:
-        for name, module_spec in transport_module_spec_registry.items():
-            if name in sys.modules:
-                module = load_module_from_spec(module_spec)
-                break
-
+def load_transport() -> TransportInfo:
+    if not transport_info_registry:
+        for module_spec in transport_module_spec_list:
+            try:
+                load_module_from_spec(module_spec)
+            except ImportError:
+                continue
+            break
         else:
-            for name, module_spec in transport_module_spec_registry.items():
-                try:
-                    module = load_module_from_spec(module_spec)
-                except ImportError:
-                    continue
-                break
-            else:
-                raise ModuleNotFoundError('A websocket transport library needs to be installed.')
+            raise ModuleNotFoundError('A websocket transport library needs to be installed.')
 
-        transport_registry[name] = module
-
-    return module
+    return next(iter(transport_info_registry.values()))
 
 def connect(url: str, *,
         subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketConnection:
-    module = load_transport_module()
-    connect = module.connect  # type: ignore[attr-defined]
+    connect = load_transport().connect
     return connect(url, subprotocols=subprotocols, timeout=timeout)
 
-transport_module_spec_registry: MutableMapping[str, ModuleSpec] = {
-    'websocket': load_spec('.websocket', __package__),
-}
-transport_registry: MutableMapping[str, ModuleType] = {}
+def register(
+    adaptor_module_name: str,
+    name: str,
+    version: str,
+    connect: ConnectFunction,
+) -> None:
+    info = TransportInfo(
+        adaptor_module_name=adaptor_module_name,
+        name=name,
+        version=version,
+        connect=connect,
+    )
+    transport_info_registry[adaptor_module_name] = info
+
+transport_module_spec_list = [
+    load_spec('.websocket', __package__),
+]
+transport_info_registry: MutableMapping[str, TransportInfo] = {}
