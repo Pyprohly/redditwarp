@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 from ...models.load.submission_SYNC import load_submission
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
+from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from .fetch_SYNC import Fetch
@@ -77,27 +78,27 @@ class Submission:
     def unhide(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
         self._client.request('POST', '/api/unhide', data=data)
-    '''
-    def bulk_hide(self, submission_ids: Sequence[int]) -> CallChunkChainingIterator[int, None]:
-        def mass_hide(ids: Sequence[int]) -> Sequence[SubmissionModel]:
+
+    def bulk_hide(self, submission_ids: Sequence[int]) -> CallChunkCallingIterator[Sequence[int], None]:
+        def mass_hide(ids: Sequence[int]) -> None:
             id36s = map(to_base36, ids)
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
-            root = self._client.request('POST', '/api/hide', params={'id': ids_str})
-            return [load_submission(i['data'], self._client) for i in root['data']['children']]
+            self._client.request('POST', '/api/hide', params={'id': ids_str})
 
-        return CallChunkChainingIterator(
-                CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
+        return CallChunkCallingIterator(
+                CallChunk(mass_hide, idfs) for idfs in chunked(submission_ids, 300))
 
+    def bulk_unhide(self, submission_ids: Sequence[int]) -> CallChunkCallingIterator[Sequence[int], None]:
+        def mass_hide(ids: Sequence[int]) -> None:
+            id36s = map(to_base36, ids)
+            full_id36s = map('t3_'.__add__, id36s)
+            ids_str = ','.join(full_id36s)
+            self._client.request('POST', '/api/unhide', params={'id': ids_str})
 
+        return CallChunkCallingIterator(
+                CallChunk(mass_hide, idfs) for idfs in chunked(submission_ids, 300))
 
-        data = {'id': 't3_' + to_base36(submission_id)}
-        self._client.request('POST', '/api/hide', data=data)
-
-    def bulk_unhide(self, submission_ids: Sequence[int]) -> None:
-        data = {'id': 't3_' + to_base36(submission_id)}
-        self._client.request('POST', '/api/unhide', data=data)
-    '''
     def mark_nsfw(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
         self._client.request('POST', '/api/marknsfw', data=data)

@@ -1,7 +1,7 @@
 
 import pytest
 
-from redditwarp.http.util.json_loads import json_loads_response
+from redditwarp.http.util.json_load import json_loads_response
 from redditwarp.http.response import Response
 
 def test_json_loads_response() -> None:

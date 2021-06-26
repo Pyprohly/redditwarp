@@ -78,8 +78,7 @@ class Account:
         entries = root['data']['children']
         return [load_user_list_entry(d) for d in entries]
 
-    @cached_property
-    class block_user:
+    class _block_user:
         def __init__(self, outer: Account) -> None:
             self._client = outer._client
 
@@ -95,8 +94,9 @@ class Account:
         def by_id36(self, id36: str) -> None:
             self._client.request('POST', '/api/block_user', data={'account_id': id36})
 
-    @cached_property
-    class unblock_user:
+    block_user = cached_property(_block_user)
+
+    class _unblock_user:
         def __init__(self, outer: Account) -> None:
             self._client = outer._client
 
@@ -118,6 +118,8 @@ class Account:
                 'id': 't2_' + to_base36(target_id),
             }
             self._client.request('POST', '/api/unfriend', data=data)
+
+    unblock_user = cached_property(_unblock_user)
 
     def trusted(self) -> Sequence[UserListEntry]:
         root = self._client.request('GET', '/prefs/trusted')

@@ -16,6 +16,7 @@ class FlairEmoji:
 
     def get_subreddit_emojis(self, sr: str) -> SubredditFlairEmojiInventory:
         root = self._client.request('GET', f'/api/v1/{sr}/emojis/all')
+        root = dict(root)
         reddit_emojis_root = root.pop('snoomojis')
         _full_id36: str
         _full_id36, subreddit_emojis_root = root.popitem()
@@ -26,8 +27,7 @@ class FlairEmoji:
             subreddit_id36,
         )
 
-    @cached_property
-    class put:
+    class _put:
         def __init__(self, outer: FlairEmoji) -> None:
             self._client = outer._client
 
@@ -61,12 +61,11 @@ class FlairEmoji:
         def upload(self, upload_lease: Mapping[str, Any], file: IO[bytes]) -> str:
             bucket_server_url = 'https:' + upload_lease['action']
             data = {field['name']: field['value'] for field in upload_lease['fields']}
-            files = {'file': file}
-            session = self._client.http.session
-            req = session.make_request('POST', bucket_server_url, data=data, files=files)
-            resp = session.send(req)
+            se = self._client.http.session
+            req = se.make_request('POST', bucket_server_url, data=data, files={'file': file})
+            resp = se.send(req)
             resp.raise_for_status()
-            return upload_lease['fields']['key']
+            return data['key']
 
         def add(self, sr: str, s3_key: str, name: str, *,
                 post_enabled: bool = True,
@@ -80,3 +79,5 @@ class FlairEmoji:
                 'mod_flair_only': '01'[mod_only],
             }
             self._client.request('POST', f'/api/v1/{sr}/emoji', data=data)
+
+    put = cached_property(_put)

@@ -1,8 +1,14 @@
 
-from typing import Iterable, Sequence
+from typing import Iterable, Sequence, Callable
 
 from redditwarp.iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from redditwarp.iterators.call_chunk_SYNC import CallChunk, new_call_chunk_of_sequences
+from redditwarp.iterators.call_chunk_SYNC import CallChunk, TInput, TOutput
+
+def new_call_chunk_of_sequences(
+    operation: Callable[[Sequence[TInput]], Sequence[TOutput]],
+    data: Sequence[TInput],
+) -> CallChunk[Sequence[TInput], Sequence[TOutput]]:
+    return CallChunk(operation, data)
 
 class TestCallChunkChainingIterator:
     def test_chunks_attribute(self) -> None:

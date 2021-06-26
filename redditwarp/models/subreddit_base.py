@@ -5,8 +5,8 @@ from typing import Mapping, Any, Optional
 from .original_reddit_thing_object import OriginalRedditThingObject
 
 class SubredditBase(OriginalRedditThingObject):
-    class User:
-        class UserFlair:
+    class Me:
+        class MeFlair:
             def __init__(self, d: Mapping[str, Any]):
                 self.enabled: bool = d['user_sr_flair_enabled']
 
@@ -46,14 +46,14 @@ class SubredditBase(OriginalRedditThingObject):
                 self.type: str = d['user_flair_type']
 
         def __init__(self, d: Mapping[str, Any]):
-            self.has_favorited: bool = d['user_has_favorited']
+            self.favorited: bool = d['user_has_favorited']
             self.is_banned: bool = d['user_is_banned']
             self.is_contributor: bool = d['user_is_contributor']
             self.is_moderator: bool = d['user_is_moderator']
             self.is_muted: bool = d['user_is_muted']
-            self.is_subscriber: bool = d['user_is_subscriber']
+            self.is_subscribed: bool = d['user_is_subscriber']
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
-            self.flair = self.UserFlair(d)
+            self.flair = self.MeFlair(d)
 
     class SubredditFlair:
         def __init__(self, d: Mapping[str, Any]):
@@ -98,9 +98,9 @@ class SubredditBase(OriginalRedditThingObject):
 
         self.icon_img: str = d['icon_img']
 
-        self.user = None
+        self.me = None
         # Just checking if a user context is available.
         if d['user_is_moderator'] is not None:
-            self.user = self.User(d)
+            self.me = self.Me(d)
 
         self.flair = self.SubredditFlair(d)

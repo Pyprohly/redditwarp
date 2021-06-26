@@ -1,10 +1,16 @@
 
-from typing import Iterable, Sequence
+from typing import Iterable, Sequence, Callable, Awaitable
 
 import pytest
 
 from redditwarp.iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
-from redditwarp.iterators.call_chunk_ASYNC import CallChunk, new_call_chunk_of_sequences
+from redditwarp.iterators.call_chunk_ASYNC import CallChunk, TInput, TOutput
+
+def new_call_chunk_of_sequences(
+    operation: Callable[[Sequence[TInput]], Awaitable[Sequence[TOutput]]],
+    data: Sequence[TInput],
+) -> CallChunk[Sequence[TInput], Sequence[TOutput]]:
+    return CallChunk(operation, data)
 
 async def _f(x: Sequence[int]) -> Sequence[int]:
     return x

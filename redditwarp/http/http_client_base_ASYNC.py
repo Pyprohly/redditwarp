@@ -41,7 +41,7 @@ class HTTPClientBase:
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         return await self.session.send(request, timeout=timeout, aux_info=aux_info)
 
-    def _new_request(self,
+    def new_request(self,
         verb: str,
         uri: str,
         *,
@@ -74,7 +74,7 @@ class HTTPClientBase:
         timeout: float = -2,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
-        r = self._new_request(verb, uri, params=params, headers=headers,
+        r = self.new_request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files)
         return await self.send(r, timeout=timeout, aux_info=aux_info)
 

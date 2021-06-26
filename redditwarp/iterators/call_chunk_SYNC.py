@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, Callable, Generic, Sequence
+from typing import TypeVar, Callable, Generic
 
 TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
@@ -17,9 +17,3 @@ class CallChunk(Generic[TInput, TOutput]):
 
     def __call__(self) -> TOutput:
         return self.operation(self.data)
-
-def new_call_chunk_of_sequences(
-    operation: Callable[[Sequence[TInput]], Sequence[TOutput]],
-    data: Sequence[TInput],
-) -> CallChunk[Sequence[TInput], Sequence[TOutput]]:
-    return CallChunk(operation, data)

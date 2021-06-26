@@ -8,7 +8,7 @@ from .original_reddit_thing_object import OriginalRedditThingObject
 from ..auth.const import AUTHORIZATION_BASE_URL
 
 class CommentBase(OriginalRedditThingObject):
-    class User:
+    class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
             self.saved: bool = d['saved']  # False if no user context
@@ -97,7 +97,7 @@ class CommentBase(OriginalRedditThingObject):
             self.parent_comment_id36 = _parent_id.split('_', 1)[-1]
             self.parent_comment_id = int(self.parent_comment_id36, 36)
 
-        self.user = self.User(d)
+        self.me = self.Me(d)
 
         self.submission = self.Submission(d)
         self.subreddit = self.Subreddit(d)

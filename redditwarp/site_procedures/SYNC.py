@@ -13,7 +13,8 @@ from .user.SYNC import User
 from .account.SYNC import Account
 from .collection.SYNC import Collection
 from .flair.SYNC import Flair
-#from .flair_emoji.SYNC import FlairEmoji
+from .flair_emoji.SYNC import FlairEmoji
+from .custom_feed.SYNC import CustomFeed
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -27,4 +28,5 @@ class SiteProcedures:
         self.account = Account(client)
         self.collection = Collection(client)
         self.flair = Flair(client)
-        #self.flair_emoji = FlairEmoji(client)
+        self.flair_emoji = FlairEmoji(client)
+        self.custom_feed = CustomFeed(client)

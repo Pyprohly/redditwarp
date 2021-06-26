@@ -8,7 +8,7 @@ from .original_reddit_thing_object import OriginalRedditThingObject
 from ..auth.const import AUTHORIZATION_BASE_URL
 
 class SubmissionBase(OriginalRedditThingObject):
-    class User:
+    class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
             self.saved: bool = d['saved']  # False if no user context
@@ -119,7 +119,7 @@ class SubmissionBase(OriginalRedditThingObject):
         if 'event_start' in d:
             self.event = self.Event(d)
 
-        self.user = self.User(d)
+        self.me = self.Me(d)
 
         self.subreddit = self.Subreddit(d)
 

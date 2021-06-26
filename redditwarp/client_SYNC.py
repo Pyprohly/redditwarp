@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from .auth.typedefs import AuthorizationGrant
     from .http.payload import RequestFiles
 
-from .http.util.json_loads import json_loads_response
+from .http.util.json_load import json_loads_response
 from .http.transport.SYNC import new_session
 from .auth import Token
 from .auth.util import auto_grant_factory

@@ -1,23 +1,26 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Iterable, Sequence
+from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Any, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_SYNC import Subreddit as SubredditModel
     from ...models.comment_SYNC import NewComment
+    from ...models.subreddit_rules import SubredditRules
 
 from ...models.load.subreddit_SYNC import load_subreddit
-from .fetch_SYNC import Fetch
-from .get_SYNC import Get
-from .pull_SYNC import Pull
-from .grab_SYNC import Grab
-
+from ...models.load.subreddit_rules import load_subreddit_rules
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
 from ...iterators.paginators.listing.comment_listing_paginator import CommentListingPaginator
+from ...exceptions import NoResultException, HTTPStatusError
+from ...http.util.json_load import json_loads_response
+from .fetch_SYNC import Fetch
+from .get_SYNC import Get
+from .pull_SYNC import Pull
+from .grab_SYNC import Grab
 
 class Subreddit:
     def __init__(self, client: Client):
@@ -45,5 +48,59 @@ class Subreddit:
     def submit(self) -> None:
         ...
 
-    def subscribe(self) -> None:
-        ...
+    def get_settings(self, sr: str) -> Mapping[str, Any]:
+        root = self._client.request('GET', f'/r/{sr}/about/edit')
+        if root['kind'] != 'subreddit_settings':
+            raise NoResultException('target not found')
+        return root['data']
+
+    def update_settings(self, data: Mapping[str, Any]) -> None:
+        self._client.request('PATCH', '/api/v1/subreddit/update_settings', json=data)
+
+    def DEFUNCT__trending_subreddit_names(self) -> Sequence[str]:
+        req = self._client.http.session.make_request('GET', 'https://reddit.com/api/trending_subreddits.json')
+        resp = self._client.http.send(req)
+        jdata = json_loads_response(resp)
+        return jdata['subreddit_names']
+
+    def subscribe_by_name(self, sr: str) -> None:
+        self._client.request('POST', '/api/subscribe', data={
+                'action': 'sub', 'sr_name': sr})
+
+    def subscribe_by_id(self, idn: int) -> None:
+        id36 = to_base36(idn)
+        full_id36 = 't5_' + id36
+        self._client.request('POST', '/api/subscribe', data={
+                'action': 'sub', 'sr': full_id36})
+
+    def unsubscribe_by_name(self, sr: str) -> None:
+        self._client.request('POST', '/api/subscribe', data={
+                'action': 'unsub', 'sr_name': sr})
+
+    def unsubscribe_by_id(self, idn: int) -> None:
+        id36 = to_base36(idn)
+        full_id36 = 't5_' + id36
+        self._client.request('POST', '/api/subscribe', data={
+                'action': 'unsub', 'sr': full_id36})
+
+    def get_rules(self, sr: str) -> SubredditRules:
+        root = self._client.request('GET', f'/r/{sr}/about/rules')
+        if 'rules' not in root:
+            raise NoResultException('target not found')
+        return load_subreddit_rules(root)
+
+    def get_post_requirements(self, sr: str) -> Mapping[str, Any]:
+        return self._client.request('GET', f'/api/v1/{sr}/post_requirements')
+
+    def search_reddit_names(self, query: str) -> Sequence[str]:
+        root = self._client.request('GET', '/api/search_reddit_names', params={'query': query})
+        return root['names']
+
+    def subreddit_name_exists(self, name: str) -> bool:
+        try:
+            self._client.request('GET', '/api/search_reddit_names', params={'query': name, 'exact': '1'})
+        except HTTPStatusError as e:
+            if e.response.status == 404:
+                return False
+            raise
+        return True
