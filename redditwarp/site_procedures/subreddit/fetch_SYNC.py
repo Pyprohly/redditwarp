@@ -26,9 +26,3 @@ class Fetch:
         if children := root['data']['children']:
             return load_subreddit(children[0]['data'], self._client)
         raise NoResultException('target not found')
-
-    def by_name(self, name: str) -> Subreddit:
-        root = self._client.request('GET', f'/r/{name}/about')
-        if root['kind'] == 'Listing':
-            raise NoResultException('target not found')
-        return load_subreddit(root['data'], self._client)

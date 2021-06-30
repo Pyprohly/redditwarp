@@ -359,3 +359,25 @@ def test_has_next() -> None:
 '''
         next(p)
         assert not p.has_next()
+
+def test_dist_none_value() -> None:
+    p = MyListingPaginator(client, '')
+    assert p.count == 0
+
+    http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": null,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": "a"
+    }
+}
+'''
+    result = next(p)
+    assert len(result) == 2
+    assert p.count == 2

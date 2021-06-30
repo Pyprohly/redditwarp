@@ -367,3 +367,26 @@ async def test_has_next() -> None:
 '''
         await p.__anext__()
         assert not p.has_next()
+
+@pytest.mark.asyncio
+async def test_dist_none_value() -> None:
+    p = MyListingAsyncPaginator(client, '')
+    assert p.count == 0
+
+    http.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": null,
+        "children": [
+            {"name": "a"},
+            {"name": "b"}
+        ],
+        "after": "b",
+        "before": "a"
+    }
+}
+'''
+    result = await p.__anext__()
+    assert len(result) == 2
+    assert p.count == 2

@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 
 from ...models.load.subreddit_SYNC import load_subreddit
 from ...util.base_conversion import to_base36
-from ... import exceptions
 
 class Get:
     def __init__(self, client: Client):
@@ -26,22 +25,3 @@ class Get:
         if children := root['data']['children']:
             return load_subreddit(children[0]['data'], self._client)
         return None
-
-    def by_name(self, name: str) -> Optional[Subreddit]:
-        try:
-            root = self._client.request('GET', f'/r/{name}/about')
-        except (
-            # A special subreddit name (`all`, `popular`, `friends`, `mod`) was specified.
-            exceptions.HTTPStatusError,
-            # Name contained invalid characters.
-            exceptions.UnacceptableHTMLDocumentReceivedError,
-        ) as e:
-            if e.response.status == 404:
-                return None
-            raise
-
-        if root['kind'] != 't5':
-            # The subreddit was not found.
-            return None
-
-        return load_subreddit(root['data'], self._client)

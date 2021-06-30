@@ -15,7 +15,7 @@ from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
 from ...iterators.paginators.listing.comment_listing_paginator import CommentListingPaginator
-from ...exceptions import NoResultException, HTTPStatusError
+from ... import exceptions
 from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
@@ -29,6 +29,31 @@ class Subreddit:
         self.fetch = Fetch(client)
         self.pull = Pull(client)
         self.grab = Grab(client)
+
+    def get_by_name(self, name: str) -> Optional[SubredditModel]:
+        try:
+            root = self._client.request('GET', f'/r/{name}/about')
+        except (
+            # A special subreddit name (`all`, `popular`, `friends`, `mod`) was specified.
+            exceptions.HTTPStatusError,
+            # Name contained invalid characters.
+            exceptions.UnacceptableHTMLDocumentReceivedError,
+        ) as e:
+            if e.response.status == 404:
+                return None
+            raise
+
+        if root['kind'] != 't5':
+            # The subreddit was not found.
+            return None
+
+        return load_subreddit(root['data'], self._client)
+
+    def fetch_by_name(self, name: str) -> SubredditModel:
+        root = self._client.request('GET', f'/r/{name}/about')
+        if root['kind'] == 'Listing':
+            raise exceptions.NoResultException('target not found')
+        return load_subreddit(root['data'], self._client)
 
     def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[int, SubredditModel]:
         def mass_fetch(ids: Sequence[int]) -> Sequence[SubredditModel]:
@@ -51,7 +76,7 @@ class Subreddit:
     def get_settings(self, sr: str) -> Mapping[str, Any]:
         root = self._client.request('GET', f'/r/{sr}/about/edit')
         if root['kind'] != 'subreddit_settings':
-            raise NoResultException('target not found')
+            raise exceptions.NoResultException('target not found')
         return root['data']
 
     def update_settings(self, data: Mapping[str, Any]) -> None:
@@ -86,7 +111,7 @@ class Subreddit:
     def get_rules(self, sr: str) -> SubredditRules:
         root = self._client.request('GET', f'/r/{sr}/about/rules')
         if 'rules' not in root:
-            raise NoResultException('target not found')
+            raise exceptions.NoResultException('target not found')
         return load_subreddit_rules(root)
 
     def get_post_requirements(self, sr: str) -> Mapping[str, Any]:
@@ -99,7 +124,7 @@ class Subreddit:
     def subreddit_name_exists(self, name: str) -> bool:
         try:
             self._client.request('GET', '/api/search_reddit_names', params={'query': name, 'exact': '1'})
-        except HTTPStatusError as e:
+        except exceptions.HTTPStatusError as e:
             if e.response.status == 404:
                 return False
             raise

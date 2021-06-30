@@ -43,18 +43,14 @@ class ListingPaginator(CursorBidirectionalPaginator[T]):
         params = self._get_params()
         recv = self.client.request('GET', self.uri, params=params)
         data = recv['data']
-        self.count += data['dist']
+        self.count += dist if (dist := data['dist']) is not None else len(data['children'])
         entries = data['children']
         after = data['after']
         before = data['before']
 
         if entries:
-            self.forward_cursor = after
-            if not self.forward_cursor:
-                self.forward_cursor = self.cursor_extractor(entries[-1])
-            self.backward_cursor = before
-            if not self.backward_cursor:
-                self.backward_cursor = self.cursor_extractor(entries[0])
+            self.forward_cursor = after if after else self.cursor_extractor(entries[-1])
+            self.backward_cursor = before if before else self.cursor_extractor(entries[0])
 
         self.forward_available = bool(after)
         self.backward_available = bool(before)
