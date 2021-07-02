@@ -16,6 +16,7 @@ from .flair.SYNC import Flair
 from .flair_emoji.SYNC import FlairEmoji
 from .custom_feed.SYNC import CustomFeed
 from .live_thread.SYNC import LiveThread
+from .message.SYNC import Message
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -32,3 +33,4 @@ class SiteProcedures:
         self.flair_emoji = FlairEmoji(client)
         self.custom_feed = CustomFeed(client)
         self.live_thread = LiveThread(client)
+        self.message = Message(client)

@@ -6,9 +6,9 @@ from ..util.data_members_namespace import DataMembersNamespaceMapping
 from ..util.attribute_mapping_wrapper import PrettyPrintingAttributeMappingWrapper
 
 class FunBox:
-    """An object with fun interactive capabilities."""
+    """An object with interactive capabilities."""
 
     def __init__(self, d: Mapping[str, Any]):
+        self.d = d
         self.a = DataMembersNamespaceMapping(self)
         self.b = PrettyPrintingAttributeMappingWrapper(d)
-        self.d = d

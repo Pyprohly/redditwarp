@@ -8,6 +8,8 @@ from .original_reddit_thing_object import OriginalRedditThingObject
 from ..auth.const import AUTHORIZATION_BASE_URL
 
 class CommentBase(OriginalRedditThingObject):
+    THING_ID = 't1'
+
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -62,8 +64,6 @@ class CommentBase(OriginalRedditThingObject):
 
             self.removed: bool = d['removed']
 
-    THING_ID = 't1'
-
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.body: str = d['body']
@@ -73,7 +73,7 @@ class CommentBase(OriginalRedditThingObject):
         self.score_hidden: bool = d['score_hidden']
 
         self.rel_permalink: str = d['permalink']
-        self.permalink: str = AUTHORIZATION_BASE_URL + d['permalink']
+        self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
         a: Any = d['edited']
         self.edited = bool(a)
@@ -88,13 +88,14 @@ class CommentBase(OriginalRedditThingObject):
         self.locked: bool = d['locked']
         #: Whether the comment is collapsed by default, i.e., when it has been downvoted significantly.
         self.collapsed: bool = d['collapsed']
+        self.distinguished: str = d['distinguished'] or ''
 
         _parent_id: str = d['parent_id']
         self.is_top_level: bool = _parent_id.startswith('t3_')
         self.parent_comment_id36: Optional[str] = None
         self.parent_comment_id: Optional[int] = None
         if _parent_id.startswith('t1_'):
-            self.parent_comment_id36 = _parent_id.split('_', 1)[-1]
+            self.parent_comment_id36 = _parent_id.partition('_')[2]
             self.parent_comment_id = int(self.parent_comment_id36, 36)
 
         self.me = self.Me(d)
@@ -129,7 +130,7 @@ class NewCommentBase(CommentBase):
             self.title: str = d['link_title']
             self.author_name: str = d['link_author']
             self.rel_permalink: str = d['link_permalink']
-            self.permalink: str = AUTHORIZATION_BASE_URL + d['link_permalink']
+            self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
     class Subreddit(CommentBase.Subreddit):
         def __init__(self, d: Mapping[str, Any]):

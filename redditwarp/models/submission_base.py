@@ -114,6 +114,7 @@ class SubmissionBase(OriginalRedditThingObject):
         self.is_original_content: bool = d['is_original_content']
         self.robot_indexable: bool = d['is_robot_indexable']
         self.pinned: bool = d['pinned']
+        self.distinguished: str = d['distinguished'] or ''
 
         self.event = None
         if 'event_start' in d:

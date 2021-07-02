@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass
 from pprint import pformat
+from http import HTTPStatus
 
 from . import http
 
@@ -59,8 +60,14 @@ class HTTPStatusError(ResponseException):
 def raise_for_status(resp: Response) -> None:
     try:
         resp.raise_for_status()
-    except http.exceptions.StatusCodeException as e:
-        raise HTTPStatusError(response=resp) from e
+    except http.exceptions.StatusCodeException:
+        sts = resp.status
+        msg = str(sts)
+        try:
+            msg = f"{sts} {HTTPStatus(sts).phrase}"
+        except ValueError:
+            pass
+        raise HTTPStatusError(msg, response=resp) from None
 
 
 class ResponseContentError(ResponseException):

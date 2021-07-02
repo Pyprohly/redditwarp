@@ -65,7 +65,7 @@ class LiveThread:
         root = self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')
         return load_live_thread_update(root['data'])
 
-    def get_thread_updates(self, idt: str, amount: Optional[int] = None) -> PaginatorChainingIterator[LiveThreadUpdateListingPaginator, LiveThreadUpdate]:
+    def pull(self, idt: str, amount: Optional[int] = None) -> PaginatorChainingIterator[LiveThreadUpdateListingPaginator, LiveThreadUpdate]:
         p = LiveThreadUpdateListingPaginator(self._client, f'/live/{idt}')
         return PaginatorChainingIterator(p, amount)
 

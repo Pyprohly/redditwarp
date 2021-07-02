@@ -361,6 +361,10 @@ def test_has_next() -> None:
         assert not p.has_next()
 
 def test_dist_none_value() -> None:
+    # Example endpoints where `dist`is null:
+    #   GET /message/messages
+    #   GET /live/{thread_id}
+
     p = MyListingPaginator(client, '')
     assert p.count == 0
 
