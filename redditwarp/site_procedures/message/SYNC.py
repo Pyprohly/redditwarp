@@ -3,10 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...client_SYNC import Client
+    from ...models.message_SYNC import ComposedMessage
 
 from functools import cached_property
 
 from ...util.base_conversion import to_base36
+from ...models.load.message_SYNC import load_composed_message
 from .pull_SYNC import Pull
 
 class Message:
@@ -31,6 +33,16 @@ class Message:
         }
         self._client.request('POST', '/api/compose', data=req_data)
 
+    def reply(self, idn: int, body: str) -> ComposedMessage:
+        data = {
+            'thing_id': 't4_' + to_base36(idn),
+            'text': body,
+            'return_rtjson': '1',
+        }
+        result = self._client.request('POST', '/api/comment', data=data)
+        root = result['json']['data']['things'][0]['data']
+        return load_composed_message(root, self._client)
+
     def delete_message(self, idn: int) -> None:
         self._client.request('POST', '/api/del_msg', data={'id': 't4_' + to_base36(idn)})
 
@@ -45,6 +57,9 @@ class Message:
 
     def mark_unread_comment(self, idn: int) -> None:
         self._client.request('POST', '/api/read_message', data={'id': 't1_' + to_base36(idn)})
+
+    def mark_all_read(self) -> None:
+        self._client.request('POST', '/api/read_all_messages')
 
     def collapse_message(self, idn: int) -> None:
         self._client.request('POST', '/api/collapse_message', data={'id': 't4_' + to_base36(idn)})

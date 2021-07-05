@@ -10,6 +10,7 @@ from ...iterators.paginators.listing.mailbox_message_listing_paginator import (
     MailboxMessageListingPaginator,
     ComposedMessageListingPaginator,
     CommentMessageListingPaginator,
+    ThreadedMessagesListingPaginator,
 )
 
 class Pull:
@@ -24,8 +25,8 @@ class Pull:
         p = MailboxMessageListingPaginator(self._client, '/message/unread')
         return PaginatorChainingIterator(p, amount)
 
-    def messages(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MailboxMessageListingPaginator, MailboxMessage]:
-        p = MailboxMessageListingPaginator(self._client, '/message/messages')
+    def messages(self, amount: Optional[int] = None) -> PaginatorChainingIterator[ThreadedMessagesListingPaginator, MailboxMessage]:
+        p = ThreadedMessagesListingPaginator(self._client, '/message/messages')
         return PaginatorChainingIterator(p, amount)
 
     def sent(self, amount: Optional[int] = None) -> PaginatorChainingIterator[ComposedMessageListingPaginator, ComposedMessage]:

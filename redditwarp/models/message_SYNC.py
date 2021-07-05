@@ -6,18 +6,11 @@ if TYPE_CHECKING:
 
 from .message_base import (  # noqa: F401
     MailboxMessage as MailboxMessage,
-    ComposedMessage as ComposedMessage,
-    UserMessage as UserMessageBase,
-    SubredditMessage as SubredditMessageBase,
+    ComposedMessage as ComposedMessageBase,
     CommentMessage as CommentMessageBase,
 )
 
-class UserMessage(UserMessageBase):
-    def __init__(self, d: Mapping[str, Any], client: Client):
-        super().__init__(d)
-        self.client = client
-
-class SubredditMessage(SubredditMessageBase):
+class ComposedMessage(ComposedMessageBase):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
