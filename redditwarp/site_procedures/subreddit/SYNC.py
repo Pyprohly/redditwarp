@@ -89,24 +89,20 @@ class Subreddit:
         return jdata['subreddit_names']
 
     def subscribe_by_name(self, sr: str) -> None:
-        self._client.request('POST', '/api/subscribe', data={
-                'action': 'sub', 'sr_name': sr})
+        self._client.request('POST', '/api/subscribe', data={'action': 'sub', 'sr_name': sr})
 
     def subscribe_by_id(self, idn: int) -> None:
         id36 = to_base36(idn)
         full_id36 = 't5_' + id36
-        self._client.request('POST', '/api/subscribe', data={
-                'action': 'sub', 'sr': full_id36})
+        self._client.request('POST', '/api/subscribe', data={'action': 'sub', 'sr': full_id36})
 
     def unsubscribe_by_name(self, sr: str) -> None:
-        self._client.request('POST', '/api/subscribe', data={
-                'action': 'unsub', 'sr_name': sr})
+        self._client.request('POST', '/api/subscribe', data={'action': 'unsub', 'sr_name': sr})
 
     def unsubscribe_by_id(self, idn: int) -> None:
         id36 = to_base36(idn)
         full_id36 = 't5_' + id36
-        self._client.request('POST', '/api/subscribe', data={
-                'action': 'unsub', 'sr': full_id36})
+        self._client.request('POST', '/api/subscribe', data={'action': 'unsub', 'sr': full_id36})
 
     def get_rules(self, sr: str) -> SubredditRules:
         root = self._client.request('GET', f'/r/{sr}/about/rules')

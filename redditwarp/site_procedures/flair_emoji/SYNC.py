@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, IO, Mapping, Any, Optional
+from typing import TYPE_CHECKING, IO, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
 
@@ -8,6 +8,8 @@ from functools import cached_property
 
 from ...models.flair_emoji import SubredditFlairEmojiInventory
 from ...models.load.flair_emoji import load_flair_emoji
+from ...models.flair_emoji_upload_lease import FlairEmojiUploadLease
+from ...models.load.flair_emoji_upload_lease import load_flair_emoji_upload_lease
 from ...http.payload import guess_mimetype_from_filename
 
 class FlairEmoji:
@@ -51,21 +53,19 @@ class FlairEmoji:
                     user_enabled=user_enabled,
                     mod_only=mod_only)
 
-        def obtain_upload_lease(self, sr: str, filename: str, mimetype: Optional[str] = None) -> Mapping[str, Any]:
+        def obtain_upload_lease(self, sr: str, filename: str, mimetype: Optional[str] = None) -> FlairEmojiUploadLease:
             if mimetype is None:
                 mimetype = guess_mimetype_from_filename(filename)
             result = self._client.request('POST', f'/api/v1/{sr}/emoji_asset_upload_s3',
                     data={'filepath': filename, 'mimetype': mimetype})
-            return result['s3UploadLease']
+            return load_flair_emoji_upload_lease(result['s3UploadLease'])
 
-        def upload(self, upload_lease: Mapping[str, Any], file: IO[bytes]) -> str:
-            bucket_server_url = 'https:' + upload_lease['action']
-            data = {field['name']: field['value'] for field in upload_lease['fields']}
-            se = self._client.http.session
-            req = se.make_request('POST', bucket_server_url, data=data, files={'file': file})
-            resp = se.send(req)
+        def upload(self, upload_lease: FlairEmojiUploadLease, file: IO[bytes]) -> str:
+            sess = self._client.http.session
+            req = sess.make_request('POST', upload_lease.bucket_url, data=upload_lease.fields, files={'file': file})
+            resp = sess.send(req)
             resp.raise_for_status()
-            return data['key']
+            return upload_lease.fields['key']
 
         def add(self, sr: str, s3_key: str, name: str, *,
                 post_enabled: bool = True,

@@ -185,4 +185,4 @@ class CoreClient:
 class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
-        self.api = ...#site_procedures_ASYNC.SiteProcedures(self)
+        self.p = ...#site_procedures_ASYNC.SiteProcedures(self)

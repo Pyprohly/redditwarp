@@ -4,10 +4,10 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from .original_reddit_thing_object import OriginalRedditThingObject
 from ..auth.const import AUTHORIZATION_BASE_URL
+from .treasure_box import TreasureBox
 
-class SubmissionBase(OriginalRedditThingObject):
+class SubmissionBase(TreasureBox):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -81,10 +81,13 @@ class SubmissionBase(OriginalRedditThingObject):
             self.text_color: str = d['link_flair_text_color']
             self.type: str = d['link_flair_type']
 
-    THING_ID = 't3'
-
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
+        self.id36: str = d['id']
+        self.id = int(self.id36, 36)
+        self.created_ut = int(d['created_utc'])
+        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+
         self.title: str = d['title']
         #: Works even if score is hidden (`hide_score` JSON field is `True`).
         self.score: int = d['score']
@@ -111,7 +114,7 @@ class SubmissionBase(OriginalRedditThingObject):
         self.in_contest_mode: bool = d['contest_mode']
         self.nsfw: bool = d['over_18']
         self.crosspostable: bool = d['is_crosspostable']
-        self.is_original_content: bool = d['is_original_content']
+        self.oc: bool = d['is_original_content']
         self.robot_indexable: bool = d['is_robot_indexable']
         self.pinned: bool = d['pinned']
         self.distinguished: str = d['distinguished'] or ''

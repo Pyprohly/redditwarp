@@ -2,9 +2,11 @@
 from __future__ import annotations
 from typing import Mapping, Any, Optional
 
-from .original_reddit_thing_object import OriginalRedditThingObject
+from datetime import datetime, timezone
 
-class SubredditBase(OriginalRedditThingObject):
+from .treasure_box import TreasureBox
+
+class SubredditBase(TreasureBox):
     class Me:
         class MeFlair:
             def __init__(self, d: Mapping[str, Any]):
@@ -64,10 +66,13 @@ class SubredditBase(OriginalRedditThingObject):
             self.user_flair_position: str = d['user_flair_position']
             self.link_flair_position: str = d['link_flair_position']
 
-    THING_ID = 't5'
-
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
+        self.id36: str = d['id']
+        self.id = int(self.id36, 36)
+        self.created_ut = int(d['created_utc'])
+        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+
         self.name: str = d['display_name']
         #: One of `public`, `private`, `restricted`, `archived`,
         #: `employees_only`, `gold_only`, or `gold_restricted`.

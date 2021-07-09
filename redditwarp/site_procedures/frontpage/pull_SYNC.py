@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_SYNC import Submission
-    from ...models.original_reddit_thing_object import OriginalRedditThingObject
 
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
 from ...iterators.paginators.listing.subreddit_detail_submission_listing_paginator import SubredditDetailSubmissionListingPaginator
@@ -50,6 +49,6 @@ class Pull:
         p.time_filter = time_filter
         return PaginatorChainingIterator(p, amount)
 
-    def gilded(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, OriginalRedditThingObject]:
+    def gilded(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, object]:
         p = SubredditDetailCommentAndSubmissionListingPaginator(self._client, '/gilded')
         return PaginatorChainingIterator(p, amount)

@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Mapping, Any, Optional, Sequence
 if TYPE_CHECKING:
     from .submission_base import SubmissionBase
 
-from .funbox import FunBox
+from .treasure_box import TreasureBox
 
 from datetime import datetime, timezone
 
-class SubmissionCollectionBase(FunBox):
+class SubmissionCollectionBase(TreasureBox):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.uuid: str = d['collection_id']

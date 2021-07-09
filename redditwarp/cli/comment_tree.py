@@ -112,7 +112,7 @@ else:
 client = redditwarp.SYNC.Client.from_access_token(access_token)
 client.http.user_agent += " redditwarp.cli.comment_tree"
 
-thread = client.api.thread.fetch(int(subm_idt, base))
+thread = client.p.thread.fetch(int(subm_idt, base))
 
 subm = thread.node.value
 

@@ -2,9 +2,11 @@
 from __future__ import annotations
 from typing import Mapping, Any
 
-from .original_reddit_thing_object import OriginalRedditThingObject
+from datetime import datetime, timezone
 
-class MyAccountBase(OriginalRedditThingObject):
+from .treasure_box import TreasureBox
+
+class MyAccountBase(TreasureBox):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
@@ -18,6 +20,10 @@ class MyAccountBase(OriginalRedditThingObject):
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
+        self.id36: str = d['id']
+        self.id = int(self.id36, 36)
+        self.created_ut = int(d['created_utc'])
+        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['name']
         self.has_mail: bool = d['has_mail']
         self.has_mod_mail: bool = d['has_mod_mail']

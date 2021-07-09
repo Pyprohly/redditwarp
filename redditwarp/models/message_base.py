@@ -5,9 +5,9 @@ from typing import Mapping, Any, Optional
 from datetime import datetime, timezone
 
 from ..auth.const import AUTHORIZATION_BASE_URL
-from .funbox import FunBox
+from .treasure_box import TreasureBox
 
-class MailboxMessage(FunBox):
+class MailboxMessage(TreasureBox):
     pass
 
 class ComposedMessage(MailboxMessage):

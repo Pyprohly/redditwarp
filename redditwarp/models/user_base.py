@@ -2,9 +2,11 @@
 from __future__ import annotations
 from typing import Mapping, Any
 
-from .original_reddit_thing_object import OriginalRedditThingObject
+from datetime import datetime, timezone
 
-class UserBase(OriginalRedditThingObject):
+from .treasure_box import TreasureBox
+
+class UserBase(TreasureBox):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
@@ -16,10 +18,12 @@ class UserBase(OriginalRedditThingObject):
             self.summary_description: str = d['public_description']
             self.nsfw: bool = d['over_18']
 
-    THING_ID = 't2'
-
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
+        self.id36: str = d['id']
+        self.id = int(self.id36, 36)
+        self.created_ut = int(d['created_utc'])
+        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['name']
 
         #: Karma accumulated from posting.

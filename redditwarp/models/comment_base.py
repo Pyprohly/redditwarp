@@ -4,12 +4,10 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from .original_reddit_thing_object import OriginalRedditThingObject
 from ..auth.const import AUTHORIZATION_BASE_URL
+from .treasure_box import TreasureBox
 
-class CommentBase(OriginalRedditThingObject):
-    THING_ID = 't1'
-
+class CommentBase(TreasureBox):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -66,6 +64,11 @@ class CommentBase(OriginalRedditThingObject):
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
+        self.id36: str = d['id']
+        self.id = int(self.id36, 36)
+        self.created_ut = int(d['created_utc'])
+        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+
         self.body: str = d['body']
         self.body_html: str = d['body_html']
         #: Works even if score is hidden (`hide_score` JSON field is `True`).

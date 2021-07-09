@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import NewComment
     from ...models.submission_SYNC import Submission
-    from ...models.original_reddit_thing_object import OriginalRedditThingObject
 
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
 from ...iterators.paginators.listing.comment_listing_paginator import CommentListingPaginator
@@ -16,10 +15,10 @@ class Pull:
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, OriginalRedditThingObject]:
+    def __call__(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, object]:
         return self.overview(name, amount)
 
-    def overview(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, OriginalRedditThingObject]:
+    def overview(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, object]:
         p = SubredditDetailCommentAndSubmissionListingPaginator(self._client, f'/user/{name}/overview')
         return PaginatorChainingIterator(p, amount)
 
@@ -31,7 +30,7 @@ class Pull:
         p = CommentListingPaginator(self._client, f'/user/{name}/comments')
         return PaginatorChainingIterator(p, amount)
 
-    def gilded(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, OriginalRedditThingObject]:
+    def gilded(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, object]:
         p = SubredditDetailCommentAndSubmissionListingPaginator(self._client, f'/user/{name}/gilded')
         return PaginatorChainingIterator(p, amount)
 
@@ -47,6 +46,6 @@ class Pull:
         p = SubredditDetailSubmissionListingPaginator(self._client, f'/user/{name}/hidden')
         return PaginatorChainingIterator(p, amount)
 
-    def saved(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, OriginalRedditThingObject]:
+    def saved(self, name: str, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditDetailCommentAndSubmissionListingPaginator, object]:
         p = SubredditDetailCommentAndSubmissionListingPaginator(self._client, f'/user/{name}/saved')
         return PaginatorChainingIterator(p, amount)

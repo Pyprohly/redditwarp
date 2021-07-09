@@ -35,7 +35,7 @@ class ContinueThisThread(MoreComments):
         return MoreCommentsTreeNode(None, o.children[0].children, o.more)
 
     def get_thread(self) -> Optional[SubmissionCommentThread]:
-        return self.client.api.thread.get.by_id36(self.submission_id36, self.comment_id36)
+        return self.client.p.thread.get.by_id36(self.submission_id36, self.comment_id36)
 
     def fetch_continued_thread(self) -> SubmissionCommentThread:
         thread = self.get_thread()
@@ -64,7 +64,7 @@ class LoadMoreComments(MoreComments):
         depth: Optional[int] = None,
         limit_children: bool = False,
     ) -> MoreCommentsTreeNode:
-        return self.client.api.thread.more_children(
+        return self.client.p.thread.more_children(
             self.submission_id36,
             self.children_id36,
             sort=self.sort,
