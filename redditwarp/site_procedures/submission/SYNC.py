@@ -1,11 +1,16 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_SYNC import Submission as SubmissionModel
 
+from functools import cached_property
+
 from ...models.load.submission_SYNC import load_submission
+from ...models.media_upload_lease import MediaUploadLease
+from ...models.load.media_upload_lease import load_media_upload_lease
+from ...http.payload import guess_mimetype_from_filename
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
@@ -30,6 +35,25 @@ class Submission:
 
         return CallChunkChainingIterator(
                 CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
+
+    class _media_upload:
+        def __init__(self, outer: Submission):
+            self._client = outer._client
+
+        def obtain_upload_lease(self, filename: str, *, mimetype: Optional[str] = None) -> MediaUploadLease:
+            if mimetype is None:
+                mimetype = guess_mimetype_from_filename(filename)
+            result = self._client.request('POST', '/api/media/asset',
+                    data={'filepath': filename, 'mimetype': mimetype})
+            return load_media_upload_lease(result)
+
+        def upload(self, upload_lease: MediaUploadLease, file: IO[bytes]) -> None:
+            sess = self._client.http.session
+            req = sess.make_request('POST', upload_lease.bucket_url, data=upload_lease.fields, files={'file': file})
+            resp = sess.send(req)
+            resp.raise_for_status()
+
+    media_upload = cached_property(_media_upload)
 
     def edit_text_post_body(self, submission_id: int, text: str) -> SubmissionModel:
         data = {

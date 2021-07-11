@@ -46,33 +46,32 @@ class FlairEmoji:
         ) -> None:
             if filename is None:
                 filename = file.name
-            upload_lease = self.obtain_upload_lease(sr, filename, mimetype)
-            s3_key = self.upload(upload_lease, file)
-            self.add(sr, s3_key, name,
+            upload_lease = self.obtain_upload_lease(filename, mimetype=mimetype, sr=sr)
+            self.upload(upload_lease, file)
+            self.add(sr, upload_lease.fields['key'], name,
                     post_enabled=post_enabled,
                     user_enabled=user_enabled,
                     mod_only=mod_only)
 
-        def obtain_upload_lease(self, sr: str, filename: str, mimetype: Optional[str] = None) -> FlairEmojiUploadLease:
+        def obtain_upload_lease(self, filename: str, *, mimetype: Optional[str] = None, sr: str) -> FlairEmojiUploadLease:
             if mimetype is None:
                 mimetype = guess_mimetype_from_filename(filename)
             result = self._client.request('POST', f'/api/v1/{sr}/emoji_asset_upload_s3',
                     data={'filepath': filename, 'mimetype': mimetype})
-            return load_flair_emoji_upload_lease(result['s3UploadLease'])
+            return load_flair_emoji_upload_lease(result)
 
-        def upload(self, upload_lease: FlairEmojiUploadLease, file: IO[bytes]) -> str:
+        def upload(self, upload_lease: FlairEmojiUploadLease, file: IO[bytes]) -> None:
             sess = self._client.http.session
             req = sess.make_request('POST', upload_lease.bucket_url, data=upload_lease.fields, files={'file': file})
             resp = sess.send(req)
             resp.raise_for_status()
-            return upload_lease.fields['key']
 
-        def add(self, sr: str, s3_key: str, name: str, *,
+        def add(self, sr: str, s3_object_key: str, name: str, *,
                 post_enabled: bool = True,
                 user_enabled: bool = True,
                 mod_only: bool = False) -> None:
             data = {
-                's3_key': s3_key,
+                's3_key': s3_object_key,
                 'name': name,
                 'post_flair_allowed': '01'[post_enabled],
                 'user_flair_allowed': '01'[user_enabled],

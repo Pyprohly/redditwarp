@@ -70,9 +70,6 @@ class Subreddit:
         p = CommentListingPaginator(self._client, f'/r/{sr}/comments')
         return PaginatorChainingIterator(p, amount)
 
-    def submit(self) -> None:
-        ...
-
     def get_settings(self, sr: str) -> Mapping[str, Any]:
         root = self._client.request('GET', f'/r/{sr}/about/edit')
         if root['kind'] != 'subreddit_settings':
