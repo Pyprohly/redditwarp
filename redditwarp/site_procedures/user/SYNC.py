@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 from .get_partial_user_SYNC import GetPartialUser
 from .bulk_fetch_partial_user_SYNC import BulkFetchPartialUser
 from .pull_SYNC import Pull
+from .pull_user_subreddits_SYNC import PullUserSubreddits
 from ...models.load.user_SYNC import load_user
 from ... import exceptions
 
@@ -17,6 +18,7 @@ class User:
         self.get_partial_user = GetPartialUser(client)
         self.bulk_fetch_partial_user = BulkFetchPartialUser(client)
         self.pull = Pull(client)
+        self.pull_user_subreddits = PullUserSubreddits(client)
 
     def get_by_name(self, name: str) -> Optional[UserModel]:
         try:

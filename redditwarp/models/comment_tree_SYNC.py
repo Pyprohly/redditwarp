@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from .more_comments_SYNC import MoreComments
 
 from ..util.tree_node import GeneralTreeNode
-from .comment_SYNC import Comment
+from .comment_SYNC import Variant0Comment
 from .submission_SYNC import Submission
 
 T = TypeVar('T')
@@ -25,7 +25,7 @@ class CommentSubtreeTreeNode(ICommentSubtreeTreeNode, GeneralTreeNode[T, 'Commen
 class MoreCommentsTreeNode(CommentSubtreeTreeNode[None]):
     pass
 
-class CommentTreeNode(CommentSubtreeTreeNode[Comment]):
+class CommentTreeNode(CommentSubtreeTreeNode[Variant0Comment]):
     pass
 
 class SubmissionTreeNode(CommentSubtreeTreeNode[Submission]):

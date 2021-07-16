@@ -70,7 +70,7 @@ class CommentBase(TreasureBox):
         self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.body: str = d['body']
-        self.body_html: str = d['body_html']
+        self.body_html: str = d.get('body_html', '')
         #: Works even if score is hidden (`hide_score` JSON field is `True`).
         self.score: int = d['score']
         self.score_hidden: bool = d['score_hidden']
@@ -121,9 +121,15 @@ class CommentBase(TreasureBox):
         if 'spam' in d:
             self.mod = self.Moderator(d)
 
+class Variant0Comment(CommentBase):
+    # For: `GET /api/info`
+    pass
 
-class NewCommentBase(CommentBase):
-    # For comments originating from `/comments` or `/r/{subreddit}/comments`.
+class Variant1Comment(CommentBase):
+    # For:
+    # * `GET /comments`
+    # * `GET /r/{subreddit}/comments`
+    # * `GET /user/{name}/overview` (and others)
 
     class Submission(CommentBase.Submission):
         def __init__(self, d: Mapping[str, Any]):
@@ -139,3 +145,7 @@ class NewCommentBase(CommentBase):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
+
+class Variant2Comment(CommentBase):
+    # For: `POST /api/editusertext`
+    pass

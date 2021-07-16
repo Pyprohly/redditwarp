@@ -22,9 +22,6 @@ class AsyncPaginator(AsyncIterator[Sequence[T]], ABC):
     async def next_result(self) -> Sequence[T]:
         raise NotImplementedError
 
-    async def next_page(self) -> Sequence[T]:
-        return await self.next_result()
-
     @abstractmethod
     def has_next(self) -> bool:
         raise NotImplementedError

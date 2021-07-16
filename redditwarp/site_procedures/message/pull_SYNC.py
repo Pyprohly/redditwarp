@@ -12,10 +12,14 @@ from ...iterators.paginators.listing.mailbox_message_listing_paginator import (
     CommentMessageListingPaginator,
     ThreadedMessagesListingPaginator,
 )
+from ...util.tree_node import GeneralTreeNode
 
 class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
+
+    def __call__(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MailboxMessageListingPaginator, MailboxMessage]:
+        return self.inbox(amount)
 
     def inbox(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MailboxMessageListingPaginator, MailboxMessage]:
         p = MailboxMessageListingPaginator(self._client, '/message/inbox')
@@ -25,7 +29,7 @@ class Pull:
         p = MailboxMessageListingPaginator(self._client, '/message/unread')
         return PaginatorChainingIterator(p, amount)
 
-    def messages(self, amount: Optional[int] = None) -> PaginatorChainingIterator[ThreadedMessagesListingPaginator, MailboxMessage]:
+    def messages(self, amount: Optional[int] = None) -> PaginatorChainingIterator[ThreadedMessagesListingPaginator, GeneralTreeNode[MailboxMessage, MailboxMessage]]:
         p = ThreadedMessagesListingPaginator(self._client, '/message/messages')
         return PaginatorChainingIterator(p, amount)
 

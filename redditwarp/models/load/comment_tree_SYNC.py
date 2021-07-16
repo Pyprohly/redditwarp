@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from ..comment_tree_SYNC import MoreCommentsTreeNode, CommentTreeNode, SubmissionTreeNode
 from ..submission_comment_thread_SYNC import SubmissionCommentThread
 from ..more_comments_SYNC import ContinueThisThread, LoadMoreComments
-from .comment_SYNC import load_comment
+from .comment_SYNC import load_variant0_comment
 from .submission_SYNC import load_submission
 
 def load_more_comments(
@@ -39,7 +39,7 @@ def load_more_comments(
 
 def load_submission_comment_thread(d: Any, client: Client, sort: Optional[str]) -> SubmissionCommentThread:
     def f(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> CommentTreeNode:
-        value = load_comment(d, client)
+        value = load_variant0_comment(d, client)
         nodes = []
         more = None
 
@@ -102,7 +102,7 @@ def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optio
             continue
         data = m['data']
         id_ = data['name']
-        value = load_comment(data, client)
+        value = load_variant0_comment(data, client)
         children: List[CommentTreeNode] = []
         node = CommentTreeNode(value, children, None)
         node_lookup[id_] = node

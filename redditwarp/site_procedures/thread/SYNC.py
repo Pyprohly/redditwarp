@@ -7,13 +7,13 @@ if TYPE_CHECKING:
 
 from ...models.load.comment_tree_SYNC import load_more_children
 from .get_SYNC import Get
-from .fetch_SYNC import Fetch
+#from .fetch_SYNC import Fetch
 
 class Thread:
     def __init__(self, client: Client):
         self._client = client
         self.get = Get(client)
-        self.fetch = Fetch(self, client)
+        #self.fetch = Fetch(self, client)
 
     def more_children(self,
         submission_id36: str,

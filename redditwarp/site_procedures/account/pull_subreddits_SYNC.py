@@ -6,20 +6,27 @@ if TYPE_CHECKING:
     from ...models.subreddit_SYNC import Subreddit
 
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.subreddit_listing_paginator import SubredditListingPaginator
+from ...iterators.paginators.listing.account_pull_subreddits_sync import (
+    SubscribedListingPaginator,
+    ContributingListingPaginator,
+    ModeratingListingPaginator,
+)
 
 class PullSubreddits:
     def __init__(self, client: Client):
         self._client = client
 
-    def subscribed(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
-        p = SubredditListingPaginator(self._client, '/subreddits/mine/subscriber')
+    def subscribed(self, amount: Optional[int] = None
+            ) -> PaginatorChainingIterator[SubscribedListingPaginator, Subreddit]:
+        p = SubscribedListingPaginator(self._client, '/subreddits/mine/subscriber')
         return PaginatorChainingIterator(p, amount)
 
-    def contributing(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
-        p = SubredditListingPaginator(self._client, '/subreddits/mine/contributor')
+    def contributing(self, amount: Optional[int] = None
+            ) -> PaginatorChainingIterator[ContributingListingPaginator, Subreddit]:
+        p = ContributingListingPaginator(self._client, '/subreddits/mine/contributor')
         return PaginatorChainingIterator(p, amount)
 
-    def moderating(self, amount: Optional[int] = None) -> PaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
-        p = SubredditListingPaginator(self._client, '/subreddits/mine/moderator')
+    def moderating(self, amount: Optional[int] = None
+            ) -> PaginatorChainingIterator[ModeratingListingPaginator, Subreddit]:
+        p = ModeratingListingPaginator(self._client, '/subreddits/mine/moderator')
         return PaginatorChainingIterator(p, amount)

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from ....models.load.flair import load_user_flair_association
 from ..cursor_bidirectional_paginator import CursorBidirectionalPaginator
 
-class FlairAssociationsPaginator(CursorBidirectionalPaginator[UserFlairAssociation]):
+class UserFlairAssociationPaginator(CursorBidirectionalPaginator[UserFlairAssociation]):
     def __init__(self,
         client: Client,
         uri: str,

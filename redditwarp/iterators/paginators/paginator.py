@@ -22,9 +22,6 @@ class Paginator(Iterator[Sequence[T]], ABC):
     def next_result(self) -> Sequence[T]:
         raise NotImplementedError
 
-    def next_page(self) -> Sequence[T]:
-        return self.next_result()
-
     @abstractmethod
     def has_next(self) -> bool:
         raise NotImplementedError

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Any, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_SYNC import Subreddit as SubredditModel
-    from ...models.comment_SYNC import NewComment
+    from ...models.comment_SYNC import Variant1Comment
     from ...models.subreddit_rules import SubredditRules
 
 from ...models.load.subreddit_SYNC import load_subreddit
@@ -14,7 +14,7 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.comment_listing_paginator import CommentListingPaginator
+from ...iterators.paginators.listing.user_pull_sync import CommentListingPaginator
 from ... import exceptions
 from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch
@@ -66,7 +66,7 @@ class Subreddit:
         return CallChunkChainingIterator(
                 CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
-    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, NewComment]:
+    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, Variant1Comment]:
         p = CommentListingPaginator(self._client, f'/r/{sr}/comments')
         return PaginatorChainingIterator(p, amount)
 

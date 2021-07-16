@@ -1,14 +1,14 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Dict, Optional, Callable, Any
+from typing import TYPE_CHECKING, TypeVar, Optional, Dict, Callable, Any
 if TYPE_CHECKING:
-    from ....client_ASYNC import Client
+    from .....client_SYNC import Client
 
-from .listing_async_paginator import ListingAsyncPaginator
+from ..listing_paginator import ListingPaginator
 
 T = TypeVar('T')
 
-class SubredditDetailListingAsyncPaginator(ListingAsyncPaginator[T]):
+class Sort(ListingPaginator[T]):
     def __init__(self,
         client: Client,
         uri: str,
@@ -17,10 +17,10 @@ class SubredditDetailListingAsyncPaginator(ListingAsyncPaginator[T]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
         super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
-        self.include_sr_detail = False
+        self.sort: str = ''
 
     def _get_params(self) -> Dict[str, str]:
         params = super()._get_params()
-        if self.include_sr_detail:
-            params['sr_detail'] = '1'
+        if self.sort:
+            params['sort'] = self.sort
         return params

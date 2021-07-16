@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from .SYNC import Comment as Outer
 
-from ...models.comment_SYNC import Comment
+from ...models.comment_SYNC import Variant0Comment
 from ...util.base_conversion import to_base36
 from ...util.extract_id36_from_url import extract_comment_id36_from_url
 from ...exceptions import NoResultException
@@ -15,18 +15,18 @@ class Fetch:
         self._outer = outer
         self._client = client
 
-    def __call__(self, id: int) -> Comment:
+    def __call__(self, id: int) -> Variant0Comment:
         return self.by_id(id)
 
-    def by_id(self, id: int) -> Comment:
+    def by_id(self, id: int) -> Variant0Comment:
         id36 = to_base36(id)
         return self.by_id36(id36)
 
-    def by_id36(self, id36: str) -> Comment:
+    def by_id36(self, id36: str) -> Variant0Comment:
         v = self._outer.get.by_id36(id36)
         if v is None:
             raise NoResultException('target not found')
         return v
 
-    def by_url(self, url: str) -> Comment:
+    def by_url(self, url: str) -> Variant0Comment:
         return self.by_id36(extract_comment_id36_from_url(url))
