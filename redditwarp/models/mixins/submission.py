@@ -4,10 +4,10 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from ..auth.const import AUTHORIZATION_BASE_URL
-from .treasure_box import TreasureBox
+from ...auth.const import AUTHORIZATION_BASE_URL
+from ..treasure_box import TreasureBox
 
-class SubmissionBase(TreasureBox):
+class Submission(TreasureBox):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -145,13 +145,28 @@ class SubmissionBase(TreasureBox):
         self.flair = self.Flair(d)
 
 
-class TextPostBase(SubmissionBase):
+class LinkPost(Submission):
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        self.link_url: str = d['url_overridden_by_dest']
+
+class TextPost(Submission):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.body: str = d['selftext']
         self.body_html: str = d['selftext_html']
 
-class LinkPostBase(SubmissionBase):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
-        self.link_url: str = d['url_overridden_by_dest']
+class ImagePost(Submission):
+    pass
+
+class VideoPost(Submission):
+    pass
+
+class GalleryPost(Submission):
+    pass
+
+class PollPost(Submission):
+    pass
+
+class CrosspostPost(Submission):
+    pass

@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from dataclasses import dataclass, field
 
 from .payload import make_payload
-from .util.join_params_ import join_params
+from .util.join_params import join_params
 
 @dataclass(eq=False)
 class Request:

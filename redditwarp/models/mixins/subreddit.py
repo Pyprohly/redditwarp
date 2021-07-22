@@ -4,9 +4,9 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from .treasure_box import TreasureBox
+from ..treasure_box import TreasureBox
 
-class SubredditBase(TreasureBox):
+class Subreddit(TreasureBox):
     class Me:
         class MeFlair:
             def __init__(self, d: Mapping[str, Any]):

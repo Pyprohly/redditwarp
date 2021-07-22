@@ -29,7 +29,7 @@ class FlairEmoji:
             subreddit_id36,
         )
 
-    class _put:
+    class _create:
         def __init__(self, outer: FlairEmoji) -> None:
             self._client = outer._client
 
@@ -38,16 +38,11 @@ class FlairEmoji:
             name: str,
             file: IO[bytes],
             *,
-            filename: Optional[str] = None,
-            mimetype: Optional[str] = None,
             post_enabled: bool = True,
             user_enabled: bool = True,
             mod_only: bool = False,
         ) -> None:
-            if filename is None:
-                filename = file.name
-            upload_lease = self.obtain_upload_lease(filename, mimetype=mimetype, sr=sr)
-            self.upload(upload_lease, file)
+            upload_lease = self.upload(file, sr=sr)
             self.add(sr, upload_lease.fields['key'], name,
                     post_enabled=post_enabled,
                     user_enabled=user_enabled,
@@ -60,11 +55,16 @@ class FlairEmoji:
                     data={'filepath': filename, 'mimetype': mimetype})
             return load_flair_emoji_upload_lease(result)
 
-        def upload(self, upload_lease: FlairEmojiUploadLease, file: IO[bytes]) -> None:
+        def deposit(self, upload_lease: FlairEmojiUploadLease, file: IO[bytes]) -> None:
             sess = self._client.http.session
-            req = sess.make_request('POST', upload_lease.bucket_url, data=upload_lease.fields, files={'file': file})
+            req = sess.make_request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file})
             resp = sess.send(req)
             resp.raise_for_status()
+
+        def upload(self, file: IO[bytes], *, sr: str) -> FlairEmojiUploadLease:
+            upload_lease = self.obtain_upload_lease(file.name, sr=sr)
+            self.deposit(upload_lease, file)
+            return upload_lease
 
         def add(self, sr: str, s3_object_key: str, name: str, *,
                 post_enabled: bool = True,
@@ -79,4 +79,4 @@ class FlairEmoji:
             }
             self._client.request('POST', f'/api/v1/{sr}/emoji', data=data)
 
-    put = cached_property(_put)
+    create = cached_property(_create)

@@ -5,16 +5,16 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
 
 from ..comment_SYNC import (
-    Variant0Comment,
-    Variant1Comment,
-    Variant2Comment,
+    NormalComment,
+    ExtraSubmissionFieldsComment,
+    EditPostTextEndpointComment,
 )
 
-def load_variant0_comment(d: Mapping[str, Any], client: Client) -> Variant0Comment:
-    return Variant0Comment(d, client)
+def load_normal_comment(d: Mapping[str, Any], client: Client) -> NormalComment:
+    return NormalComment(d, client)
 
-def load_variant1_comment(d: Mapping[str, Any], client: Client) -> Variant1Comment:
-    return Variant1Comment(d, client)
+def load_extra_submission_fields_comment(d: Mapping[str, Any], client: Client) -> ExtraSubmissionFieldsComment:
+    return ExtraSubmissionFieldsComment(d, client)
 
-def load_variant2_comment(d: Mapping[str, Any], client: Client) -> Variant2Comment:
-    return Variant2Comment(d, client)
+def load_edit_post_text_endpoint_comment(d: Mapping[str, Any], client: Client) -> EditPostTextEndpointComment:
+    return EditPostTextEndpointComment(d, client)

@@ -4,21 +4,39 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from .submission_base import (
-    SubmissionBase,
-    TextPostBase,
-    LinkPostBase,
+from .mixins.submission import (
+    Submission as SubmissionMixin,
+    LinkPost as LinkPostMixin,
+    TextPost as TextPostMixin,
+    ImagePost as ImagePostMixin,
+    VideoPost as VideoPostMixin,
+    GalleryPost as GalleryPostMixin,
+    PollPost as PollPostMixin,
+    CrosspostPost as CrosspostPostMixin,
 )
 
-class Submission(SubmissionBase):
+class Submission(SubmissionMixin):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
 
-class TextPost(Submission, TextPostBase):
-    def __init__(self, d: Mapping[str, Any], client: Client):
-        super().__init__(d, client)
+class LinkPost(Submission, LinkPostMixin):
+    pass
 
-class LinkPost(Submission, LinkPostBase):
-    def __init__(self, d: Mapping[str, Any], client: Client):
-        super().__init__(d, client)
+class TextPost(Submission, TextPostMixin):
+    pass
+
+class ImagePost(Submission, ImagePostMixin):
+    pass
+
+class VideoPost(Submission, VideoPostMixin):
+    pass
+
+class GalleryPost(Submission, GalleryPostMixin):
+    pass
+
+class PollPost(Submission, PollPostMixin):
+    pass
+
+class CrosspostPost(Submission, CrosspostPostMixin):
+    pass

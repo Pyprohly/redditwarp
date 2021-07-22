@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from .SYNC import Submission as Outer
 
-from ...models.load.submission_SYNC import load_submission, try_load_textpost, try_load_linkpost
+from ...models.load.submission_SYNC import load_submission
 from ...models.submission_SYNC import Submission, LinkPost, TextPost
 from ...util.base_conversion import to_base36
 from ...util.extract_id36_from_url import extract_submission_id36_from_url
@@ -40,17 +40,17 @@ class _Common(Generic[T]):
 class Fetch(_Common[Submission]):
     class _AsTextPost(_Common[TextPost]):
         def _load_object(self, m: Mapping[str, Any]) -> TextPost:
-            v = try_load_textpost(m, self._client)
-            if v is None:
-                raise ClientRejectedResultException('the submission is not a text post')
-            return v
+            post = load_submission(m, self._client)
+            if isinstance(post, TextPost):
+                return post
+            raise ClientRejectedResultException('the submission is not a text post')
 
     class _AsLinkPost(_Common[LinkPost]):
         def _load_object(self, m: Mapping[str, Any]) -> LinkPost:
-            v = try_load_linkpost(m, self._client)
-            if v is None:
-                raise ClientRejectedResultException('the submission is not a link post')
-            return v
+            post = load_submission(m, self._client)
+            if isinstance(post, LinkPost):
+                return post
+            raise ClientRejectedResultException('the submission is not a link post')
 
     def __init__(self, outer: Outer, client: Client):
         super().__init__(client)

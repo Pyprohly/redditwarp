@@ -73,32 +73,20 @@ def raise_for_status(resp: Response) -> None:
 class ResponseContentError(ResponseException):
     """A base exception class denoting that something in the response body
     from an API request is amiss. Either an error was indicated by the API
-    or the structure is of something the client isn't prepared to handle.
+    or the structure is of something the client isn't prepared to handle,
+    so the response was rejected.
     """
 
 class UnidentifiedResponseContentError(ResponseContentError):
     """The response body contains data that the client isn't prepared to handle."""
 
     def get_default_message(self) -> str:
-        return '\\\n\n** Please file a bug report! **'
-
-class UnidentifiedJSONLayoutResponseContentError(UnidentifiedResponseContentError):
-    # Unused. This will never be raised.
-    """The response body contains JSON data that the client isn't prepared to handle."""
-
-    def __init__(self, arg: object = None, *, response: Response, json: Mapping[str, Any]):
-        super().__init__(arg=arg, response=response)
-        self.json = json
-
-    def get_default_message(self) -> str:
-        return f'\\\n{pformat(self.json)}\n\n' \
+        return '\\\n\n' \
                 '** Please file a bug report! **'
 
 
 class UnacceptableResponseContentError(ResponseContentError):
-    """The response body contains data in a format that the client doesn’t want
-    to or can't handle.
-    """
+    """The response body contains data in a format that the client can't or won't handle."""
 
     def get_default_message(self) -> str:
         return f'\\\n{self.response.data!r}\n\n' \
@@ -140,7 +128,8 @@ def raise_for_json_layout_content_error(resp: Response, data: Mapping[str, Any])
 def handle_non_json_response(resp: Response) -> Exception:
     raise_for_response_content_error(resp)
     raise_for_status(resp)
-    return UnidentifiedResponseContentError(response=resp)
+    raise UnidentifiedResponseContentError(response=resp)
+    return Exception
 
 def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
     raise_for_json_layout_content_error(resp, data)
@@ -149,24 +138,21 @@ def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
 
 
 class ApplicationException(ResponseException):
-    pass
+    """The remote API wishes to formally inform the client that a service request was carried
+    out unsuccessfully."""
 
 class RedditAPIError(ApplicationException):
-    """An error class denoting an error that was indicated in the
-    response body of an API request, occurring when the remote API
-    wishes to inform the client that a service request was carried
-    out unsuccessfully.
-    """
-
     def __init__(self,
         arg: object = None, *,
         response: Response,
         codename: str,
         detail: str,
+        field: str,
     ) -> None:
         super().__init__(arg=arg, response=response)
         self.codename = codename
         self.detail = detail
+        self.field = field
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} ({self.response})>'
@@ -187,8 +173,8 @@ class Variant1RedditAPIError(RedditAPIError):
             response=response,
             codename=codename,
             detail=detail,
+            field=fields[0] if fields else '',
         )
-        self.field = fields[0] if fields else ''
         self.fields = fields
 
     def get_default_message(self) -> str:
@@ -224,15 +210,13 @@ class Variant2RedditAPIError(RedditAPIError):
         errors: List[:class:`.RedditErrorItem`]
         """
         err = errors[0]
-        codename = err.codename
-        detail = err.detail
         super().__init__(
             arg=arg,
             response=response,
-            codename=codename,
-            detail=detail,
+            codename=err.codename,
+            detail=err.detail,
+            field=err.field,
         )
-        self.field = err.field
         self.errors = errors
 
     def __repr__(self) -> str:

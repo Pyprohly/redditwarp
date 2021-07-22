@@ -17,6 +17,7 @@ from .core.http_client_ASYNC import RedditHTTPClient
 from .core.authorizer_ASYNC import Authorizer, Authorized
 from .core.rate_limited_ASYNC import RateLimited
 from .util.praw_config import get_praw_config
+from .util.except_without_context import except_without_context
 from .exceptions import (
     raise_for_status,
     handle_non_json_response,
@@ -43,7 +44,7 @@ class CoreClient:
         http = RedditHTTPClient(session)
         token = Token(access_token)
         token_client = None
-        authorizer = Authorizer(token, token_client)
+        authorizer = Authorizer(token_client, token)
         http.authorized_requestor = Authorized(session, authorizer)
         http.requestor = RateLimited(http.authorized_requestor)
         return cls.from_http(http)
@@ -112,7 +113,7 @@ class CoreClient:
             grant,
             http.headers,
         )
-        authorizer = Authorizer(token, token_client)
+        authorizer = Authorizer(token_client, token)
         http.authorized_requestor = Authorized(session, authorizer)
         http.requestor = RateLimited(http.authorized_requestor)
         self._init(http)
@@ -154,10 +155,10 @@ class CoreClient:
 
         json_data = None
         if resp.data:
-            try:
+            with except_without_context(ValueError) as xcpt:
                 json_data = json_loads_response(resp)
-            except ValueError:
-                raise handle_non_json_response(resp) from None
+            if xcpt:
+                raise handle_non_json_response(resp)
 
             self.last_value = json_data
 

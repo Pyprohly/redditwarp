@@ -1,8 +1,8 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Any, Optional
+from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
-    from .typedefs import ClientCredentials
+    from .typedefs import ClientCredentials, AuthorizationGrant
     from ..http.requestor_ASYNC import Requestor
     from ..http.response import Response
 
@@ -21,7 +21,7 @@ from .exceptions import (
 class TokenObtainmentClient:
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials,
-            grant: Mapping[str, Optional[str]]):
+            grant: AuthorizationGrant):
         self.requestor = requestor
         self.uri = uri
         self.client_credentials = client_credentials

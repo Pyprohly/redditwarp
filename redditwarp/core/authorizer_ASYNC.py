@@ -19,11 +19,11 @@ from ..auth.grants import RefreshTokenGrant
 
 class Authorizer:
     def __init__(self,
-        token: Optional[Token],
         token_client: Optional[TokenObtainmentClient],
+        token: Optional[Token],
     ):
-        self.token = token
         self.token_client = token_client
+        self.token = token
         self.expiry_skew = 30
         self.expiry_time: Optional[int] = None
         self.expires_in_fallback: Optional[int] = None

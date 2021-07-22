@@ -5,19 +5,19 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
     from .submission_ASYNC import Submission
 
-from .submission_collection_base import (
-    SubmissionCollectionBase,
-    PrimarySubmissionCollectionBase,
+from .mixins.submission_collection import (
+    SubmissionCollection as SubmissionCollectionMixin,
+    PrimarySubmissionCollection as PrimarySubmissionCollectionMixin,
 )
 from .load.submission_ASYNC import load_submission
 
 
-class SubmissionCollection(SubmissionCollectionBase):
+class SubmissionCollection(SubmissionCollectionMixin):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
 
-class PrimarySubmissionCollection(SubmissionCollection, PrimarySubmissionCollectionBase):
+class PrimarySubmissionCollection(SubmissionCollection, PrimarySubmissionCollectionMixin):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d, client)
         self.submissions: Optional[Sequence[Submission]] = None

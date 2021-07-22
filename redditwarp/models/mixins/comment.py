@@ -4,10 +4,10 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from ..auth.const import AUTHORIZATION_BASE_URL
-from .treasure_box import TreasureBox
+from ...auth.const import AUTHORIZATION_BASE_URL
+from ..treasure_box import TreasureBox
 
-class CommentBase(TreasureBox):
+class Comment(TreasureBox):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -121,17 +121,17 @@ class CommentBase(TreasureBox):
         if 'spam' in d:
             self.mod = self.Moderator(d)
 
-class Variant0Comment(CommentBase):
+class NormalComment(Comment):
     # For: `GET /api/info`
     pass
 
-class Variant1Comment(CommentBase):
+class ExtraSubmissionFieldsComment(Comment):
     # For:
     # * `GET /comments`
     # * `GET /r/{subreddit}/comments`
     # * `GET /user/{name}/overview` (and others)
 
-    class Submission(CommentBase.Submission):
+    class Submission(Comment.Submission):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.comment_count: int = d['num_comments']
@@ -141,11 +141,11 @@ class Variant1Comment(CommentBase):
             self.rel_permalink: str = d['link_permalink']
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-    class Subreddit(CommentBase.Subreddit):
+    class Subreddit(Comment.Subreddit):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
 
-class Variant2Comment(CommentBase):
+class EditPostTextEndpointComment(Comment):
     # For: `POST /api/editusertext`
     pass

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_SYNC import Submission as SubmissionModel
@@ -36,9 +36,12 @@ class Submission:
         return CallChunkChainingIterator(
                 CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
-    class _media_upload:
+    class _upload_media:
         def __init__(self, outer: Submission):
             self._client = outer._client
+
+        def __call__(self, file: IO[bytes]) -> MediaUploadLease:
+            return self.upload(file)
 
         def obtain_upload_lease(self, filename: str, *, mimetype: Optional[str] = None) -> MediaUploadLease:
             if mimetype is None:
@@ -47,15 +50,236 @@ class Submission:
                     data={'filepath': filename, 'mimetype': mimetype})
             return load_media_upload_lease(result)
 
-        def upload(self, upload_lease: MediaUploadLease, file: IO[bytes]) -> None:
+        def deposit(self, upload_lease: MediaUploadLease, file: IO[bytes]) -> None:
             sess = self._client.http.session
-            req = sess.make_request('POST', upload_lease.bucket_url, data=upload_lease.fields, files={'file': file})
+            req = sess.make_request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file})
             resp = sess.send(req)
             resp.raise_for_status()
 
-    media_upload = cached_property(_media_upload)
+        def upload(self, file: IO[bytes]) -> MediaUploadLease:
+            upload_lease = self.obtain_upload_lease(file.name)
+            self.deposit(upload_lease, file)
+            return upload_lease
 
-    def edit_text_post_body(self, submission_id: int, text: str) -> SubmissionModel:
+    upload_media = cached_property(_upload_media)
+
+    def create_text_post(self,
+        sr: str,
+        title: str,
+        text: str,
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+    ) -> int:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('kind', 'self')
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('text', text)
+            yield ('sendreplies', '01'[reply_notifications])
+            if spoiler: yield ('spoiler', '1')
+            if nsfw: yield ('nsfw', '1')
+            if oc: yield ('original_content', '1')
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        root = self._client.request('POST', '/api/submit', data=dict(g()))
+        return int(root['json']['data']['id'], 36)
+
+    def create_link_post(self,
+        sr: str,
+        title: str,
+        url: str,
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+        #,
+        resubmit: bool = True,
+    ) -> int:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('kind', 'link')
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('url', url)
+            if resubmit: yield ('resubmit', '1')
+            yield ('sendreplies', '01'[reply_notifications])
+            if spoiler: yield ('spoiler', '1')
+            if nsfw: yield ('nsfw', '1')
+            if oc: yield ('original_content', '1')
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        root = self._client.request('POST', '/api/submit', data=dict(g()))
+        return int(root['json']['data']['id'], 36)
+
+    def create_image_post(self,
+        sr: str,
+        title: str,
+        image_url: str,
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+    ) -> int:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('kind', 'image')
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('url', image_url)
+            yield ('sendreplies', '01'[reply_notifications])
+            if spoiler: yield ('spoiler', '1')
+            if nsfw: yield ('nsfw', '1')
+            if oc: yield ('original_content', '1')
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        root = self._client.request('POST', '/api/submit', data=dict(g()))
+        return int(root['json']['data']['id'], 36)
+
+    def create_video_post(self,
+        sr: str,
+        title: str,
+        video_upload_lease: MediaUploadLease,
+        thumbnail_upload_lease: MediaUploadLease,
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+        #,
+        vgif: bool = False,
+    ) -> None:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('kind', 'videogif' if vgif else 'video')
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('url', video_upload_lease.resource_location)
+            yield ('video_poster_url', thumbnail_upload_lease.resource_location)
+            yield ('sendreplies', '01'[reply_notifications])
+            if spoiler: yield ('spoiler', '1')
+            if nsfw: yield ('nsfw', '1')
+            if oc: yield ('original_content', '1')
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        self._client.request('POST', '/api/submit', data=dict(g()))
+
+    def create_gallery_post(self,
+        sr: str,
+        title: str,
+        items: Sequence[Mapping[str, str]],
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+    ) -> int:
+        def g() -> Iterable[tuple[str, object]]:
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('items', items)
+            yield ('sendreplies', reply_notifications)
+            if spoiler: yield ('spoiler', True)
+            if nsfw: yield ('nsfw', True)
+            if oc: yield ('original_content', True)
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        root = self._client.request('POST', '/api/submit_gallery_post', json=dict(g()))
+        return int(root['json']['data']['id'][3:], 36)
+
+    def create_poll_post(self,
+        sr: str,
+        title: str,
+        text: str,
+        options: Sequence[str],
+        duration: int,
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+    ) -> int:
+        def g() -> Iterable[tuple[str, object]]:
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('text', text)
+            yield ('options', options)
+            yield ('duration', duration)
+            yield ('sendreplies', reply_notifications)
+            if spoiler: yield ('spoiler', True)
+            if nsfw: yield ('nsfw', True)
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        root = self._client.request('POST', '/api/submit_poll_post', json=dict(g()))
+        return int(root['json']['data']['id'][3:], 36)
+
+    def edit_post_text(self, submission_id: int, text: str) -> SubmissionModel:
         data = {
             'thing_id': 't3_' + to_base36(submission_id),
             'text': text,
@@ -218,12 +442,13 @@ class Submission:
         }
         self._client.request('POST', '/api/sendreplies', data=data)
 
-    def set_event_time(self, submission_id: int, start: str, end: str, tz: str) -> None:
+    def set_event_time(self, submission_id: int,
+            event_start: str, event_end: str, event_tz: str) -> None:
         data = {
             'id': 't3_' + to_base36(submission_id),
-            'event_start': start,
-            'event_end': end,
-            'event_tz': tz,
+            'event_start': event_start,
+            'event_end': event_end,
+            'event_tz': event_tz,
         }
         self._client.request('POST', '/api/event_post_time', data=data)
 

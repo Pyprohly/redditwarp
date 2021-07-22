@@ -1,5 +1,5 @@
 
-from redditwarp.http.util.join_params_ import join_params
+from redditwarp.http.util.join_params import join_params
 
 uri = 'http://example.com/asdf'
 

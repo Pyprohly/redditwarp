@@ -2,13 +2,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Any, Optional, Sequence
 if TYPE_CHECKING:
-    from .submission_base import SubmissionBase
+    from .submission import Submission
 
-from .treasure_box import TreasureBox
+from ..treasure_box import TreasureBox
 
 from datetime import datetime, timezone
 
-class SubmissionCollectionBase(TreasureBox):
+class SubmissionCollection(TreasureBox):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.uuid: str = d['collection_id']
@@ -42,8 +42,8 @@ class SubmissionCollectionBase(TreasureBox):
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
 
 
-class PrimarySubmissionCollectionBase(SubmissionCollectionBase):
-    submissions: Optional[Sequence[SubmissionBase]]
+class PrimarySubmissionCollection(SubmissionCollection):
+    submissions: Optional[Sequence[Submission]]
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)

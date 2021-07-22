@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.comment_SYNC import Variant1Comment
+    from ...models.comment_SYNC import ExtraSubmissionFieldsComment
     from ...models.submission_SYNC import Submission
 
 from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
@@ -36,7 +36,7 @@ class Pull:
 
     def comments(self, name: str, amount: Optional[int] = None, *,
             sort: str = 'new', time_filter: str = '',
-            ) -> PaginatorChainingIterator[CommentsListingPaginator, Variant1Comment]:
+            ) -> PaginatorChainingIterator[CommentsListingPaginator, ExtraSubmissionFieldsComment]:
         p = CommentsListingPaginator(self._client, f'/user/{name}/comments')
         p.sort = sort
         p.time_filter = time_filter

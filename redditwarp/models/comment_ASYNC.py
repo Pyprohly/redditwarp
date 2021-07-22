@@ -4,19 +4,23 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from . import comment_base
+from .mixins.comment import (
+    Comment as CommentMixin,
+    NormalComment as NormalCommentMixin,
+    ExtraSubmissionFieldsComment as ExtraSubmissionFieldsCommentMixin,
+    EditPostTextEndpointComment as EditPostTextEndpointCommentMixin,
+)
 
-class Variant0Comment(comment_base.Variant0Comment):
+class Comment(CommentMixin):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
 
-class Variant1Comment(comment_base.Variant1Comment):
-    def __init__(self, d: Mapping[str, Any], client: Client):
-        super().__init__(d)
-        self.client = client
+class NormalComment(Comment, NormalCommentMixin):
+    pass
 
-class Variant2Comment(comment_base.Variant2Comment):
-    def __init__(self, d: Mapping[str, Any], client: Client):
-        super().__init__(d)
-        self.client = client
+class ExtraSubmissionFieldsComment(Comment, ExtraSubmissionFieldsCommentMixin):
+    pass
+
+class EditPostTextEndpointComment(Comment, EditPostTextEndpointCommentMixin):
+    pass

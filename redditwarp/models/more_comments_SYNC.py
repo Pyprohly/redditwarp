@@ -6,10 +6,10 @@ if TYPE_CHECKING:
 
 from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
 from .comment_tree_SYNC import MoreCommentsTreeNode
-from .more_comments_base import MoreCommentsBase
 from .submission_comment_thread_SYNC import SubmissionCommentThread
+from .mixins.more_comments import MoreComments as MoreCommentsMixin
 
-class MoreComments(MoreCommentsBase):
+class MoreComments(MoreCommentsMixin):
     def __init__(self,
         submission_id36: str,
         comment_id36: str,
