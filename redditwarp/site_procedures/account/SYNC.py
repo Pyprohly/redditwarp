@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Sequence, Tuple, Mapping, Any
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.account_SYNC import MyAccount
-    from ...models.user_list_entry import UserListEntry, FriendUserListEntry
+    from ...models.user_relationship_item import UserRelationshipItem, FriendRelationshipItem
     from ...models.trophy import Trophy
     from ...models.karma_breakdown_entry import KarmaBreakdownEntry
 
@@ -12,7 +12,7 @@ from functools import cached_property
 
 from .pull_subreddits_SYNC import PullSubreddits
 from ...models.load.account_SYNC import load_account
-from ...models.load.user_list_entry import load_user_list_entry, load_friend_user_list_entry
+from ...models.load.user_relationship_item import load_user_relationship_item, load_friend_relationship_item
 from ...models.load.karma_breakdown_entry import load_karma_breakdown_entry
 from ...models.load.trophy import load_trophy
 from ... import exceptions
@@ -45,24 +45,24 @@ class Account:
         kind_data = root['data']['trophies']
         return [load_trophy(d['data']) for d in kind_data]
 
-    def get_friend(self, name: str) -> Optional[UserListEntry]:
+    def get_friend(self, name: str) -> Optional[UserRelationshipItem]:
         try:
             root = self._client.request('GET', f'/api/v1/me/friends/{name}')
         except exceptions.RedditAPIError as e:
             if e.codename == 'USER_DOESNT_EXIST':
                 return None
             raise
-        return load_user_list_entry(root)
+        return load_user_relationship_item(root)
 
-    def friends(self) -> Sequence[UserListEntry]:
+    def friends(self) -> Sequence[UserRelationshipItem]:
         root = self._client.request('GET', '/api/v1/me/friends')
         entries = root['data']['children']
-        return [load_user_list_entry(d) for d in entries]
+        return [load_user_relationship_item(d) for d in entries]
 
-    def add_friend(self, name: str, note: Optional[str] = None) -> FriendUserListEntry:
+    def add_friend(self, name: str, note: Optional[str] = None) -> FriendRelationshipItem:
         json_data = {} if note is None else {'note': note}
         root = self._client.request('PUT', f'api/v1/me/friends/{name}', json=json_data)
-        return load_friend_user_list_entry(root)
+        return load_friend_relationship_item(root)
 
     def remove_friend(self, name: str) -> bool:
         try:
@@ -73,10 +73,10 @@ class Account:
             raise
         return True
 
-    def blocked(self) -> Sequence[UserListEntry]:
+    def blocked(self) -> Sequence[UserRelationshipItem]:
         root = self._client.request('GET', '/prefs/blocked')
         entries = root['data']['children']
-        return [load_user_list_entry(d) for d in entries]
+        return [load_user_relationship_item(d) for d in entries]
 
     class _block_user:
         def __init__(self, outer: Account) -> None:
@@ -121,10 +121,10 @@ class Account:
 
     unblock_user = cached_property(_unblock_user)
 
-    def trusted(self) -> Sequence[UserListEntry]:
+    def trusted(self) -> Sequence[UserRelationshipItem]:
         root = self._client.request('GET', '/prefs/trusted')
         entries = root['data']['children']
-        return [load_user_list_entry(d) for d in entries]
+        return [load_user_relationship_item(d) for d in entries]
 
     def add_trusted_user(self, name: str) -> None:
         self._client.request('POST', '/api/add_whitelisted', params={'name': name})
@@ -132,11 +132,11 @@ class Account:
     def remove_trusted_user(self, name: str) -> None:
         self._client.request('POST', '/api/remove_whitelisted', params={'name': name})
 
-    def messaging(self) -> Tuple[Sequence[UserListEntry], Sequence[UserListEntry]]:
+    def messaging(self) -> Tuple[Sequence[UserRelationshipItem], Sequence[UserRelationshipItem]]:
         root = self._client.request('GET', '/prefs/messaging')
         blocked_entries = root[0]['data']['children']
         trusted_entries = root[1]['data']['children']
         return (
-            [load_user_list_entry(d) for d in blocked_entries],
-            [load_user_list_entry(d) for d in trusted_entries],
+            [load_user_relationship_item(d) for d in blocked_entries],
+            [load_user_relationship_item(d) for d in trusted_entries],
         )

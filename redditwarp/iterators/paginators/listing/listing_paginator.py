@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Any, Dict, Optional, Callable, Sequence, cast
+from typing import TYPE_CHECKING, TypeVar, Any, Mapping, MutableMapping, Optional, Callable, Sequence, Iterable
 if TYPE_CHECKING:
     from ....client_SYNC import Client
 
@@ -11,37 +11,40 @@ T = TypeVar('T')
 class ListingPaginator(CursorBidirectionalPaginator[T]):
     def __init__(self,
         client: Client,
-        uri: str,
+        path: str,
         *,
         limit: Optional[int] = 100,
+        params: Optional[Mapping[str, Optional[str]]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
         super().__init__()
         self.limit = limit
         self.client = client
-        self.uri = uri
+        self.path = path
+        self.params = {} if params is None else params
         self.cursor_extractor = cursor_extractor
         self.count = 0
         self.show_all = False
 
-    def _get_params(self) -> Dict[str, str]:
-        params: Dict[str, Optional[str]] = {
-            'count': str(self.count),
-            'limit': str(self.limit),
-        }
-        if self.show_all:
-            params['show'] = 'all'
-        if self.get_direction():
-            params['after'] = self.forward_cursor
-        else:
-            params['before'] = self.backward_cursor
-        remove_keys = [k for k, v in params.items() if v is None]
-        for k in remove_keys: del params[k]
-        return cast(Dict[str, str], params)
+    def _get_params(self) -> MutableMapping[str, Optional[str]]:
+        def g() -> Iterable[tuple[str, Optional[str]]]:
+            yield from self.params.items()
+            yield ('count', str(self.count))
+            yield ('limit', str(self.limit))
+            if self.show_all:
+                yield ('show', 'all')
+            if self.get_direction():
+                if self.forward_cursor:
+                    yield ('after', self.forward_cursor)
+            else:
+                if self.backward_cursor:
+                    yield ('before', self.backward_cursor)
 
-    def _fetch_data(self) -> Dict[str, Any]:
+        return dict(g())
+
+    def _fetch_data(self) -> Mapping[str, Any]:
         params = self._get_params()
-        recv = self.client.request('GET', self.uri, params=params)
+        recv = self.client.request('GET', self.path, params=params)
         data = recv['data']
         self.count += dist if (dist := data['dist']) is not None else len(data['children'])
         entries = data['children']

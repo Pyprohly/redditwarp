@@ -12,7 +12,7 @@ class Rule:
         self.description_html: str = d.get('description_html', '')
         self.short_name: str = d['short_name']
         self.violation_reason: str = d['violation_reason']
-        self.created_ut = int(d['created_ut'])
+        self.created_ut = int(d['created_utc'])
 
     @cached_property
     def created_at(self) -> datetime:
@@ -22,7 +22,10 @@ class Rule:
 class SubredditRules(Sequence[Rule]):
     def __init__(self, d: Mapping[str, Any]):
         self.d = d
-        self._rules = tuple(Rule(o) for o in d['rules'])
+        self._rules = [Rule(o) for o in d['rules']]
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._rules})'
 
     def __len__(self) -> int:
         return len(self._rules)

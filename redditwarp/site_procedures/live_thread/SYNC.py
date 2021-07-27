@@ -87,7 +87,7 @@ class LiveThread:
         invitations = [ContributorInfo(d) for d in root[0]['data']['children']]
         return ContributorsList(contributors, invitations)
 
-    def invite_contributor(self, idt: str, user: str, permissions: Iterable[str]) -> None:
+    def send_contributor_invite(self, idt: str, user: str, permissions: Iterable[str]) -> None:
         data = {
             'type': 'liveupdate_contributor_invite',
             'name': user,
@@ -98,7 +98,7 @@ class LiveThread:
     def accept_contributor_invite(self, idt: str) -> None:
         self._client.request('POST', f'/api/live/{idt}/accept_contributor_invite')
 
-    def remove_contributor_invite(self, idt: str, user_id36: int) -> None:
+    def revoke_contributor_invite(self, idt: str, user_id36: int) -> None:
         id36 = to_base36(user_id36)
         self._client.request('POST', f'/api/live/{idt}/rm_contributor_invite', data={'id': 't2_' + id36})
 

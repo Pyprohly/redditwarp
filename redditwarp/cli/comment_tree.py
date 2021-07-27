@@ -9,7 +9,7 @@ import shutil
 from collections import deque
 
 import redditwarp
-from redditwarp.models.comment_SYNC import NormalComment
+from redditwarp.models.comment_SYNC import Comment
 
 ALGO_CHOICES = {
     'iterative-depth-first-search': 'dfs',
@@ -29,27 +29,25 @@ parser._optionals.title = __import__('gettext').gettext('named arguments')
 add = parser.add_argument
 add('submission_id')
 add('--access-token', required=True)
-add('-b', '--base', type=int, default=10)
 add('-a', '--algo', '--algorithm', choices=ALGO_CHOICES, default='dfs', dest='algo', metavar='')
-add('--NormalComment-sort', '--sort', dest='comment_sort', choices=COMMENT_SORT_CHOICES)
+add('--comment-sort', '--sort', dest='comment_sort', choices=COMMENT_SORT_CHOICES)
 args = parser.parse_args()
 
 subm_idt: str = args.submission_id
 access_token: str = args.access_token
-base: int = args.base
 chosen_algo: str = args.algo
 comment_sort: str = args.comment_sort
 
 algo = ALGO_CHOICES[chosen_algo]
 if algo == 'recursive-depth-first-search':
-    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, NormalComment]]:
+    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
         def dfs(
             root: CommentSubtreeTreeNode[T],
             level: int = 0,
-        ) -> Iterator[tuple[int, NormalComment]]:
+        ) -> Iterator[tuple[int, Comment]]:
             value = root.value
 
-            if isinstance(value, NormalComment):
+            if isinstance(value, Comment):
                 yield (level, value)
 
             for child in root.children:
@@ -61,7 +59,7 @@ if algo == 'recursive-depth-first-search':
         return dfs(cast("CommentSubtreeTreeNode[object]", node))
 
 elif algo == 'dfs':
-    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, NormalComment]]:
+    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
         stack: MutableSequence[ICommentSubtreeTreeNode] = deque([node])
         levels = deque([0])
         while stack:
@@ -69,7 +67,7 @@ elif algo == 'dfs':
             level = levels.pop()
             value = node.value
 
-            if isinstance(value, NormalComment):
+            if isinstance(value, Comment):
                 yield (level, value)
 
             if node.more:
@@ -80,7 +78,7 @@ elif algo == 'dfs':
             levels.extend([level + 1] * len(children))
 
 elif algo == 'bfs':
-    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, NormalComment]]:
+    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
         level = 0
         queue: MutableSequence[ICommentSubtreeTreeNode] = deque([node])
         while queue:
@@ -97,7 +95,7 @@ elif algo == 'bfs':
                     batch.extendleft(reversed(node.children))
                     continue
 
-                if isinstance(value, NormalComment):
+                if isinstance(value, Comment):
                     yield (level, value)
 
                 queue.extend(node.children)
@@ -113,7 +111,11 @@ else:
 client = redditwarp.SYNC.Client.from_access_token(access_token)
 client.http.user_agent += " redditwarp.cli.comment_tree"
 
-thread = client.p.thread.get(int(subm_idt, base))
+idn = int(
+    subm_idt,
+    (36 if len(subm_idt) < 8 else 10),
+)
+thread = client.p.thread.get(idn)
 if thread is None:
     print('Thread not found', file=sys.stderr)
     sys.exit(1)

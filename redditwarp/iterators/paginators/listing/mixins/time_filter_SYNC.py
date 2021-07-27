@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Optional, Dict, Callable, Any
+from typing import TYPE_CHECKING, TypeVar, Optional, MutableMapping, Callable, Any
 if TYPE_CHECKING:
     from .....client_SYNC import Client
 
@@ -19,7 +19,7 @@ class TimeFilter(ListingPaginator[T]):
         super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
         self.time_filter: str = ''
 
-    def _get_params(self) -> Dict[str, str]:
+    def _get_params(self) -> MutableMapping[str, Optional[str]]:
         params = super()._get_params()
         if self.time_filter:
             params['t'] = self.time_filter

@@ -5,7 +5,7 @@ from typing import Any, Mapping, Optional
 from functools import cached_property
 from datetime import datetime, timezone
 
-class UserListEntry:
+class UserRelationshipItem:
     def __init__(self, d: Mapping[str, Any]):
         self.d = d
         _full_id36: str = d['id']
@@ -13,13 +13,20 @@ class UserListEntry:
         self.id36 = id36
         self.id = int(id36, 36)
         self.name: str = d['name']
-        self.rel_id: str = d['rel_id']
+        #self.rel_id: str = d['rel_id']
         self.added_ut = int(d['date'])
 
     @cached_property
     def added_at(self) -> datetime:
         return datetime.fromtimestamp(self.added_ut, timezone.utc)
 
-class FriendUserListEntry(UserListEntry):
+class FriendRelationshipItem(UserRelationshipItem):
     def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
         self.note: Optional[str] = d['note']
+
+class BannedUserRelationshipItem(UserRelationshipItem):
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        self.days_left: int = d['days_left']
+        self.detail: str = d['note']

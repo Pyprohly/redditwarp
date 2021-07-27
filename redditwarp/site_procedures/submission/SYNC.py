@@ -357,11 +357,11 @@ class Submission:
 
     def mark_spoiler(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
-        self._client.request('POST', '/api/markspoiler', data=data)
+        self._client.request('POST', '/api/spoiler', data=data)
 
     def unmark_spoiler(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
-        self._client.request('POST', '/api/unmarkspoiler', data=data)
+        self._client.request('POST', '/api/unspoiler', data=data)
 
     def distinguish(self, submission_id: int) -> SubmissionModel:
         data = {
