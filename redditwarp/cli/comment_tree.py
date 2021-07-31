@@ -115,7 +115,7 @@ idn = int(
     subm_idt,
     (36 if len(subm_idt) < 8 else 10),
 )
-thread = client.p.thread.get(idn)
+thread = client.p.comment_tree.get(idn)
 if thread is None:
     print('Thread not found', file=sys.stderr)
     sys.exit(1)
@@ -128,7 +128,7 @@ print(f'''\
 Submitted at {subm.created_at.astimezone().ctime()}{' *' if subm.edited else ''}
 ''')
 
-columns, lines = shutil.get_terminal_size()
+columns, _lines = shutil.get_terminal_size()
 
 for depth, comment in traversal(thread.node):
     body_text = repr(comment.body)

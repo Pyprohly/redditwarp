@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from .submission.SYNC import Submission
 from .comment.SYNC import Comment
 from .subreddit.SYNC import Subreddit
-from .thread.SYNC import Thread
+from .comment_tree.SYNC import CommentTree
 from .frontpage.SYNC import FrontPage
 from .user.SYNC import User
 from .account.SYNC import Account
@@ -25,7 +25,7 @@ class SiteProcedures:
         self.submission = Submission(client)
         self.comment = Comment(client)
         self.subreddit = Subreddit(client)
-        self.thread = Thread(client)
+        self.comment_tree = CommentTree(client)
         self.frontpage = FrontPage(client)
         self.user = User(client)
         self.account = Account(client)

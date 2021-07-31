@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_comment_thread_SYNC import SubmissionCommentThread
-    from .SYNC import Thread as Outer
+    from .SYNC import CommentTree as Outer
 
 from ...util.base_conversion import to_base36
 from ...exceptions import NoResultException
