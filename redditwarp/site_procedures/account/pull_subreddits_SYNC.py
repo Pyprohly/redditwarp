@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_SYNC import Subreddit
 
-from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.account_pull_subreddits_sync import (
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.listing.account_pull_subreddits_sync import (
     SubscribedListingPaginator,
     ContributingListingPaginator,
     ModeratingListingPaginator,

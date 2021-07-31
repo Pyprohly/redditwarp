@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_SYNC import Submission
 
-from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.frontpage_pull_sync import (
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.listing.frontpage_pull_sync import (
     BestListingPaginator,
     HotListingPaginator,
     NewListingPaginator,

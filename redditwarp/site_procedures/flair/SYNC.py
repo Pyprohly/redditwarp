@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.flair import Variant2FlairTemplate, Variant1FlairTemplate, FlairChoices, UserFlairAssociation
-    from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-    from ...iterators.paginators.flair.user_flair_association_paginator import UserFlairAssociationPaginator
+    from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+    from ...paginators.flair.user_flair_association_paginator import UserFlairAssociationPaginator
 
 import csv
 from io import StringIO

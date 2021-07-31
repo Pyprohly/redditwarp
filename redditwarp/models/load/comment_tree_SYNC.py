@@ -119,7 +119,8 @@ def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optio
             try:
                 node_lookup[parent_id].more = more
             except KeyError:
-                assert root_more is None
+                if root_more is not None:
+                    raise Exception
                 root_more = more
         else:
             id_ = data['name']

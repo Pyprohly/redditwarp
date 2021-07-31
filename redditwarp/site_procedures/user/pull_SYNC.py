@@ -6,8 +6,8 @@ if TYPE_CHECKING:
     from ...models.comment_SYNC import ExtraSubmissionFieldsComment
     from ...models.submission_SYNC import Submission
 
-from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.user_pull_sync import (
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.listing.user_pull_sync import (
     OverviewListingPaginator,
     CommentsListingPaginator,
     SubmittedListingPaginator,

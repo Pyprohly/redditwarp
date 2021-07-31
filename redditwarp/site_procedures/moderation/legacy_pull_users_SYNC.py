@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 
 from operator import itemgetter
 
-from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.subreddit_pull_users_sync import (
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.listing.subreddit_pull_users_sync import (
     UserRelationshipItemListingPaginator,
     BannedUserRelationshipItemListingPaginator,
 )

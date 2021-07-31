@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 
 from .pull_SYNC import Pull
 
-from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.user_pull_sync import CommentListingPaginator
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.listing.user_pull_sync import CommentListingPaginator
 
 class FrontPage:
     def __init__(self, client: Client):

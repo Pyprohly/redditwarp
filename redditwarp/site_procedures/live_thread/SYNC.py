@@ -11,8 +11,8 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...util.base_conversion import to_base36
-from ...iterators.paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...iterators.paginators.listing.live_thread_update_listing_paginator import LiveThreadUpdateListingPaginator
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.listing.live_thread_update_listing_paginator import LiveThreadUpdateListingPaginator
 from ... import exceptions
 
 class LiveThread:
