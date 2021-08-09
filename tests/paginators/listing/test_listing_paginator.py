@@ -1,7 +1,7 @@
 
 from typing import Sequence, Any, Optional, Mapping, Callable
 from redditwarp.client_SYNC import Client
-from redditwarp.core.http_client_SYNC import RedditHTTPClient
+from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
 from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response

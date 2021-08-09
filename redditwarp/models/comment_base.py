@@ -4,18 +4,16 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from ...auth.const import AUTHORIZATION_BASE_URL
-from ..treasure_box import TreasureBox
+from ..auth.const import AUTHORIZATION_BASE_URL
+from .treasure_box import TreasureBox
 
-class Submission(TreasureBox):
+class Comment(TreasureBox):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
             self.saved: bool = d['saved']  # False if no user context
-            self.hidden: bool = d['hidden']  # False if no user context
             self.reply_notifications: bool = d['send_replies']  # False if no user context
             self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
-            self.is_following_event: bool = d.get('is_followed', False)  # False if no user context
 
     class Author:
         class AuthorFlair:
@@ -37,16 +35,19 @@ class Submission(TreasureBox):
             self.has_premium: bool = d['author_premium']
             self.flair = self.AuthorFlair(d)
 
+    class Submission:
+        def __init__(self, d: Mapping[str, Any]):
+            self.id36: str = d['link_id'].split('_', 1)[-1]
+            self.id = int(self.id36, 36)
+
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
             self.name: str = d['subreddit']
             #: One of `public`, `private`, `restricted`, `archived`,
-            #: `employees_only`, `gold_only`, or `gold_restricted`.
+            #: `employees_only`, `gold_only`, `gold_restricted`, `user`.
             self.type: str = d['subreddit_type']
-            self.quarantined: bool = d['quarantine']
-            self.subscriber_count: int = d['subreddit_subscribers']
 
     class Moderator:
         def __init__(self, d: Mapping[str, Any]):
@@ -60,26 +61,6 @@ class Submission(TreasureBox):
                 self.approved_at = datetime.fromtimestamp(self.approved_ut, timezone.utc)
 
             self.removed: bool = d['removed']
-            self.removed_by: Optional[str] = d['removed_by']
-
-    class Event:
-        def __init__(self, d: Mapping[str, Any]):
-            self.start_ut = int(d['event_start'])
-            self.start_at = datetime.fromtimestamp(self.start_ut, timezone.utc)
-            self.end_ut = int(d['event_end'])
-            self.end_at = datetime.fromtimestamp(self.end_ut, timezone.utc)
-            self.is_live: bool = d['event_is_live']
-
-    class Flair:
-        def __init__(self, d: Mapping[str, Any]):
-            self.has_flair: bool = d['link_flair_text'] is not None
-            self.bg_color: str = d['link_flair_background_color']
-            _link_flair_css_class_temp: Optional[str] = d['link_flair_css_class']
-            self.css_class: str = _link_flair_css_class_temp or ''
-            self.template_uuid: Optional[str] = d.get('link_flair_template_id', None)
-            self.text: str = d['link_flair_text'] or ''
-            self.text_color: str = d['link_flair_text_color']
-            self.type: str = d['link_flair_type']
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
@@ -88,14 +69,14 @@ class Submission(TreasureBox):
         self.created_ut = int(d['created_utc'])
         self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
-        self.title: str = d['title']
+        self.body: str = d['body']
+        self.body_html: str = d.get('body_html', '')
         #: Works even if score is hidden (`hide_score` JSON field is `True`).
         self.score: int = d['score']
-        self.score_hidden: bool = d['hide_score']
-        self.comment_count: int = d['num_comments']
+        self.score_hidden: bool = d['score_hidden']
 
         self.rel_permalink: str = d['permalink']
-        self.permalink: str = AUTHORIZATION_BASE_URL + d['permalink']
+        self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
         a: Any = d['edited']
         self.edited = bool(a)
@@ -104,27 +85,25 @@ class Submission(TreasureBox):
         if self.edited_ut is not None:
             self.edited_at = datetime.fromtimestamp(self.edited_ut, timezone.utc)
 
-        self.upvote_ratio: float = d['upvote_ratio']
-        self.removal_category: Optional[str] = d['removed_by_category']
-        #: One of None, `confidence` (best), `top`, `new`, `controversial`, `old`, `qa`.
-        self.suggested_sort: Optional[str] = d['suggested_sort']
+        self.is_submitter: bool = d['is_submitter']
         self.stickied: bool = d['stickied']
         self.archived: bool = d['archived']
         self.locked: bool = d['locked']
-        self.in_contest_mode: bool = d['contest_mode']
-        self.nsfw: bool = d['over_18']
-        self.crosspostable: bool = d['is_crosspostable']
-        self.oc: bool = d['is_original_content']
-        self.robot_indexable: bool = d['is_robot_indexable']
-        self.pinned: bool = d['pinned']
+        #: Whether the comment is collapsed by default, i.e., when it has been downvoted significantly.
+        self.collapsed: bool = d['collapsed']
         self.distinguished: str = d['distinguished'] or ''
 
-        self.event = None
-        if 'event_start' in d:
-            self.event = self.Event(d)
+        _parent_id: str = d['parent_id']
+        self.is_top_level: bool = _parent_id.startswith('t3_')
+        self.parent_comment_id36: Optional[str] = None
+        self.parent_comment_id: Optional[int] = None
+        if _parent_id.startswith('t1_'):
+            self.parent_comment_id36 = _parent_id.partition('_')[2]
+            self.parent_comment_id = int(self.parent_comment_id36, 36)
 
         self.me = self.Me(d)
 
+        self.submission = self.Submission(d)
         self.subreddit = self.Subreddit(d)
 
         s: str = d['author']
@@ -142,31 +121,31 @@ class Submission(TreasureBox):
         if 'spam' in d:
             self.mod = self.Moderator(d)
 
-        self.flair = self.Flair(d)
-
-
-class LinkPost(Submission):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
-        self.link_url: str = d['url_overridden_by_dest']
-
-class TextPost(Submission):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
-        self.body: str = d['selftext']
-        self.body_html: str = d['selftext_html']
-
-class ImagePost(Submission):
+class NormalComment(Comment):
+    # For: `GET /api/info`
     pass
 
-class VideoPost(Submission):
-    pass
+class ExtraSubmissionFieldsComment(Comment):
+    # For:
+    # * `GET /comments`
+    # * `GET /r/{subreddit}/comments`
+    # * `GET /user/{name}/overview` (and others)
 
-class GalleryPost(Submission):
-    pass
+    class Submission(Comment.Submission):
+        def __init__(self, d: Mapping[str, Any]):
+            super().__init__(d)
+            self.comment_count: int = d['num_comments']
+            self.nsfw: bool = d['over_18']
+            self.title: str = d['link_title']
+            self.author_name: str = d['link_author']
+            self.rel_permalink: str = d['link_permalink']
+            self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-class PollPost(Submission):
-    pass
+    class Subreddit(Comment.Subreddit):
+        def __init__(self, d: Mapping[str, Any]):
+            super().__init__(d)
+            self.quarantined: bool = d['quarantine']
 
-class CrosspostPost(Submission):
+class EditPostTextEndpointComment(Comment):
+    # For: `POST /api/editusertext`
     pass

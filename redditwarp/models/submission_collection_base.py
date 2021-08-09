@@ -2,9 +2,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Any, Optional, Sequence
 if TYPE_CHECKING:
-    from .submission import Submission
+    from .submission_base import Submission
 
-from ..treasure_box import TreasureBox
+from .treasure_box import TreasureBox
 
 from datetime import datetime, timezone
 

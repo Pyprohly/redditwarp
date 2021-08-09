@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from .mixins.user import (
+from .user_base import (
     User as UserMixin,
 )
 

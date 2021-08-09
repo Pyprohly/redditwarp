@@ -32,7 +32,7 @@ import signal
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport
 from redditwarp.auth.SYNC import TokenRevocationClient
-from redditwarp.http.components.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
+from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:

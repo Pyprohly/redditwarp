@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 import collections
 
-from .requestor_decorator_ASYNC import RequestorDecorator
+from ..requestor_decorator_ASYNC import RequestorDecorator
 
 class RecordResponses(RequestorDecorator):
     def __init__(self, requestor: Requestor) -> None:

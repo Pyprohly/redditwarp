@@ -113,7 +113,6 @@ class Submission:
         event_start: str = '',
         event_end: str = '',
         event_tz: str = '',
-        #,
         resubmit: bool = True,
     ) -> int:
         def g() -> Iterable[tuple[str, str]]:
@@ -187,7 +186,6 @@ class Submission:
         event_start: str = '',
         event_end: str = '',
         event_tz: str = '',
-        #,
         vgif: bool = False,
     ) -> None:
         def g() -> Iterable[tuple[str, str]]:

@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any, Optional, Mapping, MutableMapping, MutableSequence
-    from ..http.session_base_SYNC import SessionBase
-    from .authorizer_SYNC import Authorizer, Authorized
+    from ..http.session_base_ASYNC import SessionBase
+    from .authorizer_ASYNC import Authorizer, Authorized
     from ..http.response import Response
-    from ..http.requestor_SYNC import Requestor
 
 import sys
 import collections
@@ -17,10 +16,10 @@ from .. import http
 from ..auth.exceptions import raise_for_resource_server_response
 from .exceptions import handle_auth_response_exception
 from ..http.request import Request
-from ..http.http_client_base_SYNC import HTTPClientBase
-from ..http.transport.SYNC import transport_info_registry
+from ..http.http_client_ASYNC import HTTPClient
+from ..http.transport.ASYNC import transport_info_registry
 
-class RedditHTTPClient(HTTPClientBase):
+class RedditHTTPClient(HTTPClient):
     DEFAULT_PARAMS: Mapping[str, str] = {
         'raw_json': '1',
         'api_type': 'json',
@@ -54,19 +53,19 @@ class RedditHTTPClient(HTTPClientBase):
     ) -> None:
         params = dict(self.DEFAULT_PARAMS) if params is None else params
         super().__init__(session, params=params, headers=headers)
-        self.requestor: Requestor = session
         self.authorized_requestor: Optional[Authorized] = None
         self.user_agent = self.user_agent_start = get_user_agent(session)
         self.last_response: Optional[Response] = None
         self.last_response_queue: MutableSequence[Response] = collections.deque(maxlen=12)
+        self.timeout = 8
 
-    def send(self,
+    async def send(self,
         request: Request,
         timeout: float = -2,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         try:
-            resp = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+            resp = await super().send(request, timeout=timeout, aux_info=aux_info)
         except (
             auth.exceptions.ResponseException,
             http.exceptions.ResponseException,

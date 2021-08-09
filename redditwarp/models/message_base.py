@@ -4,8 +4,8 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from ...auth.const import AUTHORIZATION_BASE_URL
-from ..treasure_box import TreasureBox
+from ..auth.const import AUTHORIZATION_BASE_URL
+from .treasure_box import TreasureBox
 
 class MailboxMessage(TreasureBox):
     pass

@@ -10,10 +10,7 @@ from ..auth.const import TOKEN_OBTAINMENT_URL
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..exceptions import ArgInfoExceptionMixin
 
-class RootException(Exception):
-    pass
-
-class ArgInfoException(ArgInfoExceptionMixin, RootException):
+class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 

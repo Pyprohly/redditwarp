@@ -4,7 +4,7 @@ from typing import Mapping, Any
 
 from datetime import datetime, timezone
 
-from ..treasure_box import TreasureBox
+from .treasure_box import TreasureBox
 
 class MyAccount(TreasureBox):
     class Subreddit:

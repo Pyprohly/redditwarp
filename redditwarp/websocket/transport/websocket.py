@@ -45,7 +45,7 @@ class WebSocketClient(HalfImplementedWebSocketConnection):
         try:
             _, frm = self.ws.recv_data_frame(True)
         except websocket.WebSocketTimeoutException as e:
-            raise exceptions.TimeoutError from e
+            raise exceptions.TimeoutException from e
         except websocket.WebSocketConnectionClosedException as e:
             raise exceptions.ConnectionClosedException from e
         except Exception as e:
@@ -97,7 +97,7 @@ def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) 
     try:
         ws = websocket.create_connection(url, fire_cont_frame=True, timeout=t)
     except websocket.WebSocketTimeoutException:
-        raise exceptions.TimeoutError
+        raise exceptions.TimeoutException
     return WebSocketClient(ws)
 
 

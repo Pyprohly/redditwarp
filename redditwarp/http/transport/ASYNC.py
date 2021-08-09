@@ -11,9 +11,7 @@ from dataclasses import dataclass
 from ...util.imports import load_module_from_spec
 
 class NewSessionFunction(Protocol):
-    def __call__(self, *,
-        default_timeout: float = 8,
-    ) -> SessionBase:
+    def __call__(self) -> SessionBase:
         pass
 
 @dataclass
@@ -42,11 +40,9 @@ def load_transport() -> TransportInfo:
 
     return next(iter(transport_info_registry.values()))
 
-def new_session(*,
-    default_timeout: float = 8,
-) -> SessionBase:
+def new_session() -> SessionBase:
     new_session = load_transport().new_session
-    return new_session(default_timeout=default_timeout)
+    return new_session()
 
 def register(
     adaptor_module_name: str,

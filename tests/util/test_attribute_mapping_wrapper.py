@@ -54,7 +54,7 @@ def test_getattr() -> None:
     assert amw.a == 1
 
     assert type(amw.b) is MutableAttributeMappingWrapper
-    assert amw.b == {'bb': 22}
+    assert dict(amw.b) == {'bb': 22}
     assert amw.b.bb == 22
 
     with pytest.raises(AttributeError):
@@ -72,7 +72,7 @@ def test_setattr() -> None:
 
     amw.c = {'cc': 33}
     assert type(amw['c']) is dict
-    assert type(amw.c) is MutableAttributeMappingWrapper
+    assert type(amw.c).__name__ == MutableAttributeMappingWrapper.__name__
 
 def test_delattr() -> None:
     d = {'a': 1, 'b': 2, 'c': 3}

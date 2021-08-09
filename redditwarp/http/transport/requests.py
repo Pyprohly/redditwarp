@@ -84,11 +84,11 @@ class Session(SessionBase):
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         t: Optional[float] = timeout
         if timeout == -2:
-            t = self.default_timeout
+            t = self.timeout
         elif timeout == -1:
             t = None
         elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {t}')
+            raise ValueError(f'invalid timeout value: {timeout}')
 
         kwargs: MutableMapping[str, object] = {'timeout': t}
         kwargs.update(_request_kwargs(request))
@@ -96,7 +96,7 @@ class Session(SessionBase):
         try:
             response = self.session.request(**kwargs)
         except requests.exceptions.ReadTimeout as e:
-            raise exceptions.TimeoutError from e
+            raise exceptions.TimeoutException from e
         except Exception as e:
             raise exceptions.TransportError from e
 
@@ -111,15 +111,11 @@ class Session(SessionBase):
     def close(self) -> None:
         self.session.close()
 
-def new_session(*,
-    default_timeout: float = 8,
-) -> Session:
+def new_session() -> Session:
     se = requests.Session()
     retry_adapter = requests.adapters.HTTPAdapter(max_retries=3)
     se.mount('https://', retry_adapter)
-    sess = Session(se)
-    sess.default_timeout = default_timeout
-    return sess
+    return Session(se)
 
 name = requests.__name__
 version = requests.__version__

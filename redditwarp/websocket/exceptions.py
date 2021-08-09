@@ -10,13 +10,10 @@ class ArgInfoException(ArgInfoExceptionMixin, RootException):
     pass
 
 
-class NetworkError(ArgInfoException):
+class TransportError(ArgInfoException):
     pass
 
-class TransportError(NetworkError):
-    pass
-
-class TimeoutError(NetworkError):
+class TimeoutException(ArgInfoException):
     pass
 
 

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ..response import Response
 
 from ..requestor_ASYNC import Requestor
-from .requestor_decorator_ASYNC import RequestorDecorator
+from ..requestor_decorator_ASYNC import RequestorDecorator
 
 class DestinationNotEstablishedException(Exception):
     pass

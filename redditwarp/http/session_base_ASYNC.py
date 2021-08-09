@@ -13,11 +13,13 @@ from .request import make_request
 
 T = TypeVar('T')
 
+DEFAULT_TIMEOUT = 100.
+
 class SessionBase(Requestor):
     make_request = staticmethod(make_request)
 
     def __init__(self) -> None:
-        self.default_timeout: float = 60
+        self.timeout: float = DEFAULT_TIMEOUT
 
     async def __aenter__(self: T) -> T:
         return self

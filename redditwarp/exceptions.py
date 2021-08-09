@@ -10,10 +10,7 @@ from http import HTTPStatus
 
 from . import http
 
-class RootException(Exception):
-    pass
-
-class ArgInfoExceptionMixin:
+class ArgInfoExceptionMixin(Exception):
     def __init__(self, arg: object = None) -> None:
         super().__init__()
         self.arg = arg
@@ -26,7 +23,7 @@ class ArgInfoExceptionMixin:
     def get_default_message(self) -> str:
         return ''
 
-class ArgInfoException(ArgInfoExceptionMixin, RootException):
+class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 

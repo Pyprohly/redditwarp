@@ -109,7 +109,7 @@ class WebSocketClient(WebSocketConnection):
                 tv -= now - tn
                 tn = now
 
-            raise exceptions.TimeoutError
+            raise exceptions.TimeoutException
 
     async def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         if code is None:
@@ -154,7 +154,7 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
         ws = await asyncio.wait_for(coro, t)
     except asyncio.TimeoutError:
         await session.close()
-        raise exceptions.TimeoutError
+        raise exceptions.TimeoutException
 
     return WebSocketClient(ws, session)
 

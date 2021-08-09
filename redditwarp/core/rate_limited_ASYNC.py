@@ -12,7 +12,7 @@ if 0: import asyncio
 lazy_import%'asyncio'
 import time
 
-from ..http.components.requestor_decorator_ASYNC import RequestorDecorator
+from ..http.requestor_decorator_ASYNC import RequestorDecorator
 from .token_bucket import TokenBucket
 
 class RateLimited(RequestorDecorator):
@@ -28,24 +28,26 @@ class RateLimited(RequestorDecorator):
 
     async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        s = 0.
-        if self.remaining:
-            # Can't use this for rate limiting because of concurrency.
+        s: float = self.reset
+        if self.remaining > 0:
+            # Note: value not precise due to concurrency.
             s = self.reset / self.remaining
 
         tb = self._rate_limiting_tb
         async with self._lock:
-            # If the API wants us to sleep for longer than a second, do it.
-            if s > 1:
+            # If the API wants us to wait for longer than a second, oblige.
+            if s >= 1:
                 await self.sleep(s)
-
-                # Don't add any tokens for the time spent sleeping here
-                # as to have the effect of freezing the token bucket.
+                # And don't add tokens for the time spent sleeping here.
                 tb.do_consume(s)
 
+            # If not enough tokens...
             if not tb.try_consume(1):
-                await self.sleep(tb.cooldown(1))
+                # Wait until enough...
+                await self.sleep(tb.get_cooldown(1))
+                # Immediately consume...
                 tb.do_consume(1)
+                # Then proceed.
 
         self._prev_request = self._last_request
         self._last_request = time.monotonic()
@@ -61,7 +63,7 @@ class RateLimited(RequestorDecorator):
             self.remaining = int(float(headers['x-ratelimit-remaining']))
             self.used = int(headers['x-ratelimit-used'])
         elif self.reset > 0:
-            self.reset -= int(self._last_request - self._prev_request)
+            self.reset = max(0, self.reset - int(self._last_request - self._prev_request))
             self.remaining -= 1
             self.used += 1
         else:

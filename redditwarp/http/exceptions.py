@@ -6,27 +6,20 @@ if TYPE_CHECKING:
 
 from ..exceptions import ArgInfoExceptionMixin
 
-class RootException(Exception):
-    pass
-
-class ArgInfoException(ArgInfoExceptionMixin, RootException):
+class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 
-class NetworkError(ArgInfoException):
+class NetworkException(ArgInfoException):
     pass
 
-class TransportError(NetworkError):
+class TransportError(NetworkException):
     pass
 
-class TimeoutError(NetworkError):
+class TimeoutException(NetworkException):
     pass
 
-
-class HTTPException(ArgInfoException):
-    pass
-
-class ResponseException(HTTPException):
+class ResponseException(NetworkException):
     """The request completed successfully but there was an issue with the response."""
 
     def __init__(self, arg: object = None, *, response: Response) -> None:

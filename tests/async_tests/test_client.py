@@ -9,7 +9,7 @@ import pytest
 
 from redditwarp import exceptions
 from redditwarp.client_ASYNC import Client
-from redditwarp.core.http_client_ASYNC import RedditHTTPClient
+from redditwarp.core.reddit_http_client_ASYNC import RedditHTTPClient
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.response import Response
 

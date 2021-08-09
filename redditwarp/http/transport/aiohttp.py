@@ -86,17 +86,17 @@ class Session(SessionBase):
     async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
         client_timeout = aiohttp.ClientTimeout(
-            total=5*60,
+            total=timeout,
             connect=timeout,
             sock_connect=timeout,
             sock_read=timeout,
         )
         if timeout == -2:
             client_timeout = aiohttp.ClientTimeout(
-                total=5*60,
-                connect=self.default_timeout,
-                sock_connect=self.default_timeout,
-                sock_read=self.default_timeout,
+                total=self.timeout,
+                connect=self.timeout,
+                sock_connect=self.timeout,
+                sock_read=self.timeout,
             )
         elif timeout == -1:
             client_timeout = aiohttp.ClientTimeout(
@@ -115,7 +115,7 @@ class Session(SessionBase):
             async with self.session.request(**kwargs) as response:
                 content = await response.content.read()
         except asyncio.TimeoutError as e:
-            raise exceptions.TimeoutError from e
+            raise exceptions.TimeoutException from e
         except Exception as e:
             raise exceptions.TransportError from e
 
@@ -130,14 +130,10 @@ class Session(SessionBase):
     async def close(self) -> None:
         await self.session.close()
 
-def new_session(*,
-    default_timeout: float = 8,
-) -> Session:
+def new_session() -> Session:
     connector = aiohttp.TCPConnector(limit=20)
     se = aiohttp.ClientSession(connector=connector)
-    sess = Session(se)
-    sess.default_timeout = default_timeout
-    return sess
+    return Session(se)
 
 name = aiohttp.__name__
 version = aiohttp.__version__

@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
     from .submission_ASYNC import Submission
 
-from .mixins.submission_collection import (
+from .submission_collection_base import (
     SubmissionCollection as SubmissionCollectionMixin,
     PrimarySubmissionCollection as PrimarySubmissionCollectionMixin,
 )

@@ -122,8 +122,7 @@ with socket.socket() as server:
 
 assert match is not None
 query = match[1]
-dl = urllib.parse.parse_qs(query)
-response_params = {k: v[0] for k, v in dl.items()}
+response_params = dict(urllib.parse.parse_qsl(query))
 
 received_state = response_params['state']
 if received_state != state:

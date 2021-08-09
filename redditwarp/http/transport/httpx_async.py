@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from ..payload import Payload
 
 import httpx  # type: ignore[import]
-import httpcore  # type: ignore[import]
 
 from .ASYNC import register
 from ..session_base_ASYNC import SessionBase
@@ -82,36 +81,21 @@ class Session(SessionBase):
 
     async def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        client_timeout = httpx.Timeout(
-            connect=timeout,
-            read=None,
-            write=None,
-            pool=20,
-        )
+        timeout_obj = httpx.Timeout(timeout, pool=20)
         if timeout == -2:
-            client_timeout = httpx.Timeout(
-                connect=self.default_timeout,
-                read=None,
-                write=None,
-                pool=20,
-            )
+            timeout_obj = httpx.Timeout(self.timeout, pool=20)
         elif timeout == -1:
-            client_timeout = httpx.Timeout(
-                connect=None,
-                read=None,
-                write=None,
-                pool=20,
-            )
+            timeout_obj = httpx.Timeout(None, pool=20)
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {timeout}')
 
-        kwargs: MutableMapping[str, object] = {'timeout': client_timeout}
+        kwargs: MutableMapping[str, object] = {'timeout': timeout_obj}
         kwargs.update(_request_kwargs(request))
 
         try:
             response = await self.client.request(**kwargs)
-        except httpcore.TimeoutException as e:
-            raise exceptions.TimeoutError from e
+        except httpx.TimeoutException as e:
+            raise exceptions.TimeoutException from e
         except Exception as e:
             raise exceptions.TransportError from e
 
@@ -126,15 +110,11 @@ class Session(SessionBase):
     async def close(self) -> None:
         await self.client.aclose()
 
-def new_session(*,
-    default_timeout: float = 8,
-) -> Session:
+def new_session() -> Session:
     # Waiting on issue https://github.com/encode/httpx/issues/1171
     #limits = httpx.Limits(max_connections=20)
     cl = httpx.AsyncClient()#pool_limits=limits)
-    sess = Session(cl)
-    sess.default_timeout = default_timeout
-    return sess
+    return Session(cl)
 
 name = httpx.__name__
 version = httpx.__version__

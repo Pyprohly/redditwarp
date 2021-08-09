@@ -8,18 +8,18 @@ def test_init() -> None:
     assert issubclass(LingeringItemsMapping, MutableMapping)
 
     m: LingeringItemsMapping[str, int] = LingeringItemsMapping()
-    assert m == {}
+    assert dict(m) == {}
 
     d = {'a': 1}
     m = LingeringItemsMapping(d)
     d['b'] = 2
-    assert m == {'a': 1, 'b': 2}
+    assert dict(m) == {'a': 1, 'b': 2}
 
     m = LingeringItemsMapping({'a': 1})
-    assert m == {'a': 1}
+    assert dict(m) == {'a': 1}
 
     m = LingeringItemsMapping({'a': 1}, lingering_item_keys={'a'})
-    assert m == {'a': 1}
+    assert dict(m) == {'a': 1}
     assert m.lingering_item_keys == {'a'}
 
 def test_setitem() -> None:
@@ -27,18 +27,18 @@ def test_setitem() -> None:
     m['a'] = 10
     m['b'] = 20
     m['c'] = 30
-    assert m == {'a': 10, 'b': 2, 'c': 30}
+    assert dict(m) == {'a': 10, 'b': 2, 'c': 30}
     m.lingering_item_keys.remove('b')
     m['b'] = 20
-    assert m == {'a': 10, 'b': 20, 'c': 30}
+    assert dict(m) == {'a': 10, 'b': 20, 'c': 30}
 
     m = LingeringItemsMapping(lingering_item_keys={'a'})
     m['a'] = 1
-    assert m == {}
+    assert dict(m) == {}
 
 def test_delitem() -> None:
     m = LingeringItemsMapping({'a': 1, 'b': 2, 'c': 3}, {'b'})
     del m['a']
     del m['b']
     del m['c']
-    assert m == {'b': 2}
+    assert dict(m) == {'b': 2}

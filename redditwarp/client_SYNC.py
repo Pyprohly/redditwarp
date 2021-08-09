@@ -13,7 +13,7 @@ from .auth import Token
 from .auth.util import auto_grant_factory
 from .auth.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
-from .core.http_client_SYNC import RedditHTTPClient
+from .core.reddit_http_client_SYNC import RedditHTTPClient
 from .core.authorizer_SYNC import Authorizer, Authorized
 from .core.rate_limited_SYNC import RateLimited
 from .util.praw_config import get_praw_config
@@ -195,7 +195,7 @@ class CoreClient:
 
     def request(self,
         verb: str,
-        path: str,
+        uri: str,
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
@@ -205,8 +205,8 @@ class CoreClient:
         timeout: float = -2,
         aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
-        url = self.url_join(path)
-        resp = self.http.request(verb, url, params=params, headers=headers,
+        uri = self.url_join(uri)
+        resp = self.http.request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files, timeout=timeout, aux_info=aux_info)
 
         json_data = None

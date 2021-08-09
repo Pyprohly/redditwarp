@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from .mixins.comment import (
+from .comment_base import (
     Comment as CommentMixin,
     NormalComment as NormalCommentMixin,
     ExtraSubmissionFieldsComment as ExtraSubmissionFieldsCommentMixin,

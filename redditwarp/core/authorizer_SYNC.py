@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 import time
 
-from ..http.components.requestor_decorator_SYNC import RequestorDecorator
+from ..http.requestor_decorator_SYNC import RequestorDecorator
 from .exceptions import UnknownTokenType
 from ..auth.grants import RefreshTokenGrant
 

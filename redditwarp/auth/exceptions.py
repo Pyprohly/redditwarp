@@ -10,10 +10,7 @@ import re
 from .. import http
 from ..exceptions import ArgInfoExceptionMixin
 
-class RootException(Exception):
-    pass
-
-class ArgInfoException(ArgInfoExceptionMixin, RootException):
+class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 

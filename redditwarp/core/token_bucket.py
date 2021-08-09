@@ -55,7 +55,7 @@ class TokenBucket:
         self._checkpoint_time()
         self._value = 0
 
-    def cooldown(self, n: float) -> float:
+    def get_cooldown(self, n: float) -> float:
         """Return the duration the client should wait before the consume
         methods will return `True` again.
 
@@ -65,7 +65,7 @@ class TokenBucket:
             async with lock:
                 t = 3
                 if not tb.try_consume(t):
-                    await asyncio.sleep(tb.cooldown(t))
+                    await asyncio.sleep(tb.get_cooldown(t))
                     tb.do_consume(t)
         """
-        return max(0, (n - self.get_value())/self.rate)
+        return max(0, (n - self.get_value()) / self.rate)

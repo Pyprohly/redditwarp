@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
 from .comment_tree_SYNC import MoreCommentsTreeNode
 from .submission_comment_thread_SYNC import SubmissionCommentThread
-from .mixins.more_comments import MoreComments as MoreCommentsMixin
+from .more_comments_base import MoreComments as MoreCommentsMixin
 
 class MoreComments(MoreCommentsMixin):
     def __init__(self,

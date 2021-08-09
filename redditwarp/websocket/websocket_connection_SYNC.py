@@ -56,7 +56,7 @@ class WebSocketConnection:
             while tv > 0:
                 try:
                     yield from self.pulse(timeout=tv)
-                except exceptions.TimeoutError:
+                except exceptions.TimeoutException:
                     break
 
                 now = time.monotonic()
@@ -186,7 +186,7 @@ class HalfImplementedWebSocketConnection(WebSocketConnection):
         for event in self.cycle(t):
             if isinstance(event, Message):
                 return event
-        raise exceptions.TimeoutError
+        raise exceptions.TimeoutException
 
     def _send_close(self, code: Optional[int] = 1000, reason: str = '') -> None:
         data = b''

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from .mixins.submission import (
+from .submission_base import (
     Submission as SubmissionMixin,
     LinkPost as LinkPostMixin,
     TextPost as TextPostMixin,

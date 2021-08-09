@@ -81,21 +81,21 @@ class Session(SessionBase):
 
     def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        t: Optional[float] = timeout
+        timeout_obj = httpx.Timeout(timeout, pool=20)
         if timeout == -2:
-            t = self.default_timeout
+            timeout_obj = httpx.Timeout(self.timeout, pool=20)
         elif timeout == -1:
-            t = None
+            timeout_obj = httpx.Timeout(None, pool=20)
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {timeout}')
 
-        kwargs: MutableMapping[str, object] = {'timeout': t}
+        kwargs: MutableMapping[str, object] = {'timeout': timeout_obj}
         kwargs.update(_request_kwargs(request))
 
         try:
             response = self.client.request(**kwargs)
-        except httpx.ReadTimeout as e:
-            raise exceptions.TimeoutError from e
+        except httpx.TimeoutException as e:
+            raise exceptions.TimeoutException from e
         except Exception as e:
             raise exceptions.TransportError from e
 
@@ -110,13 +110,9 @@ class Session(SessionBase):
     def close(self) -> None:
         self.client.close()
 
-def new_session(*,
-    default_timeout: float = 8,
-) -> Session:
+def new_session() -> Session:
     cl = httpx.Client()
-    sess = Session(cl)
-    sess.default_timeout = default_timeout
-    return sess
+    return Session(cl)
 
 name = httpx.__name__
 version = httpx.__version__

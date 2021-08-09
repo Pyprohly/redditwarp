@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 import time
 
-from ..http.components.requestor_decorator_SYNC import RequestorDecorator
+from ..http.requestor_decorator_SYNC import RequestorDecorator
 from .token_bucket import TokenBucket
 
 class RateLimited(RequestorDecorator):
@@ -24,14 +24,14 @@ class RateLimited(RequestorDecorator):
 
     def send(self, request: Request, *, timeout: float = -2,
             aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        s = 0.
-        if self.remaining:
+        s: float = self.reset
+        if self.remaining > 0:
             s = self.reset / self.remaining
 
         h = self._burst_control_tb.hard_consume(1)
         if h and s < 1:
-            # If a token was consumed then burst this request, but only
-            # if the API didn't want us to wait for more than a second.
+            # Burst this request, but only if the API didn't
+            # want us to wait for more than a second.
             s = 0
 
         self.sleep(s)
@@ -50,7 +50,7 @@ class RateLimited(RequestorDecorator):
             self.remaining = int(float(headers['x-ratelimit-remaining']))
             self.used = int(headers['x-ratelimit-used'])
         elif self.reset > 0:
-            self.reset -= int(self._last_request - self._prev_request)
+            self.reset = max(0, self.reset - int(self._last_request - self._prev_request))
             self.remaining -= 1
             self.used += 1
         else:
