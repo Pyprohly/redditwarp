@@ -142,12 +142,6 @@ Please check <a href="http://www.redditstatus.com/">www.redditstatus.com</a> if 
                 client.request('', '')
             assert exc_info.value.arg is not None
 
-        def test_UnacceptableResponseContentError(self) -> None:
-            http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'{"jquery": {}, "success": false}')
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.UnacceptableJSONLayoutResponseContentError):
-                client.request('', '')
-
     class TestRedditAPIError:
         def test_Variant2RedditAPIError(self) -> None:
             b = b'''\

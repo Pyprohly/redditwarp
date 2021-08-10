@@ -104,13 +104,6 @@ class TestRequestExceptions:
                 await client.request('', '')
             assert exc_info.value.arg is not None
 
-        @pytest.mark.asyncio
-        async def test_UnacceptableResponseContentError(self) -> None:
-            http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'{"jquery": {}, "success": false}')
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.UnacceptableJSONLayoutResponseContentError):
-                await client.request('', '')
-
     class TestRedditAPIError:
         @pytest.mark.asyncio
         async def test_Variant2RedditAPIError(self) -> None:

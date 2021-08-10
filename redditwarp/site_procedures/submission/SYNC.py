@@ -393,7 +393,7 @@ class Submission:
         }
         self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
-    def sticky_to_profile(self, submission_id: int, slot: Optional[int] = None) -> None:
+    def pin_to_profile(self, submission_id: int, slot: Optional[int] = None) -> None:
         data = {
             'id': 't3_' + to_base36(submission_id),
             'state': '1',
@@ -403,7 +403,7 @@ class Submission:
             data['slot'] = str(slot)
         self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
-    def unsticky_from_profile(self, submission_id: int) -> None:
+    def unpin_from_profile(self, submission_id: int) -> None:
         data = {
             'id': 't3_' + to_base36(submission_id),
             'state': '0',

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from ...models.load.submission_SYNC import load_submission
 from ...models.submission_SYNC import Submission, LinkPost, TextPost
 from ...util.base_conversion import to_base36
-from ...util.extract_id36_from_url import extract_submission_id36_from_url
+from ...util.extract_id_from_url import extract_submission_id_from_url
 from ...exceptions import NoResultException, ClientRejectedResultException
 
 T = TypeVar('T')
@@ -35,7 +35,7 @@ class _Common(Generic[T]):
         raise NoResultException('target not found')
 
     def by_url(self, url: str) -> T:
-        return self.by_id36(extract_submission_id36_from_url(url))
+        return self.by_id(extract_submission_id_from_url(url))
 
 class Fetch(_Common[Submission]):
     class _AsTextPost(_Common[TextPost]):

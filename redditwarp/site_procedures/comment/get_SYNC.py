@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from ...models.load.comment_SYNC import load_normal_comment
 from ...models.comment_SYNC import NormalComment
 from ...util.base_conversion import to_base36
-from ...util.extract_id36_from_url import extract_comment_id36_from_url
+from ...util.extract_id_from_url import extract_comment_id_from_url
 
 class Get:
     def __init__(self, client: Client):
@@ -28,4 +28,4 @@ class Get:
         return None
 
     def by_url(self, url: str) -> Optional[NormalComment]:
-        return self.by_id36(extract_comment_id36_from_url(url))
+        return self.by_id(extract_comment_id_from_url(url))

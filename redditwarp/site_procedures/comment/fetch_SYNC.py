@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from ...models.comment_SYNC import NormalComment
 from ...util.base_conversion import to_base36
-from ...util.extract_id36_from_url import extract_comment_id36_from_url
+from ...util.extract_id_from_url import extract_comment_id_from_url
 from ...exceptions import NoResultException
 
 class Fetch:
@@ -29,4 +29,4 @@ class Fetch:
         return v
 
     def by_url(self, url: str) -> NormalComment:
-        return self.by_id36(extract_comment_id36_from_url(url))
+        return self.by_id(extract_comment_id_from_url(url))

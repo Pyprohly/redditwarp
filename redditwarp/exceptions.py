@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     from .http.response import Response
 
 from dataclasses import dataclass
-from pprint import pformat
 from http import HTTPStatus
 
 from . import http
@@ -77,29 +76,6 @@ class ResponseContentError(ResponseException):
 class UnidentifiedResponseContentError(ResponseContentError):
     """The response body contains data that the client isn't prepared to handle."""
 
-    def get_default_message(self) -> str:
-        return '\\\n\n' \
-                '** Please file a bug report! **'
-
-
-class UnacceptableResponseContentError(ResponseContentError):
-    """The response body contains data in a format that the client can't or won't handle."""
-
-    def get_default_message(self) -> str:
-        return f'\\\n{self.response.data!r}\n\n' \
-                '** Please file a bug report! **'
-
-class UnacceptableJSONLayoutResponseContentError(UnacceptableResponseContentError):
-    """The response body contains JSON data that the client isn't prepared to handle."""
-
-    def __init__(self, arg: object = None, *, response: Response, json: Mapping[str, Any]):
-        super().__init__(arg=arg, response=response)
-        self.json = json
-
-    def get_default_message(self) -> str:
-        return f'\\\n{pformat(self.json)}\n\n' \
-                '** Please file a bug report! **'
-
 
 class UnacceptableHTMLDocumentReceivedError(ResponseContentError):
     pass
@@ -118,10 +94,6 @@ def raise_for_response_content_error(resp: Response) -> None:
             msg = 'page not found'
         raise UnacceptableHTMLDocumentReceivedError(msg, response=resp)
 
-def raise_for_json_layout_content_error(resp: Response, data: Mapping[str, Any]) -> None:
-    if {'jquery', 'success'} <= data.keys():
-        raise UnacceptableJSONLayoutResponseContentError(response=resp, json=data)
-
 def handle_non_json_response(resp: Response) -> Exception:
     raise_for_response_content_error(resp)
     raise_for_status(resp)
@@ -129,7 +101,6 @@ def handle_non_json_response(resp: Response) -> Exception:
     return Exception
 
 def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
-    raise_for_json_layout_content_error(resp, data)
     raise_for_variant1_reddit_api_error(resp, data)
     raise_for_variant2_reddit_api_error(resp, data)
 
