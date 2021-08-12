@@ -50,7 +50,8 @@ def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
         print(v)
     return v
 
-def get_client_id(v: Optional[str]) -> str:
+def get_client_id(args: argparse.Namespace) -> str:
+    v = args.client_id_opt or args.client_id
     return get_client_cred_input('Client ID: ', 'redditwarp_client_id', v)
 
 def handle_sigint(sig: int, frame: FrameType) -> None:
@@ -61,14 +62,14 @@ signal.signal(signal.SIGINT, handle_sigint)
 
 load_transport()
 
-client_id = get_client_id(args.client_id_opt or args.client_id)
+client_id = get_client_id(args)
 scope: str = args.scope
 redirect_uri: str = args.redirect_uri
 duration: str = args.duration
 no_web_browser: bool = args.no_web_browser
 web_browser_name: str = args.web_browser_name
-state = str(uuid.uuid4())
 
+state = str(uuid.uuid4())
 browser = webbrowser.get(web_browser_name)
 
 print('\n        -~=~- Reddit OAuth2 Implicit Flow -~=~-\n')

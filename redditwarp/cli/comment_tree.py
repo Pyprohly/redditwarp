@@ -11,13 +11,13 @@ from collections import deque
 import redditwarp
 from redditwarp.models.comment_SYNC import Comment
 
-ALGO_CHOICES = {
-    'iterative-depth-first-search': 'dfs',
-    'depth-first-search': 'dfs',
+ALGORITHM_CHOICES = {
+    'iterative_depth_first_search': 'dfs',
+    'depth_first_search': 'dfs',
     'dfs': 'dfs',
-    'recursive-depth-first-search': 'recursive-depth-first-search',
-    'iterative-breadth-first-search': 'bfs',
-    'breadth-first-search': 'bfs',
+    'recursive_depth_first_search': 'recursive_depth_first_search',
+    'iterative_breadth_first_search': 'bfs',
+    'breadth_first_search': 'bfs',
     'bfs': 'bfs',
 }
 COMMENT_SORT_CHOICES = 'confidence top new controversial old random qa live'.split()
@@ -27,19 +27,21 @@ class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionH
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
 parser._optionals.title = __import__('gettext').gettext('named arguments')
 add = parser.add_argument
-add('submission_id')
-add('--access-token', required=True)
-add('-a', '--algo', '--algorithm', choices=ALGO_CHOICES, default='dfs', dest='algo', metavar='')
-add('--comment-sort', '--sort', dest='comment_sort', choices=COMMENT_SORT_CHOICES)
+add('access_token', nargs='?')
+add('target', nargs='?')
+add('--access-token', metavar='ACCESS_TOKEN', dest='access_token_opt', help=argparse.SUPPRESS)
+add('--target', metavar='TARGET', dest='target_opt', help=argparse.SUPPRESS)
+add('--algo', '--algorithm', choices=ALGORITHM_CHOICES, default='dfs', dest='algo', metavar='')
+add('--comment-sort', dest='comment_sort', choices=COMMENT_SORT_CHOICES)
 args = parser.parse_args()
 
-subm_idt: str = args.submission_id
-access_token: str = args.access_token
+access_token: str = args.access_token or args.access_token_opt or input('Access token: ')
+target: str = args.target or args.target_opt or input('Target: ')
 chosen_algo: str = args.algo
 comment_sort: str = args.comment_sort
 
-algo = ALGO_CHOICES[chosen_algo]
-if algo == 'recursive-depth-first-search':
+algo = ALGORITHM_CHOICES[chosen_algo]
+if algo == 'recursive_depth_first_search':
     def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
         def dfs(
             root: CommentSubtreeTreeNode[T],
@@ -111,26 +113,36 @@ else:
 client = redditwarp.SYNC.Client.from_access_token(access_token)
 client.http.user_agent += " redditwarp.cli.comment_tree"
 
-idn = int(
-    subm_idt,
-    (36 if len(subm_idt) < 8 else 10),
-)
-thread = client.p.comment_tree.get(idn)
-if thread is None:
-    print('Thread not found', file=sys.stderr)
+idn = 0
+length = len(target)
+if length < 8:
+    idn = int(target, 36)
+elif length < 12:
+    idn = int(target, 10)
+else:
+    idn = redditwarp.util.extract_id_from_url.extract_submission_id_from_url(target)
+
+assert idn
+
+tree = client.p.comment_tree.get(idn)
+if tree is None:
+    print('Submission not found', file=sys.stderr)
     sys.exit(1)
 
-subm = thread.node.value
+root = tree.node
+submission = m = root.value
 
 print(f'''\
-{subm.score} | {subm.title}
-<{subm.id36}> by {subm.u_author_name}
-Submitted at {subm.created_at.astimezone().ctime()}{' *' if subm.edited else ''}
+{m.permalink}
+{m.score} | {m.title}
+#({m.id36}) by u/{m.author_name} to r/{m.subreddit.name}
+Submitted at {m.created_at.astimezone().ctime()}{' *' if m.edited else ''}
 ''')
 
 columns, _lines = shutil.get_terminal_size()
 
-for depth, comment in traversal(thread.node):
-    body_text = repr(comment.body)
-    line = f"{depth*'.'} <{comment.id36}> {comment.u_author_name} | {body_text}"
+for depth, comment in traversal(root):
+    c = comment
+    body_text = repr(c.body)
+    line = f"{depth*'.'} u/{c.author_name} | {body_text}"
     print(line[:columns])
