@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Any, Optional, Mapping, MutableMapping, MutableSequence
+    from typing import Optional, Mapping, MutableMapping, MutableSequence
     from ..http.session_base_SYNC import SessionBase
     from .authorizer_SYNC import Authorizer, Authorized
     from ..http.response import Response
@@ -62,10 +62,9 @@ class RedditHTTPClient(HTTPClient):
     def send(self,
         request: Request,
         timeout: float = -2,
-        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         try:
-            resp = super().send(request, timeout=timeout, aux_info=aux_info)
+            resp = super().send(request, timeout=timeout)
         except (
             auth.exceptions.ResponseException,
             http.exceptions.ResponseException,

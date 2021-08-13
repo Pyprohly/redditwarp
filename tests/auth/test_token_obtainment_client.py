@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Mapping, Optional, Any, List
+    from typing import Mapping, Any, List
 
 import pytest
 
@@ -29,8 +29,7 @@ class MockRequestor(Requestor):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 

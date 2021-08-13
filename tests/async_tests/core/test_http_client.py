@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Mapping, List, Optional, Dict, Any
+    from typing import Mapping, List, Optional, Dict
 
 import pytest
 
@@ -25,8 +25,7 @@ class GoodSession(SessionBase):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    async def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
@@ -37,8 +36,7 @@ class BadSession(SessionBase):
         super().__init__()
         self.exception = exc
 
-    async def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
         raise self.exception
 
 @pytest.mark.asyncio

@@ -49,10 +49,9 @@ class HTTPClient(RequestorDecorator):
         (_d0 := r.params).update({**self.params, **_d0})
         (_d1 := r.headers).update({**self.headers, **_d1})
 
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
         self._prepare_request(request)
-        return self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+        return self.requestor.send(request, timeout=timeout)
 
     def request(self,
         verb: str,
@@ -64,11 +63,10 @@ class HTTPClient(RequestorDecorator):
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
-        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         r = make_request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files)
-        return self.send(r, timeout=timeout, aux_info=aux_info)
+        return self.send(r, timeout=timeout)
 
     def close(self) -> None:
         self.session.close()

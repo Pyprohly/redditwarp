@@ -80,15 +80,11 @@ class Session(SessionBase):
         super().__init__()
         self.session = requests_session
 
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        t: Optional[float] = timeout
-        if timeout == -2:
-            t = self.timeout
-        elif timeout == -1:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
+        etv = self._get_effective_timeout_value(timeout)
+        t: Optional[float] = etv
+        if t == -1:
             t = None
-        elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {timeout}')
 
         kwargs: MutableMapping[str, object] = {'timeout': t}
         kwargs.update(_request_kwargs(request))

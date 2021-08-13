@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, Set, Any
+from typing import TYPE_CHECKING, Optional, Set
 if TYPE_CHECKING:
     from ..auth.token_obtainment_client_ASYNC import TokenObtainmentClient
     from ..auth.token import Token
@@ -85,15 +85,14 @@ class Authorized(RequestorDecorator):
         self._valve.set()
         self._futures: Set[asyncio.Future[Response]] = set()
 
-    async def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
         await self._valve.wait()
 
         await self.authorizer.maybe_renew_token()
 
         self.authorizer.prepare_request(request)
 
-        coro = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+        coro = self.requestor.send(request, timeout=timeout)
         fut = asyncio.ensure_future(coro)
         self._futures.add(fut)
         try:
@@ -120,6 +119,6 @@ class Authorized(RequestorDecorator):
 
             self.authorizer.prepare_request(request)
 
-            response = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+            response = await self.requestor.send(request, timeout=timeout)
 
         return response

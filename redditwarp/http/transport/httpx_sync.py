@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any, List
+from typing import TYPE_CHECKING, Mapping, MutableMapping, Any, List
 if TYPE_CHECKING:
     from ..request import Request
     from ..payload import Payload
@@ -79,15 +79,11 @@ class Session(SessionBase):
         super().__init__()
         self.client = httpx_client
 
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        timeout_obj = httpx.Timeout(timeout, pool=20)
-        if timeout == -2:
-            timeout_obj = httpx.Timeout(self.timeout, pool=20)
-        elif timeout == -1:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
+        etv = self._get_effective_timeout_value(timeout)
+        timeout_obj = httpx.Timeout(etv, pool=20)
+        if timeout == -1:
             timeout_obj = httpx.Timeout(None, pool=20)
-        elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {timeout}')
 
         kwargs: MutableMapping[str, object] = {'timeout': timeout_obj}
         kwargs.update(_request_kwargs(request))

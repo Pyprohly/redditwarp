@@ -147,11 +147,10 @@ class CoreClient:
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
-        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Any:
         uri = self.url_join(uri)
         resp = await self.http.request(verb, uri, params=params, headers=headers,
-                data=data, json=json, files=files, timeout=timeout, aux_info=aux_info)
+                data=data, json=json, files=files, timeout=timeout)
 
         json_data = None
         if resp.data:

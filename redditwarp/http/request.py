@@ -30,7 +30,6 @@ def make_request(
     json: Any = None,
     files: Optional[RequestFiles] = None,
     timeout: float = -2,
-    aux_info: Optional[Mapping[Any, Any]] = None,
 ) -> Request:
     params = dict(params or {})
     headers = dict(headers or {})

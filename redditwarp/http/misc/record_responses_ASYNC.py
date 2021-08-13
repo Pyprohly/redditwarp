@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, Any, MutableSequence
+from typing import TYPE_CHECKING, Optional, MutableSequence
 if TYPE_CHECKING:
     from ..request import Request
     from ..response import Response
@@ -16,9 +16,8 @@ class RecordResponses(RequestorDecorator):
         self.responses: MutableSequence[Response] = collections.deque(maxlen=12)
         self.last_response: Optional[Response] = None
 
-    async def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
-        resp = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+        resp = await self.requestor.send(request, timeout=timeout)
         self.last_response = resp
         self.responses.append(resp)
         return resp

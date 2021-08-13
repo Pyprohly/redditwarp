@@ -58,7 +58,7 @@ class FlairEmoji:
         def deposit(self, upload_lease: FlairEmojiUploadLease, file: IO[bytes]) -> None:
             sess = self._client.http.session
             req = sess.make_request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file})
-            resp = sess.send(req)
+            resp = sess.send(req, timeout=-1)
             resp.raise_for_status()
 
         def upload(self, file: IO[bytes], *, sr: str) -> FlairEmojiUploadLease:

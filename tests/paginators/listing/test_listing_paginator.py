@@ -9,8 +9,7 @@ from redditwarp.http.payload import RequestFiles
 from redditwarp.paginators.listing.listing_paginator import ListingPaginator
 
 class MySession(SessionBase):
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
         return Response(0, {}, b'')
 
 class MyHTTPClient(RedditHTTPClient):
@@ -36,7 +35,6 @@ class MyHTTPClient(RedditHTTPClient):
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
-        aux_info: Optional[Mapping[Any, Any]] = None,
     ) -> Response:
         return Response(self.response_status, self.response_headers, self.response_data)
 

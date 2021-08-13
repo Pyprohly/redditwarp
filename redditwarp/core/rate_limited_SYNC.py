@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from ..http.requestor_SYNC import Requestor
@@ -22,8 +22,7 @@ class RateLimited(RequestorDecorator):
         self._prev_request = 0.
         self._last_request = time.monotonic()
 
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
         s: float = self.reset
         if self.remaining > 0:
             s = self.reset / self.remaining
@@ -39,7 +38,7 @@ class RateLimited(RequestorDecorator):
         self._prev_request = self._last_request
         self._last_request = time.monotonic()
 
-        response = self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+        response = self.requestor.send(request, timeout=timeout)
 
         self.scan_ratelimit_headers(response.headers)
         return response

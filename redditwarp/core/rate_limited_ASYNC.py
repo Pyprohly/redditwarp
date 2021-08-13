@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Mapping
     from ..http.requestor_ASYNC import Requestor
@@ -26,8 +26,7 @@ class RateLimited(RequestorDecorator):
         self._last_request = time.monotonic()
         self._lock = asyncio.Lock()
 
-    async def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
         s: float = self.reset
         if self.remaining > 0:
             # Note: value not precise due to concurrency.
@@ -52,7 +51,7 @@ class RateLimited(RequestorDecorator):
         self._prev_request = self._last_request
         self._last_request = time.monotonic()
 
-        response = await self.requestor.send(request, timeout=timeout, aux_info=aux_info)
+        response = await self.requestor.send(request, timeout=timeout)
 
         self.scan_ratelimit_headers(response.headers)
         return response

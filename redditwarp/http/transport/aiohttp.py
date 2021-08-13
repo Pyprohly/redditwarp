@@ -1,7 +1,7 @@
 """Transport adapter for aiohttp."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any, List
+from typing import TYPE_CHECKING, Mapping, MutableMapping, Any, List
 if TYPE_CHECKING:
     from ..request import Request
     from ..payload import Payload
@@ -83,30 +83,21 @@ class Session(SessionBase):
         super().__init__()
         self.session = aiohttp_client
 
-    async def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+        etv = self._get_effective_timeout_value(timeout)
         client_timeout = aiohttp.ClientTimeout(
-            total=timeout,
-            connect=timeout,
-            sock_connect=timeout,
-            sock_read=timeout,
+            total=etv,
+            connect=etv,
+            sock_connect=etv,
+            sock_read=etv,
         )
-        if timeout == -2:
-            client_timeout = aiohttp.ClientTimeout(
-                total=self.timeout,
-                connect=self.timeout,
-                sock_connect=self.timeout,
-                sock_read=self.timeout,
-            )
-        elif timeout == -1:
+        if timeout == -1:
             client_timeout = aiohttp.ClientTimeout(
                 total=None,
                 connect=None,
                 sock_connect=None,
                 sock_read=None,
             )
-        elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {timeout}')
 
         kwargs: MutableMapping[str, object] = {'timeout': client_timeout}
         kwargs.update(_request_kwargs(request))

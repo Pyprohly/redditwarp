@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Any
+from typing import TYPE_CHECKING, MutableMapping
 if TYPE_CHECKING:
     from ..request import Request
     from ..response import Response
@@ -16,8 +16,7 @@ class RequestDistributor(Requestor):
         super().__init__()
         self.directions: MutableMapping[Request, Requestor] = {}
 
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
         try:
             dest = self.directions[request]
         except KeyError:
@@ -33,8 +32,7 @@ class RequestDirector(RequestorDecorator):
         self.target = target
         self.receiver = receiver
 
-    def send(self, request: Request, *, timeout: float = -2,
-            aux_info: Optional[Mapping[Any, Any]] = None) -> Response:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
         directions = self.target.directions
         directions[request] = self.receiver
         try:
