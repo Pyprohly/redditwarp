@@ -1,63 +1,84 @@
 
-from typing import Sequence, Any, Optional, Mapping, Callable
+from typing import Sequence, Any, Mapping, Callable
 from redditwarp.client_SYNC import Client
 from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
 from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.http.payload import RequestFiles
-from redditwarp.paginators.listing.listing_paginator import ListingPaginator
+from redditwarp.paginators.implementations.listing.listing_paginator import ListingPaginator
 
 class MySession(SessionBase):
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return Response(0, {}, b'')
-
-class MyHTTPClient(RedditHTTPClient):
-    session = MySession()
-
     def __init__(self,
         response_status: int,
         response_headers: Mapping[str, str],
         response_data: bytes,
     ) -> None:
-        super().__init__(session=self.session)
+        super().__init__()
         self.response_status = response_status
         self.response_headers = response_headers
         self.response_data = response_data
 
-    def request(self,
-        verb: str,
-        uri: str,
-        *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
-        headers: Optional[Mapping[str, str]] = None,
-        data: Any = None,
-        json: Any = None,
-        files: Optional[RequestFiles] = None,
-        timeout: float = -2,
-    ) -> Response:
-        return Response(self.response_status, self.response_headers, self.response_data)
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
+        return Response(self.response_status, self.response_headers, self.response_data, request=request)
 
 class MyListingPaginator(ListingPaginator[str]):
     def __init__(self,
         client: Client,
-        path: str,
+        uri: str,
     ):
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
-        super().__init__(client, path, cursor_extractor=cursor_extractor)
+        super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
-    def _fetch_result(self) -> Sequence[str]:
+    def next_result(self) -> Sequence[str]:
         data = self._fetch_data()
         return [d['name'] for d in data['children']]
 
-http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'')
+session = MySession(200, {'Content-Type': 'application/json'}, b'')
+http = RedditHTTPClient(session)
 client = Client.from_http(http)
+
+def test_none_limit() -> None:
+    p = MyListingPaginator(client, '')
+    session.response_data = b'''\
+{
+    "kind": "Listing",
+    "data": {
+        "dist": 0,
+        "children": [],
+        "after": "a",
+        "before": "b"
+    }
+}
+'''
+    p.limit = None
+    p.next_result()
+
+    if http.last_response is None:
+        raise Exception
+    response = http.last_response
+    if response.request is None:
+        raise Exception
+    request = response.request
+
+    assert 'limit' not in request.params
+
+    p.limit = 14
+    p.next_result()
+
+    if http.last_response is None:
+        raise Exception
+    response = http.last_response
+    if response.request is None:
+        raise Exception
+    request = response.request
+
+    assert request.params['limit'] == '14'
 
 def test_return_value_and_count() -> None:
     p = MyListingPaginator(client, '')
     assert p.count == 0
 
-    http.response_data = b'''\
+    session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -75,7 +96,7 @@ def test_return_value_and_count() -> None:
     assert len(result) == 2
     assert p.count == 2
 
-    http.response_data = b'''\
+    session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -101,7 +122,7 @@ def test_cursor_extractor() -> None:
     for direction in (True, False):
         p.direction = direction
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -119,7 +140,7 @@ def test_cursor_extractor() -> None:
         assert p.after == 'b'
         assert p.before == 'a'
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -137,7 +158,7 @@ def test_cursor_extractor() -> None:
         assert p.after == 'b'
         assert p.before == 'a'
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -155,7 +176,7 @@ def test_cursor_extractor() -> None:
         assert p.after == 'b'
         assert p.before == 'a'
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -173,7 +194,7 @@ def test_cursor_extractor() -> None:
         assert p.after == 'b'
         assert p.before == 'a'
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -191,7 +212,7 @@ def test_cursor_extractor() -> None:
         assert p.after == 'b'
         assert p.before == 'a'
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -210,7 +231,7 @@ def test_cursor_extractor() -> None:
 
         p.after = 'no_change1'
         p.before = 'no_change2'
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -231,7 +252,7 @@ def test_next_available() -> None:
     for direction in (True, False):
         p.direction = direction
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -248,7 +269,7 @@ def test_next_available() -> None:
         p.next_result()
         assert p.next_available()
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -265,7 +286,7 @@ def test_next_available() -> None:
         p.next_result()
         assert p.next_available() is direction
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -282,7 +303,7 @@ def test_next_available() -> None:
         p.next_result()
         assert p.next_available() is not direction
 
-        http.response_data = b'''\
+        session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {
@@ -304,7 +325,7 @@ def test_dist_none_value() -> None:
     p = MyListingPaginator(client, '')
     assert p.count == 0
 
-    http.response_data = b'''\
+    session.response_data = b'''\
 {
     "kind": "Listing",
     "data": {

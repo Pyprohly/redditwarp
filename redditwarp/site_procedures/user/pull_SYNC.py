@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from ...models.submission_SYNC import Submission
 
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.listing.user_pull_sync import (
+from ...paginators.implementations.listing.user_pull_sync import (
     OverviewListingPaginator,
     CommentsListingPaginator,
     SubmittedListingPaginator,

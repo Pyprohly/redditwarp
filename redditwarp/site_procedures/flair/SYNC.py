@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.flair import Variant2FlairTemplate, Variant1FlairTemplate, FlairChoices, UserFlairAssociation
     from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-    from ...paginators.flair.user_flair_association_paginator import UserFlairAssociationPaginator
+    from ...paginators.implementations.user_flair_association_paginator_sync import UserFlairAssociationPaginator
 
 import csv
 from io import StringIO

@@ -16,7 +16,7 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.listing.user_pull_sync import CommentListingPaginator
+from ...paginators.implementations.listing.user_pull_sync import CommentListingPaginator
 from ... import exceptions
 from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch

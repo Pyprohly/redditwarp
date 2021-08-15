@@ -4,9 +4,9 @@ from typing import Mapping, Any
 
 from datetime import datetime, timezone
 
-from .treasure_box import TreasureBox
+from .artifact import Artifact
 
-class User(TreasureBox):
+class User(Artifact):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']

@@ -32,7 +32,7 @@ class LiveThreadUpdate:
         self.stricken: bool = d['stricken']
 
 
-class ContributorInfo:
+class Contributor:
     def __init__(self, d: Mapping[str, Any]):
         self.d = d
         self.name: str = d['name']
@@ -42,10 +42,10 @@ class ContributorInfo:
         self.id = int(id36, 36)
         self.permissions: Sequence[str] = d['permissions']
 
-class ContributorsList(Sequence[ContributorInfo]):
+class ContributorList(Sequence[Contributor]):
     def __init__(self,
-            contributors: Sequence[ContributorInfo],
-            invitations: Sequence[ContributorInfo]):
+            contributors: Sequence[Contributor],
+            invitations: Sequence[Contributor]):
         self.contributors = contributors
         self.invitations = invitations
 
@@ -55,12 +55,12 @@ class ContributorsList(Sequence[ContributorInfo]):
     def __contains__(self, item: object) -> bool:
         return item in self.contributors
 
-    def __iter__(self) -> Iterator[ContributorInfo]:
+    def __iter__(self) -> Iterator[Contributor]:
         return iter(self.contributors)
 
     @overload
-    def __getitem__(self, index: int) -> ContributorInfo: pass
+    def __getitem__(self, index: int) -> Contributor: pass
     @overload
-    def __getitem__(self, index: slice) -> Sequence[ContributorInfo]: pass
-    def __getitem__(self, index: Union[int, slice]) -> Union[ContributorInfo, Sequence[ContributorInfo]]:
+    def __getitem__(self, index: slice) -> Sequence[Contributor]: pass
+    def __getitem__(self, index: Union[int, slice]) -> Union[Contributor, Sequence[Contributor]]:
         return self.contributors[index]

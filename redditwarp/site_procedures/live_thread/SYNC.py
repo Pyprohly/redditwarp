@@ -5,14 +5,14 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.live_thread import LiveThread as LiveThreadModel, LiveThreadUpdate
 
-from ...models.live_thread import ContributorsList, ContributorInfo
+from ...models.live_thread import ContributorList, Contributor
 from ...models.load.live_thread import load_live_thread, load_live_thread_update
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...util.base_conversion import to_base36
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.listing.live_thread_update_listing_paginator import LiveThreadUpdateListingPaginator
+from ...paginators.implementations.listing.live_thread_update_listing_paginator import LiveThreadUpdateListingPaginator
 from ... import exceptions
 
 class LiveThread:
@@ -65,7 +65,8 @@ class LiveThread:
         root = self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')
         return load_live_thread_update(root['data'])
 
-    def pull(self, idt: str, amount: Optional[int] = None) -> PaginatorChainingIterator[LiveThreadUpdateListingPaginator, LiveThreadUpdate]:
+    def pull(self, idt: str, amount: Optional[int] = None,
+            ) -> PaginatorChainingIterator[LiveThreadUpdateListingPaginator, LiveThreadUpdate]:
         p = LiveThreadUpdateListingPaginator(self._client, f'/live/{idt}')
         return PaginatorChainingIterator(p, amount)
 
@@ -78,14 +79,14 @@ class LiveThread:
     def delete_live_update(self, idt: str, update_uuid: str) -> None:
         self._client.request('POST', f'/api/live/{idt}/delete_update', data={'id': 'LiveUpdate_' + update_uuid})
 
-    def list_contributors(self, idt: str) -> ContributorsList:
+    def list_contributors(self, idt: str) -> ContributorList:
         root = self._client.request('GET', f'/live/{idt}/contributors')
         if isinstance(root, Mapping):
-            return ContributorsList([ContributorInfo(d) for d in root['data']['children']], ())
+            return ContributorList([Contributor(d) for d in root['data']['children']], ())
 
-        contributors = [ContributorInfo(d) for d in root[0]['data']['children']]
-        invitations = [ContributorInfo(d) for d in root[0]['data']['children']]
-        return ContributorsList(contributors, invitations)
+        contributors = [Contributor(d) for d in root[0]['data']['children']]
+        invitations = [Contributor(d) for d in root[0]['data']['children']]
+        return ContributorList(contributors, invitations)
 
     def send_contributor_invite(self, idt: str, user: str, permissions: Iterable[str]) -> None:
         data = {

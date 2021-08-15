@@ -5,9 +5,9 @@ from typing import Mapping, Any, Optional
 from datetime import datetime, timezone
 
 from ..auth.const import AUTHORIZATION_BASE_URL
-from .treasure_box import TreasureBox
+from .artifact import Artifact
 
-class MailboxMessage(TreasureBox):
+class MailboxMessage(Artifact):
     pass
 
 class ComposedMessage(MailboxMessage):

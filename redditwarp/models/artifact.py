@@ -5,7 +5,7 @@ from typing import Any, Mapping
 from ..util.data_members_namespace import DataMembersNamespaceMapping
 from ..util.attribute_mapping_wrapper import PrettyPrintingAttributeMappingWrapper
 
-class TreasureBox:
+class Artifact:
     """An object with interactive capabilities."""
 
     def __init__(self, d: Mapping[str, Any]):

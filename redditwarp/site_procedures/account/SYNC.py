@@ -61,7 +61,7 @@ class Account:
 
     def add_friend(self, name: str, note: Optional[str] = None) -> FriendRelationshipItem:
         json_data = {} if note is None else {'note': note}
-        root = self._client.request('PUT', f'api/v1/me/friends/{name}', json=json_data)
+        root = self._client.request('PUT', f'/api/v1/me/friends/{name}', json=json_data)
         return load_friend_relationship_item(root)
 
     def remove_friend(self, name: str) -> bool:

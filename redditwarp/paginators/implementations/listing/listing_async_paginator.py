@@ -1,18 +1,18 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Any, Mapping, Optional, Callable, Sequence, Iterable
+from typing import TYPE_CHECKING, TypeVar, Any, Mapping, Optional, Callable, Iterable
 if TYPE_CHECKING:
-    from ...client_SYNC import Client
+    from ....client_ASYNC import Client
 
-from ..exceptions import MissingCursorException
-from ..bidirectional_cursor_paginator import BidirectionalCursorPaginator
+from ...exceptions import MissingCursorException
+from ...bidirectional_cursor_async_paginator import BidirectionalCursorAsyncPaginator
 
 T = TypeVar('T')
 
-class ListingPaginator(BidirectionalCursorPaginator[T]):
+class ListingAsyncPaginator(BidirectionalCursorAsyncPaginator[T]):
     def __init__(self,
         client: Client,
-        path: str,
+        uri: str,
         *,
         limit: Optional[int] = 100,
         params: Optional[Mapping[str, Optional[str]]] = None,
@@ -20,7 +20,7 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
     ):
         super().__init__(limit=limit)
         self.client = client
-        self.path = path
+        self.uri = uri
         self.params = {} if params is None else params
         self.cursor_extractor = cursor_extractor
         self.count = 0
@@ -29,7 +29,8 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
     def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
         yield from self.params.items()
         yield ('count', str(self.count))
-        yield ('limit', str(self.limit))
+        if self.limit is not None:
+            yield ('limit', str(self.limit))
         if self.show_all:
             yield ('show', 'all')
         if self.direction:
@@ -41,9 +42,9 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
                 raise MissingCursorException('before')
             yield ('before', self.before)
 
-    def _fetch_data(self) -> Mapping[str, Any]:
+    async def _fetch_data(self) -> Mapping[str, Any]:
         params = dict(self._generate_params())
-        root = self.client.request('GET', self.path, params=params)
+        root = await self.client.request('GET', self.uri, params=params)
         data = root['data']
         children = data['children']
         self.count += x if (x := data['dist']) else len(children)
@@ -57,9 +58,3 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
         self.has_after = bool(after)
         self.has_before = bool(before)
         return data
-
-    def _fetch_result(self) -> Sequence[T]:
-        raise NotImplementedError
-
-    def next_result(self) -> Sequence[T]:
-        return self._fetch_result()

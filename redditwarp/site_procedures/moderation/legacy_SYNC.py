@@ -23,27 +23,27 @@ class Legacy:
         root = self._client.request('GET', f'/r/{sr}/about/moderators')
         return [load_moderator_list_item(d) for d in root['data']['children']]
 
-    def get_banned_user_item(self, sr: str, user: str) -> Optional[BannedUserRelationshipItem]:
-        root = self._client.request('GET', f'/r/{sr}/about/banned', params={'user': user})
-        children = root['data']['children']
-        return load_banned_user_relation_item(children[0]) if children else None
-
-    def get_muted_user_item(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
-        root = self._client.request('GET', f'/r/{sr}/about/muted', params={'user': user})
-        children = root['data']['children']
-        return load_user_relationship_item(children[0]) if children else None
-
-    def get_approved_contributor_item(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
+    def get_approved_contributor(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
         root = self._client.request('GET', f'/r/{sr}/about/contributors', params={'user': user})
         children = root['data']['children']
         return load_user_relationship_item(children[0]) if children else None
 
-    def get_wiki_banned_user_item(self, sr: str, user: str) -> Optional[BannedUserRelationshipItem]:
-        root = self._client.request('GET', f'/r/{sr}/about/wikibanned', params={'user': user})
-        children = root['data']['children']
-        return load_banned_user_relation_item(children[0]) if children else None
-
-    def get_approved_wiki_contributor_item(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
+    def get_approved_wiki_contributor(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
         root = self._client.request('GET', f'/r/{sr}/about/wikicontributors', params={'user': user})
         children = root['data']['children']
         return load_user_relationship_item(children[0]) if children else None
+
+    def get_banned_user(self, sr: str, user: str) -> Optional[BannedUserRelationshipItem]:
+        root = self._client.request('GET', f'/r/{sr}/about/banned', params={'user': user})
+        children = root['data']['children']
+        return load_banned_user_relation_item(children[0]) if children else None
+
+    def get_muted_user(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
+        root = self._client.request('GET', f'/r/{sr}/about/muted', params={'user': user})
+        children = root['data']['children']
+        return load_user_relationship_item(children[0]) if children else None
+
+    def get_wiki_banned_user(self, sr: str, user: str) -> Optional[BannedUserRelationshipItem]:
+        root = self._client.request('GET', f'/r/{sr}/about/wikibanned', params={'user': user})
+        children = root['data']['children']
+        return load_banned_user_relation_item(children[0]) if children else None

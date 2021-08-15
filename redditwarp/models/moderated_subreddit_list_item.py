@@ -4,9 +4,9 @@ from typing import Mapping, Any
 
 from datetime import datetime, timezone
 
-from .treasure_box import TreasureBox
+from .artifact import Artifact
 
-class ModeratedSubredditListItem(TreasureBox):
+class ModeratedSubredditListItem(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             self.is_subscribed: bool = d['user_is_subscriber']

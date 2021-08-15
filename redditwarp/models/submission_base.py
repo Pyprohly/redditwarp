@@ -5,9 +5,9 @@ from typing import Mapping, Any, Optional
 from datetime import datetime, timezone
 
 from ..auth.const import AUTHORIZATION_BASE_URL
-from .treasure_box import TreasureBox
+from .artifact import Artifact
 
-class Submission(TreasureBox):
+class Submission(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields

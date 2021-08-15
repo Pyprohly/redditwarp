@@ -6,6 +6,10 @@ from functools import cached_property
 from datetime import datetime, timezone
 
 class UserRelationshipItem:
+    @cached_property
+    def added_at(self) -> datetime:
+        return datetime.fromtimestamp(self.added_ut, timezone.utc)
+
     def __init__(self, d: Mapping[str, Any]):
         self.d = d
         _full_id36: str = d['id']
@@ -16,17 +20,14 @@ class UserRelationshipItem:
         #self.rel_id: str = d['rel_id']
         self.added_ut = int(d['date'])
 
-    @cached_property
-    def added_at(self) -> datetime:
-        return datetime.fromtimestamp(self.added_ut, timezone.utc)
-
 class FriendRelationshipItem(UserRelationshipItem):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        self.note: Optional[str] = d['note']
+        # Need premium to test this
+        #self.note: Optional[str] = d['note']
 
 class BannedUserRelationshipItem(UserRelationshipItem):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        self.days_left: int = d['days_left']
+        self.days_remaining: Optional[int] = d['days_left']
         self.detail: str = d['note']

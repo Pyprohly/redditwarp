@@ -5,12 +5,10 @@ from typing import TypeVar, AsyncIterator, Iterator, Generic, Optional
 from .async_paginator import AsyncPaginator
 
 E = TypeVar('E')
-__bound = 'AsyncPaginator[E]'
-TAsyncPaginator = TypeVar('TAsyncPaginator', bound=AsyncPaginator)  # type: ignore[type-arg]
 
-class PaginatorChainingAsyncIterator(AsyncIterator[E], Generic[TAsyncPaginator, E]):
-    def __init__(self, paginator: TAsyncPaginator, amount: Optional[int] = None) -> None:
-        self.paginator = paginator
+class BasePaginatorChainingAsyncIterator(AsyncIterator[E]):
+    def __init__(self, paginator: AsyncPaginator[E], amount: Optional[int] = None) -> None:
+        self._paginator: AsyncPaginator[E] = paginator
         self.amount = amount
         self.count = 0
         self.current_iter: Iterator[E] = iter(())
@@ -25,15 +23,23 @@ class PaginatorChainingAsyncIterator(AsyncIterator[E], Generic[TAsyncPaginator, 
                     self.count += 1
                     return elem
 
-                if not self.paginator.next_available():
+                if not self._paginator.next_available():
                     raise StopAsyncIteration
 
-                if self.paginator.limit is not None and self.amount is not None:
+                if self._paginator.limit is not None and self.amount is not None:
                     remaining = self.amount - self.count
-                    if remaining < self.paginator.limit:
-                        self.paginator.limit = remaining
+                    if remaining < self._paginator.limit:
+                        self._paginator.limit = remaining
 
-                it = await self.paginator.next_result()
+                it = await self._paginator.next_result()
                 self.current_iter = iter(it)
 
         raise StopAsyncIteration
+
+__bound = 'AsyncPaginator[E]'
+TAsyncPaginator = TypeVar('TAsyncPaginator', bound=AsyncPaginator)  # type: ignore[type-arg]
+
+class PaginatorChainingAsyncIterator(BasePaginatorChainingAsyncIterator[E], Generic[TAsyncPaginator, E]):
+    def __init__(self, paginator: TAsyncPaginator, amount: Optional[int] = None) -> None:
+        super().__init__(paginator, amount)
+        self.paginator: TAsyncPaginator = paginator

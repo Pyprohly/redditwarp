@@ -1,9 +1,9 @@
 
 from typing import Any, Mapping, Optional, NamedTuple, Sequence
 
-from .treasure_box import TreasureBox
+from .artifact import Artifact
 
-class FlairTemplate(TreasureBox):
+class FlairTemplate(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self._from_dict(d)

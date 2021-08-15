@@ -8,10 +8,8 @@ if TYPE_CHECKING:
         BannedUserRelationshipItem,
     )
 
-from operator import itemgetter
-
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.listing.subreddit_pull_users_sync import (
+from ...paginators.implementations.listing.subreddit_legacy_pull_users_sync import (
     UserRelationshipItemListingPaginator,
     BannedUserRelationshipItemListingPaginator,
 )
@@ -20,27 +18,27 @@ class LegacyPullUsers:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def banned(self, sr: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[BannedUserRelationshipItemListingPaginator, BannedUserRelationshipItem]:
-        p = BannedUserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/banned', cursor_extractor=itemgetter('rel_id'))
-        return PaginatorChainingIterator(p, amount)
-
-    def muted(self, sr: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[UserRelationshipItemListingPaginator, UserRelationshipItem]:
-        p = UserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/muted', cursor_extractor=itemgetter('rel_id'))
-        return PaginatorChainingIterator(p, amount)
-
     def contributors(self, sr: str, amount: Optional[int] = None,
             ) -> PaginatorChainingIterator[UserRelationshipItemListingPaginator, UserRelationshipItem]:
-        p = UserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/contributors', cursor_extractor=itemgetter('rel_id'))
-        return PaginatorChainingIterator(p, amount)
-
-    def wiki_banned(self, sr: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[BannedUserRelationshipItemListingPaginator, BannedUserRelationshipItem]:
-        p = BannedUserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/wikibanned', cursor_extractor=itemgetter('rel_id'))
+        p = UserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/contributors')
         return PaginatorChainingIterator(p, amount)
 
     def wiki_contributors(self, sr: str, amount: Optional[int] = None,
             ) -> PaginatorChainingIterator[UserRelationshipItemListingPaginator, UserRelationshipItem]:
-        p = UserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/wikicontributors', cursor_extractor=itemgetter('rel_id'))
+        p = UserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/wikicontributors')
+        return PaginatorChainingIterator(p, amount)
+
+    def banned(self, sr: str, amount: Optional[int] = None,
+            ) -> PaginatorChainingIterator[BannedUserRelationshipItemListingPaginator, BannedUserRelationshipItem]:
+        p = BannedUserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/banned')
+        return PaginatorChainingIterator(p, amount)
+
+    def muted(self, sr: str, amount: Optional[int] = None,
+            ) -> PaginatorChainingIterator[UserRelationshipItemListingPaginator, UserRelationshipItem]:
+        p = UserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/muted')
+        return PaginatorChainingIterator(p, amount)
+
+    def wiki_banned(self, sr: str, amount: Optional[int] = None,
+            ) -> PaginatorChainingIterator[BannedUserRelationshipItemListingPaginator, BannedUserRelationshipItem]:
+        p = BannedUserRelationshipItemListingPaginator(self._client, f'/r/{sr}/about/wikibanned')
         return PaginatorChainingIterator(p, amount)
