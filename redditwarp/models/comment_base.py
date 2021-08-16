@@ -1,11 +1,13 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Optional
+from typing import Mapping, Any, Optional, Sequence
 
 from datetime import datetime, timezone
 
 from ..auth.const import AUTHORIZATION_BASE_URL
 from .artifact import Artifact
+from .reports import ModReport, UserReport
+from .load.reports import load_mod_report, load_user_report
 
 class Comment(Artifact):
     class Me:
@@ -20,9 +22,9 @@ class Comment(Artifact):
             def __init__(self, d: Mapping[str, Any]):
                 self.has_had_flair: bool = d['author_flair_text'] is not None
                 self.bg_color: str = d['author_flair_background_color'] or ''
-                _author_flair_css_class_temp: Optional[str] = d['author_flair_css_class']
-                self.has_had_css_class_when_no_flair_template: bool = _author_flair_css_class_temp is not None
-                self.css_class: str = _author_flair_css_class_temp or ''
+                author_flair_css_class_temp: Optional[str] = d['author_flair_css_class']
+                self.has_had_css_class_when_no_flair_template: bool = author_flair_css_class_temp is not None
+                self.css_class: str = author_flair_css_class_temp or ''
                 self.template_uuid: Optional[str] = d['author_flair_template_id']
                 self.text: str = d['author_flair_text'] or ''
                 self.text_color: str = d['author_flair_text_color'] or ''
@@ -62,6 +64,13 @@ class Comment(Artifact):
 
             self.removed: bool = d['removed']
 
+    class Reports:
+        def __init__(self, d: Mapping[str, Any]):
+            self.ignoring: bool = d['ignore_reports']
+            self.num_reports: int = d['num_reports']
+            self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
+            self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
+
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id36: str = d['id']
@@ -93,12 +102,12 @@ class Comment(Artifact):
         self.collapsed: bool = d['collapsed']
         self.distinguished: str = d['distinguished'] or ''
 
-        _parent_id: str = d['parent_id']
-        self.is_top_level: bool = _parent_id.startswith('t3_')
+        parent_id: str = d['parent_id']
+        self.is_top_level: bool = parent_id.startswith('t3_')
         self.parent_comment_id36: Optional[str] = None
         self.parent_comment_id: Optional[int] = None
-        if _parent_id.startswith('t1_'):
-            self.parent_comment_id36 = _parent_id.partition('_')[2]
+        if parent_id.startswith('t1_'):
+            self.parent_comment_id36 = parent_id.partition('_')[2]
             self.parent_comment_id = int(self.parent_comment_id36, 36)
 
         self.me = self.Me(d)
@@ -118,6 +127,11 @@ class Comment(Artifact):
         # not a moderator of the subreddit (or there’s no user context).
         if 'spam' in d:
             self.mod = self.Moderator(d)
+
+        self.reports = None
+        if d['num_reports'] is not None:
+            self.reports = self.Reports(d)
+
 
 class NormalComment(Comment):
     # For: `GET /api/info`

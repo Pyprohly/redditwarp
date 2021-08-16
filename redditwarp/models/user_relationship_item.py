@@ -12,8 +12,8 @@ class UserRelationshipItem:
 
     def __init__(self, d: Mapping[str, Any]):
         self.d = d
-        _full_id36: str = d['id']
-        _, _, id36 = _full_id36.partition('_')
+        full_id36: str = d['id']
+        _, _, id36 = full_id36.partition('_')
         self.id36 = id36
         self.id = int(id36, 36)
         self.name: str = d['name']

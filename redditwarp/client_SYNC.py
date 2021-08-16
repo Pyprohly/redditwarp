@@ -1,9 +1,8 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, MutableSequence, Union, AnyStr
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Union, AnyStr
 if TYPE_CHECKING:
     from types import TracebackType
-    from .http.response import Response
     from .auth.typedefs import AuthorizationGrant
     from .http.payload import RequestFiles
 
@@ -12,7 +11,7 @@ from .http.transport.SYNC import new_session
 from .auth import Token
 from .auth.util import auto_grant_factory
 from .auth.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
-from .auth.const import TOKEN_OBTAINMENT_URL, RESOURCE_BASE_URL
+from .auth.const import TOKEN_OBTAINMENT_URL
 from .core.reddit_http_client_SYNC import RedditHTTPClient
 from .core.authorizer_SYNC import Authorizer, Authorized
 from .core.rate_limited_SYNC import RateLimited
@@ -30,7 +29,7 @@ site_procedures_SYNC = lazy_import('.site_procedures.SYNC', __package__)  # noqa
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
 
-    USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR = ' Bot !-- '
+    _USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR = ' Bot !-- '
 
     T = TypeVar('T', bound='CoreClient')
 
@@ -94,22 +93,6 @@ class CoreClient:
         if 'user_agent' in section:
             self.set_user_agent(get('user_agent'))
         return self
-
-    @property
-    def last_response(self) -> Optional[Response]:
-        return self.http.last_response
-
-    @last_response.setter
-    def last_response(self, value: Response) -> None:
-        self.http.last_response = value
-
-    @property
-    def last_response_queue(self) -> MutableSequence[Response]:
-        return self.http.last_response_queue
-
-    @last_response_queue.setter
-    def last_response_queue(self, value: MutableSequence[Response]) -> None:
-        self.http.last_response_queue = value
 
     def __init__(self,
             client_id: str, client_secret: str,
@@ -176,7 +159,6 @@ class CoreClient:
 
     def _init(self, http: RedditHTTPClient) -> None:
         self.http = http
-        self.resource_base_url = RESOURCE_BASE_URL
         self.last_value: Any = None
 
     def __enter__(self: T) -> T:
@@ -204,7 +186,8 @@ class CoreClient:
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
     ) -> Any:
-        uri = self.url_join(uri)
+        self.last_value = None
+
         resp = self.http.request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files, timeout=timeout)
 
@@ -240,11 +223,8 @@ class CoreClient:
     def set_user_agent(self, s: Optional[str]) -> None:
         ua = self.http.user_agent_start
         if s is not None:
-            ua += self.USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR + s
+            ua += self._USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR + s
         self.http.user_agent = ua
-
-    def url_join(self, path: str) -> str:
-        return self.resource_base_url + path
 
 class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:

@@ -13,8 +13,8 @@ class ModeratedSubredditListItem(Artifact):
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        _full_id36: str = d['name']
-        self.id36: str = _full_id36[3:]
+        full_id36: str = d['name']
+        self.id36: str = full_id36[3:]
         self.id = int(self.id36, 36)
         self.created_ut = int(d['created_utc'])
         self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)

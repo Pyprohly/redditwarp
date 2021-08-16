@@ -26,8 +26,8 @@ class CustomFeed:
         self.copied_from: str = d['copied_from']
         self.owner: str = d['owner']
 
-        _full_id36: str = d['owner_id']
-        _, _, id36 = _full_id36.partition('_')
+        full_id36: str = d['owner_id']
+        _, _, id36 = full_id36.partition('_')
         self.owner_id36: str = id36
         self.owner_id = int(id36, 36)
 

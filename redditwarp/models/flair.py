@@ -75,6 +75,6 @@ class UserFlairAssociation:
     def __init__(self, d: Mapping[str, Any]):
         self.username: str = d['user']
         self.text: str = d['flair_text']
-        _flair_css_class_temp: Optional[str] = d['flair_css_class']
-        self.has_had_css_class_when_no_flair_template: bool = _flair_css_class_temp is not None
-        self.css_class: str = _flair_css_class_temp or ''
+        flair_css_class_temp: Optional[str] = d['flair_css_class']
+        self.has_had_css_class_when_no_flair_template: bool = flair_css_class_temp is not None
+        self.css_class: str = flair_css_class_temp or ''

@@ -49,10 +49,27 @@ async def test_request() -> None:
     await http.request('DELETE', 'system32', params=params, headers=headers, data={})
     requ = session.history[0]
     assert requ.verb == 'DELETE'
-    assert requ.uri == 'system32'
+    assert requ.uri == 'https://oauth.reddit.com/system32'
     assert requ.params == {'raw_json': '1', 'api_type': 'json', 'water': 'earth'}
     assert requ.headers.pop('User-Agent')
     assert requ.headers == {'cheese': 'bacon', 'fire': 'air'}
+
+@pytest.mark.asyncio
+async def test_last_response() -> None:
+    good_session = GoodSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
+    http = RedditHTTPClient(session=good_session)
+    assert http.last_response is None
+    await http.request('', '')
+    assert http.last_response is not None
+
+    exc = RuntimeError()
+    bad_session = BadSession(exc)
+    http.session = http.requestor = bad_session
+    try:
+        await http.request('', '')
+    except RuntimeError:
+        pass
+    assert http.last_response is None
 
 class TestRequestExceptions:
     class TestAuth:
@@ -129,16 +146,16 @@ class TestRequestExceptions:
 
             @pytest.mark.asyncio
             async def test_CredentialsError(self) -> None:
-                response = Response(400, {}, b'')
-                exc = auth.exceptions.HTTPStatusError(response=response)
+                response = Response(400, {}, b'{"error": "invalid_grant"}')
+                exc = auth.exceptions.InvalidGrant(response=response)
                 session = BadSession(exc)
                 http = RedditHTTPClient(session=session)
                 with pytest.raises(core.exceptions.CredentialsError):
                     await http.request('', '')
 
                 response = Response(401, {}, b'')
-                exc = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc)
+                exc2 = auth.exceptions.HTTPStatusError(response=response)
+                session = BadSession(exc2)
                 http = RedditHTTPClient(session=session)
                 with pytest.raises(core.exceptions.CredentialsError):
                     await http.request('', '')

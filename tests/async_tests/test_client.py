@@ -1,9 +1,8 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, Any
+from typing import TYPE_CHECKING, Mapping
 if TYPE_CHECKING:
     from redditwarp.http.request import Request
-    from redditwarp.http.payload import RequestFiles
 
 import pytest
 
@@ -15,33 +14,23 @@ from redditwarp.http.response import Response
 
 class MySession(SessionBase):
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return Response(0, {}, b'')
+        raise Exception
 
 class MyHTTPClient(RedditHTTPClient):
-    session = MySession()
+    SESSION = MySession()
 
     def __init__(self,
         response_status: int,
         response_headers: Mapping[str, str],
         response_data: bytes,
     ) -> None:
-        super().__init__(session=self.session)
+        super().__init__(session=self.SESSION)
         self.response_status = response_status
         self.response_headers = response_headers
         self.response_data = response_data
 
-    async def request(self,
-        verb: str,
-        uri: str,
-        *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
-        headers: Optional[Mapping[str, str]] = None,
-        data: Any = None,
-        json: Any = None,
-        files: Optional[RequestFiles] = None,
-        timeout: float = -2,
-    ) -> Response:
-        return Response(self.response_status, self.response_headers, self.response_data)
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+        return Response(self.response_status, self.response_headers, self.response_data, request=request)
 
 
 @pytest.mark.asyncio
@@ -58,6 +47,16 @@ async def test_zero_data() -> None:
     client = Client.from_http(http)
     data = await client.request('', '')
     assert data is None
+
+@pytest.mark.asyncio
+async def test_last_value() -> None:
+    http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b'{"a": 1}')
+    client = Client.from_http(http)
+    await client.request('', '')
+    assert client.last_value == {'a': 1}
+    http.response_data = b''
+    await client.request('', '')
+    assert client.last_value is None
 
 class TestRequestExceptions:
     class TestHTTPStatusError:

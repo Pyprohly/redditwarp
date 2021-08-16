@@ -13,13 +13,13 @@ class SubmissionCollection(Artifact):
         super().__init__(d)
         self.uuid: str = d['collection_id']
 
-        _full_id36: str = d['subreddit_id']
-        _, _, id36 = _full_id36.partition('_')
+        full_id36: str = d['subreddit_id']
+        _, _, id36 = full_id36.partition('_')
         self.subreddit_id36 = id36
         self.subreddit_id = int(id36, 36)
 
-        _full_id36 = d['author_id']
-        _, _, id36 = _full_id36.partition('_')
+        full_id36 = d['author_id']
+        _, _, id36 = full_id36.partition('_')
         self.author_id36 = id36
         self.author_id = int(id36, 36)
 
@@ -37,8 +37,8 @@ class SubmissionCollection(Artifact):
         if self.display_layout is not None:
             self.layout = self.display_layout
 
-        _submission_full_id36s: Sequence[str] = d['link_ids']
-        self.submission_id36s: Sequence[str] = [s[3:] for s in _submission_full_id36s]
+        submission_full_id36s: Sequence[str] = d['link_ids']
+        self.submission_id36s: Sequence[str] = [s[3:] for s in submission_full_id36s]
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
 
 
@@ -47,7 +47,7 @@ class PrimarySubmissionCollection(SubmissionCollection):
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        _full_id36: str = d['primary_link_id']
-        _, _, id36 = _full_id36.partition('_')
+        full_id36: str = d['primary_link_id']
+        _, _, id36 = full_id36.partition('_')
         self.primary_submission_id36 = id36
         self.primary_submission_id = int(id36, 36)

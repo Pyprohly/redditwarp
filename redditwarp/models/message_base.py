@@ -16,9 +16,9 @@ class ComposedMessage(MailboxMessage):
         self.id = int(d['id'], 36)
         self.created_ut = int(d['created_utc'])
         self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
-        _dest: str = d['dest']
-        self.dest: str = _dest
-        self.recipient_name_prefixed: str = 'r/'+_dest if _dest.startswith('#') else 'u/'+_dest
+        dest: str = d['dest']
+        self.dest: str = dest
+        self.recipient_name_prefixed: str = 'r/'+dest if dest.startswith('#') else 'u/'+dest
         self.subject: str = d['subject']
         self.body: str = d['body']
         self.body_html: str = d['body_html']
@@ -30,14 +30,14 @@ class ComposedMessage(MailboxMessage):
             if (v := d['author_fullname']) else
             None
         )
-        self.via: str = '' if _dest.startswith('#') else (d['subreddit'] or '')
+        self.via: str = '' if dest.startswith('#') else (d['subreddit'] or '')
 
 class CommentMessage(MailboxMessage):
     class SubmissionInfo:
         def __init__(self, d: Mapping[str, Any]):
             self.title: str = d['link_title']
-            _context: str = d['context']
-            self.id: int = int(_context.split('/', 5)[4], 36)
+            context: str = d['context']
+            self.id: int = int(context.split('/', 5)[4], 36)
             self.comment_count: int = d['num_comments']
 
     class CommentInfo:
@@ -49,12 +49,12 @@ class CommentMessage(MailboxMessage):
             self.rel_permalink: str = self.context.partition('?')[0]
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-            _parent_id: str = d['parent_id']
-            self.is_top_level: bool = _parent_id.startswith('t3_')
+            parent_id: str = d['parent_id']
+            self.is_top_level: bool = parent_id.startswith('t3_')
             self.parent_comment_id36: Optional[str] = None
             self.parent_comment_id: Optional[int] = None
-            if _parent_id.startswith('t1_'):
-                self.parent_comment_id36 = _parent_id.partition('_')[2]
+            if parent_id.startswith('t1_'):
+                self.parent_comment_id36 = parent_id.partition('_')[2]
                 self.parent_comment_id = int(self.parent_comment_id36, 36)
 
             self.score: int = d['score']

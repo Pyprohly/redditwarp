@@ -6,8 +6,8 @@ class FlairEmoji:
     def __init__(self, d: Mapping[str, Any], name: str):
         self.name = name
         self.d = d
-        _full_id36: str = d['created_by']
-        _, _, id36 = _full_id36.partition('_')
+        full_id36: str = d['created_by']
+        _, _, id36 = full_id36.partition('_')
         self.creator_id36: str = id36
         self.creator_id = int(id36, 36)
         self.image_url: str = d['url']

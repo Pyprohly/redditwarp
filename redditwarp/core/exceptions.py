@@ -85,11 +85,11 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
             raise HTMLDocumentResponseContentError(msg, response=resp) from e
         raise UnidentifiedResponseContentError(response=resp) from e
 
-    elif isinstance(e, auth.exceptions.HTTPStatusError):
-        if status == 400:
-            raise CredentialsError('check your grant credentials', response=resp) from e
+    elif isinstance(e, auth.exceptions.InvalidGrant):
+        raise CredentialsError('Check your grant credentials', response=resp) from e
 
-        elif status == 401:
+    elif isinstance(e, auth.exceptions.HTTPStatusError):
+        if status == 401:
             req = resp.request
             if req:
                 if not (uri := req.uri).startswith("https://www.reddit.com"):
@@ -101,7 +101,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
                 if req.headers['Authorization'][:6].lower() != 'basic ':
                     e.arg = 'Authorization header value must start with "Basic "'
                     raise
-            raise CredentialsError('check your client credentials', response=resp) from e
+            raise CredentialsError('Check your client credentials', response=resp) from e
 
         elif status == 429:
             if resp.request is not None:

@@ -474,3 +474,17 @@ class Submission:
             'spam': '0',
         }
         self._client.request('POST', '/api/remove', data=data)
+
+    def ignore_reports(self, idn: int) -> None:
+        self._client.request('POST', '/api/ignore_reports', data={'id': 't3_' + to_base36(idn)})
+
+    def unignore_reports(self, idn: int) -> None:
+        self._client.request('POST', '/api/unignore_reports', data={'id': 't3_' + to_base36(idn)})
+
+    def snooze_reports(self, idn: int, reason: str) -> None:
+        data = {'id': 't3_' + to_base36(idn), 'reason': reason}
+        self._client.request('POST', '/api/snooze_reports', data=data)
+
+    def unsnooze_reports(self, idn: int, reason: str) -> None:
+        data = {'id': 't3_' + to_base36(idn), 'reason': reason}
+        self._client.request('POST', '/api/unsnooze_reports', data=data)

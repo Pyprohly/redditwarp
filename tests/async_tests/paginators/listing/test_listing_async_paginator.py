@@ -31,7 +31,7 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
-    async def next_result(self) -> Sequence[str]:
+    async def fetch_next_result(self) -> Sequence[str]:
         data = await self._fetch_data()
         return [d['name'] for d in data['children']]
 
@@ -54,7 +54,7 @@ async def test_none_limit() -> None:
 }
 '''
     p.limit = None
-    await p.next_result()
+    await p.fetch_next_result()
 
     if http.last_response is None:
         raise Exception
@@ -66,7 +66,7 @@ async def test_none_limit() -> None:
     assert 'limit' not in request.params
 
     p.limit = 14
-    await p.next_result()
+    await p.fetch_next_result()
 
     if http.last_response is None:
         raise Exception
@@ -96,7 +96,7 @@ async def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = await p.next_result()
+    result = await p.fetch_next_result()
     assert len(result) == 2
     assert p.count == 2
 
@@ -116,7 +116,7 @@ async def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = await p.next_result()
+    result = await p.fetch_next_result()
     assert len(result) == 3
     assert p.count == 5
 
@@ -141,7 +141,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -159,7 +159,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -177,7 +177,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -195,7 +195,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -213,7 +213,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -230,7 +230,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.after == 'a'
         assert p.before == 'a'
 
@@ -247,7 +247,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.after == 'no_change1'
         assert p.before == 'no_change2'
 
@@ -272,7 +272,7 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.next_available()
 
         session.response_data = b'''\
@@ -289,7 +289,7 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.next_available() is direction
 
         session.response_data = b'''\
@@ -306,7 +306,7 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert p.next_available() is not direction
 
         session.response_data = b'''\
@@ -320,7 +320,7 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.next_result()
+        await p.fetch_next_result()
         assert not p.next_available()
 
 @pytest.mark.asyncio
@@ -342,6 +342,6 @@ async def test_dist_none_value() -> None:
     }
 }
 '''
-    result = await p.next_result()
+    result = await p.fetch_next_result()
     assert len(result) == 2
     assert p.count == 2

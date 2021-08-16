@@ -13,14 +13,14 @@ class MyAsyncPaginator(AsyncPaginator[int]):
         self.index = -1
         self.proceed = True
 
-    async def next_result(self) -> Sequence[int]:
+    def next_available(self) -> bool:
+        return self.proceed
+
+    async def fetch_next_result(self) -> Sequence[int]:
         self.index += 1
         if self.index >= len(self.seq) - 1:
             self.proceed = False
         return self.seq[self.index]
-
-    def next_available(self) -> bool:
-        return self.proceed
 
 
 @pytest.mark.asyncio

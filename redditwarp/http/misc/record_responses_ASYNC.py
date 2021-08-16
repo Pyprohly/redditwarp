@@ -17,6 +17,7 @@ class RecordResponses(RequestorDecorator):
         self.last_response: Optional[Response] = None
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
+        self.last_response = None
         resp = await self.requestor.send(request, timeout=timeout)
         self.last_response = resp
         self.responses.append(resp)

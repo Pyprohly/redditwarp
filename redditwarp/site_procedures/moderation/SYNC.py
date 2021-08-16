@@ -19,6 +19,7 @@ from ...models.load.subreddit_user_item import (
 from .pull_users_SYNC import PullUsers
 from .legacy_SYNC import Legacy
 from .pull_SYNC import Pull
+from ...util.base_conversion import to_base36
 
 class Moderation:
     def __init__(self, client: Client):
@@ -83,6 +84,17 @@ class Moderation:
         }
         self._client.request('POST', '/api/friend', data=data)
 
+    def leave_moderator(self, subreddit_id: int) -> None:
+        self._client.request('POST', '/api/leavemoderator', data={'id': 't5_' + to_base36(subreddit_id)})
+
+    def remove_moderator(self, sr: str, user: str) -> None:
+        data = {
+            'r': sr,
+            'type': 'moderator',
+            'name': user,
+        }
+        self._client.request('POST', '/api/unfriend', data=data)
+
     def set_moderator_permissions(self, sr: str, user: str, permissions: Iterable[str]) -> None:
         data = {
             'r': sr,
@@ -109,8 +121,8 @@ class Moderation:
         }
         self._client.request('POST', '/api/friend', data=data)
 
-    def leave_approved_contributor(self, sr: str, user: str) -> None:
-        ...
+    def leave_approved_contributor(self, subreddit_id: int) -> None:
+        self._client.request('POST', '/api/leavecontributor', data={'id': 't5_' + to_base36(subreddit_id)})
 
     def remove_approved_contributor(self, sr: str, user: str) -> None:
         data = {

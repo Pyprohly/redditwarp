@@ -23,8 +23,8 @@ class Subreddit(Artifact):
                 #   * A color hex string, starting with '#'.
                 self.bg_color: str = d['user_flair_background_color'] or ''
 
-                _user_flair_css_class_temp: Optional[str] = d['user_flair_css_class']
-                self.has_had_css_class_when_no_flair_template: bool = _user_flair_css_class_temp is not None
+                user_flair_css_class_temp: Optional[str] = d['user_flair_css_class']
+                self.has_had_css_class_when_no_flair_template: bool = user_flair_css_class_temp is not None
 
                 # `None`:
                 #   * Flair not configured.
@@ -32,7 +32,7 @@ class Subreddit(Artifact):
                 # empty string:
                 #   * Starts off as empty string if no flair template is being used.
                 #   * CSS class was removed on a flair template.
-                self.css_class: str = _user_flair_css_class_temp or ''
+                self.css_class: str = user_flair_css_class_temp or ''
 
                 # Values: `left` or `right`.
                 self.position: str = d['user_flair_position']
@@ -91,9 +91,9 @@ class Subreddit(Artifact):
         self.submit_text_label: str = d['submit_text_label']
         self.submit_link_label: str = d['submit_link_label']
 
-        _submission_type: str = d['submission_type']
-        self.allows_text_submissions = _submission_type in ('any', 'self')
-        self.allows_link_submissions = _submission_type in ('any', 'link')
+        submission_type: str = d['submission_type']
+        self.allows_text_submissions = submission_type in ('any', 'self')
+        self.allows_link_submissions = submission_type in ('any', 'link')
 
         #: One of `confidence` (best), `old`, `top`, `qa`, `controversial`, or `new`.
         self.suggested_comment_sort: Optional[str] = d['suggested_comment_sort']

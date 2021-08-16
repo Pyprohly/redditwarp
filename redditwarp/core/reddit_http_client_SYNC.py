@@ -14,10 +14,11 @@ from .. import __about__
 from .. import auth
 from .. import http
 from ..auth.exceptions import raise_for_resource_server_response
-from .exceptions import handle_auth_response_exception
+from ..auth.const import RESOURCE_BASE_URL
 from ..http.request import Request
 from ..http.http_client_SYNC import HTTPClient
 from ..http.transport.SYNC import transport_info_registry
+from .exceptions import handle_auth_response_exception
 
 class RedditHTTPClient(HTTPClient):
     DEFAULT_PARAMS: Mapping[str, str] = {
@@ -58,11 +59,11 @@ class RedditHTTPClient(HTTPClient):
         self.last_response: Optional[Response] = None
         self.last_response_queue: MutableSequence[Response] = collections.deque(maxlen=12)
         self.timeout = 8
+        self.base_url = RESOURCE_BASE_URL
 
-    def send(self,
-        request: Request,
-        timeout: float = -2,
-    ) -> Response:
+    def send(self, request: Request, *, timeout: float = -2) -> Response:
+        self.last_response = None
+
         try:
             resp = super().send(request, timeout=timeout)
         except (

@@ -29,7 +29,7 @@ class MyListingPaginator(ListingPaginator[str]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
-    def next_result(self) -> Sequence[str]:
+    def fetch_next_result(self) -> Sequence[str]:
         data = self._fetch_data()
         return [d['name'] for d in data['children']]
 
@@ -51,7 +51,7 @@ def test_none_limit() -> None:
 }
 '''
     p.limit = None
-    p.next_result()
+    p.fetch_next_result()
 
     if http.last_response is None:
         raise Exception
@@ -63,7 +63,7 @@ def test_none_limit() -> None:
     assert 'limit' not in request.params
 
     p.limit = 14
-    p.next_result()
+    p.fetch_next_result()
 
     if http.last_response is None:
         raise Exception
@@ -92,7 +92,7 @@ def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = p.next_result()
+    result = p.fetch_next_result()
     assert len(result) == 2
     assert p.count == 2
 
@@ -112,7 +112,7 @@ def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = p.next_result()
+    result = p.fetch_next_result()
     assert len(result) == 3
     assert p.count == 5
 
@@ -136,7 +136,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -154,7 +154,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -172,7 +172,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -190,7 +190,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -208,7 +208,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -225,7 +225,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.after == 'a'
         assert p.before == 'a'
 
@@ -242,7 +242,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.after == 'no_change1'
         assert p.before == 'no_change2'
 
@@ -266,7 +266,7 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.next_available()
 
         session.response_data = b'''\
@@ -283,7 +283,7 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.next_available() is direction
 
         session.response_data = b'''\
@@ -300,7 +300,7 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert p.next_available() is not direction
 
         session.response_data = b'''\
@@ -314,7 +314,7 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.next_result()
+        p.fetch_next_result()
         assert not p.next_available()
 
 def test_dist_none_value() -> None:
@@ -339,6 +339,6 @@ def test_dist_none_value() -> None:
     }
 }
 '''
-    result = p.next_result()
+    result = p.fetch_next_result()
     assert len(result) == 2
     assert p.count == 2
