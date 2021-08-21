@@ -11,7 +11,7 @@ from importlib.abc import Loader
 
 def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
     if spec.loader is None:
-        raise RuntimeError('spec has no loader')
+        raise ImportError('spec has no loader')
     assert isinstance(spec.loader, Loader)
 
     module = importlib.util.module_from_spec(spec)
@@ -28,7 +28,7 @@ class _LazyImport:
             if spec is None:
                 raise ImportError(f'module named {name!r} not found')
             if spec.loader is None:
-                raise RuntimeError('spec has no loader')
+                raise ImportError('spec has no loader')
             assert isinstance(spec.loader, Loader)
 
             module = importlib.util.module_from_spec(spec)

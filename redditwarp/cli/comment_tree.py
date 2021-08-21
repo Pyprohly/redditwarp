@@ -134,8 +134,8 @@ submission = m = root.value
 
 print(f'''\
 {m.permalink}
-{m.score} | {m.title}
-#({m.id36}) by u/{m.author_name} to r/{m.subreddit.name}
+{m.score} :: {m.title}
+#{m.id36} by u/{m.author_name} to r/{m.subreddit.name}
 Submitted at {m.created_at.astimezone().ctime()}{' *' if m.edited else ''}
 ''')
 

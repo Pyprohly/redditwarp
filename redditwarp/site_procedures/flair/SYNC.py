@@ -277,6 +277,7 @@ class Flair:
         self._client.request('POST', f'/r/{sr_name}/api/clearflairtemplates', data={'flair_type': 'POST_FLAIR'})
 
     def configure_subreddit_flair_settings(self,
+        sr_name: str,
         *,
         uf_enabled: Optional[bool],
         uf_position: Optional[str],
@@ -294,7 +295,7 @@ class Flair:
         }.items():
             if v is not None:
                 d[k] = v
-        self._client.request('POST', '/r/{sr_name}/api/flairconfig', data=d)
+        self._client.request('POST', f'/r/{sr_name}/api/flairconfig', data=d)
 
     def reorder_user_flair_templates(self, sr_name: str, order: Sequence[str]) -> None:
         params = {'subreddit': sr_name, 'flair_type': 'USER_FLAIR'}

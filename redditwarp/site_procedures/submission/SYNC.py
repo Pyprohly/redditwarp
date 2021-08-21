@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_SYNC import Submission as SubmissionModel
+    from ...models.comment_SYNC import Comment
 
 from functools import cached_property
 
@@ -16,6 +17,7 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
+from ...models.load.comment_SYNC import load_comment
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 
@@ -488,3 +490,36 @@ class Submission:
     def unsnooze_reports(self, idn: int, reason: str) -> None:
         data = {'id': 't3_' + to_base36(idn), 'reason': reason}
         self._client.request('POST', '/api/unsnooze_reports', data=data)
+
+    def set_removal_reason(self,
+            submission_id: int,
+            reason_id: Optional[int],
+            note: Optional[str] = None) -> None:
+        target = 't3_' + to_base36(submission_id)
+        reason = None if reason_id is None else to_base36(reason_id)
+        json_data = {'item_ids': [target], 'reason_id': reason, 'mod_note': note}
+        self._client.request('POST', '/api/v1/modactions/removal_reasons', json=json_data)
+
+    def send_removal_comment(self,
+            submission_id: int,
+            title: str,
+            message: str) -> Comment:
+        target = 't3_' + to_base36(submission_id)
+        json_data = {'type': 'public', 'item_id': [target], 'title': title, 'message': message}
+        root = self._client.request('POST', '/api/v1/modactions/removal_link_message', json=json_data)
+        return load_comment(root, self._client)
+
+    def send_removal_modmail(self,
+            submission_id: int,
+            title: str,
+            message: str,
+            *,
+            expose: bool = False) -> None:
+        target = 't3_' + to_base36(submission_id)
+        json_data = {
+            'type': 'private' + ('_exposed' if expose else ''),
+            'item_id': [target],
+            'title': title,
+            'message': message,
+        }
+        self._client.request('POST', '/api/v1/modactions/removal_link_message', json=json_data)

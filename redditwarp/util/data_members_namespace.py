@@ -43,7 +43,6 @@ T = TypeVar('T')
 class DataMembersNamespace(Collection[str], Generic[T]):
     def __init__(self, instance: T):
         self._instance = instance
-        self._inst_typ = type(instance)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__}({self._instance})>'
@@ -62,11 +61,11 @@ class DataMembersNamespace(Collection[str], Generic[T]):
             value = getattr(self._instance, cast(str, item))
         except AttributeError:
             return False
-        return self._is_data_member(value)
+        return self._data_member(value)
 
     def __getattr__(self, name: str) -> Any:
         value = getattr(self._instance, name)
-        if not self._is_data_member(value):
+        if not self._data_member(value):
             raise AttributeError(f'{self._instance.__class__.__name__!r} has no data attribute {name!r}')
         return value
 
@@ -76,11 +75,11 @@ class DataMembersNamespace(Collection[str], Generic[T]):
     def __abs__(self) -> T:
         return self._instance
 
-    def _is_data_member(self, value: object) -> bool:
+    def _data_member(self, value: object) -> bool:
         return not callable(value)
 
     def _data_members(self) -> Iterator[Tuple[str, Any]]:
-        for name, value in inspect.getmembers(self._instance, self._is_data_member):
+        for name, value in inspect.getmembers(self._instance, self._data_member):
             if value is self:
                 continue
             if name.startswith('_'):
@@ -118,6 +117,6 @@ class DataMembersNamespaceMapping(DataMembersNamespace[T]):
             value = getattr(self._instance, key)
         except AttributeError:
             raise KeyError(key)
-        if not self._is_data_member(value):
+        if not self._data_member(value):
             raise KeyError(key)
         return value

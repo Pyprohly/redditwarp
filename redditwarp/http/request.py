@@ -20,6 +20,8 @@ class Request:
     def get_url(self) -> str:
         return join_params(self.uri, self.params)
 
+BLANK_REQUEST = Request('', '')
+
 def make_request(
     verb: str,
     uri: str,

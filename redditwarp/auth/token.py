@@ -9,19 +9,10 @@ class Token:
     expires_in: Optional[int] = None
     refresh_token: Optional[str] = None
     scope: Optional[str] = None
-
-@dataclass(frozen=True)
-class ResponseToken(Token):
-    """
-    Attributes
-    ----------
-    d: Mapping[str, Any]
-        The JSON object dictionary.
-    """
-
+    #_: KW_ONLY
     d: Mapping[str, Any] = field(repr=False, default_factory=dict)
 
-    T = TypeVar('T', bound='ResponseToken')
+    T = TypeVar('T', bound='Token')
 
     @classmethod
     def from_dict(cls: Type[T], d: Mapping[str, Any]) -> T:

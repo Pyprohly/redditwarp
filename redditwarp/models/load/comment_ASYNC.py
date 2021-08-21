@@ -5,13 +5,13 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
 
 from ..comment_ASYNC import (
-    NormalComment,
+    Comment,
     ExtraSubmissionFieldsComment,
     EditPostTextEndpointComment,
 )
 
-def load_normal_comment(d: Mapping[str, Any], client: Client) -> NormalComment:
-    return NormalComment(d, client)
+def load_comment(d: Mapping[str, Any], client: Client) -> Comment:
+    return Comment(d, client)
 
 def load_extra_submission_fields_comment(d: Mapping[str, Any], client: Client) -> ExtraSubmissionFieldsComment:
     return ExtraSubmissionFieldsComment(d, client)

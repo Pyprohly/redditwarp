@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Iterable, Optional, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_user_item import (
@@ -9,6 +9,8 @@ if TYPE_CHECKING:
         BannedUserItem,
         MutedUserItem,
     )
+
+from functools import cached_property
 
 from ...models.load.subreddit_user_item import (
     load_moderator_user_item,
@@ -30,39 +32,39 @@ class Moderation:
 
     def get_moderator(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators', params={'username': user})
-        sequence = root['moderatorIds']
-        object_mapping = root['moderators']
-        return load_moderator_user_item(object_mapping[sequence[0]]) if sequence else None
+        order = root['moderatorIds']
+        object_map = root['moderators']
+        return load_moderator_user_item(object_map[order[0]]) if order else None
 
     def get_moderator_invitation(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators_invited', params={'username': user})
-        sequence = root['moderatorIds']
-        object_mapping = root['moderators']
-        return load_moderator_user_item(object_mapping[sequence[0]]) if sequence else None
+        order = root['moderatorIds']
+        object_map = root['moderators']
+        return load_moderator_user_item(object_map[order[0]]) if order else None
 
     def get_editable_moderator(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators_editable', params={'username': user})
-        sequence = root['moderatorIds']
-        object_mapping = root['moderators']
-        return load_moderator_user_item(object_mapping[sequence[0]]) if sequence else None
+        order = root['moderatorIds']
+        object_map = root['moderators']
+        return load_moderator_user_item(object_map[order[0]]) if order else None
 
     def get_approved_contributor(self, sr: str, user: str) -> Optional[ContributorUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/contributors', params={'username': user})
-        sequence = root['approvedSubmitterIds']
-        object_mapping = root['approvedSubmitters']
-        return load_contributor_user_item(object_mapping[sequence[0]]) if sequence else None
+        order = root['approvedSubmitterIds']
+        object_map = root['approvedSubmitters']
+        return load_contributor_user_item(object_map[order[0]]) if order else None
 
     def get_banned_user(self, sr: str, user: str) -> Optional[BannedUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/banned', params={'username': user})
-        sequence = root['bannedUserIds']
-        object_mapping = root['bannedUsers']
-        return load_banned_user_item(object_mapping[sequence[0]]) if sequence else None
+        order = root['bannedUserIds']
+        object_map = root['bannedUsers']
+        return load_banned_user_item(object_map[order[0]]) if order else None
 
     def get_muted_user(self, sr: str, user: str) -> Optional[MutedUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/muted', params={'username': user})
-        sequence = root['mutedUserIds']
-        object_mapping = root['mutedUsers']
-        return load_muted_user_item(object_mapping[sequence[0]]) if sequence else None
+        order = root['mutedUserIds']
+        object_map = root['mutedUsers']
+        return load_muted_user_item(object_map[order[0]]) if order else None
 
     def send_moderator_invite(self, sr: str, user: str, permissions: Iterable[str]) -> None:
         data = {
@@ -214,3 +216,33 @@ class Moderation:
             'name': user,
         }
         self._client.request('POST', '/api/unfriend', data=data)
+
+    class _removal_reason:
+        def __init__(self, outer: Moderation) -> None:
+            self._outer = outer
+            self._client = outer._client
+
+        def create(self, sr: str, title: str, message: str) -> int:
+            data = {'title': title, 'message': message}
+            root = self._client.request('POST', f'/api/v1/{sr}/removal_reasons', data=data)
+            return int(root['id'], 36)
+
+        def retrieve_map(self, sr: str) -> Mapping[int, tuple[str, str]]:
+            root = self._client.request('GET', f'/api/v1/{sr}/removal_reasons')
+            order = root['order']
+            object_map = root['data']
+            return {
+                int(y, 36): (m['title'], m['message'])
+                for y in order for m in [object_map[y]]
+            }
+
+        def update(self, sr: str, reason_id: int, title: str, message: str) -> None:
+            idt = to_base36(reason_id)
+            data = {'title': title, 'message': message}
+            self._client.request('PUT', f'/api/v1/{sr}/removal_reasons/{idt}', data=data)
+
+        def delete(self, sr: str, reason_id: int) -> None:
+            idt = to_base36(reason_id)
+            self._client.request('DELETE', f'/api/v1/{sr}/removal_reasons/{idt}')
+
+    removal_reason = cached_property(_removal_reason)

@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Mapping, Optional, List
+    from typing import MutableMapping, Optional, List
 
 import pytest
 
@@ -16,7 +16,7 @@ from redditwarp.http.payload import FormData
 class MockRequestor(Requestor):
     def __init__(self,
         response_status: int,
-        response_headers: Mapping[str, str],
+        response_headers: MutableMapping[str, str],
         response_data: bytes,
     ) -> None:
         self.response_status = response_status

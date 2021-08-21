@@ -232,11 +232,11 @@ def try_parse_reddit_error_items(data: Mapping[str, Any]) -> Optional[List[Reddi
         return l
     return None
 
-def get_variant2_reddit_api_error(response: Response, error_list: Sequence[RedditErrorItem]) -> Variant2RedditAPIError:
+def get_variant2_reddit_api_error(resp: Response, error_list: Sequence[RedditErrorItem]) -> Variant2RedditAPIError:
     cls = Variant2RedditAPIError
     if (len(error_list) == 1) and (error_list[0].codename == 'RATELIMIT'):
         cls = ContentCreationCooldown
-    return cls(response=response, errors=error_list)
+    return cls(response=resp, errors=error_list)
 
 def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
     error_list = try_parse_reddit_error_items(data)

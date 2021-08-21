@@ -94,20 +94,20 @@ class MutableAttributeMappingWrapper(AttributeMappingWrapper[V], MutableMapping[
 
     The underlying mapping object can be retrieved with `abs(self)`.
     """
-    _mutable_store: MutableMapping[str, V]
+    _mstore: MutableMapping[str, V]
 
     def __init__(self, data: MutableMapping[str, V]) -> None:
         super().__init__(data)
-        object.__setattr__(self, '_mutable_store', data)
+        object.__setattr__(self, '_mstore', data)
 
     def __abs__(self) -> MutableMapping[str, V]:
-        return self._mutable_store
+        return self._mstore
 
     def __setitem__(self, key: str, value: V) -> None:
-        self._mutable_store[key] = value
+        self._mstore[key] = value
 
     def __delitem__(self, key: str) -> None:
-        del self._mutable_store[key]
+        del self._mstore[key]
 
     # Have to write it the long way to make mypy notice this method.
     #__setattr__ = __setitem__

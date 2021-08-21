@@ -15,5 +15,5 @@ class AsyncPaginator(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def fetch_next_result(self) -> Sequence[T]:
+    async def next_result(self) -> Sequence[T]:
         raise NotImplementedError

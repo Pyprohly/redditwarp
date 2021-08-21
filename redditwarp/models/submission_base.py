@@ -22,15 +22,16 @@ class Submission(Artifact):
     class Author:
         class AuthorFlair:
             def __init__(self, d: Mapping[str, Any]):
-                self.has_had_flair: bool = d['author_flair_text'] is not None
-                self.bg_color: str = d['author_flair_background_color'] or ''
-                author_flair_css_class_temp: Optional[str] = d['author_flair_css_class']
-                self.has_had_css_class_when_no_flair_template: bool = author_flair_css_class_temp is not None
-                self.css_class: str = author_flair_css_class_temp or ''
                 self.template_uuid: Optional[str] = d['author_flair_template_id']
-                self.text: str = d['author_flair_text'] or ''
-                self.text_color: str = d['author_flair_text_color'] or ''
-                self.type: str = d['author_flair_type']
+                author_flair_text: Optional[str] = d['author_flair_text']
+                self.text: str = author_flair_text or ''
+                self.has_had_flair: bool = author_flair_text is not None
+                self.text_light_mode: str = d['author_flair_text_color'] or ''
+                self.bg_color: str = d['author_flair_background_color'] or ''
+                self.uses_richtext: bool = d['author_flair_type'] == 'richtext'
+                author_flair_css_class: Optional[str] = d['author_flair_css_class']
+                self.has_had_css_class_when_no_flair_template: bool = author_flair_css_class is not None
+                self.css_class: str = author_flair_css_class or ''
 
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['author']
@@ -51,18 +52,41 @@ class Submission(Artifact):
             self.subscriber_count: int = d['subreddit_subscribers']
 
     class Moderator:
+        class Approved:
+            def __init__(self, d: Mapping[str, Any]):
+                self.by: str = d['approved_by']
+                self.ut: int = d['approved_at_utc']
+                self.at = datetime.fromtimestamp(self.ut, timezone.utc)
+
+        class Removed:
+            def __init__(self, d: Mapping[str, Any]):
+                self.by: str = d['banned_by']
+                self.ut: int = d['banned_at_utc']
+                self.at = datetime.fromtimestamp(self.ut, timezone.utc)
+
+        class Reports:
+            def __init__(self, d: Mapping[str, Any]):
+                self.ignoring: bool = d['ignore_reports']
+                self.num_reports: int = d['num_reports']
+                self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
+                self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
+
         def __init__(self, d: Mapping[str, Any]):
             self.spam: bool = d['spam']
 
-            self.approved: bool = d['approved']
-            self.approved_by: Optional[str] = d['approved_by']
-            self.approved_ut: Optional[int] = d['approved_at_utc']
-            self.approved_at: Optional[datetime] = None
-            if self.approved_ut is not None:
-                self.approved_at = datetime.fromtimestamp(self.approved_ut, timezone.utc)
+            self.approved = None
+            if d['approved_by']:
+                self.approved = self.Approved(d)
 
-            self.removed: bool = d['removed']
-            self.removed_by: Optional[str] = d['removed_by']
+            self.removed = None
+            if d['banned_by']:
+                self.removed = self.Removed(d)
+
+            self.reports = self.Reports(d)
+
+            self.removal_reason_by: Optional[str] = d['mod_reason_by']
+            self.removal_reason_title: Optional[str] = d['mod_reason_title']
+            self.removal_note: Optional[str] = d['mod_note']
 
     class Event:
         def __init__(self, d: Mapping[str, Any]):

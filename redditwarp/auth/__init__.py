@@ -1,5 +1,5 @@
 
-__all__ = 'Token', 'ResponseToken'
+__all__ = 'Token',
 
 from . import SYNC, ASYNC  # noqa: F401
-from .token import Token, ResponseToken
+from .token import Token

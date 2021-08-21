@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 import asyncio
 
 import aiohttp  # type: ignore[import]
+import multidict
 
 from .ASYNC import register
 from ..session_base_ASYNC import SessionBase
@@ -110,9 +111,10 @@ class Session(SessionBase):
         except Exception as e:
             raise exceptions.TransportError from e
 
+        headers: multidict.CIMultiDict[str] = multidict.CIMultiDict(response.headers)
         return Response(
             status=response.status,
-            headers=response.headers,
+            headers=headers,
             data=content,
             request=request,
             underlying_object=response,

@@ -19,9 +19,9 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from types import FrameType
 
+globalz = globals()
 
 import argparse
-globalz = globals()
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
 cli_desc = globalz.get('?description', __doc__)
 parser = argparse.ArgumentParser(description=cli_desc, formatter_class=Formatter)

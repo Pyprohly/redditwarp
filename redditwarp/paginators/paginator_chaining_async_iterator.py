@@ -31,7 +31,7 @@ class BasePaginatorChainingAsyncIterator(AsyncIterator[E]):
                     if remaining < self._paginator.limit:
                         self._paginator.limit = remaining
 
-                it = await self._paginator.fetch_next_result()
+                it = await self._paginator.next_result()
                 self.current_iter = iter(it)
 
         raise StopAsyncIteration

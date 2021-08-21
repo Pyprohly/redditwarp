@@ -5,17 +5,17 @@ if TYPE_CHECKING:
     from typing import Optional, Mapping, MutableMapping, MutableSequence
     from ..http.session_base_ASYNC import SessionBase
     from .authorizer_ASYNC import Authorizer, Authorized
+    from ..http.request import Request
     from ..http.response import Response
 
 import sys
-import collections
+from collections import deque
 
 from .. import __about__
 from .. import auth
 from .. import http
 from ..auth.exceptions import raise_for_resource_server_response
 from ..auth.const import RESOURCE_BASE_URL
-from ..http.request import Request
 from ..http.http_client_ASYNC import HTTPClient
 from ..http.transport.ASYNC import transport_info_registry
 from .exceptions import handle_auth_response_exception
@@ -56,30 +56,45 @@ class RedditHTTPClient(HTTPClient):
         super().__init__(session, params=params, headers=headers)
         self.authorized_requestor: Optional[Authorized] = None
         self.user_agent = self.user_agent_start = get_user_agent(session)
-        self.last_response: Optional[Response] = None
-        self.last_response_queue: MutableSequence[Response] = collections.deque(maxlen=12)
         self.timeout = 8
         self.base_url = RESOURCE_BASE_URL
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
-        self.last_response = None
+        self.last_request: Optional[Request] = None
+        self.last_request_queue: MutableSequence[Request] = deque(maxlen=16)
+        self.last_response: Optional[Response] = None
+        self.last_response_queue: MutableSequence[Response] = deque(maxlen=16)
+        self.last_transfer: Optional[tuple[Request, Response]] = None
+        self.last_transfer_queue: MutableSequence[tuple[Request, Response]] = deque(maxlen=16)
+        self.last_transmit: Optional[tuple[Request, Optional[Response]]] = None
+        self.last_transmit_queue: MutableSequence[tuple[Request, Optional[Response]]] = deque(maxlen=16)
 
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+        resp = None
         try:
             resp = await super().send(request, timeout=timeout)
         except (
-            auth.exceptions.ResponseException,
             http.exceptions.ResponseException,
+            auth.exceptions.ResponseException,
         ) as e:
             resp = e.response
-            self.last_response = resp
-            self.last_response_queue.append(resp)
 
             if isinstance(e, auth.exceptions.ResponseException):
                 raise handle_auth_response_exception(e)
+
             raise
 
-        self.last_response = resp
-        self.last_response_queue.append(resp)
+        finally:
+            self.last_request = request
+            self.last_response = None
+            self.last_transfer = None
+            self.last_transmit = (request, resp)
+            self.last_request_queue.append(request)
+            self.last_transmit_queue.append(self.last_transmit)
+            if resp is not None:
+                self.last_response = resp
+                self.last_transfer = (request, resp)
+                self.last_response_queue.append(resp)
+                self.last_transfer_queue.append(self.last_transfer)
 
         raise_for_resource_server_response(resp)
         return resp

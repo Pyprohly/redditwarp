@@ -36,14 +36,17 @@ class ModerationPullUsersPaginator(BidirectionalCursorPaginator[T]):
     def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
         if self.limit is not None:
             yield ('count', str(self.limit))
+
         if self.direction:
-            if not self.after and not self.has_after:
+            if self.after:
+                yield ('after', self.after)
+            elif not self.has_after:
                 raise MissingCursorException('after')
-            yield ('after', self.after)
         else:
-            if not self.before and not self.has_before:
+            if self.before:
+                yield ('before', self.before)
+            elif not self.has_before:
                 raise MissingCursorException('before')
-            yield ('before', self.before)
 
     def _fetch_data(self) -> Mapping[str, Any]:
         params = dict(self._generate_params())
@@ -58,29 +61,29 @@ class ModerationPullUsersPaginator(BidirectionalCursorPaginator[T]):
 
 
 class ModeratorsPaginator(ModerationPullUsersPaginator[ModeratorUserItem]):
-    def fetch_next_result(self) -> Sequence[ModeratorUserItem]:
+    def next_result(self) -> Sequence[ModeratorUserItem]:
         root = self._fetch_data()
-        sequence = root['moderatorIds']
-        object_mapping = root['moderators']
-        return [load_moderator_user_item(object_mapping[full_id36]) for full_id36 in sequence]
+        order = root['moderatorIds']
+        object_map = root['moderators']
+        return [load_moderator_user_item(object_map[full_id36]) for full_id36 in order]
 
 class ContributorsPaginator(ModerationPullUsersPaginator[ContributorUserItem]):
-    def fetch_next_result(self) -> Sequence[ContributorUserItem]:
+    def next_result(self) -> Sequence[ContributorUserItem]:
         root = self._fetch_data()
-        sequence = root['approvedSubmitterIds']
-        object_mapping = root['approvedSubmitters']
-        return [load_contributor_user_item(object_mapping[full_id36]) for full_id36 in sequence]
+        order = root['approvedSubmitterIds']
+        object_map = root['approvedSubmitters']
+        return [load_contributor_user_item(object_map[full_id36]) for full_id36 in order]
 
 class BannedPaginator(ModerationPullUsersPaginator[BannedUserItem]):
-    def fetch_next_result(self) -> Sequence[BannedUserItem]:
+    def next_result(self) -> Sequence[BannedUserItem]:
         root = self._fetch_data()
-        sequence = root['bannedUserIds']
-        object_mapping = root['bannedUsers']
-        return [load_banned_user_item(object_mapping[full_id36]) for full_id36 in sequence]
+        order = root['bannedUserIds']
+        object_map = root['bannedUsers']
+        return [load_banned_user_item(object_map[full_id36]) for full_id36 in order]
 
 class MutedPaginator(ModerationPullUsersPaginator[MutedUserItem]):
-    def fetch_next_result(self) -> Sequence[MutedUserItem]:
+    def next_result(self) -> Sequence[MutedUserItem]:
         root = self._fetch_data()
-        sequence = root['mutedUserIds']
-        object_mapping = root['mutedUsers']
-        return [load_muted_user_item(object_mapping[full_id36]) for full_id36 in sequence]
+        order = root['mutedUserIds']
+        object_map = root['mutedUsers']
+        return [load_muted_user_item(object_map[full_id36]) for full_id36 in order]

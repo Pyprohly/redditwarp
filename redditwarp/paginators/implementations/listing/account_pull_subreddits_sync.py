@@ -9,7 +9,7 @@ from ....models.subreddit_SYNC import Subreddit
 
 
 class SubredditListingPaginator(ListingPaginator[Subreddit]):
-    def fetch_next_result(self) -> Sequence[Subreddit]:
+    def next_result(self) -> Sequence[Subreddit]:
         data = self._fetch_data()
         return [load_subreddit(d['data'], self.client) for d in data['children']]
 

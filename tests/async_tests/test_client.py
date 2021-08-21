@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING, MutableMapping
 if TYPE_CHECKING:
     from redditwarp.http.request import Request
 
@@ -21,7 +21,7 @@ class MyHTTPClient(RedditHTTPClient):
 
     def __init__(self,
         response_status: int,
-        response_headers: Mapping[str, str],
+        response_headers: MutableMapping[str, str],
         response_data: bytes,
     ) -> None:
         super().__init__(session=self.SESSION)

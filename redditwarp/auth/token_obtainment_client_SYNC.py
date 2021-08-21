@@ -10,7 +10,7 @@ from .. import http
 from ..http.request import Request
 from ..http.util.json_load import json_loads_response
 from ..http.payload import FormData
-from .token import ResponseToken
+from .token import Token
 from .util import apply_basic_auth
 from .exceptions import (
     ResponseContentError,
@@ -62,5 +62,5 @@ class TokenObtainmentClient:
 
         return resp_json
 
-    def fetch_token(self) -> ResponseToken:
-        return ResponseToken.from_dict(self.fetch_json_dict())
+    def fetch_token(self) -> Token:
+        return Token.from_dict(self.fetch_json_dict())

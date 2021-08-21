@@ -33,14 +33,17 @@ class ListingAsyncPaginator(BidirectionalCursorAsyncPaginator[T]):
             yield ('limit', str(self.limit))
         if self.show_all:
             yield ('show', 'all')
+
         if self.direction:
-            if not self.after and not self.has_after:
+            if self.after:
+                yield ('after', self.after)
+            elif not self.has_after:
                 raise MissingCursorException('after')
-            yield ('after', self.after)
         else:
-            if not self.before and not self.has_before:
+            if self.before:
+                yield ('before', self.before)
+            elif not self.has_before:
                 raise MissingCursorException('before')
-            yield ('before', self.before)
 
     async def _fetch_data(self) -> Mapping[str, Any]:
         params = dict(self._generate_params())
