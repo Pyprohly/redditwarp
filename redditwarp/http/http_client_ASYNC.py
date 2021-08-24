@@ -13,19 +13,27 @@ if TYPE_CHECKING:
 from urllib.parse import urljoin
 
 from .request import make_request
-from .requestor_decorator_ASYNC import RequestorDecorator
 
 T = TypeVar('T')
 
-class HTTPClient(RequestorDecorator):
+class HTTPClient:
+    @property
+    def session(self) -> SessionBase:
+        return self._session
+
+    @property
+    def requestor(self) -> Requestor:
+        return self._requestor
+
     def __init__(self,
         session: SessionBase,
+        requestor: Optional[Requestor] = None,
         *,
         params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
-        self.session = session
-        self.requestor: Requestor = session
+        self._session = session
+        self._requestor = session if requestor is None else requestor
         self.params: MutableMapping[str, Optional[str]]
         self.params = {} if params is None else params
         self.headers: MutableMapping[str, str]

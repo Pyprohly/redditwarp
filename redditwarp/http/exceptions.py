@@ -10,16 +10,13 @@ class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 
-class NetworkException(ArgInfoException):
+class TransportError(ArgInfoException):
     pass
 
-class TransportError(NetworkException):
+class TimeoutException(ArgInfoException):
     pass
 
-class TimeoutException(NetworkException):
-    pass
-
-class ResponseException(NetworkException):
+class ResponseException(ArgInfoException):
     """The request completed successfully but there was an issue with the response."""
 
     def __init__(self, arg: object = None, *, response: Response) -> None:

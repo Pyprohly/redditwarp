@@ -60,12 +60,16 @@ class CoreClient:
         access_token: str
         """
         session = new_session()
-        http = RedditHTTPClient(session)
-        token = Token(access_token)
-        token_client = None
-        authorizer = Authorizer(token_client, token)
-        http.authorized_requestor = Authorized(session, authorizer)
-        http.requestor = RateLimited(http.authorized_requestor)
+        requestor = RateLimited(
+            Authorized(
+                session,
+                Authorizer(
+                    None,
+                    Token(access_token),
+                ),
+            ),
+        )
+        http = RedditHTTPClient(session, requestor)
         return cls.from_http(http)
 
     @classmethod
@@ -143,18 +147,23 @@ class CoreClient:
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
         session = new_session()
-        http = RedditHTTPClient(session)
-        token = None if access_token is None else Token(access_token)
         token_client = RedditTokenObtainmentClient(
             session,
             TOKEN_OBTAINMENT_URL,
             (client_id, client_secret),
             grant,
-            http.headers,
         )
-        authorizer = Authorizer(token_client, token)
-        http.authorized_requestor = Authorized(session, authorizer)
-        http.requestor = RateLimited(http.authorized_requestor)
+        requestor = RateLimited(
+            Authorized(
+                session,
+                Authorizer(
+                    token_client,
+                    (None if access_token is None else Token(access_token)),
+                ),
+            ),
+        )
+        http = RedditHTTPClient(session, requestor)
+        token_client.headers = http.headers
         self._init(http)
 
     def _init(self, http: RedditHTTPClient) -> None:

@@ -8,6 +8,7 @@ import pytest
 
 from redditwarp import auth
 from redditwarp import core
+from redditwarp.http import exceptions as http_exceptions
 from redditwarp.core.reddit_http_client_ASYNC import RedditHTTPClient
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.response import Response
@@ -27,6 +28,27 @@ class GoodSession(SessionBase):
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         self.history.append(request)
+        return Response(self.response_status, self.response_headers, self.response_data)
+
+class NeutralSession(SessionBase):
+    def __init__(self,
+        response_status: int = 200,
+        response_headers: Optional[MutableMapping[str, str]] = None,
+        response_data: bytes = b'',
+        *,
+        exception: Optional[Exception] = None,
+    ) -> None:
+        super().__init__()
+        self.response_status = response_status
+        self.response_headers = {} if response_headers is None else response_headers
+        self.response_data = response_data
+        self.history: List[Request] = []
+        self.exception = exception
+
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+        self.history.append(request)
+        if self.exception is not None:
+            raise self.exception
         return Response(self.response_status, self.response_headers, self.response_data)
 
 class BadSession(SessionBase):
@@ -54,89 +76,104 @@ async def test_request() -> None:
     assert requ.headers.pop('User-Agent')
     assert requ.headers == {'cheese': 'bacon', 'fire': 'air'}
 
-@pytest.mark.asyncio
-async def test_last_request() -> None:
-    good_session = GoodSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-    http = RedditHTTPClient(session=good_session)
-    assert http.last_request is None
-    req1 = Request('', '')
-    await http.send(req1)
-    assert http.last_request is req1
+class LastMessageRecord:
+    @pytest.mark.asyncio
+    async def test_last_request(self) -> None:
+        session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
+        http = RedditHTTPClient(session=session)
+        assert http.last.request is None
+        req1 = Request('', '')
+        await http.send(req1)
+        assert http.last.request is req1
 
-    exc = RuntimeError()
-    bad_session = BadSession(exc)
-    http.session = http.requestor = bad_session
-    req2 = Request('', '')
-    try:
-        await http.send(req2)
-    except RuntimeError:
-        pass
-    assert http.last_request == req2
+        session.exception = RuntimeError()
+        req2 = Request('', '')
+        try:
+            await http.send(req2)
+        except RuntimeError:
+            pass
+        assert http.last.request == req2
 
-    assert list(http.last_request_queue) == [req1, req2]
+        assert list(http.last_request_queue) == [req1, req2]
 
-@pytest.mark.asyncio
-async def test_last_response() -> None:
-    good_session = GoodSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-    http = RedditHTTPClient(session=good_session)
-    assert http.last_response is None
-    resp = await http.send(Request('', ''))
-    assert http.last_response is resp
+    @pytest.mark.asyncio
+    async def test_last_response(self) -> None:
+        session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
+        http = RedditHTTPClient(session=session)
+        assert http.last.response is None
+        resp = await http.send(Request('', ''))
+        assert http.last.response is resp
 
-    exc = RuntimeError()
-    bad_session = BadSession(exc)
-    http.session = http.requestor = bad_session
-    try:
-        await http.send(Request('', ''))
-    except RuntimeError:
-        pass
-    assert http.last_response is None
+        session.exception = RuntimeError()
+        try:
+            await http.send(Request('', ''))
+        except RuntimeError:
+            pass
+        assert http.last.response is None
 
-    assert list(http.last_response_queue) == [resp]
+        assert list(http.last_response_queue) == [resp]
 
-@pytest.mark.asyncio
-async def test_last_transfer() -> None:
-    good_session = GoodSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-    http = RedditHTTPClient(session=good_session)
-    assert http.last_transfer is None
-    req1 = Request('', '')
-    resp1 = await http.send(req1)
-    assert http.last_transfer == (req1, resp1)
+    @pytest.mark.asyncio
+    async def test_last_transfer(self) -> None:
+        session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
+        http = RedditHTTPClient(session=session)
+        assert http.last.transfer is None
+        req1 = Request('', '')
+        resp1 = await http.send(req1)
+        assert http.last.transfer == (req1, resp1)
 
-    exc = RuntimeError()
-    bad_session = BadSession(exc)
-    http.session = http.requestor = bad_session
-    try:
-        await http.send(Request('', ''))
-    except RuntimeError:
-        pass
-    assert http.last_transfer is None
+        session.exception = RuntimeError()
+        try:
+            await http.send(Request('', ''))
+        except RuntimeError:
+            pass
+        assert http.last.transfer is None
 
-    assert list(http.last_transfer_queue) == [(req1, resp1)]
+        assert list(http.last.transfer_queue) == [(req1, resp1)]
 
-@pytest.mark.asyncio
-async def test_last_transmit() -> None:
-    good_session = GoodSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-    http = RedditHTTPClient(session=good_session)
-    assert http.last_transmit is None
-    req1 = Request('', '')
-    resp1 = await http.send(req1)
-    assert http.last_transmit == (req1, resp1)
+    @pytest.mark.asyncio
+    async def test_last_transmit(self) -> None:
+        session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
+        http = RedditHTTPClient(session=session)
+        assert http.last.transmit is None
+        req1 = Request('', '')
+        resp1 = await http.send(req1)
+        assert http.last.transmit == (req1, resp1)
 
-    exc = RuntimeError()
-    bad_session = BadSession(exc)
-    http.session = http.requestor = bad_session
-    req2 = Request('', '')
-    try:
-        await http.send(req2)
-    except RuntimeError:
-        pass
-    assert http.last_transmit == (req2, None)
+        session.exception = RuntimeError()
+        req2 = Request('', '')
+        try:
+            await http.send(req2)
+        except RuntimeError:
+            pass
+        assert http.last.transmit == (req2, None)
 
-    assert list(http.last_transmit_queue) == [(req1, resp1), (req2, None)]
+        assert list(http.last.transmit_queue) == [(req1, resp1), (req2, None)]
+
 
 class TestRequestExceptions:
+    class TestHTTP:
+        @pytest.mark.asyncio
+        async def test_response_exception_response_object_stored_in_last_response(self) -> None:
+            response = Response(999, {}, b'')
+            exc = http_exceptions.ResponseException(response=response)
+            session = BadSession(exc)
+            http = RedditHTTPClient(session=session)
+            with pytest.raises(http_exceptions.ResponseException):
+                await http.request('', '')
+            assert http.last_response is exc.response
+
     class TestAuth:
+        @pytest.mark.asyncio
+        async def test_response_exception_response_object_stored_in_last_response(self) -> None:
+            response = Response(999, {}, b'')
+            exc = auth.exceptions.ResponseException(response=response)
+            session = BadSession(exc)
+            http = RedditHTTPClient(session=session)
+            with pytest.raises(auth.exceptions.ResponseException):
+                await http.request('', '')
+            assert http.last_response is exc.response
+
         class TestResponseContentError:
             @pytest.mark.asyncio
             async def test_UnidentifiedResponseContentError(self) -> None:

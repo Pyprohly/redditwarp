@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import pytest
 
-from redditwarp.auth.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
+from redditwarp.auth.reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
 from redditwarp.auth.exceptions import HTTPStatusError
 
-from .test_token_obtainment_client import MockRequestor
+from .test_token_obtainment_client_ASYNC import MockRequestor
 
-def test_fetch_json_dict__exceptions() -> None:
+@pytest.mark.asyncio
+async def test_fetch_json_dict__exceptions() -> None:
     requestor = MockRequestor(
         response_status=401,
         response_headers={'Content-Type': 'application/json'},
@@ -20,4 +21,4 @@ def test_fetch_json_dict__exceptions() -> None:
         {},
     )
     with pytest.raises(HTTPStatusError):
-        o.fetch_json_dict()
+        await o.fetch_json_dict()

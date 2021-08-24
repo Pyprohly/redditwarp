@@ -509,7 +509,7 @@ class Submission:
         root = self._client.request('POST', '/api/v1/modactions/removal_link_message', json=json_data)
         return load_comment(root, self._client)
 
-    def send_removal_modmail(self,
+    def send_removal_message(self,
             submission_id: int,
             title: str,
             message: str,

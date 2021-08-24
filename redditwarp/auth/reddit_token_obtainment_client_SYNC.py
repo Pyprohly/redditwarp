@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Any
+from typing import TYPE_CHECKING, Mapping, Any, Optional
 if TYPE_CHECKING:
     from .typedefs import ClientCredentials, AuthorizationGrant
     from ..http.requestor_SYNC import Requestor
@@ -14,9 +14,9 @@ class RedditTokenObtainmentClient(TokenObtainmentClient):
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials,
             grant: AuthorizationGrant,
-            headers: Mapping[str, str]):
+            headers: Optional[Mapping[str, str]] = None):
         super().__init__(requestor, uri, client_credentials, grant)
-        self.headers = headers
+        self.headers = {} if headers is None else headers
 
     def _new_request(self) -> Request:
         r = super()._new_request()

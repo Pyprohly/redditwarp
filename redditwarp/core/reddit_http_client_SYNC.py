@@ -2,23 +2,23 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Optional, Mapping, MutableMapping, MutableSequence
+    from typing import Optional, Mapping, MutableMapping
     from ..http.session_base_SYNC import SessionBase
     from .authorizer_SYNC import Authorizer, Authorized
     from ..http.request import Request
     from ..http.response import Response
+    from ..http.requestor_SYNC import Requestor
 
 import sys
-from collections import deque
 
 from .. import __about__
 from .. import auth
-from .. import http
 from ..auth.exceptions import raise_for_resource_server_response
 from ..auth.const import RESOURCE_BASE_URL
 from ..http.http_client_SYNC import HTTPClient
 from ..http.transport.SYNC import transport_info_registry
 from .exceptions import handle_auth_response_exception
+from .record_messages_requestor_SYNC import RecordLastMessages
 
 class RedditHTTPClient(HTTPClient):
     DEFAULT_PARAMS: Mapping[str, str] = {
@@ -43,58 +43,38 @@ class RedditHTTPClient(HTTPClient):
     @authorizer.setter
     def authorizer(self, value: Authorizer) -> None:
         if self.authorized_requestor is None:
-            raise RuntimeError('The client is not configured in a way that knows how to update this field.')
+            raise RuntimeError('.authorized_requestor missing')
         self.authorized_requestor.authorizer = value
+
+    @property
+    def last(self) -> RecordLastMessages.State:
+        return self.recorder.last
+
+    @property
+    def last_response(self) -> Optional[Response]:
+        return self.recorder.last.response
 
     def __init__(self,
         session: SessionBase,
+        requestor: Optional[Requestor] = None,
         *,
         params: Optional[MutableMapping[str, Optional[str]]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
+        authorized_requestor: Optional[Authorized] = None,
     ) -> None:
         params = dict(self.DEFAULT_PARAMS) if params is None else params
-        super().__init__(session, params=params, headers=headers)
-        self.authorized_requestor: Optional[Authorized] = None
+        self.recorder = RecordLastMessages(session if requestor is None else requestor)
+        super().__init__(session, self.recorder, params=params, headers=headers)
+        self.authorized_requestor: Optional[Authorized] = authorized_requestor
         self.user_agent = self.user_agent_start = get_user_agent(session)
         self.timeout = 8
         self.base_url = RESOURCE_BASE_URL
 
-        self.last_request: Optional[Request] = None
-        self.last_response: Optional[Response] = None
-        self.last_transfer: Optional[tuple[Request, Response]] = None
-        self.last_transmit: Optional[tuple[Request, Optional[Response]]] = None
-        self.last_request_queue: MutableSequence[Request] = deque(maxlen=16)
-        self.last_response_queue: MutableSequence[Response] = deque(maxlen=16)
-        self.last_transfer_queue: MutableSequence[tuple[Request, Response]] = deque(maxlen=16)
-        self.last_transmit_queue: MutableSequence[tuple[Request, Optional[Response]]] = deque(maxlen=16)
-
     def send(self, request: Request, *, timeout: float = -2) -> Response:
-        resp = None
         try:
             resp = super().send(request, timeout=timeout)
-        except (
-            http.exceptions.ResponseException,
-            auth.exceptions.ResponseException,
-        ) as e:
-            resp = e.response
-
-            if isinstance(e, auth.exceptions.ResponseException):
-                raise handle_auth_response_exception(e)
-
-            raise
-
-        finally:
-            self.last_request = request
-            self.last_response = None
-            self.last_transfer = None
-            self.last_transmit = (request, resp)
-            self.last_request_queue.append(request)
-            self.last_transmit_queue.append(self.last_transmit)
-            if resp is not None:
-                self.last_response = resp
-                self.last_transfer = (request, resp)
-                self.last_response_queue.append(resp)
-                self.last_transfer_queue.append(self.last_transfer)
+        except auth.exceptions.ResponseException as e:
+            raise handle_auth_response_exception(e)
 
         raise_for_resource_server_response(resp)
         return resp
