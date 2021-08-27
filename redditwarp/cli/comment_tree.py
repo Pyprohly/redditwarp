@@ -9,6 +9,7 @@ import shutil
 from collections import deque
 
 import redditwarp
+from redditwarp.util.extract_id_from_url import extract_submission_id_from_url
 from redditwarp.models.comment_SYNC import Comment
 
 ALGORITHM_CHOICES = {
@@ -16,7 +17,6 @@ ALGORITHM_CHOICES = {
     'depth_first_search': 'dfs',
     'dfs': 'dfs',
     'recursive_depth_first_search': 'recursive_depth_first_search',
-    'iterative_breadth_first_search': 'bfs',
     'breadth_first_search': 'bfs',
     'bfs': 'bfs',
 }
@@ -40,75 +40,76 @@ target: str = args.target or args.target_opt or input('Target: ')
 chosen_algo: str = args.algo
 comment_sort: str = args.comment_sort
 
-algo = ALGORITHM_CHOICES[chosen_algo]
-if algo == 'recursive_depth_first_search':
-    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
-        def dfs(
-            root: CommentSubtreeTreeNode[T],
-            level: int = 0,
-        ) -> Iterator[tuple[int, Comment]]:
-            value = root.value
 
-            if isinstance(value, Comment):
-                yield (level, value)
+def recursive_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
+    def dfs(
+        root: CommentSubtreeTreeNode[T],
+        level: int = 0,
+    ) -> Iterator[tuple[int, Comment]]:
+        value = root.value
 
-            for child in root.children:
-                dfs(child, level + 1)
+        if isinstance(value, Comment):
+            yield (level, value)
 
-            if root.more:
-                dfs(root.more(), level)
+        for child in root.children:
+            dfs(child, level + 1)
 
-        return dfs(cast("CommentSubtreeTreeNode[object]", node))
+        if root.more:
+            dfs(root.more(), level)
 
-elif algo == 'dfs':
-    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
-        stack: MutableSequence[ICommentSubtreeTreeNode] = deque([node])
-        levels = deque([0])
-        while stack:
-            node = cast("CommentSubtreeTreeNode[object]", stack.pop())
-            level = levels.pop()
+    return dfs(cast("CommentSubtreeTreeNode[object]", node))
+
+def iterative_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
+    stack: MutableSequence[ICommentSubtreeTreeNode] = deque([node])
+    levels = deque([0])
+    while stack:
+        node = cast("CommentSubtreeTreeNode[object]", stack.pop())
+        level = levels.pop()
+        value = node.value
+
+        if isinstance(value, Comment):
+            yield (level, value)
+
+        if node.more:
+            stack.append(node.more())
+            levels.append(level)
+        children = node.children
+        stack.extend(reversed(children))
+        levels.extend([level + 1] * len(children))
+
+def breadth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
+    level = 0
+    queue: MutableSequence[ICommentSubtreeTreeNode] = deque([node])
+    while queue:
+        batch = deque(queue)
+        queue.clear()
+
+        while batch:
+            node = cast("CommentSubtreeTreeNode[object]", batch.popleft())
             value = node.value
 
+            if value is None:
+                if node.more:
+                    batch.appendleft(node.more())
+                batch.extendleft(reversed(node.children))
+                continue
+
             if isinstance(value, Comment):
                 yield (level, value)
 
+            queue.extend(node.children)
             if node.more:
-                stack.append(node.more())
-                levels.append(level)
-            children = node.children
-            stack.extend(reversed(children))
-            levels.extend([level + 1] * len(children))
+                queue.append(node.more())
 
-elif algo == 'bfs':
-    def traversal(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
-        level = 0
-        queue: MutableSequence[ICommentSubtreeTreeNode] = deque([node])
-        while queue:
-            batch = deque(queue)
-            queue.clear()
+        level += 1
 
-            while batch:
-                node = cast("CommentSubtreeTreeNode[object]", batch.popleft())
-                value = node.value
 
-                if value is None:
-                    if node.more:
-                        batch.appendleft(node.more())
-                    batch.extendleft(reversed(node.children))
-                    continue
-
-                if isinstance(value, Comment):
-                    yield (level, value)
-
-                queue.extend(node.children)
-                if node.more:
-                    queue.append(node.more())
-
-            level += 1
-
-else:
-    raise Exception
-
+algo = ALGORITHM_CHOICES[chosen_algo]
+traversal = {
+    'recursive_depth_first_search': recursive_depth_first_search,
+    'dfs': iterative_depth_first_search,
+    'bfs': breadth_first_search,
+}[algo]
 
 client = redditwarp.SYNC.Client.from_access_token(access_token)
 client.http.user_agent += " redditwarp.cli.comment_tree"
@@ -120,7 +121,7 @@ if length < 8:
 elif length < 12:
     idn = int(target, 10)
 else:
-    idn = redditwarp.util.extract_id_from_url.extract_submission_id_from_url(target)
+    idn = extract_submission_id_from_url(target)
 
 assert idn
 

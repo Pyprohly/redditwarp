@@ -13,7 +13,7 @@ from .. import exceptions
 from .. import payload
 from ..response import Response
 
-def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
+def _multipart_payload_dispatch(y: Payload) -> Mapping[str, Any]:
     if not isinstance(y, payload.Multipart):
         raise Exception
 
@@ -46,13 +46,13 @@ def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
         'files': destructured_file_payloads,
     }
 
-def _request_kwargs(r: Request) -> Mapping[str, object]:
+def _request_kwargs(r: Request) -> Mapping[str, Any]:
     for v in r.params.values():
         if v is None:
             msg = f'valueless URL params is not supported by this HTTP transport library ({name}); the params mapping cannot contain None'
             raise RuntimeError(msg)
 
-    kwargs: MutableMapping[str, object] = {
+    kwargs: MutableMapping[str, Any] = {
         'method': r.verb,
         'url': r.uri,
         'params': r.params,
@@ -85,7 +85,7 @@ class Session(SessionBase):
         if timeout == -1:
             timeout_obj = httpx.Timeout(None, pool=20)
 
-        kwargs: MutableMapping[str, object] = {'timeout': timeout_obj}
+        kwargs: MutableMapping[str, Any] = {'timeout': timeout_obj}
         kwargs.update(_request_kwargs(request))
 
         try:

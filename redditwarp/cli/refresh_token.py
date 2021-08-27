@@ -72,7 +72,7 @@ def get_client_secret(args: argparse.Namespace) -> str:
     v = args.client_secret_opt or args.client_secret
     return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', v)
 
-def handle_sigint(sig: int, frame: FrameType) -> None:
+def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
     print('KeyboardInterrupt', file=sys.stderr)
     sys.exit(130)
 

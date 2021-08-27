@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Sequence, Optional, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
+    from .comment_tree_SYNC import CommentTreeNode
 
 from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
 from .comment_tree_SYNC import MoreCommentsTreeNode

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Union, AnyStr
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Union
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.typedefs import AuthorizationGrant
@@ -22,23 +22,27 @@ from .exceptions import (
     handle_non_json_response,
     raise_for_json_object_data,
 )
-#from .util.imports import lazy_import;
-#if 0: from .site_procedures import ASYNC as site_procedures_ASYNC
-#site_procedures_ASYNC = lazy_import('.site_procedures.ASYNC', __package__)  # noqa: F811
+
+'''
+from .util.imports import lazy_import
+if TYPE_CHECKING:
+    from .site_procedures import ASYNC as site_procedures_ASYNC
+else:
+    site_procedures_ASYNC = lazy_import('.site_procedures.SYNC', __package__)
+'''
 
 class CoreClient:
     _USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR = ' Bot !-- '
-
-    T = TypeVar('T', bound='CoreClient')
+    _TSelf = TypeVar('_TSelf', bound='CoreClient')
 
     @classmethod
-    def from_http(cls: Type[T], http: RedditHTTPClient) -> T:
+    def from_http(cls: Type[_TSelf], http: RedditHTTPClient) -> _TSelf:
         self = cls.__new__(cls)
         self._init(http)
         return self
 
     @classmethod
-    def from_access_token(cls: Type[T], access_token: str) -> T:
+    def from_access_token(cls: Type[_TSelf], access_token: str) -> _TSelf:
         session = new_session()
         requestor = RateLimited(
             Authorized(
@@ -53,7 +57,7 @@ class CoreClient:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_ini(cls: Type[T], site_name: str) -> T:
+    def from_praw_ini(cls: Type[_TSelf], site_name: str) -> _TSelf:
         config = get_praw_config()
         section_name = site_name or config.default_section
         try:
@@ -114,7 +118,7 @@ class CoreClient:
         self.http = http
         self.last_value: Any = None
 
-    async def __aenter__(self: T) -> T:
+    async def __aenter__(self: _TSelf) -> _TSelf:
         return self
 
     async def __aexit__(self,
@@ -134,7 +138,7 @@ class CoreClient:
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
-        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
+        data: Optional[Union[Mapping[str, str], str, bytes]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,

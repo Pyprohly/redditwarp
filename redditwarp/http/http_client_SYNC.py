@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar
 if TYPE_CHECKING:
-    from typing import Type, Any, Optional, Mapping, MutableMapping, Union, AnyStr
+    from typing import Type, Any, Optional, Mapping, MutableMapping, Union
     from types import TracebackType
     from .session_base_SYNC import SessionBase
     from .requestor_SYNC import Requestor
@@ -67,7 +67,7 @@ class HTTPClient:
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
-        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
+        data: Optional[Union[Mapping[str, str], str, bytes]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,

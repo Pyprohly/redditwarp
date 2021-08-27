@@ -67,7 +67,6 @@ class RedditHTTPClient(HTTPClient):
         super().__init__(session, self.recorder, params=params, headers=headers)
         self.authorized_requestor: Optional[Authorized] = authorized_requestor
         self.user_agent = self.user_agent_start = get_user_agent(session)
-        self.timeout = 8
         self.base_url = RESOURCE_BASE_URL
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:

@@ -48,7 +48,7 @@ def get_client_id(v: Optional[str]) -> str:
 def get_client_secret(v: Optional[str]) -> str:
     return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', v)
 
-def handle_sigint(sig: int, frame: FrameType) -> None:
+def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
     print('KeyboardInterrupt', file=sys.stderr)
     sys.exit(130)
 

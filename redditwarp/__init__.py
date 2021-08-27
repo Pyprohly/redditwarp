@@ -1,18 +1,27 @@
 
 __all__ = '*'
 
-from . import SYNC, ASYNC  # noqa: F401
-from .__about__ import (  # noqa: F401
-    __title__ as __title__,
-    __summary__ as __summary__,
-    __uri__ as __uri__,
-    __url__ as __url__,
-    __version__ as __version__,
-    version_info as version_info,
-    __version_info__ as __version_info__,
-    __author__ as __author__,
-    __license__ as __license__,
-    __copyright__ as __copyright__,
-)
-
 globals()[__name__] = __import__(__name__)
+
+from . import (SYNC, ASYNC)
+from . import (client_SYNC, client_ASYNC)
+from .__about__ import (
+    __title__,
+    __summary__,
+    __uri__,
+    __version__,
+    version_info,
+    __author__,
+    __license__,
+    __copyright__,
+)
+from . import auth
+from . import core
+from . import http
+from . import websocket
+from . import iterators
+from . import paginators
+from . import models
+from . import site_procedures
+from . import util
+from . import exceptions

@@ -76,7 +76,7 @@ async def test_request() -> None:
     assert requ.headers.pop('User-Agent')
     assert requ.headers == {'cheese': 'bacon', 'fire': 'air'}
 
-class LastMessageRecord:
+class TestLastMessageRecord:
     @pytest.mark.asyncio
     async def test_last_request(self) -> None:
         session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')

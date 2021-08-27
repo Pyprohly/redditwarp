@@ -8,9 +8,12 @@ if TYPE_CHECKING:
     from ..http.request import Request
     from ..http.response import Response
 
-from ..util.imports import lazy_import;
-if 0: import asyncio
-lazy_import%'asyncio'
+from ..util.imports import lazy_import
+if TYPE_CHECKING:
+    import asyncio
+else:
+    lazy_import('asyncio')
+
 import time
 
 from ..http.requestor_decorator_ASYNC import RequestorDecorator

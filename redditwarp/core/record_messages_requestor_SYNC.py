@@ -45,6 +45,8 @@ class RecordMessages(RequestorDecorator):
                 self.last_response_queue.append(resp)
                 self.last_transfer_queue.append(self.last_transfer)
 
+        if resp is None:
+            raise Exception
         return resp
 
     def extract_response_from_exception(self, e: Exception) -> Optional[Response]:
@@ -94,6 +96,8 @@ class RecordLastMessages(RequestorDecorator):
                 self.last.response_queue.append(resp)
                 self.last.transfer_queue.append(self.last.transfer)
 
+        if resp is None:
+            raise Exception
         return resp
 
     def extract_response_from_exception(self, e: Exception) -> Optional[Response]:

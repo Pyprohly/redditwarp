@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Union, AnyStr, Any
+from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Union, Any
 if TYPE_CHECKING:
     from .payload import Payload, RequestFiles
 
@@ -28,7 +28,7 @@ def make_request(
     *,
     params: Optional[Mapping[str, Optional[str]]] = None,
     headers: Optional[Mapping[str, str]] = None,
-    data: Optional[Union[Mapping[str, str], AnyStr]] = None,
+    data: Optional[Union[Mapping[str, str], str, bytes]] = None,
     json: Any = None,
     files: Optional[RequestFiles] = None,
     timeout: float = -2,

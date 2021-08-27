@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 from typing import Optional, Any, Mapping, Union, \
-        AnyStr, IO, Sequence, Tuple, List, cast
+        IO, Sequence, Tuple, List, cast
 
 import mimetypes
 import os.path as op
@@ -76,7 +76,7 @@ def guess_mimetype_from_filename(fname: str) -> str:
     return y or 'application/octet-stream'
 
 def make_payload(
-    data: Optional[Union[Mapping[str, str], AnyStr]] = None,
+    data: Optional[Union[Mapping[str, str], str, bytes]] = None,
     json: Any = None,
     files: Optional[RequestFiles] = None,
 ) -> Optional[Payload]:

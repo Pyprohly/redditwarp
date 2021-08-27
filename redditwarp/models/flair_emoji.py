@@ -37,8 +37,8 @@ class SubredditFlairEmojiInventory(Sequence[FlairEmoji]):
         return iter(self.subreddit_emojis)
 
     @overload
-    def __getitem__(self, index: int) -> FlairEmoji: pass
+    def __getitem__(self, index: int) -> FlairEmoji: ...
     @overload
-    def __getitem__(self, index: slice) -> Sequence[FlairEmoji]: pass
+    def __getitem__(self, index: slice) -> Sequence[FlairEmoji]: ...
     def __getitem__(self, index: Union[int, slice]) -> Union[FlairEmoji, Sequence[FlairEmoji]]:
         return self.subreddit_emojis[index]

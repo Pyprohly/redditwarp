@@ -63,13 +63,11 @@ version_info = VersionInfo(
 )
 
 __title__ = 'RedditWarp'
-__summary__ = 'The unofficial, async-ready, advanced Reddit API wrapper for Python development'
+__summary__ = 'The unofficial, advanced Reddit API wrapper for Python development'
 __uri__ = "https://github.com/Pyprohly/redditwarp"
-__url__ = __uri__
 
 #__version__ = '.'.join(map(str, version_info[:3]))
 __version__ = 'alpha'
-__version_info__ = version_info
 
 __author__ = 'u/Pyprohly'
 

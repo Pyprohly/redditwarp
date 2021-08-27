@@ -11,8 +11,7 @@ from dataclasses import dataclass
 from ...util.imports import load_module_from_spec
 
 class NewSessionFunction(Protocol):
-    def __call__(self) -> SessionBase:
-        pass
+    def __call__(self) -> SessionBase: ...
 
 @dataclass
 class TransportInfo:

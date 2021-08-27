@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Union, AnyStr
+from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Union
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.typedefs import AuthorizationGrant
@@ -22,19 +22,21 @@ from .exceptions import (
     handle_non_json_response,
     raise_for_json_object_data,
 )
-from .util.imports import lazy_import;
-if 0: from .site_procedures import SYNC as site_procedures_SYNC
-site_procedures_SYNC = lazy_import('.site_procedures.SYNC', __package__)  # noqa: F811
+
+from .util.imports import lazy_import
+if TYPE_CHECKING:
+    from .site_procedures import SYNC as site_procedures_SYNC
+else:
+    site_procedures_SYNC = lazy_import('.site_procedures.SYNC', __package__)
 
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
 
     _USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR = ' Bot !-- '
-
-    T = TypeVar('T', bound='CoreClient')
+    _TSelf = TypeVar('_TSelf', bound='CoreClient')
 
     @classmethod
-    def from_http(cls: Type[T], http: RedditHTTPClient) -> T:
+    def from_http(cls: Type[_TSelf], http: RedditHTTPClient) -> _TSelf:
         """Alternative constructor for testing purposes or advanced uses.
 
         Parameters
@@ -46,7 +48,7 @@ class CoreClient:
         return self
 
     @classmethod
-    def from_access_token(cls: Type[T], access_token: str) -> T:
+    def from_access_token(cls: Type[_TSelf], access_token: str) -> _TSelf:
         """Construct a Reddit client instance without a token client.
 
         No token client means `self.http.authorizer.token_client` will be `None`.
@@ -73,7 +75,7 @@ class CoreClient:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_ini(cls: Type[T], site_name: str) -> T:
+    def from_praw_ini(cls: Type[_TSelf], site_name: str) -> _TSelf:
         config = get_praw_config()
         section_name = site_name or config.default_section
         try:
@@ -170,7 +172,7 @@ class CoreClient:
         self.http = http
         self.last_value: Any = None
 
-    def __enter__(self: T) -> T:
+    def __enter__(self: _TSelf) -> _TSelf:
         return self
 
     def __exit__(self,
@@ -190,7 +192,7 @@ class CoreClient:
         *,
         params: Optional[Mapping[str, Optional[str]]] = None,
         headers: Optional[Mapping[str, str]] = None,
-        data: Optional[Union[Mapping[str, str], AnyStr]] = None,
+        data: Optional[Union[Mapping[str, str], str, bytes]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,

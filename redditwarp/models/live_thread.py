@@ -59,8 +59,8 @@ class ContributorList(Sequence[Contributor]):
         return iter(self.contributors)
 
     @overload
-    def __getitem__(self, index: int) -> Contributor: pass
+    def __getitem__(self, index: int) -> Contributor: ...
     @overload
-    def __getitem__(self, index: slice) -> Sequence[Contributor]: pass
+    def __getitem__(self, index: slice) -> Sequence[Contributor]: ...
     def __getitem__(self, index: Union[int, slice]) -> Union[Contributor, Sequence[Contributor]]:
         return self.contributors[index]

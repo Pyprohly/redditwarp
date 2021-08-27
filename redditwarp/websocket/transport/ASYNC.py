@@ -13,8 +13,7 @@ from ..websocket_connection_ASYNC import WebSocketConnection
 class ConnectFunction(Protocol):
     async def __call__(self, url: str, *,
         subprotocols: Sequence[str] = (), timeout: float = -2
-    ) -> WebSocketConnection:
-        pass
+    ) -> WebSocketConnection: ...
 
 @dataclass
 class TransportInfo:

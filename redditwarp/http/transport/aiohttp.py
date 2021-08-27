@@ -9,15 +9,15 @@ if TYPE_CHECKING:
 import asyncio
 
 import aiohttp  # type: ignore[import]
-import multidict
 
 from .ASYNC import register
 from ..session_base_ASYNC import SessionBase
 from .. import exceptions
 from .. import payload
 from ..response import Response
+from ..util.case_insensitive_dict import CaseInsensitiveDict
 
-def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
+def _multipart_payload_dispatch(y: Payload) -> Mapping[str, Any]:
     if not isinstance(y, payload.Multipart):
         raise Exception
 
@@ -51,13 +51,13 @@ def _multipart_payload_dispatch(y: Payload) -> Mapping[str, object]:
 
     return {'data': formdata}
 
-def _request_kwargs(r: Request) -> Mapping[str, object]:
+def _request_kwargs(r: Request) -> Mapping[str, Any]:
     for v in r.params.values():
         if v is None:
             msg = f'valueless URL params is not supported by this HTTP transport library ({name}); the params mapping cannot contain None'
             raise RuntimeError(msg)
 
-    kwargs: MutableMapping[str, object] = {
+    kwargs: MutableMapping[str, Any] = {
         'method': r.verb,
         'url': r.uri,
         'params': r.params,
@@ -100,7 +100,7 @@ class Session(SessionBase):
                 sock_read=None,
             )
 
-        kwargs: MutableMapping[str, object] = {'timeout': client_timeout}
+        kwargs: MutableMapping[str, Any] = {'timeout': client_timeout}
         kwargs.update(_request_kwargs(request))
 
         try:
@@ -111,7 +111,8 @@ class Session(SessionBase):
         except Exception as e:
             raise exceptions.TransportError from e
 
-        headers: multidict.CIMultiDict[str] = multidict.CIMultiDict(response.headers)
+        aiohttp_headers: Any = response.headers
+        headers = CaseInsensitiveDict(dict(aiohttp_headers))
         return Response(
             status=response.status,
             headers=headers,

@@ -37,8 +37,8 @@ class SubredditRules(Sequence[Rule]):
         return iter(self._rules)
 
     @overload
-    def __getitem__(self, index: int) -> Rule: pass
+    def __getitem__(self, index: int) -> Rule: ...
     @overload
-    def __getitem__(self, index: slice) -> Sequence[Rule]: pass
+    def __getitem__(self, index: slice) -> Sequence[Rule]: ...
     def __getitem__(self, index: Union[int, slice]) -> Union[Rule, Sequence[Rule]]:
         return self._rules[index]

@@ -9,7 +9,8 @@ import time
 
 # https://pypi.org/project/websockets/
 import websockets  # type: ignore[import]
-import websockets.legacy.client
+import websockets.legacy.client  # type: ignore[import]
+import websockets.typing  # type: ignore[import]
 
 from .ASYNC import register
 from ..websocket_connection_ASYNC import WebSocketConnection
