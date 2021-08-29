@@ -2,17 +2,16 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-    from ...client_SYNC import Client
-    from ...models.submission_comment_thread_SYNC import SubmissionCommentThread
+    from ...models.submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
     from .SYNC import CommentTree as Outer
 
 from ...util.base_conversion import to_base36
-from ...exceptions import NoResultException
+from ...exceptions import HTTPStatusError
 
-class Fetch:
-    def __init__(self, outer: Outer, client: Client):
+class Get:
+    def __init__(self, outer: Outer):
         self._outer = outer
-        self._client = client
+        self._client = outer._client
 
     def __call__(self,
         submission_id: int,
@@ -21,7 +20,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> SubmissionCommentThread:
+    ) -> Optional[SubmissionCommentTreeWrapper]:
         return self.by_id(submission_id, comment_id, sort, limit, depth, context)
 
     def by_id(self,
@@ -31,7 +30,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> SubmissionCommentThread:
+    ) -> Optional[SubmissionCommentTreeWrapper]:
         submission_id36 = to_base36(submission_id)
         comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
         return self.by_id36(submission_id36, comment_id36, sort, limit, depth, context)
@@ -43,15 +42,18 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> SubmissionCommentThread:
-        v = self._outer.get.by_id36(
-            submission_id36,
-            comment_id36,
-            sort,
-            limit,
-            depth,
-            context,
-        )
-        if v is None:
-            raise NoResultException('target not found')
+    ) -> Optional[SubmissionCommentTreeWrapper]:
+        try:
+            v = self._outer.fetch.by_id36(
+                submission_id36,
+                comment_id36,
+                sort,
+                limit,
+                depth,
+                context,
+            )
+        except HTTPStatusError as e:
+            if e.response.status == 404:
+                return None
+            raise
         return v

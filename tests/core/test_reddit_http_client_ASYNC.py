@@ -94,7 +94,7 @@ class TestLastMessageRecord:
             pass
         assert http.last.request == req2
 
-        assert list(http.last_request_queue) == [req1, req2]
+        assert list(http.last.request_queue) == [req1, req2]
 
     @pytest.mark.asyncio
     async def test_last_response(self) -> None:
@@ -111,7 +111,7 @@ class TestLastMessageRecord:
             pass
         assert http.last.response is None
 
-        assert list(http.last_response_queue) == [resp]
+        assert list(http.last.response_queue) == [resp]
 
     @pytest.mark.asyncio
     async def test_last_transfer(self) -> None:

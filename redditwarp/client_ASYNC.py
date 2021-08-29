@@ -26,9 +26,9 @@ from .exceptions import (
 '''
 from .util.imports import lazy_import
 if TYPE_CHECKING:
-    from .site_procedures import ASYNC as site_procedures_ASYNC
+    from .siteprocs import ASYNC as siteprocs
 else:
-    site_procedures_ASYNC = lazy_import('.site_procedures.SYNC', __package__)
+    siteprocs = lazy_import('.siteprocs.ASYNC', __package__)
 '''
 
 class CoreClient:
@@ -177,4 +177,4 @@ class CoreClient:
 class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
-        self.p = ...#site_procedures_ASYNC.SiteProcedures(self)
+        self.p = ...#siteprocs.ClientProcedures(self)

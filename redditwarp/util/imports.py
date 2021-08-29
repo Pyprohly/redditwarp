@@ -46,7 +46,7 @@ class _LazyImport:
 
     def __mod__(self, other: str) -> None:
         if '.' in other:
-            raise ValueError('dot in module name not supported')
+            raise ValueError('dotted module name not supported')
 
         module = self(other)
         spec = module.__spec__

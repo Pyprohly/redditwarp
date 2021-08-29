@@ -56,7 +56,9 @@ def test_renew_token() -> None:
     token_client.my_token = get_token(expires_in=234)
     o.expires_in_fallback = None
     o.renew_token()
-    assert o.expiry_time == int(o.current_time()) + token_client.my_token.expires_in - o.expiry_skew
+    expires_in = token_client.my_token.expires_in
+    assert expires_in is not None
+    assert o.expiry_time == int(o.current_time()) + expires_in - o.expiry_skew
 
     o.expiry_time = 9999
     token_client.my_token = get_token(expires_in=None)

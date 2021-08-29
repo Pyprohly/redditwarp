@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ..more_comments_SYNC import MoreComments
 
 from ..comment_tree_SYNC import MoreCommentsTreeNode, CommentTreeNode, SubmissionTreeNode
-from ..submission_comment_thread_SYNC import SubmissionCommentThread
+from ..submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
 from ..more_comments_SYNC import ContinueThisThread, LoadMoreComments
 from .comment_SYNC import load_comment
 from .submission_SYNC import load_submission
@@ -37,7 +37,8 @@ def load_more_comments(
         client=client,
     )
 
-def load_submission_comment_thread(d: Any, client: Client, sort: Optional[str]) -> SubmissionCommentThread:
+
+def load_submission_comment_tree_wrapper(d: Any, client: Client, sort: Optional[str]) -> SubmissionCommentTreeWrapper:
     def f(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> CommentTreeNode:
         value = load_comment(d, client)
         nodes = []
@@ -89,7 +90,7 @@ def load_submission_comment_thread(d: Any, client: Client, sort: Optional[str]) 
         nodes.append(node)
 
     root = SubmissionTreeNode(value, nodes, more)
-    return SubmissionCommentThread(root, sort)
+    return SubmissionCommentTreeWrapper(root, sort)
 
 def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> MoreCommentsTreeNode:
     node_lookup: Dict[str, CommentTreeNode] = {}
@@ -127,6 +128,6 @@ def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optio
             node = node_lookup[id_]
             chilren_lookup.get(parent_id, roots).append(node)
 
-    # Use `None` for the node's value here. It is important that we don't
-    # allow any node of the tree to appear more than once.
+    # Use `None` for the node's value here because it's important we
+    # don't allow any node to appear more than once in the tree.
     return MoreCommentsTreeNode(None, roots, root_more)

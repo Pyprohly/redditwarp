@@ -19,7 +19,7 @@ from .live_thread.SYNC import LiveThread
 from .message.SYNC import Message
 from .moderation.SYNC import Moderation
 
-class SiteProcedures:
+class ClientProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.submission = Submission(client)

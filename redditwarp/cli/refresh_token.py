@@ -19,11 +19,11 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from types import FrameType
 
-globalz = globals()
+globlz = globals()
 
 import argparse
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
-cli_desc = globalz.get('?description', __doc__)
+cli_desc = globlz.get('?description', __doc__)
 parser = argparse.ArgumentParser(description=cli_desc, formatter_class=Formatter)
 parser._optionals.title = __import__('gettext').gettext('named arguments')
 add = parser.add_argument
@@ -33,7 +33,7 @@ add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPP
 add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 add('--scope', default='*', help='an OAuth2 scope string')
 add('--redirect-uri', default="http://localhost:8080", help="\N{ZERO WIDTH SPACE}")
-if globalz.get('?access_token_only', False):
+if globlz.get('?access_token_only', False):
     add('--access-token-only', default=True, help=argparse.SUPPRESS)
 else:
     add('--access-token-only', action='store_true', help="get an access token and not a refresh token")

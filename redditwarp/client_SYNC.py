@@ -25,9 +25,9 @@ from .exceptions import (
 
 from .util.imports import lazy_import
 if TYPE_CHECKING:
-    from .site_procedures import SYNC as site_procedures_SYNC
+    from .siteprocs import SYNC as siteprocs
 else:
-    site_procedures_SYNC = lazy_import('.site_procedures.SYNC', __package__)
+    siteprocs = lazy_import('.siteprocs.SYNC', __package__)
 
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
@@ -240,4 +240,4 @@ class CoreClient:
 class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
-        self.p = site_procedures_SYNC.SiteProcedures(self)
+        self.p = siteprocs.ClientProcedures(self)

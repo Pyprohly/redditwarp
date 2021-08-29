@@ -59,13 +59,13 @@ def recursive_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tupl
 
     return dfs(cast("CommentSubtreeTreeNode[object]", node))
 
-def iterative_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
+def depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
     stack: MutableSequence[ICommentSubtreeTreeNode] = deque([node])
     levels = deque([0])
     while stack:
         node = cast("CommentSubtreeTreeNode[object]", stack.pop())
-        level = levels.pop()
         value = node.value
+        level = levels.pop()
 
         if isinstance(value, Comment):
             yield (level, value)
@@ -73,9 +73,10 @@ def iterative_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tupl
         if node.more:
             stack.append(node.more())
             levels.append(level)
-        children = node.children
-        stack.extend(reversed(children))
-        levels.extend([level + 1] * len(children))
+
+        cl = node.children
+        stack.extend(reversed(cl))
+        levels.extend([level + 1] * len(cl))
 
 def breadth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
     level = 0
@@ -107,7 +108,7 @@ def breadth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, C
 algo = ALGORITHM_CHOICES[chosen_algo]
 traversal = {
     'recursive_depth_first_search': recursive_depth_first_search,
-    'dfs': iterative_depth_first_search,
+    'dfs': depth_first_search,
     'bfs': breadth_first_search,
 }[algo]
 

@@ -3,11 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Sequence, Optional, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
-    from .comment_tree_SYNC import CommentTreeNode
 
-from ..exceptions import UnexpectedServiceRequestResultError, ClientRejectedResultException
+from ..exceptions import ClientRejectedResultException
 from .comment_tree_SYNC import MoreCommentsTreeNode
-from .submission_comment_thread_SYNC import SubmissionCommentThread
+from .submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
 from .more_comments_base import MoreComments as MoreCommentsMixin
 
 class MoreComments(MoreCommentsMixin):
@@ -31,20 +30,21 @@ class ContinueThisThread(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
     ) -> MoreCommentsTreeNode:
-        thread = self.fetch_continued_thread()
-        o = thread.node
+        tree = self.fetch_continued_thread()
+        o = tree.node
         return MoreCommentsTreeNode(None, o.children[0].children, o.more)
 
-    def get_thread(self) -> Optional[SubmissionCommentThread]:
+    def get(self) -> Optional[SubmissionCommentTreeWrapper]:
         return self.client.p.comment_tree.get.by_id36(self.submission_id36, self.comment_id36)
 
-    def fetch_continued_thread(self) -> SubmissionCommentThread:
-        thread = self.get_thread()
-        if thread is None:
-            raise UnexpectedServiceRequestResultError(self)
-        if not thread.is_continued():
+    def fetch(self) -> SubmissionCommentTreeWrapper:
+        return self.client.p.comment_tree.fetch.by_id36(self.submission_id36, self.comment_id36)
+
+    def fetch_continued_thread(self) -> SubmissionCommentTreeWrapper:
+        tree = self.fetch()
+        if not tree.is_continued():
             raise ClientRejectedResultException(self)
-        return thread
+        return tree
 
 class LoadMoreComments(MoreComments):
     def __init__(self,

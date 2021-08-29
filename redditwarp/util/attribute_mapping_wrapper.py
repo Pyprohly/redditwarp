@@ -109,12 +109,14 @@ class MutableAttributeMappingWrapper(AttributeMappingWrapper[V], MutableMapping[
     def __delitem__(self, key: str) -> None:
         del self._mstore[key]
 
-    # Have to write it the long way to make mypy notice this method.
+    # Write it the long way to make type checkers happy.
     #__setattr__ = __setitem__
     def __setattr__(self, name: str, value: V) -> None:
         return self.__setitem__(name, value)
 
-    __delattr__ = __delitem__
+    #__delattr__ = __delitem__
+    def __delattr__(self, name: str) -> None:
+        return self.__delitem__(name)
 
 
 class _PrettyPrintingMixin(Generic[V]):

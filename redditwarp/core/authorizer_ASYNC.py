@@ -12,7 +12,7 @@ from ..util.imports import lazy_import
 if TYPE_CHECKING:
     import asyncio
 else:
-    lazy_import('asyncio')
+    lazy_import % 'asyncio'
 
 import time
 

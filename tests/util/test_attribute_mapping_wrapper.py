@@ -78,7 +78,7 @@ def test_delattr() -> None:
     d = {'a': 1, 'b': 2, 'c': 3}
     amw = MutableAttributeMappingWrapper(d)
     assert len(amw) == 3
-    del amw.c
+    del amw.c  # type: ignore
     assert 'c' not in amw
     assert len(amw) == 2
 
@@ -139,6 +139,6 @@ def test_noclobber_mapping_methods() -> None:
     assert amw['update'] == 1
     assert amw.update == update_method
 
-    amw.update({'clear': 2})
+    amw.update({'clear': 2})  # type: ignore
     assert amw['clear'] == 2
-    assert amw.clear == clear_method
+    assert amw.clear == clear_method  # type: ignore

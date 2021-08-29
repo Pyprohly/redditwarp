@@ -12,6 +12,13 @@ class Node(Generic[T]):
 class TreeNode(Node[T], Generic[T, TChild]):
     pass
 
+class GeneralTreeNode(TreeNode[T, TChild]):
+    def __init__(self,
+        value: T,
+        children: Sequence[TChild],
+    ):
+        super().__init__(value)
+        self.children = children
 
 class BinaryTreeNode(TreeNode[T, TChild]):
     def __init__(self,
@@ -22,18 +29,3 @@ class BinaryTreeNode(TreeNode[T, TChild]):
         super().__init__(value)
         self.left = left
         self.right = right
-
-__bound = 'BinaryTreeNode[T, TRecursiveBinaryTreeNode]'
-TRecursiveBinaryTreeNode = TypeVar('TRecursiveBinaryTreeNode', bound=BinaryTreeNode)  # type: ignore[type-arg]
-
-
-class GeneralTreeNode(TreeNode[T, TChild]):
-    def __init__(self,
-        value: T,
-        children: Sequence[TChild],
-    ):
-        super().__init__(value)
-        self.children = children
-
-__bound = 'GeneralTreeNode[T, TRecursiveGeneralTreeNode]'
-TRecursiveGeneralTreeNode = TypeVar('TRecursiveGeneralTreeNode', bound=GeneralTreeNode)  # type: ignore[type-arg]

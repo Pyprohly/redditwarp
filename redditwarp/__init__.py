@@ -22,6 +22,6 @@ from . import websocket
 from . import iterators
 from . import paginators
 from . import models
-from . import site_procedures
+from . import siteprocs
 from . import util
 from . import exceptions

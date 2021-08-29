@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from .comment_tree_SYNC import SubmissionTreeNode
 
-class SubmissionCommentThread:
+class SubmissionCommentTreeWrapper:
     def __init__(self, node: SubmissionTreeNode, sort: Optional[str]):
         self.node = node
         self.sort = sort
