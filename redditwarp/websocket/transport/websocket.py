@@ -12,7 +12,7 @@ from ..websocket_connection_SYNC import HalfImplementedWebSocketConnection
 from .. import exceptions
 from ..events import Event, Frame
 from ..const import Opcode, Side, ConnectionState
-from ..util import parse_close
+from ..utils import parse_close
 
 class WebSocketClient(HalfImplementedWebSocketConnection):
     side = Side.CLIENT

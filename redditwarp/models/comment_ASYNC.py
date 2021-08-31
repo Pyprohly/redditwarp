@@ -5,18 +5,18 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
 from .comment_base import (
-    Comment as CommentMixin,
-    ExtraSubmissionFieldsComment as ExtraSubmissionFieldsCommentMixin,
-    EditPostTextEndpointComment as EditPostTextEndpointCommentMixin,
+    CommentMixinBase,
+    ExtraSubmissionFieldsCommentMixinBase,
+    EditPostTextEndpointCommentMixinBase,
 )
 
-class Comment(CommentMixin):
+class Comment(CommentMixinBase):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
 
-class ExtraSubmissionFieldsComment(Comment, ExtraSubmissionFieldsCommentMixin):
+class ExtraSubmissionFieldsComment(Comment, ExtraSubmissionFieldsCommentMixinBase):
     pass
 
-class EditPostTextEndpointComment(Comment, EditPostTextEndpointCommentMixin):
+class EditPostTextEndpointComment(Comment, EditPostTextEndpointCommentMixinBase):
     pass

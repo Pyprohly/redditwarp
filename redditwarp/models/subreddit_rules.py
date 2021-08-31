@@ -24,9 +24,6 @@ class SubredditRules(Sequence[Rule]):
         self.d = d
         self._rules = [Rule(o) for o in d['rules']]
 
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}({self._rules})'
-
     def __len__(self) -> int:
         return len(self._rules)
 

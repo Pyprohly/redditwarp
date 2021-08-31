@@ -16,7 +16,7 @@ class FlairEmoji:
         self.mod_only: bool = d['mod_flair_only']
 
 
-class SubredditFlairEmojiInventory(Sequence[FlairEmoji]):
+class SubredditFlairEmojis(Sequence[FlairEmoji]):
     def __init__(self,
             subreddit_emojis: Sequence[FlairEmoji],
             reddit_emojis: Sequence[FlairEmoji],

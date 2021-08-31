@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...models.flair_emoji import SubredditFlairEmojiInventory
+from ...models.flair_emoji import SubredditFlairEmojis
 from ...models.load.flair_emoji import load_flair_emoji
 from ...models.flair_emoji_upload_lease import FlairEmojiUploadLease
 from ...models.load.flair_emoji_upload_lease import load_flair_emoji_upload_lease
@@ -16,14 +16,14 @@ class FlairEmoji:
     def __init__(self, client: Client):
         self._client = client
 
-    def get_subreddit_emojis(self, sr: str) -> SubredditFlairEmojiInventory:
+    def get_subreddit_emojis(self, sr: str) -> SubredditFlairEmojis:
         root = self._client.request('GET', f'/api/v1/{sr}/emojis/all')
         root = dict(root)
         reddit_emojis_root = root.pop('snoomojis')
         _full_id36: str
         _full_id36, subreddit_emojis_root = root.popitem()
         _, _, subreddit_id36 = _full_id36.partition('_')
-        return SubredditFlairEmojiInventory(
+        return SubredditFlairEmojis(
             [load_flair_emoji(d, name) for name, d in subreddit_emojis_root.items()],
             [load_flair_emoji(d, name) for name, d in reddit_emojis_root.items()],
             subreddit_id36,

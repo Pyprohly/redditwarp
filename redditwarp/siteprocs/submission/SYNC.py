@@ -279,6 +279,41 @@ class Submission:
         root = self._client.request('POST', '/api/submit_poll_post', json=dict(g()))
         return int(root['json']['data']['id'][3:], 36)
 
+    def crosspost(self,
+        sr: str,
+        title: str,
+        submission_id: int,
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+    ) -> int:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('kind', 'self')
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('crosspost_parent', 't3_' + to_base36(submission_id))
+            yield ('sendreplies', '01'[reply_notifications])
+            if spoiler: yield ('spoiler', '1')
+            if nsfw: yield ('nsfw', '1')
+            if oc: yield ('original_content', '1')
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        root = self._client.request('POST', '/api/submit', data=dict(g()))
+        return int(root['json']['data']['id'], 36)
+
     def edit_post_text(self, submission_id: int, text: str) -> SubmissionModel:
         data = {
             'thing_id': 't3_' + to_base36(submission_id),

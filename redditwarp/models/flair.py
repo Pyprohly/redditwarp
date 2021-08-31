@@ -15,12 +15,11 @@ class FlairTemplate(Artifact):
         self.mod_only: bool = False
         self.text: str = ''
         self.bg_color: str = ''
-        self.text_color: str = ''
+        self.fg_light_or_dark: str = ''
         self.allowable_content: str = ''
         self.css_class: str = ''
         self.max_emojis: int = 0
         self.text_editable: bool = False
-        self.override_css: bool = False
 
 class Variant1FlairTemplate(FlairTemplate):
     def _from_dict(self, d: Mapping[str, Any]) -> None:
@@ -29,12 +28,11 @@ class Variant1FlairTemplate(FlairTemplate):
         self.mod_only: bool = d['mod_only']
         self.text: str = d['text']
         self.bg_color: str = d['background_color']
-        self.text_color: str = d['text_color']
+        self.fg_light_or_dark: str = d['text_color']
         self.allowable_content: str = d['allowable_content']
         self.css_class: str = d['css_class']
         self.max_emojis: int = d['max_emojis']
         self.text_editable: bool = d['text_editable']
-        self.override_css: bool = d['override_css']
 
 class Variant2FlairTemplate(FlairTemplate):
     def _from_dict(self, d: Mapping[str, Any]) -> None:
@@ -43,12 +41,11 @@ class Variant2FlairTemplate(FlairTemplate):
         self.mod_only: bool = d['modOnly']
         self.text: str = d['text']
         self.bg_color: str = d['backgroundColor']
-        self.text_color: str = d['textColor']
+        self.fg_light_or_dark: str = d['textColor']
         self.allowable_content: str = d['allowableContent']
         self.css_class: str = d['cssClass']
         self.max_emojis: int = d['maxEmojis']
         self.text_editable: bool = d['textEditable']
-        self.override_css: bool = d['overrideCss']
 
 
 class CurrentFlairChoice:

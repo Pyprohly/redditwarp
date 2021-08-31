@@ -75,11 +75,10 @@ class Flair:
         allowable_content: Optional[str] = None,
         bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        text_color: Optional[str] = None,
+        fg_light_or_dark: Optional[str] = None,
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-        override_css: Optional[bool] = None,
     ) -> Variant2FlairTemplate:
         d = {'flair_type': flair_type}
         for k, v in (
@@ -88,11 +87,10 @@ class Flair:
             ('allowable_content', allowable_content),
             ('background_color', bg_color),
             ('css_class', css_class),
-            ('text_color', text_color),
+            ('text_color', fg_light_or_dark),
             ('text_editable', None if text_editable is None else '01'[text_editable]),
             ('max_emojis', str(max_emojis)),
             ('mod_only', None if mod_only is None else '01'[mod_only]),
-            ('override_css', None if override_css is None else '01'[override_css]),
         ):
             if v is not None:
                 d[k] = v
@@ -106,11 +104,10 @@ class Flair:
         allowable_content: Optional[str] = None,
         bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        text_color: Optional[str] = None,
+        fg_light_or_dark: Optional[str] = None,
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-        override_css: Optional[bool] = None,
     ) -> Variant2FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
@@ -119,11 +116,10 @@ class Flair:
             allowable_content=allowable_content,
             bg_color=bg_color,
             css_class=css_class,
-            text_color=text_color,
+            fg_light_or_dark=fg_light_or_dark,
             text_editable=text_editable,
             max_emojis=max_emojis,
             mod_only=mod_only,
-            override_css=override_css,
         )
 
     def create_post_flair_template(self,
@@ -133,11 +129,10 @@ class Flair:
         allowable_content: Optional[str] = None,
         bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        text_color: Optional[str] = None,
+        fg_light_or_dark: Optional[str] = None,
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-        override_css: Optional[bool] = None,
     ) -> Variant2FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
@@ -146,11 +141,10 @@ class Flair:
             allowable_content=allowable_content,
             bg_color=bg_color,
             css_class=css_class,
-            text_color=text_color,
+            fg_light_or_dark=fg_light_or_dark,
             text_editable=text_editable,
             max_emojis=max_emojis,
             mod_only=mod_only,
-            override_css=override_css,
         )
 
     def update_user_flair_template(self,
@@ -161,11 +155,10 @@ class Flair:
         allowable_content: Optional[str] = None,
         bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        text_color: Optional[str] = None,
+        fg_light_or_dark: Optional[str] = None,
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-        override_css: Optional[bool] = None,
     ) -> Variant2FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
@@ -175,11 +168,10 @@ class Flair:
             allowable_content=allowable_content,
             bg_color=bg_color,
             css_class=css_class,
-            text_color=text_color,
+            fg_light_or_dark=fg_light_or_dark,
             text_editable=text_editable,
             max_emojis=max_emojis,
             mod_only=mod_only,
-            override_css=override_css,
         )
 
     def update_post_flair_template(self,
@@ -190,11 +182,10 @@ class Flair:
         allowable_content: Optional[str] = None,
         bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        text_color: Optional[str] = None,
+        fg_light_or_dark: Optional[str] = None,
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-        override_css: Optional[bool] = None,
     ) -> Variant2FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
@@ -204,11 +195,10 @@ class Flair:
             allowable_content=allowable_content,
             bg_color=bg_color,
             css_class=css_class,
-            text_color=text_color,
+            fg_light_or_dark=fg_light_or_dark,
             text_editable=text_editable,
             max_emojis=max_emojis,
             mod_only=mod_only,
-            override_css=override_css,
         )
 
     def assign_user_flair_template(self,
@@ -219,7 +209,7 @@ class Flair:
         text: Optional[str] = None,
         css_class: Optional[str] = None,
         bg_color: Optional[str] = None,
-        text_color: Optional[str] = None,
+        fg_light_or_dark: Optional[str] = None,
     ) -> None:
         d = {'name': name}
         for k, v in (
@@ -227,7 +217,7 @@ class Flair:
             ('text', text),
             ('css_class', css_class),
             ('background_color', bg_color),
-            ('text_color', text_color),
+            ('text_color', fg_light_or_dark),
         ):
             if v is not None:
                 d[k] = v
@@ -241,7 +231,7 @@ class Flair:
         text: Optional[str] = None,
         css_class: Optional[str] = None,
         bg_color: Optional[str] = None,
-        text_color: Optional[str] = None,
+        fg_light_or_dark: Optional[str] = None,
     ) -> None:
         full_id36 = 't3_' + to_base36(submission_id)
         d = {'link': full_id36}
@@ -250,7 +240,7 @@ class Flair:
             ('text', text),
             ('css_class', css_class),
             ('background_color', bg_color),
-            ('text_color', text_color),
+            ('text_color', fg_light_or_dark),
         ):
             if v is not None:
                 d[k] = v

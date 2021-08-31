@@ -9,7 +9,7 @@ from .artifact import Artifact
 from .reports import ModReport, UserReport
 from .load.reports import load_mod_report, load_user_report
 
-class Comment(Artifact):
+class CommentMixinBase(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -24,7 +24,7 @@ class Comment(Artifact):
                 author_flair_text: Optional[str] = d['author_flair_text']
                 self.text: str = author_flair_text or ''
                 self.has_had_flair: bool = author_flair_text is not None
-                self.text_light_mode: str = d['author_flair_text_color'] or ''
+                self.fg_light_or_dark: str = d['author_flair_text_color'] or ''
                 self.bg_color: str = d['author_flair_background_color'] or ''
                 self.uses_richtext: bool = d['author_flair_type'] == 'richtext'
                 author_flair_css_class: Optional[str] = d['author_flair_css_class']
@@ -147,13 +147,13 @@ class Comment(Artifact):
             self.mod = self.Moderator(d)
 
 
-class ExtraSubmissionFieldsComment(Comment):
+class ExtraSubmissionFieldsCommentMixinBase(CommentMixinBase):
     # For:
     # * `GET /comments`
     # * `GET /r/{subreddit}/comments`
     # * `GET /user/{name}/overview` (and others)
 
-    class Submission(Comment.Submission):
+    class Submission(CommentMixinBase.Submission):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.comment_count: int = d['num_comments']
@@ -163,11 +163,11 @@ class ExtraSubmissionFieldsComment(Comment):
             self.rel_permalink: str = d['link_permalink']
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-    class Subreddit(Comment.Subreddit):
+    class Subreddit(CommentMixinBase.Subreddit):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
 
-class EditPostTextEndpointComment(Comment):
+class EditPostTextEndpointCommentMixinBase(CommentMixinBase):
     # For: `POST /api/editusertext`
     pass

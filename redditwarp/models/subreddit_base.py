@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from .artifact import Artifact
 
-class Subreddit(Artifact):
+class SubredditMixinBase(Artifact):
     class Me:
         class MeFlair:
             def __init__(self, d: Mapping[str, Any]):
@@ -42,7 +42,7 @@ class Subreddit(Artifact):
                 self.template_uuid: Optional[str] = d['user_flair_template_id']
 
                 self.text: str = d['user_flair_text'] or ''
-                self.text_color: str = d['user_flair_text_color'] or ''
+                self.fg_light_or_dark: str = d['user_flair_text_color'] or ''
 
                 # Values: `text` or `richtext`.
                 self.type: str = d['user_flair_type']

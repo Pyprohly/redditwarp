@@ -1,14 +1,12 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Any, Optional, Sequence
-if TYPE_CHECKING:
-    from .submission_base import Submission
+from typing import Mapping, Any, Optional, Sequence, TypeVar, overload, Iterator, Union
 
 from .artifact import Artifact
 
 from datetime import datetime, timezone
 
-class SubmissionCollection(Artifact):
+class SubmissionCollectionDetailsMixinBase(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.uuid: str = d['collection_id']
@@ -41,13 +39,29 @@ class SubmissionCollection(Artifact):
         self.submission_id36s: Sequence[str] = [s[3:] for s in submission_full_id36s]
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
 
+T = TypeVar('T')
 
-class PrimarySubmissionCollection(SubmissionCollection):
-    submissions: Optional[Sequence[Submission]]
-
+class GenericSubmissionCollectionMixinBase(SubmissionCollectionDetailsMixinBase, Sequence[T]):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        full_id36: str = d['primary_link_id']
-        _, _, id36 = full_id36.partition('_')
-        self.primary_submission_id36 = id36
-        self.primary_submission_id = int(id36, 36)
+        self.submissions: Sequence[T] = ()
+
+    def __len__(self) -> int:
+        return len(self.submissions)
+
+    def __contains__(self, item: object) -> bool:
+        return item in self.submissions
+
+    def __iter__(self) -> Iterator[T]:
+        return iter(self.submissions)
+
+    @overload
+    def __getitem__(self, index: int) -> T: ...
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[T]: ...
+    def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
+        return self.submissions[index]
+
+class SubmissionCollectionMixinBase(SubmissionCollectionDetailsMixinBase):
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)

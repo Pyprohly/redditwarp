@@ -5,10 +5,10 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
 from .account_base import (
-    MyAccount as MyAccountMixin,
+    MyAccountMixinBase,
 )
 
-class MyAccount(MyAccountMixin):
+class MyAccount(MyAccountMixinBase):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
