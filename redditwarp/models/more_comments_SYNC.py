@@ -7,9 +7,9 @@ if TYPE_CHECKING:
 from ..exceptions import ClientRejectedResultException
 from .comment_tree_SYNC import MoreCommentsTreeNode
 from .submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
-from .more_comments_base import MoreCommentsMixinBase
+from .more_comments_base import BaseMoreComments
 
-class MoreComments(MoreCommentsMixinBase):
+class MoreComments(BaseMoreComments):
     def __init__(self,
         submission_id36: str,
         comment_id36: str,

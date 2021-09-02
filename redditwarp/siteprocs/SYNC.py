@@ -18,6 +18,7 @@ from .custom_feed.SYNC import CustomFeed
 from .live_thread.SYNC import LiveThread
 from .message.SYNC import Message
 from .moderation.SYNC import Moderation
+from .draft.SYNC import Draft
 
 class ClientProcedures:
     def __init__(self, client: Client):
@@ -36,3 +37,4 @@ class ClientProcedures:
         self.live_thread = LiveThread(client)
         self.message = Message(client)
         self.moderation = Moderation(client)
+        self.draft = Draft(client)

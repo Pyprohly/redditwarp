@@ -4,7 +4,7 @@ from typing import Optional, Mapping, Any
 
 from functools import cached_property
 
-class MoreCommentsMixinBase:
+class BaseMoreComments:
     def __init__(self,
         submission_id36: str,
         comment_id36: str,

@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, Optional, Sequence
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.user_SYNC import User as UserModel
-    from ...models.moderated_subreddit_list_item import ModeratedSubredditListItem
+    from ...models.moderated_subreddit_list import ModeratedSubredditListItem
 
 from .get_partial_user_SYNC import GetPartialUser
 from .bulk_fetch_partial_user_SYNC import BulkFetchPartialUser
 from .pull_SYNC import Pull
 from .pull_user_subreddits_SYNC import PullUserSubreddits
 from ...models.load.user_SYNC import load_user
-from ...models.load.moderated_subreddit_list_item import load_moderated_subreddit_list_item
+from ...models.load.moderated_subreddit_list import load_moderated_subreddit_list_item
 from ... import exceptions
 
 class User:

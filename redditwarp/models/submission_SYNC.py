@@ -5,38 +5,38 @@ if TYPE_CHECKING:
     from ..client_SYNC import Client
 
 from .submission_base import (
-    SubmissionMixinBase,
-    LinkPostMixinBase,
-    TextPostMixinBase,
-    ImagePostMixinBase,
-    VideoPostMixinBase,
-    GalleryPostMixinBase,
-    PollPostMixinBase,
-    CrosspostPostMixinBase,
+    BaseSubmission,
+    BaseLinkPost,
+    BaseTextPost,
+    BaseImagePost,
+    BaseVideoPost,
+    BaseGalleryPost,
+    BasePollPost,
+    BaseCrosspostPost,
 )
 
-class Submission(SubmissionMixinBase):
+class Submission(BaseSubmission):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
 
-class LinkPost(Submission, LinkPostMixinBase):
+class LinkPost(Submission, BaseLinkPost):
     pass
 
-class TextPost(Submission, TextPostMixinBase):
+class TextPost(Submission, BaseTextPost):
     pass
 
-class ImagePost(Submission, ImagePostMixinBase):
+class ImagePost(Submission, BaseImagePost):
     pass
 
-class VideoPost(Submission, VideoPostMixinBase):
+class VideoPost(Submission, BaseVideoPost):
     pass
 
-class GalleryPost(Submission, GalleryPostMixinBase):
+class GalleryPost(Submission, BaseGalleryPost):
     pass
 
-class PollPost(Submission, PollPostMixinBase):
+class PollPost(Submission, BasePollPost):
     pass
 
-class CrosspostPost(Submission, CrosspostPostMixinBase):
+class CrosspostPost(Submission, BaseCrosspostPost):
     pass

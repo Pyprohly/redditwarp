@@ -7,9 +7,9 @@ if TYPE_CHECKING:
         UserRelationshipItem,
         BannedUserRelationshipItem,
     )
-    from ...models.moderator_list_item import ModeratorListItem
+    from ...models.moderator_list import ModeratorListItem
 
-from ...models.load.moderator_list_item import load_moderator_list_item
+from ...models.load.moderator_list import load_moderator_list_item
 from ...models.load.user_relationship_item import load_user_relationship_item, load_banned_user_relation_item
 
 from .legacy_pull_users_SYNC import LegacyPullUsers

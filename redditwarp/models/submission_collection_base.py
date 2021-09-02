@@ -2,11 +2,11 @@
 from __future__ import annotations
 from typing import Mapping, Any, Optional, Sequence, TypeVar, overload, Iterator, Union
 
-from .artifact import Artifact
-
 from datetime import datetime, timezone
 
-class SubmissionCollectionDetailsMixinBase(Artifact):
+from .artifact import Artifact
+
+class BaseSubmissionCollectionDetails(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.uuid: str = d['collection_id']
@@ -39,12 +39,18 @@ class SubmissionCollectionDetailsMixinBase(Artifact):
         self.submission_id36s: Sequence[str] = [s[3:] for s in submission_full_id36s]
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
 
-T = TypeVar('T')
-
-class GenericSubmissionCollectionMixinBase(SubmissionCollectionDetailsMixinBase, Sequence[T]):
+class BaseSubmissionCollection(BaseSubmissionCollectionDetails):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        self.submissions: Sequence[T] = ()
+
+TSubmission = TypeVar('TSubmission')
+
+class GenericBaseSubmissionCollection(BaseSubmissionCollection, Sequence[TSubmission]):
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        children_data = d['sorted_links']['data']['children']
+        subms = [self._load_submission(i['data']) for i in children_data]
+        self.submissions: Sequence[TSubmission] = subms
 
     def __len__(self) -> int:
         return len(self.submissions)
@@ -52,16 +58,15 @@ class GenericSubmissionCollectionMixinBase(SubmissionCollectionDetailsMixinBase,
     def __contains__(self, item: object) -> bool:
         return item in self.submissions
 
-    def __iter__(self) -> Iterator[T]:
+    def __iter__(self) -> Iterator[TSubmission]:
         return iter(self.submissions)
 
     @overload
-    def __getitem__(self, index: int) -> T: ...
+    def __getitem__(self, index: int) -> TSubmission: ...
     @overload
-    def __getitem__(self, index: slice) -> Sequence[T]: ...
-    def __getitem__(self, index: Union[int, slice]) -> Union[T, Sequence[T]]:
+    def __getitem__(self, index: slice) -> Sequence[TSubmission]: ...
+    def __getitem__(self, index: Union[int, slice]) -> Union[TSubmission, Sequence[TSubmission]]:
         return self.submissions[index]
 
-class SubmissionCollectionMixinBase(SubmissionCollectionDetailsMixinBase):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
+    def _load_submission(self, m: Mapping[str, Any]) -> TSubmission:
+        raise NotImplementedError

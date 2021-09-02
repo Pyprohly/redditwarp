@@ -5,10 +5,10 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
 from .subreddit_base import (
-    SubredditMixinBase,
+    BaseSubreddit,
 )
 
-class Subreddit(SubredditMixinBase):
+class Subreddit(BaseSubreddit):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client

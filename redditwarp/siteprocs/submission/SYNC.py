@@ -540,7 +540,12 @@ class Submission:
             title: str,
             message: str) -> Comment:
         target = 't3_' + to_base36(submission_id)
-        json_data = {'type': 'public', 'item_id': [target], 'title': title, 'message': message}
+        json_data = {
+            'type': 'public',
+            'item_id': [target],
+            'title': title,
+            'message': message,
+        }
         root = self._client.request('POST', '/api/v1/modactions/removal_link_message', json=json_data)
         return load_comment(root, self._client)
 

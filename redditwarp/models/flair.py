@@ -1,77 +1,46 @@
 
 from typing import Any, Mapping, Optional, NamedTuple, Sequence
 
-from .artifact import Artifact
+from dataclasses import dataclass
 
-class FlairTemplate(Artifact):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
-        self._from_dict(d)
+from .artifact import IArtifact
 
-    def _from_dict(self, d: Mapping[str, Any]) -> None:
-        raise NotImplementedError
-        self.uuid: str = ''
-        self.type: str = ''
-        self.mod_only: bool = False
-        self.text: str = ''
-        self.bg_color: str = ''
-        self.fg_light_or_dark: str = ''
-        self.allowable_content: str = ''
-        self.css_class: str = ''
-        self.max_emojis: int = 0
-        self.text_editable: bool = False
+@dataclass(repr=False, eq=False)
+class FlairTemplate(IArtifact):
+    d: Mapping[str, Any]
+    uuid: str
+    type: str
+    mod_only: bool
+    text: str
+    bg_color: str
+    fg_light_or_dark: str
+    allowable_content: str
+    css_class: str
+    max_emojis: int
+    text_editable: bool
 
-class Variant1FlairTemplate(FlairTemplate):
-    def _from_dict(self, d: Mapping[str, Any]) -> None:
-        self.uuid: str = d['id']
-        self.type: str = d['type']
-        self.mod_only: bool = d['mod_only']
-        self.text: str = d['text']
-        self.bg_color: str = d['background_color']
-        self.fg_light_or_dark: str = d['text_color']
-        self.allowable_content: str = d['allowable_content']
-        self.css_class: str = d['css_class']
-        self.max_emojis: int = d['max_emojis']
-        self.text_editable: bool = d['text_editable']
-
-class Variant2FlairTemplate(FlairTemplate):
-    def _from_dict(self, d: Mapping[str, Any]) -> None:
-        self.uuid: str = d['id']
-        self.type: str = d['type']
-        self.mod_only: bool = d['modOnly']
-        self.text: str = d['text']
-        self.bg_color: str = d['backgroundColor']
-        self.fg_light_or_dark: str = d['textColor']
-        self.allowable_content: str = d['allowableContent']
-        self.css_class: str = d['cssClass']
-        self.max_emojis: int = d['maxEmojis']
-        self.text_editable: bool = d['textEditable']
-
-
+@dataclass(repr=False, eq=False)
 class CurrentFlairChoice:
-    def __init__(self, d: Mapping[str, Any]):
-        self.uuid: Optional[str] = d['flair_template_id']
-        self.text: str = d['flair_text']
-        self.css_class: str = d['flair_css_class']
-        self.position: str = d['flair_position']
+    uuid: Optional[str]
+    text: str
+    css_class: str
+    position: str
 
+@dataclass(repr=False, eq=False)
 class FlairTemplateChoice:
-    def __init__(self, d: Mapping[str, Any]):
-        self.uuid: str = d['flair_template_id']
-        self.text: str = d['flair_text']
-        self.css_class: str = d['flair_css_class']
-        self.position: str = d['flair_position']
-        self.text_editable: bool = d['flair_text_editable']
+    uuid: str
+    text: str
+    css_class: str
+    position: str
+    text_editable: bool
 
 class FlairChoices(NamedTuple):
     current: Optional[CurrentFlairChoice]
     choices: Sequence[FlairTemplateChoice]
 
-
+@dataclass(repr=False, eq=False)
 class UserFlairAssociation:
-    def __init__(self, d: Mapping[str, Any]):
-        self.username: str = d['user']
-        self.text: str = d['flair_text']
-        flair_css_class_temp: Optional[str] = d['flair_css_class']
-        self.has_had_css_class_when_no_flair_template: bool = flair_css_class_temp is not None
-        self.css_class: str = flair_css_class_temp or ''
+    username: str
+    text: str
+    has_had_css_class_when_no_flair_template: bool
+    css_class: str

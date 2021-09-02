@@ -167,7 +167,12 @@ class Comment:
             title: str,
             message: str) -> CommentModel:
         target = 't1_' + to_base36(comment_id)
-        json_data = {'type': 'public', 'item_id': [target], 'title': title, 'message': message}
+        json_data = {
+            'type': 'public',
+            'item_id': [target],
+            'title': title,
+            'message': message,
+        }
         root = self._client.request('POST', '/api/v1/modactions/removal_comment_message', json=json_data)
         return load_comment(root, self._client)
 

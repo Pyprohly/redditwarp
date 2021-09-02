@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from .artifact import Artifact
 
-class SubredditMixinBase(Artifact):
+class BaseSubreddit(Artifact):
     class Me:
         class MeFlair:
             def __init__(self, d: Mapping[str, Any]):

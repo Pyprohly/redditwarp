@@ -2,12 +2,14 @@
 from __future__ import annotations
 from typing import Any, Mapping
 
-from .artifact import Artifact
+from dataclasses import dataclass
 
-class Trophy(Artifact):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
-        self.name: str = d['name']
-        self.description: str = d['description'] or ''
-        self.icon_40: str = d['icon_40']
-        self.icon_70: str = d['icon_70']
+from .artifact import IArtifact
+
+@dataclass(repr=False, eq=False)
+class Trophy(IArtifact):
+    d: Mapping[str, Any]
+    name: str
+    description: str
+    icon_40: str
+    icon_70: str

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.flair import Variant2FlairTemplate, Variant1FlairTemplate, FlairChoices, UserFlairAssociation
+    from ...models.flair import FlairTemplate, FlairChoices, UserFlairAssociation
     from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
     from ...paginators.implementations.user_flair_association_paginator_sync import UserFlairAssociationPaginator
 
@@ -79,7 +79,7 @@ class Flair:
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-    ) -> Variant2FlairTemplate:
+    ) -> FlairTemplate:
         d = {'flair_type': flair_type}
         for k, v in (
             ('flair_template_id', uuid),
@@ -108,7 +108,7 @@ class Flair:
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-    ) -> Variant2FlairTemplate:
+    ) -> FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
             flair_type='USER_FLAIR',
@@ -133,7 +133,7 @@ class Flair:
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-    ) -> Variant2FlairTemplate:
+    ) -> FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
             flair_type='POST_FLAIR',
@@ -159,7 +159,7 @@ class Flair:
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-    ) -> Variant2FlairTemplate:
+    ) -> FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
             flair_type='USER_FLAIR',
@@ -186,7 +186,7 @@ class Flair:
         text_editable: Optional[bool] = None,
         max_emojis: Optional[int] = None,
         mod_only: Optional[bool] = None,
-    ) -> Variant2FlairTemplate:
+    ) -> FlairTemplate:
         return self._create_or_update_flair_template(
             sr_name,
             flair_type='USER_FLAIR',
@@ -295,11 +295,11 @@ class Flair:
         params = {'subreddit': sr_name, 'flair_type': 'POST_FLAIR'}
         self._client.request('PATCH', '/api/flair_template_order', params=params, json=order)
 
-    def get_user_flair_templates(self, sr_name: str) -> Sequence[Variant1FlairTemplate]:
+    def get_user_flair_templates(self, sr_name: str) -> Sequence[FlairTemplate]:
         root = self._client.request('GET', f'/r/{sr_name}/api/user_flair_v2')
         return [load_variant1_flair_template(i) for i in root]
 
-    def get_post_flair_templates(self, sr_name: str) -> Sequence[Variant1FlairTemplate]:
+    def get_post_flair_templates(self, sr_name: str) -> Sequence[FlairTemplate]:
         root = self._client.request('GET', f'/r/{sr_name}/api/link_flair_v2')
         return [load_variant1_flair_template(i) for i in root]
 

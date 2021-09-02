@@ -2,18 +2,18 @@
 from __future__ import annotations
 from typing import Mapping, Any, Sequence, Iterator, overload, Union
 
+from dataclasses import dataclass
+
+@dataclass(repr=False, eq=False)
 class FlairEmoji:
-    def __init__(self, d: Mapping[str, Any], name: str):
-        self.name = name
-        self.d = d
-        full_id36: str = d['created_by']
-        _, _, id36 = full_id36.partition('_')
-        self.creator_id36: str = id36
-        self.creator_id = int(id36, 36)
-        self.image_url: str = d['url']
-        self.post_enabled: bool = d['post_flair_allowed']
-        self.user_enabled: bool = d['user_flair_allowed']
-        self.mod_only: bool = d['mod_flair_only']
+    d: Mapping[str, Any]
+    name: str
+    creator_id36: str
+    creator_id: int
+    image_url: str
+    post_enabled: bool
+    user_enabled: bool
+    mod_only: bool
 
 
 class SubredditFlairEmojis(Sequence[FlairEmoji]):
@@ -23,7 +23,7 @@ class SubredditFlairEmojis(Sequence[FlairEmoji]):
             subreddit_id36: str):
         self.subreddit_emojis = subreddit_emojis
         self.reddit_emojis = reddit_emojis
-        self.all_emojis: Sequence[FlairEmoji] = list(self.subreddit_emojis) + list(self.reddit_emojis)
+        #self.all_emojis: Sequence[FlairEmoji] = list(self.subreddit_emojis) + list(self.reddit_emojis)
         self.subreddit_id36 = subreddit_id36
         self.subreddit_id = int(subreddit_id36, 36)
 

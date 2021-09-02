@@ -9,7 +9,7 @@ from .artifact import Artifact
 from .reports import ModReport, UserReport
 from .load.reports import load_mod_report, load_user_report
 
-class CommentMixinBase(Artifact):
+class BaseComment(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -147,13 +147,13 @@ class CommentMixinBase(Artifact):
             self.mod = self.Moderator(d)
 
 
-class ExtraSubmissionFieldsCommentMixinBase(CommentMixinBase):
+class BaseExtraSubmissionFieldsComment(BaseComment):
     # For:
     # * `GET /comments`
     # * `GET /r/{subreddit}/comments`
     # * `GET /user/{name}/overview` (and others)
 
-    class Submission(CommentMixinBase.Submission):
+    class Submission(BaseComment.Submission):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.comment_count: int = d['num_comments']
@@ -163,11 +163,11 @@ class ExtraSubmissionFieldsCommentMixinBase(CommentMixinBase):
             self.rel_permalink: str = d['link_permalink']
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-    class Subreddit(CommentMixinBase.Subreddit):
+    class Subreddit(BaseComment.Subreddit):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
 
-class EditPostTextEndpointCommentMixinBase(CommentMixinBase):
+class BaseEditPostTextEndpointComment(BaseComment):
     # For: `POST /api/editusertext`
     pass

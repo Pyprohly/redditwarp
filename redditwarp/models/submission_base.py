@@ -9,7 +9,7 @@ from .artifact import Artifact
 from .reports import ModReport, UserReport
 from .load.reports import load_mod_report, load_user_report
 
-class SubmissionMixinBase(Artifact):
+class BaseSubmission(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
@@ -180,28 +180,28 @@ class SubmissionMixinBase(Artifact):
             self.reports = self.Reports(d)
 
 
-class LinkPostMixinBase(SubmissionMixinBase):
+class BaseLinkPost(BaseSubmission):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.link_url: str = d['url_overridden_by_dest']
 
-class TextPostMixinBase(SubmissionMixinBase):
+class BaseTextPost(BaseSubmission):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.body: str = d['selftext']
         self.body_html: str = d['selftext_html']
 
-class ImagePostMixinBase(SubmissionMixinBase):
+class BaseImagePost(BaseSubmission):
     pass
 
-class VideoPostMixinBase(SubmissionMixinBase):
+class BaseVideoPost(BaseSubmission):
     pass
 
-class GalleryPostMixinBase(SubmissionMixinBase):
+class BaseGalleryPost(BaseSubmission):
     pass
 
-class PollPostMixinBase(SubmissionMixinBase):
+class BasePollPost(BaseSubmission):
     pass
 
-class CrosspostPostMixinBase(SubmissionMixinBase):
+class BaseCrosspostPost(BaseSubmission):
     pass
