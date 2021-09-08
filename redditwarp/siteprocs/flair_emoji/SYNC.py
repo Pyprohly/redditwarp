@@ -80,3 +80,40 @@ class FlairEmoji:
             self._client.request('POST', f'/api/v1/{sr}/emoji', data=data)
 
     create = cached_property(_create)
+
+    def set_emoji_permissions(self,
+        sr: str,
+        emoji_name: str,
+        *,
+        mod_only: bool = False,
+        user_enabled: bool = True,
+        post_enabled: bool = True,
+    ) -> None:
+        data = {
+            'name': emoji_name,
+            'mod_flair_only': '01'[mod_only],
+            'user_flair_allowed': '01'[user_enabled],
+            'post_flair_allowed': '01'[post_enabled],
+        }
+        self._client.request('POST', f'/api/v1/{sr}/emoji_permissions', data=data)
+
+    def delete(self, sr: str, emoji_name: str) -> None:
+        self._client.request('DELETE', f'/api/v1/{sr}/emoji/{emoji_name}')
+
+    def set_custom_emoji_size(self, sr: str, size: Optional[tuple[int, int]]) -> None:
+        data = None
+        if size is not None:
+            w, h = size
+            data = {
+                'width': str(w),
+                'height': str(h),
+            }
+        self._client.request('POST', f'/api/v1/{sr}/emoji_custom_size', data=data)
+
+    def enable_emojis_in_sr(self, sr: str) -> None:
+        data = {'subreddit': sr, 'enable': '1'}
+        self._client.request('POST', '/api/enable_emojis_in_sr', data=data)
+
+    def disable_emojis_in_sr(self, sr: str) -> None:
+        data = {'subreddit': sr, 'enable': '0'}
+        self._client.request('POST', '/api/enable_emojis_in_sr', data=data)

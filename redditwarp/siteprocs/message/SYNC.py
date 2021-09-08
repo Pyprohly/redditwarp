@@ -33,7 +33,7 @@ class Message:
         }
         self._client.request('POST', '/api/compose', data=req_data)
 
-    def reply(self, idn: int, body: str) -> ComposedMessage:
+    def reply_to_message(self, idn: int, body: str) -> ComposedMessage:
         data = {
             'thing_id': 't4_' + to_base36(idn),
             'text': body,
@@ -46,16 +46,16 @@ class Message:
     def delete_message(self, idn: int) -> None:
         self._client.request('POST', '/api/del_msg', data={'id': 't4_' + to_base36(idn)})
 
-    def mark_read(self, idn: int) -> None:
+    def mark_message_read(self, idn: int) -> None:
         self._client.request('POST', '/api/read_message', data={'id': 't4_' + to_base36(idn)})
 
-    def mark_unread(self, idn: int) -> None:
+    def mark_message_unread(self, idn: int) -> None:
         self._client.request('POST', '/api/unread_message', data={'id': 't4_' + to_base36(idn)})
 
-    def mark_read_comment(self, idn: int) -> None:
+    def mark_comment_read(self, idn: int) -> None:
         self._client.request('POST', '/api/read_message', data={'id': 't1_' + to_base36(idn)})
 
-    def mark_unread_comment(self, idn: int) -> None:
+    def mark_comment_unread(self, idn: int) -> None:
         self._client.request('POST', '/api/read_message', data={'id': 't1_' + to_base36(idn)})
 
     def mark_all_read(self) -> None:

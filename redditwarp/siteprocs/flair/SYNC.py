@@ -269,23 +269,25 @@ class Flair:
     def configure_subreddit_flair_settings(self,
         sr_name: str,
         *,
-        uf_enabled: Optional[bool],
-        uf_position: Optional[str],
-        uf_self_assign: Optional[bool],
-        pf_position: Optional[str],
-        pf_self_assign: Optional[bool],
+        user_flair_enabled: Optional[bool],
+        user_flair_position: Optional[str],
+        user_flair_self_assign: Optional[bool],
+        post_flair_position: Optional[str],
+        post_flair_self_assign: Optional[bool],
     ) -> None:
-        d = {}
-        for k, v in {
-            'flair_enabled': None if uf_enabled is None else '01'[uf_enabled],
-            'flair_position': uf_position,
-            'flair_self_assign_enabled': None if uf_self_assign is None else '01'[uf_self_assign],
-            'link_flair_position': pf_position,
-            'link_flair_self_assign_enabled': None if pf_self_assign is None else '01'[pf_self_assign],
-        }.items():
-            if v is not None:
-                d[k] = v
-        self._client.request('POST', f'/r/{sr_name}/api/flairconfig', data=d)
+        def g() -> Iterable[tuple[str, str]]:
+            if user_flair_enabled is not None:
+                yield ('flair_enabled', '01'[user_flair_enabled])
+            if user_flair_position is not None:
+                yield ('flair_position', user_flair_position)
+            if user_flair_self_assign is not None:
+                yield ('flair_self_assign_enabled', '01'[user_flair_self_assign])
+            if post_flair_position is not None:
+                yield ('link_flair_position', post_flair_position)
+            if post_flair_self_assign is not None:
+                yield ('link_flair_self_assign_enabled', '01'[post_flair_self_assign])
+
+        self._client.request('POST', f'/r/{sr_name}/api/flairconfig', data=dict(g()))
 
     def reorder_user_flair_templates(self, sr_name: str, order: Sequence[str]) -> None:
         params = {'subreddit': sr_name, 'flair_type': 'USER_FLAIR'}

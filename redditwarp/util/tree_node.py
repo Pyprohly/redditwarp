@@ -2,30 +2,24 @@
 from __future__ import annotations
 from typing import TypeVar, Generic, Optional, Sequence
 
+from dataclasses import dataclass
+
 T = TypeVar('T')
 TChild = TypeVar('TChild')
 
+@dataclass(repr=False, eq=False)
 class Node(Generic[T]):
-    def __init__(self, value: T):
-        self.value = value
+    value: T
 
+@dataclass(repr=False, eq=False)
 class TreeNode(Node[T], Generic[T, TChild]):
     pass
 
+@dataclass(repr=False, eq=False)
 class GeneralTreeNode(TreeNode[T, TChild]):
-    def __init__(self,
-        value: T,
-        children: Sequence[TChild],
-    ):
-        super().__init__(value)
-        self.children = children
+    children: Sequence[TChild]
 
+@dataclass(repr=False, eq=False)
 class BinaryTreeNode(TreeNode[T, TChild]):
-    def __init__(self,
-        value: T,
-        left: Optional[TChild],
-        right: Optional[TChild],
-    ):
-        super().__init__(value)
-        self.left = left
-        self.right = right
+    left: Optional[TChild]
+    right: Optional[TChild]

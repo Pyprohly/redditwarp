@@ -13,7 +13,7 @@ def load_flair_emoji(d: Mapping[str, Any], name: str) -> FlairEmoji:
         creator_id36=id36,
         creator_id=int(id36, 36),
         image_url=d['url'],
-        post_enabled=d['post_flair_allowed'],
-        user_enabled=d['user_flair_allowed'],
         mod_only=d['mod_flair_only'],
+        user_enabled=d['user_flair_allowed'],
+        post_enabled=d['post_flair_allowed'],
     )

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Sequence, Optional, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from ..exceptions import ClientRejectedResultException
+from ..exceptions import ResultRejectedException
 from .comment_tree_SYNC import MoreCommentsTreeNode
 from .submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
 from .more_comments_base import BaseMoreComments
@@ -30,7 +30,7 @@ class ContinueThisThread(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
     ) -> MoreCommentsTreeNode:
-        tree = self.fetch_continued_thread()
+        tree = self.fetch_continued()
         o = tree.node
         return MoreCommentsTreeNode(None, o.children[0].children, o.more)
 
@@ -40,10 +40,10 @@ class ContinueThisThread(MoreComments):
     def fetch(self) -> SubmissionCommentTreeWrapper:
         return self.client.p.comment_tree.fetch.by_id36(self.submission_id36, self.comment_id36)
 
-    def fetch_continued_thread(self) -> SubmissionCommentTreeWrapper:
+    def fetch_continued(self) -> SubmissionCommentTreeWrapper:
         tree = self.fetch()
         if not tree.is_continued():
-            raise ClientRejectedResultException(self)
+            raise ResultRejectedException(self)
         return tree
 
 class LoadMoreComments(MoreComments):

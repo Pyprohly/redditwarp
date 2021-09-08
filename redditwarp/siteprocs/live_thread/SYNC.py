@@ -3,16 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.live_thread import LiveThread as LiveThreadModel, LiveThreadUpdate
+    from ...models.live_thread_SYNC import LiveThread as LiveThreadModel, LiveUpdate
 
 from ...models.live_thread import ContributorList, Contributor
-from ...models.load.live_thread import load_live_thread, load_live_thread_update
+from ...models.load.live_thread_SYNC import load_live_thread, load_live_update
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...util.base_conversion import to_base36
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.implementations.listing.live_thread_update_listing_paginator import LiveThreadUpdateListingPaginator
+from ...paginators.implementations.listing.live_update_listing_paginator import LiveUpdateListingPaginator
 from ... import exceptions
 
 class LiveThread:
@@ -26,13 +26,13 @@ class LiveThread:
             if e.response.status == 404:
                 return None
             raise
-        return load_live_thread(root['data'])
+        return load_live_thread(root['data'], self._client)
 
     def bulk_fetch(self, idts: Iterable[str]) -> CallChunkChainingIterator[str, LiveThreadModel]:
         def mass_fetch(idts: Sequence[str]) -> Sequence[LiveThreadModel]:
             idts_str = ','.join(idts)
             root = self._client.request('GET', '/api/live/by_id/' + idts_str)
-            return [load_live_thread(o['data']) for o in root['data']['children']]
+            return [load_live_thread(o['data'], self._client) for o in root['data']['children']]
 
         return CallChunkChainingIterator(
                 CallChunk(mass_fetch, idfs) for idfs in chunked(idts, 100))
@@ -61,13 +61,13 @@ class LiveThread:
     def close(self, idt: str) -> None:
         self._client.request('GET', f'/api/live/{idt}/close_thread')
 
-    def get_thread_update(self, idt: str, update_uuid: str) -> LiveThreadUpdate:
+    def get_thread_update(self, idt: str, update_uuid: str) -> LiveUpdate:
         root = self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')
-        return load_live_thread_update(root['data'])
+        return load_live_update(root['data'], self._client)
 
     def pull(self, idt: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[LiveThreadUpdateListingPaginator, LiveThreadUpdate]:
-        p = LiveThreadUpdateListingPaginator(self._client, f'/live/{idt}')
+            ) -> PaginatorChainingIterator[LiveUpdateListingPaginator, LiveUpdate]:
+        p = LiveUpdateListingPaginator(self._client, f'/live/{idt}')
         return PaginatorChainingIterator(p, amount)
 
     def post_live_update(self, idt: str, body: str) -> None:

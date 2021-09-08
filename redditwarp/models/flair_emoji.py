@@ -11,9 +11,9 @@ class FlairEmoji:
     creator_id36: str
     creator_id: int
     image_url: str
-    post_enabled: bool
-    user_enabled: bool
     mod_only: bool
+    user_enabled: bool
+    post_enabled: bool
 
 
 class SubredditFlairEmojis(Sequence[FlairEmoji]):

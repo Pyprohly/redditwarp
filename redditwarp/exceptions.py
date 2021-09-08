@@ -26,22 +26,13 @@ class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 
-class ClientOperationException(ArgInfoException):
+class ClientException(ArgInfoException):
     pass
 
-class ClientProcessingError(ClientOperationException):
+class NoResultException(ClientException):
     pass
 
-class ServiceRequestException(ClientOperationException):
-    pass
-
-class NoResultException(ServiceRequestException):
-    pass
-
-class ClientRejectedResultException(ServiceRequestException):
-    pass
-
-class UnexpectedServiceRequestResultError(ServiceRequestException):
+class ResultRejectedException(ClientException):
     pass
 
 

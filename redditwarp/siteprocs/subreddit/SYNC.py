@@ -17,6 +17,7 @@ from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
 from ...paginators.implementations.listing.user_pull_sync import CommentListingPaginator
+from ...paginators.implementations.listing.subreddit_search_sync import SearchSubredditsListingPaginator
 from ... import exceptions
 from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch
@@ -112,11 +113,17 @@ class Subreddit:
     def get_post_requirements(self, sr: str) -> Mapping[str, Any]:
         return self._client.request('GET', f'/api/v1/{sr}/post_requirements')
 
-    def search_reddit_names(self, query: str) -> Sequence[str]:
-        root = self._client.request('GET', '/api/search_reddit_names', params={'query': query})
+    def explore(self, query: str, amount: Optional[int] = None, *,
+            show_users: bool = False,
+            ) -> PaginatorChainingIterator[SearchSubredditsListingPaginator, SubredditModel]:
+        p = SearchSubredditsListingPaginator(self._client, '/subreddits/search', query, show_users=show_users)
+        return PaginatorChainingIterator(p, amount)
+
+    def explore_names(self, name: str) -> Sequence[str]:
+        root = self._client.request('GET', '/api/search_reddit_names', params={'query': name})
         return root['names']
 
-    def subreddit_name_exists(self, name: str) -> bool:
+    def exists(self, name: str) -> bool:
         try:
             self._client.request('GET', '/api/search_reddit_names', params={'query': name, 'exact': '1'})
         except exceptions.HTTPStatusError as e:

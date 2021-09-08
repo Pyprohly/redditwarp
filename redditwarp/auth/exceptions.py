@@ -110,6 +110,7 @@ def raise_for_oauth2_response_error(resp: Response, json_dict: Any) -> None:
         help_uri=json_dict.get('error_uri', ''),
     )
 
+
 def raise_for_token_server_response(resp: Response, json_dict: Any) -> None:
     raise_for_oauth2_response_error(resp, json_dict)
 
@@ -118,6 +119,7 @@ def raise_for_reddit_token_server_response(resp: Response, json_dict: Any) -> No
     if not isinstance(error, str):
         return
     raise_for_token_server_response(resp, json_dict)
+
 
 _www_authenticate_auth_param_regex = re.compile(r'(\w+)=\"(.*?)\"')
 

@@ -151,7 +151,7 @@ class BaseExtraSubmissionFieldsComment(BaseComment):
     # For:
     # * `GET /comments`
     # * `GET /r/{subreddit}/comments`
-    # * `GET /user/{name}/overview` (and others)
+    # * `GET /user/{name}/overview` (and variants)
 
     class Submission(BaseComment.Submission):
         def __init__(self, d: Mapping[str, Any]):
