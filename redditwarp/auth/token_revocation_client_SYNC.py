@@ -5,11 +5,10 @@ if TYPE_CHECKING:
     from .typedefs import ClientCredentials
     from ..http.requestor_SYNC import Requestor
 
-from .. import http
 from ..http.request import Request
 from ..http.payload import FormData
 from .util import apply_basic_auth
-from .exceptions import HTTPStatusError
+from .exceptions import raise_for_status
 
 class TokenRevocationClient:
     def __init__(self, requestor: Requestor, uri: str,
@@ -28,10 +27,7 @@ class TokenRevocationClient:
 
         resp = self.requestor.send(r)
 
-        try:
-            resp.raise_for_status()
-        except http.exceptions.StatusCodeException as e:
-            raise HTTPStatusError(response=resp) from e
+        raise_for_status(resp)
 
     def revoke_access_token(self, token: str) -> None:
         self.revoke_token(token, 'access_token')

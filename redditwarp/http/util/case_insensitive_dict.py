@@ -7,11 +7,10 @@ from pprint import PrettyPrinter
 V = TypeVar('V')
 
 class CaseInsensitiveDict(MutableMapping[str, V]):
-    __slots__ = ('_store',)
-    _store: MutableMapping[str, Tuple[str, V]]
+    """A case-folding-case-preserving dictionary."""
 
     def __init__(self, data: Optional[Mapping[str, V]] = None, **kwargs: V) -> None:
-        self._store = {}
+        self._store: MutableMapping[str, Tuple[str, V]] = {}
         if data is None:
             data = {}
         self.update(data, **kwargs)
@@ -28,13 +27,13 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
         return len(self._store)
 
     def __setitem__(self, key: str, value: V) -> None:
-        self._store[key.lower()] = (key, value)
+        self._store[key.casefold()] = (key, value)
 
     def __getitem__(self, key: str) -> V:
-        return self._store[key.lower()][1]
+        return self._store[key.casefold()][1]
 
     def __delitem__(self, key: str) -> None:
-        del self._store[key.lower()]
+        del self._store[key.casefold()]
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, Mapping):

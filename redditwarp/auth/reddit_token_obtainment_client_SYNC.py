@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from ..http.response import Response
 
 from .token_obtainment_client_SYNC import TokenObtainmentClient
-from .exceptions import raise_for_reddit_token_server_response
+from .exceptions import raise_for_reddit_token_server_response_error
 
 class RedditTokenObtainmentClient(TokenObtainmentClient):
     def __init__(self, requestor: Requestor, uri: str,
@@ -24,4 +24,4 @@ class RedditTokenObtainmentClient(TokenObtainmentClient):
         return r
 
     def _check_response_errors(self, resp: Response, json_dict: Any) -> None:
-        raise_for_reddit_token_server_response(resp, json_dict)
+        raise_for_reddit_token_server_response_error(resp, json_dict)

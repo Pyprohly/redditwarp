@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     )
 
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.implementations.listing.subreddit_legacy_pull_users_sync import (
+from ...paginators.implementations.listing.p_subreddit_legacy_pull_users_sync import (
     UserRelationshipItemListingPaginator,
     BannedUserRelationshipItemListingPaginator,
 )

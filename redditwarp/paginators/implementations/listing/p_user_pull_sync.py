@@ -1,20 +1,19 @@
 
 from __future__ import annotations
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Iterable
 
 from .mixins.sort_SYNC import Sort
-from .mixins.time_filter_SYNC import TimeFilter
 from .mixins.subreddit_detail_SYNC import SubredditDetail
 from .listing_paginator import ListingPaginator
+from .submission_listing_paginator_sync import SubmissionListingPaginator
 from ....models.comment_SYNC import ExtraSubmissionFieldsComment
 from ....models.load.comment_SYNC import load_extra_submission_fields_comment
 from ....models.load.submission_SYNC import load_submission
 from ....models.submission_SYNC import Submission
 
-
-class SubmissionAndCommentListingPaginator(ListingPaginator[object]):
+class SubmissionAndExtraSubmissionFieldsCommentListingPaginator(ListingPaginator[object]):
     def next_result(self) -> Sequence[object]:
-        data = self._fetch_data()
+        data = self._next_data()
         l = []
         for child in data['children']:
             kind = child['kind']
@@ -29,69 +28,74 @@ class SubmissionAndCommentListingPaginator(ListingPaginator[object]):
             l.append(obj)
         return l
 
-class CommentListingPaginator(ListingPaginator[ExtraSubmissionFieldsComment]):
+class ExtraSubmissionFieldsCommentListingPaginator(ListingPaginator[ExtraSubmissionFieldsComment]):
     def next_result(self) -> Sequence[ExtraSubmissionFieldsComment]:
-        data = self._fetch_data()
+        data = self._next_data()
         return [load_extra_submission_fields_comment(d['data'], self.client) for d in data['children']]
-
-class SubmissionListingPaginator(ListingPaginator[Submission]):
-    def next_result(self) -> Sequence[Submission]:
-        data = self._fetch_data()
-        return [load_submission(d['data'], self.client) for d in data['children']]
 
 
 class OverviewListingPaginator(
     Sort[object],
-    TimeFilter[object],
     SubredditDetail[object],
-    SubmissionAndCommentListingPaginator,
+    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
 ): pass
 
 class CommentsListingPaginator(
     Sort[ExtraSubmissionFieldsComment],
-    TimeFilter[ExtraSubmissionFieldsComment],
     SubredditDetail[ExtraSubmissionFieldsComment],
-    CommentListingPaginator,
+    ExtraSubmissionFieldsCommentListingPaginator,
 ): pass
 
 class SubmittedListingPaginator(
     Sort[Submission],
-    TimeFilter[Submission],
     SubredditDetail[Submission],
     SubmissionListingPaginator,
 ): pass
 
 class GildedListingPaginator(
     Sort[object],
-    TimeFilter[object],
     SubredditDetail[object],
-    SubmissionAndCommentListingPaginator,
+    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
 ): pass
 
 class UpvotedListingPaginator(
     Sort[Submission],
-    TimeFilter[Submission],
     SubredditDetail[Submission],
     SubmissionListingPaginator,
 ): pass
 
 class DownvotedListingPaginator(
     Sort[Submission],
-    TimeFilter[Submission],
     SubredditDetail[Submission],
     SubmissionListingPaginator,
 ): pass
 
 class HiddenListingPaginator(
     Sort[Submission],
-    TimeFilter[Submission],
     SubredditDetail[Submission],
     SubmissionListingPaginator,
 ): pass
 
 class SavedListingPaginator(
     Sort[object],
-    TimeFilter[object],
     SubredditDetail[object],
-    SubmissionAndCommentListingPaginator,
+    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
 ): pass
+
+class SavedSubmissionsListingPaginator(
+    Sort[object],
+    SubredditDetail[object],
+    SubmissionListingPaginator,
+):
+    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+        yield from super()._generate_params()
+        yield ('type', 'links')
+
+class SavedCommentsListingPaginator(
+    Sort[object],
+    SubredditDetail[object],
+    ExtraSubmissionFieldsCommentListingPaginator,
+):
+    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+        yield from super()._generate_params()
+        yield ('type', 'comments')

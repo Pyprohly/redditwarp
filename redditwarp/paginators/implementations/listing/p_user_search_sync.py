@@ -1,20 +1,13 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Iterable, Sequence
+from typing import TYPE_CHECKING, Optional, Iterable
 if TYPE_CHECKING:
     from ....client_SYNC import Client
 
 from types import SimpleNamespace
 
 from .mixins.sort_SYNC import Sort
-from .listing_paginator import ListingPaginator
-
-
-class NamespaceListingPaginator(ListingPaginator[SimpleNamespace]):
-    def next_result(self) -> Sequence[SimpleNamespace]:
-        data = self._fetch_data()
-        return [SimpleNamespace(**d['data']) for d in data['children']]
-
+from .namespace_listing_paginator_sync import NamespaceListingPaginator
 
 class SearchUsersListingPaginator(
     Sort[SimpleNamespace],

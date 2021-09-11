@@ -1,12 +1,11 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ....models.submission_SYNC import Submission
 
 from .mixins.time_filter_SYNC import TimeFilter
 from .mixins.subreddit_detail_SYNC import SubredditDetail
-from .user_pull_sync import SubmissionListingPaginator
+from .p_user_pull_sync import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
+from .submission_listing_paginator_sync import SubmissionListingPaginator
+from ....models.submission_SYNC import Submission
 
 class BestListingPaginator(
     SubredditDetail[Submission],
@@ -38,4 +37,10 @@ class ControversialListingPaginator(
     TimeFilter[Submission],
     SubredditDetail[Submission],
     SubmissionListingPaginator,
+): pass
+
+class GildedListingPaginator(
+    TimeFilter[object],
+    SubredditDetail[object],
+    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
 ): pass

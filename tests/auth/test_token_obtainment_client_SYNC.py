@@ -10,8 +10,8 @@ from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
 from redditwarp.auth.util import basic_auth
 from redditwarp.auth.exceptions import (
     ResponseContentError,
-    InvalidClient,
-    UnrecognizedOAuth2ResponseError,
+    TokenServerResponseErrors,
+    UnrecognizedTokenServerResponseError,
 )
 from redditwarp.http.requestor_SYNC import Requestor
 from redditwarp.http.request import Request
@@ -85,7 +85,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"error": "invalid_client"}',
     )
-    with pytest.raises(InvalidClient):
+    with pytest.raises(TokenServerResponseErrors.InvalidClient):
         o.fetch_json_dict()
 
     o.requestor = MockRequestor(
@@ -93,7 +93,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"error": "asdf"}',
     )
-    with pytest.raises(UnrecognizedOAuth2ResponseError):
+    with pytest.raises(UnrecognizedTokenServerResponseError):
         o.fetch_json_dict()
 
     o.requestor = MockRequestor(
@@ -101,7 +101,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"message": "Unauthorized", "error": 401}',
     )
-    with pytest.raises(UnrecognizedOAuth2ResponseError):
+    with pytest.raises(UnrecognizedTokenServerResponseError):
         o.fetch_json_dict()
 
 def test_fetch_token() -> None:

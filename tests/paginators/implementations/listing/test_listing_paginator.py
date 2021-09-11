@@ -30,7 +30,7 @@ class MyListingPaginator(ListingPaginator[str]):
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
     def next_result(self) -> Sequence[str]:
-        data = self._fetch_data()
+        data = self._next_data()
         return [d['name'] for d in data['children']]
 
 session = MySession(200, {'Content-Type': 'application/json'}, b'')

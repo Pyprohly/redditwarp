@@ -16,29 +16,32 @@ class Get:
     def __call__(self,
         submission_id: int,
         comment_id: Optional[int] = None,
-        sort: Optional[str] = 'confidence',
+        *,
+        sort: str = 'confidence',
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
     ) -> Optional[SubmissionCommentTreeWrapper]:
-        return self.by_id(submission_id, comment_id, sort, limit, depth, context)
+        return self.by_id(submission_id, comment_id, sort=sort, limit=limit, depth=depth, context=context)
 
     def by_id(self,
         submission_id: int,
         comment_id: Optional[int] = None,
-        sort: Optional[str] = 'confidence',
+        *,
+        sort: str = 'confidence',
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
     ) -> Optional[SubmissionCommentTreeWrapper]:
         submission_id36 = to_base36(submission_id)
         comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
-        return self.by_id36(submission_id36, comment_id36, sort, limit, depth, context)
+        return self.by_id36(submission_id36, comment_id36, sort=sort, limit=limit, depth=depth, context=context)
 
     def by_id36(self,
         submission_id36: str,
         comment_id36: Optional[str] = None,
-        sort: Optional[str] = 'confidence',
+        *,
+        sort: str = 'confidence',
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
@@ -47,10 +50,10 @@ class Get:
             v = self._outer.fetch.by_id36(
                 submission_id36,
                 comment_id36,
-                sort,
-                limit,
-                depth,
-                context,
+                sort=sort,
+                limit=limit,
+                depth=depth,
+                context=context,
             )
         except HTTPStatusError as e:
             if e.response.status == 404:

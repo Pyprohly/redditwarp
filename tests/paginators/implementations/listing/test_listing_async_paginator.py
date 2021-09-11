@@ -32,7 +32,7 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
     async def next_result(self) -> Sequence[str]:
-        data = await self._fetch_data()
+        data = await self._next_data()
         return [d['name'] for d in data['children']]
 
 session = MySession(200, {'Content-Type': 'application/json'}, b'')

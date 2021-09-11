@@ -19,6 +19,7 @@ from .live_thread.SYNC import LiveThread
 from .message.SYNC import Message
 from .moderation.SYNC import Moderation
 from .draft.SYNC import Draft
+from .misc.SYNC import Misc
 
 class ClientProcedures:
     def __init__(self, client: Client):
@@ -38,3 +39,4 @@ class ClientProcedures:
         self.message = Message(client)
         self.moderation = Moderation(client)
         self.draft = Draft(client)
+        self.misc = Misc(client)

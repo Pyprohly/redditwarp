@@ -16,7 +16,7 @@ from ...models.load.user_SYNC import load_user
 from ...models.load.moderated_subreddit_list import load_moderated_subreddit_list_item
 from ... import exceptions
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.implementations.listing.user_search_sync import SearchUsersListingPaginator
+from ...paginators.implementations.listing.p_user_search_sync import SearchUsersListingPaginator
 
 class User:
     def __init__(self, client: Client):

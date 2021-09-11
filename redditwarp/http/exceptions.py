@@ -29,61 +29,62 @@ class ResponseException(ArgInfoException):
 class StatusCodeException(ResponseException):
     STATUS_CODE = 0
 
-class InformationalResponseException(StatusCodeException):
-    STATUS_CODE = -100
-class SuccessfulResponseException(StatusCodeException):
-    STATUS_CODE = -200
-class RedirectionResponseException(StatusCodeException):
-    STATUS_CODE = -300
-class ClientErrorResponseException(StatusCodeException):
-    STATUS_CODE = -400
-class ServerErrorResponseException(StatusCodeException):
-    STATUS_CODE = -500
+class StatusCodeExceptions:
+    class InformationalResponseException(StatusCodeException):
+        STATUS_CODE = -100
+    class SuccessfulResponseException(StatusCodeException):
+        STATUS_CODE = -200
+    class RedirectionResponseException(StatusCodeException):
+        STATUS_CODE = -300
+    class ClientErrorResponseException(StatusCodeException):
+        STATUS_CODE = -400
+    class ServerErrorResponseException(StatusCodeException):
+        STATUS_CODE = -500
 
-class BadRequest(ClientErrorResponseException):
-    STATUS_CODE = 400
-class Unauthorized(ClientErrorResponseException):
-    STATUS_CODE = 401
-class Forbidden(ClientErrorResponseException):
-    STATUS_CODE = 403
-class NotFound(ClientErrorResponseException):
-    STATUS_CODE = 404
-class Conflict(ClientErrorResponseException):
-    STATUS_CODE = 409
-class PayloadTooLarge(ClientErrorResponseException):
-    STATUS_CODE = 413
-class URITooLong(ClientErrorResponseException):
-    STATUS_CODE = 414
-class TooManyRequests(ClientErrorResponseException):
-    STATUS_CODE = 429
+    class BadRequest(ClientErrorResponseException):
+        STATUS_CODE = 400
+    class Unauthorized(ClientErrorResponseException):
+        STATUS_CODE = 401
+    class Forbidden(ClientErrorResponseException):
+        STATUS_CODE = 403
+    class NotFound(ClientErrorResponseException):
+        STATUS_CODE = 404
+    class Conflict(ClientErrorResponseException):
+        STATUS_CODE = 409
+    class PayloadTooLarge(ClientErrorResponseException):
+        STATUS_CODE = 413
+    class URITooLong(ClientErrorResponseException):
+        STATUS_CODE = 414
+    class TooManyRequests(ClientErrorResponseException):
+        STATUS_CODE = 429
 
-class InternalServerError(ServerErrorResponseException):
-    STATUS_CODE = 500
-class BadGateway(ServerErrorResponseException):
-    STATUS_CODE = 502
-class ServiceUnavailable(ServerErrorResponseException):
-    STATUS_CODE = 503
-class GatewayTimeout(ServerErrorResponseException):
-    STATUS_CODE = 504
+    class InternalServerError(ServerErrorResponseException):
+        STATUS_CODE = 500
+    class BadGateway(ServerErrorResponseException):
+        STATUS_CODE = 502
+    class ServiceUnavailable(ServerErrorResponseException):
+        STATUS_CODE = 503
+    class GatewayTimeout(ServerErrorResponseException):
+        STATUS_CODE = 504
 
 status_code_exception_class_by_status_code = {
     cls.STATUS_CODE: cls
     for cls in [
         # Client errors
-        BadRequest,
-        Unauthorized,
-        Forbidden,
-        NotFound,
-        Conflict,
-        PayloadTooLarge,
-        URITooLong,
-        TooManyRequests,
+        StatusCodeExceptions.BadRequest,
+        StatusCodeExceptions.Unauthorized,
+        StatusCodeExceptions.Forbidden,
+        StatusCodeExceptions.NotFound,
+        StatusCodeExceptions.Conflict,
+        StatusCodeExceptions.PayloadTooLarge,
+        StatusCodeExceptions.URITooLong,
+        StatusCodeExceptions.TooManyRequests,
 
         # Server errors
-        InternalServerError,
-        BadGateway,
-        ServiceUnavailable,
-        GatewayTimeout,
+        StatusCodeExceptions.InternalServerError,
+        StatusCodeExceptions.BadGateway,
+        StatusCodeExceptions.ServiceUnavailable,
+        StatusCodeExceptions.GatewayTimeout,
     ]
 }
 
@@ -92,15 +93,15 @@ def get_status_code_exception_class_by_status_code(n: int) -> Type[StatusCodeExc
     if klass is None:
         klass = StatusCodeException
         if 100 <= n < 200:
-            klass = InformationalResponseException
+            klass = StatusCodeExceptions.InformationalResponseException
         elif 200 <= n < 300:
-            klass = SuccessfulResponseException
+            klass = StatusCodeExceptions.SuccessfulResponseException
         elif 300 <= n < 400:
-            klass = RedirectionResponseException
+            klass = StatusCodeExceptions.RedirectionResponseException
         elif 400 <= n < 500:
-            klass = ClientErrorResponseException
+            klass = StatusCodeExceptions.ClientErrorResponseException
         elif 500 <= n < 600:
-            klass = ServerErrorResponseException
+            klass = StatusCodeExceptions.ServerErrorResponseException
     return klass
 
 def raise_now(resp: Response) -> None:

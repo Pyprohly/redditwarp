@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Optional, Mapping, Any
+from typing import Mapping, Any
 
 from functools import cached_property
 
@@ -8,7 +8,7 @@ class BaseMoreComments:
     def __init__(self,
         submission_id36: str,
         comment_id36: str,
-        sort: Optional[str],
+        sort: str,
         *,
         d: Mapping[str, Any],
     ):

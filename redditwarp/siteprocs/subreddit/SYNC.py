@@ -16,8 +16,8 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.implementations.listing.user_pull_sync import CommentListingPaginator
-from ...paginators.implementations.listing.subreddit_search_sync import SearchSubredditsListingPaginator
+from ...paginators.implementations.listing.p_user_pull_sync import ExtraSubmissionFieldsCommentListingPaginator
+from ...paginators.implementations.listing.p_subreddit_search_sync import SearchSubredditsListingPaginator
 from ... import exceptions
 from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch
@@ -69,8 +69,8 @@ class Subreddit:
         return CallChunkChainingIterator(
                 CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
-    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[CommentListingPaginator, ExtraSubmissionFieldsComment]:
-        p = CommentListingPaginator(self._client, f'/r/{sr}/comments')
+    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
+        p = ExtraSubmissionFieldsCommentListingPaginator(self._client, f'/r/{sr}/comments')
         return PaginatorChainingIterator(p, amount)
 
     def get_settings(self, sr: str) -> Mapping[str, Any]:

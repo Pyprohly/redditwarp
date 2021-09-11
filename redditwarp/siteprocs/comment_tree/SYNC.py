@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Sequence, Optional
+from typing import TYPE_CHECKING, Iterable, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_tree_SYNC import MoreCommentsTreeNode
@@ -17,21 +17,21 @@ class CommentTree:
 
     def more_children(self,
         submission_id36: str,
-        children_id36: Sequence[str],
-        sort: Optional[str] = None,
+        children_id36: Iterable[str],
+        *,
+        sort: str = '',
         depth: Optional[int] = None,
         limit_children: bool = False,
     ) -> MoreCommentsTreeNode:
-        params = {
-            'link_id': 't3_' + submission_id36,
-            'children': ','.join(children_id36),
-        }
-        if sort is not None:
-            params['sort'] = sort
-        if depth is not None:
-            params['depth'] = str(depth)
-        if limit_children:
-            params['limit_children'] = '1'
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('link_id', 't3_' + submission_id36)
+            yield ('children', ','.join(children_id36))
+            if sort:
+                yield ('sort', sort)
+            if depth is not None:
+                yield ('depth', str(depth))
+            if limit_children:
+                yield ('limit_children', '1')
 
-        resp_data = self._client.request('GET', '/api/morechildren', params=params)
+        resp_data = self._client.request('GET', '/api/morechildren', params=dict(g()))
         return load_more_children(resp_data, self._client, submission_id36, sort)

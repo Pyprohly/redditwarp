@@ -85,7 +85,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
             raise HTMLDocumentResponseContentError(msg, response=resp) from e
         raise UnidentifiedResponseContentError(response=resp) from e
 
-    elif isinstance(e, auth.exceptions.InvalidGrant):
+    elif isinstance(e, auth.exceptions.TokenServerResponseErrors.InvalidGrant):
         raise CredentialsError('Check your grant credentials', response=resp) from e
 
     elif isinstance(e, auth.exceptions.HTTPStatusError):
@@ -93,7 +93,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
             req = resp.request
             if req:
                 if not (uri := req.uri).startswith("https://www.reddit.com"):
-                    e.arg = f'access token URL inaccuracy: got {uri!r}, need {TOKEN_OBTAINMENT_URL!r}'
+                    e.arg = f'bad access token URL: got {uri!r}, need {TOKEN_OBTAINMENT_URL!r}'
                     raise
                 if 'Authorization' not in req.headers:
                     e.arg = 'Authorization header missing from request'
@@ -112,7 +112,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
                         response=resp,
                     ) from e
 
-    elif isinstance(e, auth.exceptions.UnsupportedGrantType):
+    elif isinstance(e, auth.exceptions.TokenServerResponseErrors.UnsupportedGrantType):
         req = resp.request
         if req:
             headers = CaseInsensitiveDict(req.headers)

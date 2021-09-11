@@ -48,16 +48,23 @@ class ListingAsyncPaginator(BidirectionalCursorAsyncPaginator[T]):
     async def _fetch_data(self) -> Mapping[str, Any]:
         params = dict(self._generate_params())
         root = await self.client.request('GET', self.uri, params=params)
-        data = root['data']
+        return root['data']
+
+    def process_data(self, data: Mapping[str, Any]) -> None:
         children = data['children']
-        self.count += x if (x := data['dist']) else len(children)
+
+        self.count += z if (z := data['dist']) else len(children)
+
         after = data['after'] or ''
         before = data['before'] or ''
-
         if children:
             self.after = after if after else self.cursor_extractor(children[-1])
             self.before = before if before else self.cursor_extractor(children[0])
 
         self.has_after = bool(after)
         self.has_before = bool(before)
+
+    async def _next_data(self) -> Mapping[str, Any]:
+        data = await self._fetch_data()
+        self.process_data(data)
         return data

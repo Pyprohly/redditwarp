@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...models.subreddit_SYNC import Subreddit
 
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.implementations.listing.account_pull_subreddits_sync import SubredditListingPaginator
+from ...paginators.implementations.listing.p_account_pull_subreddits_sync import SubredditListingPaginator
 
 class Grab:
     def __init__(self, client: Client) -> None:

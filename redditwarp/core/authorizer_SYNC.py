@@ -13,6 +13,7 @@ import time
 from ..http.requestor_decorator_SYNC import RequestorDecorator
 from .exceptions import UnknownTokenType
 from ..auth.grants import RefreshTokenGrant
+from ..auth.exceptions import extract_www_authenticate_bearer_auth_params, raise_for_resource_server_response_error
 
 class Authorizer:
     """Knows how to authorize requests."""
@@ -86,12 +87,19 @@ class Authorized(RequestorDecorator):
         self.authorizer.maybe_renew_token()
         self.authorizer.prepare_request(request)
 
-        response = self.requestor.send(request, timeout=timeout)
+        resp = self.requestor.send(request, timeout=timeout)
 
-        if response.status == 401 and self.authorizer.can_renew_token():
+        auth_params = extract_www_authenticate_bearer_auth_params(resp)
+        invalid_token = auth_params.get('error', '') == 'invalid_token'
+
+        if invalid_token and self.authorizer.can_renew_token():
             self.authorizer.renew_token()
             self.authorizer.prepare_request(request)
 
-            response = self.requestor.send(request, timeout=timeout)
+            resp = self.requestor.send(request, timeout=timeout)
 
-        return response
+            auth_params = extract_www_authenticate_bearer_auth_params(resp)
+
+        raise_for_resource_server_response_error(resp, auth_params)
+
+        return resp

@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from ..http.requestor_ASYNC import Requestor
     from ..http.response import Response
 
-from .. import http
 from ..http.request import Request
 from ..http.util.json_load import json_loads_response
 from ..http.payload import FormData
@@ -14,8 +13,8 @@ from .token import Token
 from .util import apply_basic_auth
 from .exceptions import (
     ResponseContentError,
-    HTTPStatusError,
-    raise_for_token_server_response,
+    raise_for_status,
+    raise_for_token_server_response_error,
 )
 
 class TokenObtainmentClient:
@@ -34,7 +33,7 @@ class TokenObtainmentClient:
         return r
 
     def _check_response_errors(self, resp: Response, json_dict: Any) -> None:
-        raise_for_token_server_response(resp, json_dict)
+        raise_for_token_server_response_error(resp, json_dict)
 
     async def fetch_json_dict(self) -> Mapping[str, Any]:
         r = self._new_request()
@@ -51,10 +50,7 @@ class TokenObtainmentClient:
 
         self._check_response_errors(resp, resp_json)
 
-        try:
-            resp.raise_for_status()
-        except http.exceptions.StatusCodeException as e:
-            raise HTTPStatusError(response=resp) from e
+        raise_for_status(resp)
 
         return resp_json
 

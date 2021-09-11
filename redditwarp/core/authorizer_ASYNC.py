@@ -19,6 +19,7 @@ import time
 from ..http.requestor_decorator_ASYNC import RequestorDecorator
 from .exceptions import UnknownTokenType
 from ..auth.grants import RefreshTokenGrant
+from ..auth.exceptions import extract_www_authenticate_bearer_auth_params, raise_for_resource_server_response_error
 
 class Authorizer:
     def __init__(self,
@@ -92,18 +93,20 @@ class Authorized(RequestorDecorator):
         await self._valve.wait()
 
         await self.authorizer.maybe_renew_token()
-
         self.authorizer.prepare_request(request)
 
         coro = self.requestor.send(request, timeout=timeout)
         fut = asyncio.ensure_future(coro)
         self._futures.add(fut)
         try:
-            response = await fut
+            resp = await fut
         finally:
             self._futures.remove(fut)
 
-        if response.status == 401 and self.authorizer.can_renew_token():
+        auth_params = extract_www_authenticate_bearer_auth_params(resp)
+        invalid_token = auth_params.get('error', '') == 'invalid_token'
+
+        if invalid_token and self.authorizer.can_renew_token():
             # Need to call `renew_token()` ensuring only one task does it.
             if self._valve.is_set():
                 # Stop new requests. Assume the token we have is invalid.
@@ -111,10 +114,11 @@ class Authorized(RequestorDecorator):
 
                 await self.authorizer.renew_token()
 
-                # Wait for all other tasks to finish making a request
-                # so that a request that fails on the same old token
+                # Wait for all other requests to finish so that
+                # a request that fails on the same old token
                 # doesn't cause another token renewal.
-                await asyncio.wait(self._futures)
+                if self._futures:
+                    await asyncio.wait(self._futures)
 
                 self._valve.set()
             else:
@@ -122,6 +126,10 @@ class Authorized(RequestorDecorator):
 
             self.authorizer.prepare_request(request)
 
-            response = await self.requestor.send(request, timeout=timeout)
+            resp = await self.requestor.send(request, timeout=timeout)
 
-        return response
+            auth_params = extract_www_authenticate_bearer_auth_params(resp)
+
+        raise_for_resource_server_response_error(resp, auth_params)
+
+        return resp

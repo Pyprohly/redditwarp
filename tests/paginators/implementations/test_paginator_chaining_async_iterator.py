@@ -51,27 +51,26 @@ async def test_current_iter() -> None:
     assert await pci.__anext__() == 9
 
 @pytest.mark.asyncio
-async def test_amount() -> None:
+async def test_remaining() -> None:
     p = MyAsyncPaginator([
         [10, 20, 30, 40],
         [50, 60, 70, 80],
     ])
     pci: PaginatorChainingAsyncIterator[MyAsyncPaginator, int] = PaginatorChainingAsyncIterator(p, 6)
-    assert pci.amount == 6
-    assert pci.count == 0
+    assert pci.remaining == 6
     assert await pci.__anext__() == 10
-    assert pci.count == 1
+    assert pci.remaining == 5
     assert [i async for i in pci] == [20,30,40,50,60]
-    assert pci.count == 6
+    assert pci.remaining == 0
 
     p = MyAsyncPaginator([
         [10, 20, 30, 40],
         [50, 60, 70, 80],
     ])
     pci = PaginatorChainingAsyncIterator(p)
-    assert pci.amount is None
+    assert pci.remaining is None
     assert [i async for i in pci] == [10,20,30,40,50,60,70,80]
-    assert pci.count == 8
+    assert pci.remaining is None
 
 @pytest.mark.asyncio
 async def test_efficient_pagination_limit() -> None:
@@ -83,7 +82,7 @@ async def test_efficient_pagination_limit() -> None:
     pci: PaginatorChainingAsyncIterator[MyAsyncPaginator, int] = PaginatorChainingAsyncIterator(p, 123)
     for _ in range(100):
         await pci.__anext__()
-    assert pci.count == 100
+    assert pci.remaining == 23
     assert p.limit == 100
     await pci.__anext__()
     assert p.limit == 23

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, Mapping, Dict, List
+from typing import TYPE_CHECKING, Any, Mapping, Dict, List
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ..more_comments_SYNC import MoreComments
@@ -15,7 +15,7 @@ def load_more_comments(
     d: Mapping[str, Any],
     client: Client,
     submission_id36: str,
-    sort: Optional[str],
+    sort: str,
 ) -> MoreComments:
     _, _, comment_id36 = d['parent_id'].partition('_')
     go_deeper = d['id'] == '_'
@@ -38,8 +38,8 @@ def load_more_comments(
     )
 
 
-def load_submission_comment_tree_wrapper(d: Any, client: Client, sort: Optional[str]) -> SubmissionCommentTreeWrapper:
-    def f(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> CommentTreeNode:
+def load_submission_comment_tree_wrapper(d: Any, client: Client, sort: str) -> SubmissionCommentTreeWrapper:
+    def f(d: Any, client: Client, submission_id36: str, sort: str) -> CommentTreeNode:
         value = load_comment(d, client)
         nodes = []
         more = None
@@ -92,7 +92,7 @@ def load_submission_comment_tree_wrapper(d: Any, client: Client, sort: Optional[
     root = SubmissionTreeNode(value, nodes, more)
     return SubmissionCommentTreeWrapper(root, sort)
 
-def load_more_children(d: Any, client: Client, submission_id36: str, sort: Optional[str]) -> MoreCommentsTreeNode:
+def load_more_children(d: Any, client: Client, submission_id36: str, sort: str) -> MoreCommentsTreeNode:
     node_lookup: Dict[str, CommentTreeNode] = {}
     chilren_lookup: Dict[str, List[CommentTreeNode]] = {}
 

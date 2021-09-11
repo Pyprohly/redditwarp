@@ -24,10 +24,10 @@ class ModerationLegacyPullUsersPaginator(ListingPaginator[T]):
 
 class UserRelationshipItemListingPaginator(ModerationLegacyPullUsersPaginator[UserRelationshipItem]):
     def next_result(self) -> Sequence[UserRelationshipItem]:
-        data = self._fetch_data()
+        data = self._next_data()
         return [load_user_relationship_item(d) for d in data['children']]
 
 class BannedUserRelationshipItemListingPaginator(ModerationLegacyPullUsersPaginator[BannedUserRelationshipItem]):
     def next_result(self) -> Sequence[BannedUserRelationshipItem]:
-        data = self._fetch_data()
+        data = self._next_data()
         return [load_banned_user_relation_item(d) for d in data['children']]

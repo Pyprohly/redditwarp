@@ -234,7 +234,7 @@ class TestRequestExceptions:
 
             def test_CredentialsError(self) -> None:
                 response = Response(400, {}, b'{"error": "invalid_grant"}')
-                exc = auth.exceptions.InvalidGrant(response=response)
+                exc = auth.exceptions.TokenServerResponseErrors.InvalidGrant(response=response)
                 session = BadSession(exc)
                 http = RedditHTTPClient(session=session)
                 with pytest.raises(core.exceptions.CredentialsError):
@@ -245,12 +245,6 @@ class TestRequestExceptions:
                 session = BadSession(exc2)
                 http = RedditHTTPClient(session=session)
                 with pytest.raises(core.exceptions.CredentialsError):
-                    http.request('', '')
-
-            def test_InsufficientScope(self) -> None:
-                session = GoodSession(403, {'WWW-Authenticate': 'error="insufficient_scope"'}, b'{"message": "Forbidden", "error": 403}')
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(auth.exceptions.InsufficientScope):
                     http.request('', '')
 
             def test_FaultyUserAgent(self) -> None:
@@ -265,9 +259,9 @@ class TestRequestExceptions:
             def test_UnsupportedGrantType(self) -> None:
                 request = Request('', '', headers={'Content-Type': 'application/json'})
                 response = Response(200, {}, b'', request=request)
-                exc = auth.exceptions.UnsupportedGrantType(response=response)
+                exc = auth.exceptions.TokenServerResponseErrors.UnsupportedGrantType(response=response)
                 session = BadSession(exc)
                 http = RedditHTTPClient(session=session)
-                with pytest.raises(auth.exceptions.UnsupportedGrantType) as exc_info:
+                with pytest.raises(auth.exceptions.TokenServerResponseErrors.UnsupportedGrantType) as exc_info:
                     http.request('', '')
                 assert exc_info.value.arg is not None

@@ -35,7 +35,7 @@ class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssoci
             elif not self.has_before:
                 raise MissingCursorException('before')
 
-    def _fetch_data(self) -> Mapping[str, Any]:
+    def _next_data(self) -> Mapping[str, Any]:
         params = dict(self._generate_params())
         data = self.client.request('GET', self.uri, params=params)
         children = data['users']
@@ -51,5 +51,5 @@ class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssoci
         return data
 
     def next_result(self) -> Sequence[UserFlairAssociation]:
-        data = self._fetch_data()
+        data = self._next_data()
         return [load_user_flair_association(d) for d in data['users']]

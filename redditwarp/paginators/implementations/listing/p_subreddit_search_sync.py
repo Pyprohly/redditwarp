@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from ....models.subreddit_SYNC import Subreddit
 from .mixins.sort_SYNC import Sort
-from .user_pull_subreddits_sync import SubredditListingPaginator
+from .subreddit_listing_paginator_sync import SubredditListingPaginator
 
 class SearchSubredditsListingPaginator(
     Sort[Subreddit],

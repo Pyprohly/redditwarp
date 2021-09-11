@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 from functools import cached_property
 
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
-from ...paginators.implementations.listing.moderation_pull_sync import (
+from ...paginators.implementations.listing.p_moderation_pull_sync import (
     ModQueueListingPaginator,
     ModQueueSubmissionListingPaginator,
     ModQueueCommentListingPaginator,
