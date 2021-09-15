@@ -78,7 +78,7 @@ def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
 
 signal.signal(signal.SIGINT, handle_sigint)
 
-tinfo = load_transport()
+ti = load_transport()
 
 client_id = get_client_id(args)
 client_secret = get_client_secret(args)
@@ -139,7 +139,7 @@ if received_state != state:
 
 code = response_params.get('code', '')
 if not code:
-    raise Exception('authorization declined by user')
+    raise Exception('authorization was declined by the user')
 
 print(f'Authorization code: {code}\n')
 
@@ -150,11 +150,11 @@ print('Authorization grant:')
 pp(dict(grant))
 print()
 
-session = tinfo.new_session()
+session = ti.new_session()
 user_agent = (
     f"RedditWarp/{redditwarp.__version__} "
     f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
-    f"{tinfo.name}/{tinfo.version} "
+    f"{ti.name}/{ti.version} "
     "redditwarp.cli.refresh_token"
 )
 headers = {'User-Agent': user_agent}

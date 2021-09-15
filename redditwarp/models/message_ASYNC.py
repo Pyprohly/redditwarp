@@ -5,18 +5,18 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
 from .message_base import (
-    BaseMailboxMessage,
+    BaseMessage,
     BaseComposedMessage,
     BaseCommentMessage,
 )
 
-class MailboxMessage(BaseMailboxMessage):
+class Message(BaseMessage):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
         self.client = client
 
-class ComposedMessage(MailboxMessage, BaseComposedMessage):
+class ComposedMessage(Message, BaseComposedMessage):
     pass
 
-class CommentMessage(MailboxMessage, BaseCommentMessage):
+class CommentMessage(Message, BaseCommentMessage):
     pass

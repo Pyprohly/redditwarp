@@ -81,6 +81,5 @@ class Draft:
         root = self._client.request('PUT', '/api/v1/draft', data=dict(g()))
         return root['json']['data']['id']
 
-    def delete(self, uuid: str) -> str:
-        root = self._client.request('DELETE', '/api/v1/draft')
-        return root['json']['data']['id']
+    def delete(self, uuid: str) -> None:
+        self._client.request('DELETE', '/api/v1/draft', params={'draft_id': uuid})

@@ -13,7 +13,7 @@ class CallChunkChainingIterator(Iterator[TOutput], Generic[TInput, TOutput]):
     def current(self) -> Optional[CallChunk[Sequence[TInput], Sequence[TOutput]]]:
         c = self._call_iter.current
         if c is not None and not isinstance(c, CallChunk):
-            raise RuntimeError('type is not CallChunk')
+            raise RuntimeError('not a CallChunk')
         return c
 
     @current.setter

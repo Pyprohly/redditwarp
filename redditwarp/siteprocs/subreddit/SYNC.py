@@ -23,7 +23,7 @@ from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 from .pull_SYNC import Pull
-from .grab_SYNC import Grab
+from .pulls_SYNC import Pulls
 
 class Subreddit:
     def __init__(self, client: Client):
@@ -31,7 +31,7 @@ class Subreddit:
         self.get = Get(client)
         self.fetch = Fetch(client)
         self.pull = Pull(client)
-        self.grab = Grab(client)
+        self.pulls = Pulls(client)
 
     def get_by_name(self, name: str) -> Optional[SubredditModel]:
         try:
@@ -66,8 +66,7 @@ class Subreddit:
             root = self._client.request('GET', '/api/info', params={'id': ids_str})
             return [load_subreddit(i['data'], self._client) for i in root['data']['children']]
 
-        return CallChunkChainingIterator(
-                CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
+        return CallChunkChainingIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
     def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
         p = ExtraSubmissionFieldsCommentListingPaginator(self._client, f'/r/{sr}/comments')

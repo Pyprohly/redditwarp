@@ -35,8 +35,7 @@ class Submission:
             root = self._client.request('GET', '/api/info', params={'id': ids_str})
             return [load_submission(i['data'], self._client) for i in root['data']['children']]
 
-        return CallChunkChainingIterator(
-                CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
+        return CallChunkChainingIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
     class _upload_media:
         def __init__(self, outer: Submission):
@@ -369,8 +368,7 @@ class Submission:
             ids_str = ','.join(full_id36s)
             self._client.request('POST', '/api/hide', params={'id': ids_str})
 
-        return CallChunkCallingIterator(
-                CallChunk(mass_hide, idfs) for idfs in chunked(submission_ids, 300))
+        return CallChunkCallingIterator(CallChunk(mass_hide, chunk) for chunk in chunked(submission_ids, 300))
 
     def bulk_unhide(self, submission_ids: Sequence[int]) -> CallChunkCallingIterator[Sequence[int], None]:
         def mass_hide(ids: Sequence[int]) -> None:
@@ -379,8 +377,7 @@ class Submission:
             ids_str = ','.join(full_id36s)
             self._client.request('POST', '/api/unhide', params={'id': ids_str})
 
-        return CallChunkCallingIterator(
-                CallChunk(mass_hide, idfs) for idfs in chunked(submission_ids, 300))
+        return CallChunkCallingIterator(CallChunk(mass_hide, chunk) for chunk in chunked(submission_ids, 300))
 
     def mark_nsfw(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}

@@ -9,6 +9,9 @@ import json
 
 from ...models.load.custom_feed import load_custom_feed
 from ... import exceptions
+from ...iterators.chunking import chunked
+from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
+from ...iterators.call_chunk_SYNC import CallChunk
 
 class CustomFeed:
     def __init__(self, client: Client):
@@ -25,12 +28,12 @@ class CustomFeed:
             raise
         return load_custom_feed(root['data'])
 
-    def list_own(self) -> Sequence[CustomFeedModel]:
-        result = self._client.request(*'GET /api/multi/mine'.split())
-        return [load_custom_feed(d['data']) for d in result]
+    def retrieve(self, user: str = '') -> Sequence[CustomFeedModel]:
+        uri = '/api/multi/mine'
+        if user:
+            uri = f'/api/multi/user/{user}'
 
-    def list_user(self, user: str) -> Sequence[CustomFeedModel]:
-        result = self._client.request(*f'GET /api/multi/user/{user}'.split())
+        result = self._client.request('GET', uri)
         return [load_custom_feed(d['data']) for d in result]
 
     def create(self,
@@ -90,7 +93,7 @@ class CustomFeed:
         root = self._client.request('POST', '/api/multi/copy', data=data)
         return load_custom_feed(root['data'])
 
-    def check_sr_in_feed(self, user: str, feed: str, sr_name: str) -> bool:
+    def contains(self, user: str, feed: str, sr_name: str) -> bool:
         try:
             self._client.request('GET', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}')
         except exceptions.RedditAPIError as e:
@@ -99,10 +102,16 @@ class CustomFeed:
             raise
         return True
 
-    def add_subreddit(self, user: str, feed: str, sr_name: str) -> None:
-        json_str = self._json_encode({"name": "aa"})
-        self._client.request('PUT', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}',
-                data={'model': json_str})
+    def add_to(self, user: str, feed: str, sr_name: str) -> None:
+        json_str = self._json_encode({"name": "abc"})
+        self._client.request('PUT', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}', data={'model': json_str})
 
-    def remove_subreddit(self, user: str, feed: str, sr_name: str) -> None:
+    def bulk_add_to(self, user: str, feed: str, sr_names: Sequence[str]) -> CallChunkCallingIterator[Sequence[str], None]:
+        def mass_add_to(sr_names: Sequence[str]) -> None:
+            data = {'path': f'/user/{user}/m/{feed}', 'sr_names': (','.join(sr_names))}
+            self._client.request('POST', '/api/multi/add_srs_bulk', data=data)
+
+        return CallChunkCallingIterator(CallChunk(mass_add_to, chunk) for chunk in chunked(sr_names, 300))
+
+    def remove_from(self, user: str, feed: str, sr_name: str) -> None:
         self._client.request('DELETE', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}')

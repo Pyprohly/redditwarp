@@ -138,6 +138,7 @@ resource_server_response_error_by_error_name = {
     cls.ERROR_NAME: cls
     for cls in [
         ResourceServerResponseError,
+        ResourceServerResponseErrors.InvalidRequest,
         ResourceServerResponseErrors.InvalidToken,
         ResourceServerResponseErrors.InsufficientScope,
     ]

@@ -1,35 +1,34 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Sequence
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.message_SYNC import MailboxMessage, ComposedMessage, CommentMessage
+    from ...models.message_SYNC import Message, ComposedMessage, CommentMessage
 
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
 from ...paginators.implementations.listing.p_mailbox_message_listing_paginator import (
-    MailboxMessageListingPaginator,
+    MessageListingPaginator,
     ComposedMessageListingPaginator,
     CommentMessageListingPaginator,
     ThreadedMessagesListingPaginator,
 )
-from ...util.tree_node import GeneralTreeNode
 
 class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MailboxMessageListingPaginator, MailboxMessage]:
+    def __call__(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MessageListingPaginator, Message]:
         return self.inbox(amount)
 
-    def inbox(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MailboxMessageListingPaginator, MailboxMessage]:
-        p = MailboxMessageListingPaginator(self._client, '/message/inbox')
+    def inbox(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MessageListingPaginator, Message]:
+        p = MessageListingPaginator(self._client, '/message/inbox')
         return PaginatorChainingIterator(p, amount)
 
-    def unread(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MailboxMessageListingPaginator, MailboxMessage]:
-        p = MailboxMessageListingPaginator(self._client, '/message/unread')
+    def unread(self, amount: Optional[int] = None) -> PaginatorChainingIterator[MessageListingPaginator, Message]:
+        p = MessageListingPaginator(self._client, '/message/unread')
         return PaginatorChainingIterator(p, amount)
 
-    def messages(self, amount: Optional[int] = None) -> PaginatorChainingIterator[ThreadedMessagesListingPaginator, GeneralTreeNode[MailboxMessage, MailboxMessage]]:
+    def messages(self, amount: Optional[int] = None) -> PaginatorChainingIterator[ThreadedMessagesListingPaginator, Sequence[ComposedMessage]]:
         p = ThreadedMessagesListingPaginator(self._client, '/message/messages')
         return PaginatorChainingIterator(p, amount)
 

@@ -6,7 +6,7 @@ TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
 
 class CallChunk(Generic[TInput, TOutput]):
-    """Call me to perform `.operation` on `.data` to produce products."""
+    """Perform `.operation` on `.data` when called."""
 
     def __init__(self,
         operation: Callable[[TInput], TOutput],

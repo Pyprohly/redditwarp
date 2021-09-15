@@ -44,16 +44,15 @@ class CoreClient:
     @classmethod
     def from_access_token(cls: Type[_TSelf], access_token: str) -> _TSelf:
         session = new_session()
-        requestor = RateLimited(
-            Authorized(
-                session,
-                Authorizer(
-                    None,
-                    Token(access_token),
-                ),
+        authorized_requestor = Authorized(
+            session,
+            Authorizer(
+                None,
+                Token(access_token),
             ),
         )
-        http = RedditHTTPClient(session, requestor)
+        requestor = RateLimited(authorized_requestor)
+        http = RedditHTTPClient(session, requestor, authorized_requestor=authorized_requestor)
         return cls.from_http(http)
 
     @classmethod
@@ -101,16 +100,15 @@ class CoreClient:
             (client_id, client_secret),
             grant,
         )
-        requestor = RateLimited(
-            Authorized(
-                session,
-                Authorizer(
-                    token_client,
-                    (None if access_token is None else Token(access_token)),
-                ),
+        authorized_requestor = Authorized(
+            session,
+            Authorizer(
+                token_client,
+                (None if access_token is None else Token(access_token)),
             ),
         )
-        http = RedditHTTPClient(session, requestor)
+        requestor = RateLimited(authorized_requestor)
+        http = RedditHTTPClient(session, requestor, authorized_requestor=authorized_requestor)
         token_client.headers = http.headers
         self._init(http)
 
