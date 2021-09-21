@@ -10,13 +10,13 @@ from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
 from redditwarp.auth.util import basic_auth
 from redditwarp.auth.exceptions import (
     ResponseContentError,
-    TokenServerResponseErrors,
+    TokenServerResponseErrorTypes,
     UnrecognizedTokenServerResponseError,
 )
 from redditwarp.http.requestor_SYNC import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.http.payload import FormData
+from redditwarp.http.payload import URLEncodedFormData
 
 class MockRequestor(Requestor):
     def __init__(self,
@@ -41,7 +41,7 @@ def test_fetch_json_dict() -> None:
     )
     uri = 'abcdef'
     client_credentials = ('cid', 'cse')
-    grant = {'grant_type': 'epyt_tnarg', 'data1': 'blah', 'data2': '', 'data3': None}
+    grant = {'grant_type': 'epyt_tnarg', 'data1': 'blah', 'data2': ''}
     o = TokenObtainmentClient(
         requestor,
         uri,
@@ -55,8 +55,8 @@ def test_fetch_json_dict() -> None:
     req = requestor.history[0]
     assert req.verb == 'POST'
     assert req.uri == uri
-    assert isinstance(req.payload, FormData)
-    assert req.payload.data == {'grant_type': 'epyt_tnarg', 'data1': 'blah'}
+    assert isinstance(req.payload, URLEncodedFormData)
+    assert req.payload.data == {'grant_type': 'epyt_tnarg', 'data1': 'blah', 'data2': ''}
     assert req.headers['Authorization'] == basic_auth(client_credentials)
 
 def test_fetch_json_dict__exceptions() -> None:
@@ -85,7 +85,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"error": "invalid_client"}',
     )
-    with pytest.raises(TokenServerResponseErrors.InvalidClient):
+    with pytest.raises(TokenServerResponseErrorTypes.InvalidClient):
         o.fetch_json_dict()
 
     o.requestor = MockRequestor(

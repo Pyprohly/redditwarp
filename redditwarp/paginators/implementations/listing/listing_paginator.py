@@ -15,7 +15,7 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
         uri: str,
         *,
         limit: Optional[int] = 100,
-        params: Optional[Mapping[str, Optional[str]]] = None,
+        params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
         super().__init__(limit=limit)
@@ -26,7 +26,7 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
         self.count = 0
         self.show_all = False
 
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from self.params.items()
         yield ('count', str(self.count))
         if self.limit is not None:

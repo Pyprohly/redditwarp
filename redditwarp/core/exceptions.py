@@ -85,7 +85,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
             raise HTMLDocumentResponseContentError(msg, response=resp) from e
         raise UnidentifiedResponseContentError(response=resp) from e
 
-    elif isinstance(e, auth.exceptions.TokenServerResponseErrors.InvalidGrant):
+    elif isinstance(e, auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant):
         raise CredentialsError('Check your grant credentials', response=resp) from e
 
     elif isinstance(e, auth.exceptions.HTTPStatusError):
@@ -112,7 +112,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
                         response=resp,
                     ) from e
 
-    elif isinstance(e, auth.exceptions.TokenServerResponseErrors.UnsupportedGrantType):
+    elif isinstance(e, auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType):
         req = resp.request
         if req:
             headers = CaseInsensitiveDict(req.headers)

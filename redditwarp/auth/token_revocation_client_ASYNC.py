@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ..http.requestor_ASYNC import Requestor
 
 from ..http.request import Request
-from ..http.payload import FormData
+from ..http.payload import URLEncodedFormData
 from .util import apply_basic_auth
 from .exceptions import raise_for_status
 
@@ -22,7 +22,7 @@ class TokenRevocationClient:
         if token_type_hint:
             data['token_type_hint'] = token_type_hint
 
-        r = Request('POST', self.uri, payload=FormData(data))
+        r = Request('POST', self.uri, payload=URLEncodedFormData(data))
         apply_basic_auth(r, self.client_credentials)
 
         resp = await self.requestor.send(r)

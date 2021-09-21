@@ -13,7 +13,7 @@ from .util.join_params import join_params
 class Request:
     verb: str
     uri: str
-    params: MutableMapping[str, Optional[str]] = field(default_factory=dict)
+    params: MutableMapping[str, str] = field(default_factory=dict)
     headers: MutableMapping[str, str] = field(default_factory=dict)
     payload: Optional[Payload] = None
 
@@ -26,7 +26,7 @@ def make_request(
     verb: str,
     uri: str,
     *,
-    params: Optional[Mapping[str, Optional[str]]] = None,
+    params: Optional[Mapping[str, str]] = None,
     headers: Optional[Mapping[str, str]] = None,
     data: Optional[Union[Mapping[str, str], str, bytes]] = None,
     json: Any = None,

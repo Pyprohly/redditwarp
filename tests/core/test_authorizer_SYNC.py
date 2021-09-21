@@ -122,5 +122,5 @@ class TestAuthorized:
             token_client=token_client,
         )
         requestor = Authorized(session, authorizer)
-        with pytest.raises(auth.exceptions.ResourceServerResponseErrors.InsufficientScope):
+        with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
             requestor.send(Request('', ''))

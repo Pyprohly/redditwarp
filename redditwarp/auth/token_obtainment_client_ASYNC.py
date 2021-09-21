@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 from ..http.request import Request
 from ..http.util.json_load import json_loads_response
-from ..http.payload import FormData
+from ..http.payload import URLEncodedFormData
 from .token import Token
 from .util import apply_basic_auth
 from .exceptions import (
@@ -27,8 +27,7 @@ class TokenObtainmentClient:
         self.grant = grant
 
     def _new_request(self) -> Request:
-        data = {k: v for k, v in self.grant.items() if v}
-        r = Request('POST', self.uri, payload=FormData(data))
+        r = Request('POST', self.uri, payload=URLEncodedFormData(self.grant))
         apply_basic_auth(r, self.client_credentials)
         return r
 

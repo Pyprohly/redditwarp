@@ -21,7 +21,7 @@ class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssoci
         self.client = client
         self.uri = uri
 
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield ('limit', str(self.limit))
 
         if self.direction:

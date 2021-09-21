@@ -10,7 +10,7 @@ from ..requestor_decorator_ASYNC import RequestorDecorator
 
 class ApplyParamsAndHeaders(RequestorDecorator):
     def __init__(self, requestor: Requestor, *,
-            params: Optional[Mapping[str, Optional[str]]] = None,
+            params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):
         super().__init__(requestor)
         self.params = {} if params is None else params
@@ -23,7 +23,7 @@ class ApplyParamsAndHeaders(RequestorDecorator):
 
 class ApplyDefaultParamsAndHeaders(RequestorDecorator):
     def __init__(self, requestor: Requestor, *,
-            params: Optional[Mapping[str, Optional[str]]] = None,
+            params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):
         super().__init__(requestor)
         self.params = {} if params is None else params

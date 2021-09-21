@@ -65,7 +65,7 @@ def test_request() -> None:
     session = GoodSession(200, {}, b'')
     headers = {'cheese': 'bacon', 'fire': 'water'}
     http = RedditHTTPClient(session=session, headers=headers)
-    params: Dict[str, Optional[str]] = {'water': 'earth'}
+    params: Dict[str, str] = {'water': 'earth'}
     headers = {'fire': 'air'}
     http.request('DELETE', 'system32', params=params, headers=headers, data={})
     requ = session.history[0]
@@ -234,7 +234,7 @@ class TestRequestExceptions:
 
             def test_CredentialsError(self) -> None:
                 response = Response(400, {}, b'{"error": "invalid_grant"}')
-                exc = auth.exceptions.TokenServerResponseErrors.InvalidGrant(response=response)
+                exc = auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant(response=response)
                 session = BadSession(exc)
                 http = RedditHTTPClient(session=session)
                 with pytest.raises(core.exceptions.CredentialsError):
@@ -259,9 +259,9 @@ class TestRequestExceptions:
             def test_UnsupportedGrantType(self) -> None:
                 request = Request('', '', headers={'Content-Type': 'application/json'})
                 response = Response(200, {}, b'', request=request)
-                exc = auth.exceptions.TokenServerResponseErrors.UnsupportedGrantType(response=response)
+                exc = auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType(response=response)
                 session = BadSession(exc)
                 http = RedditHTTPClient(session=session)
-                with pytest.raises(auth.exceptions.TokenServerResponseErrors.UnsupportedGrantType) as exc_info:
+                with pytest.raises(auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType) as exc_info:
                     http.request('', '')
                 assert exc_info.value.arg is not None

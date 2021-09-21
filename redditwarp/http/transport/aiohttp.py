@@ -1,10 +1,9 @@
 """Transport adapter for aiohttp."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, MutableMapping, Any, List
+from typing import TYPE_CHECKING, Any, Iterable
 if TYPE_CHECKING:
     from ..request import Request
-    from ..payload import Payload
 
 import asyncio
 
@@ -17,64 +16,73 @@ from .. import payload
 from ..response import Response
 from ..util.case_insensitive_dict import CaseInsensitiveDict
 
-def _multipart_payload_dispatch(y: Payload) -> Mapping[str, Any]:
-    if not isinstance(y, payload.Multipart):
-        raise Exception
+def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]]:
+    client_timeout = aiohttp.ClientTimeout(
+        total=etv,
+        connect=etv,
+        sock_connect=etv,
+        sock_read=etv,
+    )
+    if etv == -1:
+        client_timeout = aiohttp.ClientTimeout(
+            total=None,
+            connect=None,
+            sock_connect=None,
+            sock_read=None,
+        )
+    yield ('timeout', client_timeout)
 
-    text_payloads: List[payload.MultipartTextData] = []
-    file_payloads: List[payload.MultipartFileData] = []
-    for part in y.parts:
-        if part.headers:
-            raise NotImplementedError('multipart body part additional headers not implemented')
-
-        sub_payload = part.payload
-
-        if isinstance(sub_payload, payload.MultipartTextData):
-            text_payloads.append(sub_payload)
-        elif isinstance(sub_payload, payload.MultipartFileData):
-            file_payloads.append(sub_payload)
-        else:
-            raise NotImplementedError('mixed multipart not implemented')
-
-    if not file_payloads:
-        raise NotImplementedError('multipart without file fields not supported')
-
-    formdata = aiohttp.FormData()
-    for ty in text_payloads:
-        formdata.add_field(ty.name, ty.value)
-    for fy in file_payloads:
-        ct = fy.content_type
-        if ct is None:
-            raise NotImplementedError('multipart file none content type not supported')
-        formdata.add_field(fy.name, fy.file, filename=fy.filename,
-                content_type=(None if ct == '.' else ct))
-
-    return {'data': formdata}
-
-def _request_kwargs(r: Request) -> Mapping[str, Any]:
     for v in r.params.values():
         if v is None:
-            msg = f'valueless URL params is not supported by this HTTP transport library ({name}); the params mapping cannot contain None'
+            msg = f'valueless URL query params are not supported by this HTTP transport library ({name})'
             raise RuntimeError(msg)
 
-    kwargs: MutableMapping[str, Any] = {
-        'method': r.verb,
-        'url': r.uri,
-        'params': r.params,
-        'headers': r.headers,
-    }
-    d = _PAYLOAD_DISPATCH_TABLE[type(r.payload)](r.payload)
-    kwargs.update(d)
-    return kwargs
+    yield ('method', r.verb)
+    yield ('url', r.uri)
+    yield ('params', r.params)
+    yield ('headers', r.headers)
 
-_PAYLOAD_DISPATCH_TABLE: Mapping[Any, Any] = {
-    type(None): lambda y: {},
-    payload.Bytes: lambda y: {'data': y.data},
-    payload.FormData: lambda y: {'data': y.data},
-    payload.Multipart: _multipart_payload_dispatch,
-    payload.Text: lambda y: {'data': y.text},
-    payload.JSON: lambda y: {'json': y.json},
-}
+    pld = r.payload
+    if isinstance(pld, payload.Bytes):
+        yield ('data', pld.data)
+
+    elif isinstance(pld, payload.Text):
+        yield ('data', pld.text)
+
+    elif isinstance(pld, payload.JSON):
+        yield ('json', pld.json)
+
+    elif isinstance(pld, payload.URLEncodedFormData):
+        for v in pld.data.values():
+            if v is None:
+                msg = f'valueless URL-encoded form data parameters are not supported by this HTTP transport library ({name})'
+                raise RuntimeError(msg)
+
+        yield ('data', pld.data)
+
+    elif isinstance(pld, payload.MultipartFormData):
+        text_plds: list[payload.MultipartTextField] = []
+        file_plds: list[payload.MultipartFileField] = []
+        for part in pld.parts:
+            if isinstance(part, payload.MultipartTextField):
+                text_plds.append(part)
+            elif isinstance(part, payload.MultipartFileField):
+                file_plds.append(part)
+
+        if not file_plds:
+            # aiohttp won't send a multipart if no files
+            raise NotImplementedError('multipart without file fields not supported')
+
+        formdata = aiohttp.FormData()
+        for ty in text_plds:
+            formdata.add_field(ty.name, ty.value)
+        for fy in file_plds:
+            formdata.add_field(fy.name, fy.file, filename=fy.filename, content_type=fy.content_type)
+
+        yield ('data', formdata)
+
+    else:
+        raise NotImplementedError('unsupported payload type')
 
 
 class Session(SessionBase):
@@ -86,23 +94,7 @@ class Session(SessionBase):
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         etv = self._get_effective_timeout_value(timeout)
-        client_timeout = aiohttp.ClientTimeout(
-            total=etv,
-            connect=etv,
-            sock_connect=etv,
-            sock_read=etv,
-        )
-        if timeout == -1:
-            client_timeout = aiohttp.ClientTimeout(
-                total=None,
-                connect=None,
-                sock_connect=None,
-                sock_read=None,
-            )
-
-        kwargs: MutableMapping[str, Any] = {'timeout': client_timeout}
-        kwargs.update(_request_kwargs(request))
-
+        kwargs = dict(_generate_request_kwargs(request, etv))
         try:
             async with self.session.request(**kwargs) as response:
                 content = await response.content.read()

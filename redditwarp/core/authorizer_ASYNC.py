@@ -23,8 +23,8 @@ from ..auth.exceptions import extract_www_authenticate_bearer_auth_params, raise
 
 class Authorizer:
     def __init__(self,
-        token_client: Optional[TokenObtainmentClient],
-        token: Optional[Token],
+        token_client: Optional[TokenObtainmentClient] = None,
+        token: Optional[Token] = None,
     ):
         self.token_client = token_client
         self.token = token
@@ -43,7 +43,7 @@ class Authorizer:
 
     async def renew_token(self) -> None:
         if self.token_client is None:
-            raise RuntimeError('a new token was requested but no token client is assigned')
+            raise RuntimeError('no token client')
 
         self.token = tk = await self.token_client.fetch_token()
 

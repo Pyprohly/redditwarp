@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Iterable, Sequence
+from typing import TYPE_CHECKING, Iterable, Sequence
 if TYPE_CHECKING:
     from ....client_SYNC import Client
 
@@ -28,6 +28,6 @@ class SearchUsersListingPaginator(
         super().__init__(client, uri)
         self.query = query
 
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()
         yield ('q', self.query)

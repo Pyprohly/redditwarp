@@ -33,7 +33,7 @@ class ModerationPullUsersPaginator(BidirectionalCursorPaginator[T]):
         self.client = client
         self.uri = uri
 
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         if self.limit is not None:
             yield ('count', str(self.limit))
 

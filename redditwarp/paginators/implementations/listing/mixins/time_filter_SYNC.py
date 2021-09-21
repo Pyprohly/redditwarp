@@ -19,7 +19,7 @@ class TimeFilter(ListingPaginator[T]):
         super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
         self.time_filter: str = ''
 
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()
         if self.time_filter:
             yield ('t', self.time_filter)

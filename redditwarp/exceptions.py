@@ -195,18 +195,6 @@ class Variant2RedditAPIError(RedditAPIError):
         fd = self.field
         return f"{cn}: {de}{fd and f' -> {fd}'}"
 
-class ContentCreationCooldown(Variant2RedditAPIError):
-    """Used over RedditAPIError when the error items list contains
-    a RATELIMIT error, and it is the only error in the list.
-    """
-
-    def get_default_message(self) -> str:
-        return super().get_default_message() + '''
-
-Looks like you hit a content creation rate limit. This can happen when
-your account has low karma or no verified email.
-'''
-
 @dataclass
 class RedditErrorItem:
     codename: str
@@ -223,13 +211,7 @@ def try_parse_reddit_error_items(data: Mapping[str, Any]) -> Optional[List[Reddi
         return l
     return None
 
-def get_variant2_reddit_api_error(resp: Response, error_list: Sequence[RedditErrorItem]) -> Variant2RedditAPIError:
-    cls = Variant2RedditAPIError
-    if (len(error_list) == 1) and (error_list[0].codename == 'RATELIMIT'):
-        cls = ContentCreationCooldown
-    return cls(response=resp, errors=error_list)
-
 def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
     error_list = try_parse_reddit_error_items(data)
     if error_list is not None:
-        raise get_variant2_reddit_api_error(resp, error_list)
+        raise Variant2RedditAPIError(response=resp, errors=error_list)

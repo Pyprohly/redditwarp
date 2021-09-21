@@ -19,7 +19,7 @@ class Sort(ListingPaginator[T]):
         super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
         self.sort: str = ''
 
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()
         if self.sort:
             yield ('sort', self.sort)

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional, Mapping, MutableMapping
     from ..http.session_base_SYNC import SessionBase
-    from .authorizer_SYNC import Authorizer, Authorized
+    from .authorizer_SYNC import Authorizer
     from ..http.request import Request
     from ..http.response import Response
     from ..http.requestor_SYNC import Requestor
@@ -34,16 +34,8 @@ class RedditHTTPClient(HTTPClient):
         self.headers['User-Agent'] = value
 
     @property
-    def authorizer(self) -> Optional[Authorizer]:
-        if self.authorized_requestor is None:
-            return None
-        return self.authorized_requestor.authorizer
-
-    @authorizer.setter
-    def authorizer(self, value: Authorizer) -> None:
-        if self.authorized_requestor is None:
-            raise RuntimeError('.authorized_requestor missing')
-        self.authorized_requestor.authorizer = value
+    def authorizer(self) -> Authorizer:
+        return self.get_authorizer()
 
     @property
     def last(self) -> RecordLastMessages.State:
@@ -57,14 +49,14 @@ class RedditHTTPClient(HTTPClient):
         session: SessionBase,
         requestor: Optional[Requestor] = None,
         *,
-        params: Optional[MutableMapping[str, Optional[str]]] = None,
+        params: Optional[MutableMapping[str, str]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
-        authorized_requestor: Optional[Authorized] = None,
+        authorizer: Optional[Authorizer] = None,
     ) -> None:
         params = dict(self.DEFAULT_PARAMS) if params is None else params
         self.recorder = RecordLastMessages(session if requestor is None else requestor)
         super().__init__(session, self.recorder, params=params, headers=headers)
-        self.authorized_requestor: Optional[Authorized] = authorized_requestor
+        self._authorizer = authorizer
         self.user_agent = self.user_agent_start = get_user_agent(session)
         self.base_url = RESOURCE_BASE_URL
 
@@ -74,6 +66,13 @@ class RedditHTTPClient(HTTPClient):
         except auth.exceptions.ResponseException as e:
             raise handle_auth_response_exception(e)
 
+    def get_authorizer(self) -> Authorizer:
+        if self._authorizer is None:
+            raise RuntimeError('value not set')
+        return self._authorizer
+
+    def set_authorizer(self, value: Authorizer) -> None:
+        self._authorizer = value
 
 def get_user_agent(session: object) -> str:
     transport_token = ''

@@ -62,15 +62,9 @@ class CoreClient:
         access_token: str
         """
         session = new_session()
-        authorized_requestor = Authorized(
-            session,
-            Authorizer(
-                None,
-                Token(access_token),
-            ),
-        )
-        requestor = RateLimited(authorized_requestor)
-        http = RedditHTTPClient(session, requestor, authorized_requestor=authorized_requestor)
+        authorizer = Authorizer(token=Token(access_token))
+        requestor = RateLimited(Authorized(session, authorizer))
+        http = RedditHTTPClient(session, requestor, authorizer=authorizer)
         return cls.from_http(http)
 
     @classmethod
@@ -154,15 +148,12 @@ class CoreClient:
             (client_id, client_secret),
             grant,
         )
-        authorized_requestor = Authorized(
-            session,
-            Authorizer(
-                token_client,
-                (None if access_token is None else Token(access_token)),
-            ),
+        authorizer = Authorizer(
+            token_client,
+            (None if access_token is None else Token(access_token)),
         )
-        requestor = RateLimited(authorized_requestor)
-        http = RedditHTTPClient(session, requestor, authorized_requestor=authorized_requestor)
+        requestor = RateLimited(Authorized(session, authorizer))
+        http = RedditHTTPClient(session, requestor, authorizer=authorizer)
         token_client.headers = http.headers
         self._init(http)
 
@@ -188,7 +179,7 @@ class CoreClient:
         verb: str,
         uri: str,
         *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
+        params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], str, bytes]] = None,
         json: Any = None,

@@ -11,7 +11,7 @@ from redditwarp.auth.exceptions import HTTPStatusError
 from redditwarp.http.requestor_ASYNC import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.http.payload import FormData
+from redditwarp.http.payload import URLEncodedFormData
 
 class MockRequestor(Requestor):
     def __init__(self,
@@ -48,7 +48,7 @@ async def test_revoke_token() -> None:
     req = requestor.history[0]
     assert req.verb == 'POST'
     assert req.uri == uri
-    assert isinstance(req.payload, FormData)
+    assert isinstance(req.payload, URLEncodedFormData)
     assert req.payload.data == {'token': 'a1', 'token_type_hint': 'a2'}
 
     await o.revoke_token('b1', '')
@@ -56,7 +56,7 @@ async def test_revoke_token() -> None:
     req = requestor.history[1]
     assert req.verb == 'POST'
     assert req.uri == uri
-    assert isinstance(req.payload, FormData)
+    assert isinstance(req.payload, URLEncodedFormData)
     assert req.payload.data == {'token': 'b1'}
 
     await o.revoke_token('c1', None)
@@ -64,7 +64,7 @@ async def test_revoke_token() -> None:
     req = requestor.history[2]
     assert req.verb == 'POST'
     assert req.uri == uri
-    assert isinstance(req.payload, FormData)
+    assert isinstance(req.payload, URLEncodedFormData)
     assert req.payload.data == {'token': 'c1'}
 
 @pytest.mark.asyncio

@@ -87,7 +87,7 @@ class SavedSubmissionsListingPaginator(
     SubredditDetail[object],
     SubmissionListingPaginator,
 ):
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()
         yield ('type', 'links')
 
@@ -96,6 +96,6 @@ class SavedCommentsListingPaginator(
     SubredditDetail[object],
     ExtraSubmissionFieldsCommentListingPaginator,
 ):
-    def _generate_params(self) -> Iterable[tuple[str, Optional[str]]]:
+    def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()
         yield ('type', 'comments')

@@ -29,7 +29,7 @@ class ResponseException(ArgInfoException):
 class StatusCodeException(ResponseException):
     STATUS_CODE = 0
 
-class StatusCodeExceptions:
+class StatusCodeExceptionTypes:
     class InformationalResponseException(StatusCodeException):
         STATUS_CODE = -100
     class SuccessfulResponseException(StatusCodeException):
@@ -71,20 +71,20 @@ status_code_exception_class_by_status_code = {
     cls.STATUS_CODE: cls
     for cls in [
         # Client errors
-        StatusCodeExceptions.BadRequest,
-        StatusCodeExceptions.Unauthorized,
-        StatusCodeExceptions.Forbidden,
-        StatusCodeExceptions.NotFound,
-        StatusCodeExceptions.Conflict,
-        StatusCodeExceptions.PayloadTooLarge,
-        StatusCodeExceptions.URITooLong,
-        StatusCodeExceptions.TooManyRequests,
+        StatusCodeExceptionTypes.BadRequest,
+        StatusCodeExceptionTypes.Unauthorized,
+        StatusCodeExceptionTypes.Forbidden,
+        StatusCodeExceptionTypes.NotFound,
+        StatusCodeExceptionTypes.Conflict,
+        StatusCodeExceptionTypes.PayloadTooLarge,
+        StatusCodeExceptionTypes.URITooLong,
+        StatusCodeExceptionTypes.TooManyRequests,
 
         # Server errors
-        StatusCodeExceptions.InternalServerError,
-        StatusCodeExceptions.BadGateway,
-        StatusCodeExceptions.ServiceUnavailable,
-        StatusCodeExceptions.GatewayTimeout,
+        StatusCodeExceptionTypes.InternalServerError,
+        StatusCodeExceptionTypes.BadGateway,
+        StatusCodeExceptionTypes.ServiceUnavailable,
+        StatusCodeExceptionTypes.GatewayTimeout,
     ]
 }
 
@@ -93,15 +93,15 @@ def get_status_code_exception_class_by_status_code(n: int) -> Type[StatusCodeExc
     if klass is None:
         klass = StatusCodeException
         if 100 <= n < 200:
-            klass = StatusCodeExceptions.InformationalResponseException
+            klass = StatusCodeExceptionTypes.InformationalResponseException
         elif 200 <= n < 300:
-            klass = StatusCodeExceptions.SuccessfulResponseException
+            klass = StatusCodeExceptionTypes.SuccessfulResponseException
         elif 300 <= n < 400:
-            klass = StatusCodeExceptions.RedirectionResponseException
+            klass = StatusCodeExceptionTypes.RedirectionResponseException
         elif 400 <= n < 500:
-            klass = StatusCodeExceptions.ClientErrorResponseException
+            klass = StatusCodeExceptionTypes.ClientErrorResponseException
         elif 500 <= n < 600:
-            klass = StatusCodeExceptions.ServerErrorResponseException
+            klass = StatusCodeExceptionTypes.ServerErrorResponseException
     return klass
 
 def raise_now(resp: Response) -> None:

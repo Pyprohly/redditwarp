@@ -62,7 +62,7 @@ class OAuth2ResponseError(ResponseException):
 class TokenServerResponseError(OAuth2ResponseError):
     pass
 
-class TokenServerResponseErrors:
+class TokenServerResponseErrorTypes:
     class InvalidRequest(TokenServerResponseError):
         ERROR_NAME = 'invalid_request'
 
@@ -88,12 +88,12 @@ token_server_response_error_by_error_name = {
     cls.ERROR_NAME: cls
     for cls in [
         TokenServerResponseError,
-        TokenServerResponseErrors.InvalidRequest,
-        TokenServerResponseErrors.InvalidClient,
-        TokenServerResponseErrors.InvalidGrant,
-        TokenServerResponseErrors.UnauthorizedClient,
-        TokenServerResponseErrors.UnsupportedGrantType,
-        TokenServerResponseErrors.InvalidScope,
+        TokenServerResponseErrorTypes.InvalidRequest,
+        TokenServerResponseErrorTypes.InvalidClient,
+        TokenServerResponseErrorTypes.InvalidGrant,
+        TokenServerResponseErrorTypes.UnauthorizedClient,
+        TokenServerResponseErrorTypes.UnsupportedGrantType,
+        TokenServerResponseErrorTypes.InvalidScope,
     ]
 }
 
@@ -121,7 +121,7 @@ def raise_for_reddit_token_server_response_error(resp: Response, json_dict: Any)
 class ResourceServerResponseError(OAuth2ResponseError):
     pass
 
-class ResourceServerResponseErrors:
+class ResourceServerResponseErrorTypes:
     class InvalidRequest(ResourceServerResponseError):
         ERROR_NAME = 'invalid_request'
 
@@ -138,9 +138,9 @@ resource_server_response_error_by_error_name = {
     cls.ERROR_NAME: cls
     for cls in [
         ResourceServerResponseError,
-        ResourceServerResponseErrors.InvalidRequest,
-        ResourceServerResponseErrors.InvalidToken,
-        ResourceServerResponseErrors.InsufficientScope,
+        ResourceServerResponseErrorTypes.InvalidRequest,
+        ResourceServerResponseErrorTypes.InvalidToken,
+        ResourceServerResponseErrorTypes.InsufficientScope,
     ]
 }
 

@@ -29,12 +29,12 @@ class HTTPClient:
         session: SessionBase,
         requestor: Optional[Requestor] = None,
         *,
-        params: Optional[MutableMapping[str, Optional[str]]] = None,
+        params: Optional[MutableMapping[str, str]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
         self._session = session
         self._requestor = session if requestor is None else requestor
-        self.params: MutableMapping[str, Optional[str]]
+        self.params: MutableMapping[str, str]
         self.params = {} if params is None else params
         self.headers: MutableMapping[str, str]
         self.headers = {} if headers is None else headers
@@ -65,7 +65,7 @@ class HTTPClient:
         verb: str,
         uri: str,
         *,
-        params: Optional[Mapping[str, Optional[str]]] = None,
+        params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], str, bytes]] = None,
         json: Any = None,
