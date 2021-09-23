@@ -20,4 +20,4 @@ def test_fetch_json_dict__exceptions() -> None:
         {},
     )
     with pytest.raises(HTTPStatusError):
-        o.fetch_json_dict()
+        o.fetch_data()

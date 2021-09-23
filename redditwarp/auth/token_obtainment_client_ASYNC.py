@@ -34,24 +34,19 @@ class TokenObtainmentClient:
     def _check_response_errors(self, resp: Response, json_dict: Any) -> None:
         raise_for_token_server_response_error(resp, json_dict)
 
-    async def fetch_json_dict(self) -> Mapping[str, Any]:
+    async def fetch_data(self) -> Mapping[str, Any]:
         r = self._new_request()
         resp = await self.requestor.send(r)
 
-        resp_json = None
         try:
             resp_json = json_loads_response(resp)
-        except ValueError:
-            pass
-
-        if not isinstance(resp_json, Mapping):
-            raise ResponseContentError(response=resp)
+        except ValueError as e:
+            raise ResponseContentError(response=resp) from e
 
         self._check_response_errors(resp, resp_json)
-
         raise_for_status(resp)
 
         return resp_json
 
     async def fetch_token(self) -> Token:
-        return Token.from_dict(await self.fetch_json_dict())
+        return Token.from_dict(await self.fetch_data())

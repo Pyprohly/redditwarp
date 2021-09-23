@@ -16,9 +16,7 @@ from ..submission_SYNC import (
 )
 
 def load_submission(d: Mapping[str, Any], client: Client) -> Submission:
-    if d['is_self']:
-        return TextPost(d, client)
-    elif d.get('post_hint') == 'image':
+    if d.get('post_hint') == 'image':
         return ImagePost(d, client)
     elif d['is_video']:
         return VideoPost(d, client)
@@ -28,4 +26,6 @@ def load_submission(d: Mapping[str, Any], client: Client) -> Submission:
         return PollPost(d, client)
     elif 'crosspost_parent' in d:
         return CrosspostPost(d, client)
+    elif d['is_self']:
+        return TextPost(d, client)
     return LinkPost(d, client)

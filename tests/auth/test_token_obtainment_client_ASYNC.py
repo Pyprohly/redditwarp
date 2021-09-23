@@ -49,7 +49,7 @@ async def test_fetch_json_dict() -> None:
         client_credentials,
         grant,
     )
-    resp_json = await o.fetch_json_dict()
+    resp_json = await o.fetch_data()
 
     assert resp_json == {'a': 100, "some": "text"}
     assert len(requestor.history) == 1
@@ -62,17 +62,10 @@ async def test_fetch_json_dict() -> None:
 
 @pytest.mark.asyncio
 async def test_fetch_json_dict__exceptions() -> None:
-    requestor = MockRequestor(
-        response_status=200,
-        response_headers={'Content-Type': 'application/json'},
-        response_data=b'["hi"]',
-    )
     o = TokenObtainmentClient(
-        requestor,
+        Requestor(),
         '', ('cid', 'cse'), {},
     )
-    with pytest.raises(ResponseContentError):
-        await o.fetch_json_dict()
 
     o.requestor = MockRequestor(
         response_status=599,
@@ -80,7 +73,7 @@ async def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(ResponseContentError):
-        await o.fetch_json_dict()
+        await o.fetch_data()
 
     o.requestor = MockRequestor(
         response_status=599,
@@ -88,7 +81,7 @@ async def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(TokenServerResponseErrorTypes.InvalidClient):
-        await o.fetch_json_dict()
+        await o.fetch_data()
 
     o.requestor = MockRequestor(
         response_status=599,
@@ -96,7 +89,7 @@ async def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "asdf"}',
     )
     with pytest.raises(UnrecognizedTokenServerResponseError):
-        await o.fetch_json_dict()
+        await o.fetch_data()
 
     o.requestor = MockRequestor(
         response_status=401,
@@ -104,12 +97,12 @@ async def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"message": "Unauthorized", "error": 401}',
     )
     with pytest.raises(UnrecognizedTokenServerResponseError):
-        await o.fetch_json_dict()
+        await o.fetch_data()
 
 @pytest.mark.asyncio
 async def test_fetch_token() -> None:
     class MyTokenObtainmentClient(TokenObtainmentClient):
-        async def fetch_json_dict(self) -> Mapping[str, Any]:
+        async def fetch_data(self) -> Mapping[str, Any]:
             return {
                 'access_token': 'aoeu',
                 'token_type': ';qjk',

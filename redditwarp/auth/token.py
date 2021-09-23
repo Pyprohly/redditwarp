@@ -5,11 +5,11 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class Token:
     access_token: str
+    #_: KW_ONLY
     token_type: str = 'Bearer'
     expires_in: Optional[int] = None
     refresh_token: Optional[str] = None
     scope: Optional[str] = None
-    #_: KW_ONLY
     d: Mapping[str, Any] = field(repr=False, default_factory=dict)
 
     T = TypeVar('T', bound='Token')

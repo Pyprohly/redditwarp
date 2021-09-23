@@ -21,4 +21,4 @@ async def test_fetch_json_dict__exceptions() -> None:
         {},
     )
     with pytest.raises(HTTPStatusError):
-        await o.fetch_json_dict()
+        await o.fetch_data()

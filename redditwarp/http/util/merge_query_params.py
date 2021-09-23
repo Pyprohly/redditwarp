@@ -4,9 +4,9 @@ from typing import Optional, Mapping
 
 import urllib.parse
 
-_NO_VALUE_PARAM_PLACEHOLDER = 'NO_VALUE_PARAM_PLACEHOLDER_d07d4b7d-d881-4217-9bca-42ed0c6a3d04'
+_NO_VALUE_PARAM_PLACEHOLDER = 'NO_VALUE_PARAM_PLACEHOLDER__d07d4b7d-d881-4217-9bca-42ed0c6a3d04'
 
-def join_params(uri: str, params: Mapping[str, Optional[str]]) -> str:
+def merge_query_params(uri: str, params: Mapping[str, Optional[str]]) -> str:
     urlparts = list(urllib.parse.urlparse(uri))
     query_dict = urllib.parse.parse_qs(urlparts[4])
 

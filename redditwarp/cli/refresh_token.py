@@ -5,13 +5,6 @@ Step through the OAuth2 Authorization Code Flow to obtain OAuth2 tokens.
 Visit <https://www.reddit.com/prefs/apps> to create an app for your client.
 
 Your app's redirect URI must *exactly* match `http://localhost:8080`.
-
-Only one refresh token and access token can be active at a time. If either
-becomes leaked, simply fetch new tokens with this tool to invalidate both.
-
-Refresh tokens never expire.
-Access tokens expire after one hour.
-Authorization codes expire after 10 minutes or after use.
 """
 
 from __future__ import annotations
@@ -174,5 +167,5 @@ except redditwarp.auth.exceptions.ResponseException as e:
     raise redditwarp.core.exceptions.handle_auth_response_exception(e)
 
 print(f'''\
- Access token: {token.access_token}
-Refresh token: {token.refresh_token}''')
+     Access token: {token.access_token}
+    Refresh token: {token.refresh_token}''')

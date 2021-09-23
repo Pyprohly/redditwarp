@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Set
+from typing import TYPE_CHECKING, Optional, Set, Callable
 if TYPE_CHECKING:
     from ..auth.token_obtainment_client_ASYNC import TokenObtainmentClient
     from ..auth.token import Token
@@ -31,6 +31,8 @@ class Authorizer:
         self.expiry_skew = 30
         self.expiry_time: Optional[int] = None
         self.expires_in_fallback: Optional[int] = None
+        self.honor_refresh_token = True
+        self.time_func: Callable[[], float] = time.monotonic
         self._lock = asyncio.Lock()
 
     def token_expired(self) -> bool:
@@ -47,11 +49,12 @@ class Authorizer:
 
         self.token = tk = await self.token_client.fetch_token()
 
-        if tk.refresh_token is not None:
-            self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
-
         if tk.token_type.lower() != 'bearer':
             raise UnknownTokenType(token=tk)
+
+        if self.honor_refresh_token:
+            if tk.refresh_token:
+                self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
 
         if tk.expires_in is None:
             if self.expires_in_fallback is None:
@@ -73,7 +76,7 @@ class Authorizer:
         request.headers['Authorization'] = f'{tk.token_type} {tk.access_token}'
 
     def current_time(self) -> float:
-        return time.monotonic()
+        return self.time_func()
 
     def remaining_time(self) -> Optional[float]:
         if self.expiry_time is None:

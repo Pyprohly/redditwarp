@@ -18,18 +18,16 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
         timeout_obj = httpx.Timeout(None, pool=20)
     yield ('timeout', timeout_obj)
 
-    for v in r.params.values():
-        if v is None:
-            msg = f'valueless URL query params are not supported by this HTTP transport library ({name})'
-            raise RuntimeError(msg)
-
     yield ('method', r.verb)
     yield ('url', r.uri)
     yield ('params', r.params)
     yield ('headers', r.headers)
 
     pld = r.payload
-    if isinstance(pld, payload.Bytes):
+    if pld is None:
+        pass
+
+    elif isinstance(pld, payload.Bytes):
         yield ('data', pld.data)
 
     elif isinstance(pld, payload.Text):
@@ -39,12 +37,7 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
         yield ('json', pld.json)
 
     elif isinstance(pld, payload.URLEncodedFormData):
-        for v in pld.data.values():
-            if v is None:
-                msg = f'valueless URL-encoded form data parameters are not supported by this HTTP transport library ({name})'
-                raise RuntimeError(msg)
-
-        yield ('data', pld.data)
+        yield ('data', dict(pld.data))
 
     elif isinstance(pld, payload.MultipartFormData):
         text_plds: list[payload.MultipartTextField] = []

@@ -48,7 +48,7 @@ def test_fetch_json_dict() -> None:
         client_credentials,
         grant,
     )
-    resp_json = o.fetch_json_dict()
+    resp_json = o.fetch_data()
 
     assert resp_json == {'a': 100, "some": "text"}
     assert len(requestor.history) == 1
@@ -60,17 +60,10 @@ def test_fetch_json_dict() -> None:
     assert req.headers['Authorization'] == basic_auth(client_credentials)
 
 def test_fetch_json_dict__exceptions() -> None:
-    requestor = MockRequestor(
-        response_status=200,
-        response_headers={'Content-Type': 'application/json'},
-        response_data=b'["hi"]',
-    )
     o = TokenObtainmentClient(
-        requestor,
+        Requestor(),
         '', ('cid', 'cse'), {},
     )
-    with pytest.raises(ResponseContentError):
-        o.fetch_json_dict()
 
     o.requestor = MockRequestor(
         response_status=599,
@@ -78,7 +71,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(ResponseContentError):
-        o.fetch_json_dict()
+        o.fetch_data()
 
     o.requestor = MockRequestor(
         response_status=599,
@@ -86,7 +79,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(TokenServerResponseErrorTypes.InvalidClient):
-        o.fetch_json_dict()
+        o.fetch_data()
 
     o.requestor = MockRequestor(
         response_status=599,
@@ -94,7 +87,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "asdf"}',
     )
     with pytest.raises(UnrecognizedTokenServerResponseError):
-        o.fetch_json_dict()
+        o.fetch_data()
 
     o.requestor = MockRequestor(
         response_status=401,
@@ -102,11 +95,11 @@ def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"message": "Unauthorized", "error": 401}',
     )
     with pytest.raises(UnrecognizedTokenServerResponseError):
-        o.fetch_json_dict()
+        o.fetch_data()
 
 def test_fetch_token() -> None:
     class MyTokenObtainmentClient(TokenObtainmentClient):
-        def fetch_json_dict(self) -> Mapping[str, Any]:
+        def fetch_data(self) -> Mapping[str, Any]:
             return {
                 'access_token': 'aoeu',
                 'token_type': ';qjk',

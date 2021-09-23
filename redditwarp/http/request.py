@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 from dataclasses import dataclass, field
 
 from .payload import make_payload
-from .util.join_params import join_params
 
 @dataclass(eq=False)
 class Request:
@@ -16,9 +15,6 @@ class Request:
     params: MutableMapping[str, str] = field(default_factory=dict)
     headers: MutableMapping[str, str] = field(default_factory=dict)
     payload: Optional[Payload] = None
-
-    def get_url(self) -> str:
-        return join_params(self.uri, self.params)
 
 BLANK_REQUEST = Request('', '')
 

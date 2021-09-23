@@ -59,8 +59,8 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
 
     if isinstance(e, auth.exceptions.ResponseContentError):
         if status == 403:
-            if resp.request is not None:
-                ua = resp.request.headers['User-Agent']
+            if req := resp.request:
+                ua = req.headers['User-Agent']
                 msg = None
 
                 if ua.startswith('Bot'):
@@ -90,8 +90,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
 
     elif isinstance(e, auth.exceptions.HTTPStatusError):
         if status == 401:
-            req = resp.request
-            if req:
+            if req := resp.request:
                 if not (uri := req.uri).startswith("https://www.reddit.com"):
                     e.arg = f'bad access token URL: got {uri!r}, need {TOKEN_OBTAINMENT_URL!r}'
                     raise
@@ -104,8 +103,8 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
             raise CredentialsError('Check your client credentials', response=resp) from e
 
         elif status == 429:
-            if resp.request is not None:
-                ua = resp.request.headers['User-Agent']
+            if req := resp.request:
+                ua = req.headers['User-Agent']
                 if 'curl' in ua:
                     raise FaultyUserAgent(
                         "the pattern 'curl' in your user-agent string is known to interfere with rate limits. Remove it from your user-agent string.",
@@ -113,8 +112,7 @@ def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exce
                     ) from e
 
     elif isinstance(e, auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType):
-        req = resp.request
-        if req:
+        if req := resp.request:
             headers = CaseInsensitiveDict(req.headers)
             if 'Content-Type' in headers:
                 content_type = req.headers.get('Content-Type', '')
