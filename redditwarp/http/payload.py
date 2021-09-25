@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 from typing import Optional, Any, Mapping, Union, \
-        IO, Sequence, Tuple, cast
+        IO, Sequence, Tuple, cast, MutableMapping
 
 import mimetypes
 import os.path as op
@@ -11,33 +11,53 @@ RequestFiles = Union[
     Mapping[str, FileObjectType],
     Mapping[str, Tuple[FileObjectType]],
     Mapping[str, Tuple[FileObjectType, str]],
-    Mapping[str, Tuple[FileObjectType, str, Optional[str]]],
-    Sequence[Tuple[str, FileObjectType, str, Optional[str]]],
+    Mapping[str, Tuple[FileObjectType, str, str]],
+    Sequence[Tuple[str, FileObjectType, str, str]],
 ]
 
 class Payload:
     pass
 
-class CommonContent(Payload):
+class Content(Payload):
     CONTENT_TYPE_HINT = ''
 
-class Bytes(CommonContent):
+    def get_content_type(self) -> str:
+        return self.CONTENT_TYPE_HINT
+
+    def apply_content_type(self, headers: MutableMapping[str, str], *, field_name: str = 'Content-Type') -> None:
+        headers.setdefault(field_name, self.get_content_type())
+
+class Bytes(Content):
     CONTENT_TYPE_HINT = 'application/octet-stream'
+
     def __init__(self, data: bytes):
         self.data = data
 
-class URLEncodedFormData(CommonContent):
+class URLEncodedFormData(Content):
     CONTENT_TYPE_HINT = 'application/x-www-form-urlencoded'
+
     def __init__(self, data: Mapping[str, str]):
         self.data = data
 
-class Text(CommonContent):
+class Text(Content):
     CONTENT_TYPE_HINT = 'text/plain'
+
     def __init__(self, text: str):
         self.text = text
 
-class JSON(CommonContent):
+class TextData(Content):
+    CONTENT_TYPE_HINT = 'text/plain'
+
+    def __init__(self, data: bytes, *, charset: str = ''):
+        self.data = data
+        self.charset = charset
+
+    def get_content_type(self) -> str:
+        return self.CONTENT_TYPE_HINT + ((x := self.charset) and f'; charset={x}')
+
+class JSON(Content):
     CONTENT_TYPE_HINT = 'application/json'
+
     def __init__(self, json: Any):
         self.json = json
 
@@ -56,7 +76,7 @@ class MultipartFileField(MultipartFormDataField):
             name: str, 
             file: FileObjectType,
             filename: str,
-            content_type: Optional[str]):
+            content_type: str):
         super().__init__(name)
         self.file = file
         self.filename = filename
@@ -76,7 +96,7 @@ def guess_mimetype_from_filename(fname: str) -> str:
     return y or 'application/octet-stream'
 
 def make_payload(
-    data: Optional[Union[Mapping[str, str], str, bytes]] = None,
+    data: Optional[Union[Mapping[str, str], bytes]] = None,
     json: Any = None,
     files: Optional[RequestFiles] = None,
 ) -> Optional[Payload]:
@@ -85,7 +105,6 @@ def make_payload(
         if isinstance(files, Mapping):
             for key, value in files.items():
                 if isinstance(value, tuple):
-                    content_type: Optional[str]
                     length = len(value)
                     if length == 1:
                         file, = cast(Tuple[FileObjectType], value)
@@ -95,7 +114,7 @@ def make_payload(
                         file, filename = cast(Tuple[FileObjectType, str], value)
                         content_type = guess_mimetype_from_filename(filename)
                     elif length == 3:
-                        file, filename, content_type = cast(Tuple[FileObjectType, str, Optional[str]], value)
+                        file, filename, content_type = cast(Tuple[FileObjectType, str, str], value)
 
                 else:
                     file = value
@@ -120,10 +139,11 @@ def make_payload(
         return MultipartFormData(parts)
 
     if data is not None:
+        if json is not None:
+            raise ValueError("`data` and `json` are mutually exclusive parameters")
+
         if isinstance(data, Mapping):
             return URLEncodedFormData(data)
-        if isinstance(data, str):
-            return Text(data)
         if isinstance(data, bytes):
             return Bytes(data)
         raise Exception

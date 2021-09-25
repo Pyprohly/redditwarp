@@ -27,7 +27,6 @@ class Authorizer:
         self.expiry_skew = 30
         self.expiry_time: Optional[int] = None
         self.expires_in_fallback: Optional[int] = None
-        self.honor_refresh_token = True
         self.time_func: Callable[[], float] = time.monotonic
 
     def token_expired(self) -> bool:
@@ -47,9 +46,8 @@ class Authorizer:
         if tk.token_type.lower() != 'bearer':
             raise UnknownTokenType(token=tk)
 
-        if self.honor_refresh_token:
-            if tk.refresh_token:
-                self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
+        if tk.refresh_token:
+            self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
 
         if tk.expires_in is None:
             if self.expires_in_fallback is None:

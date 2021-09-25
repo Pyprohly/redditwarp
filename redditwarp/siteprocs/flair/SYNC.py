@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.flair import FlairTemplate, FlairChoices, UserFlairAssociation
-    from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+    from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
     from ...paginators.implementations.user_flair_association_paginator_sync import UserFlairAssociationPaginator
 
 import csv
@@ -338,9 +338,9 @@ class Flair:
     def get_user_flair_associations(self,
         sr_name: str,
         amount: Optional[int] = None,
-    ) -> PaginatorChainingIterator[UserFlairAssociationPaginator, UserFlairAssociation]:
+    ) -> PaginatorChainingWrapper[UserFlairAssociationPaginator, UserFlairAssociation]:
         p = UserFlairAssociationPaginator(self._client, '/r/{sr_name}/api/flairlist')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def show_my_flair(self, sr_name: str) -> None:
         self._client.request('GET', f'/r/{sr_name}/api/setflairenabled', params={'flair_enabled': '1'})

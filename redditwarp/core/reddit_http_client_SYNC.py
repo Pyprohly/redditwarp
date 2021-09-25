@@ -48,10 +48,10 @@ class RedditHTTPClient(HTTPClient):
     def __init__(self,
         session: SessionBase,
         requestor: Optional[Requestor] = None,
+        authorizer: Optional[Authorizer] = None,
         *,
         params: Optional[MutableMapping[str, str]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
-        authorizer: Optional[Authorizer] = None,
     ) -> None:
         params = dict(self.DEFAULT_PARAMS) if params is None else params
         self.recorder = RecordLastMessages(session if requestor is None else requestor)

@@ -83,8 +83,8 @@ class SavedListingPaginator(
 ): pass
 
 class SavedSubmissionsListingPaginator(
-    Sort[object],
-    SubredditDetail[object],
+    Sort[Submission],
+    SubredditDetail[Submission],
     SubmissionListingPaginator,
 ):
     def _generate_params(self) -> Iterable[tuple[str, str]]:
@@ -92,8 +92,8 @@ class SavedSubmissionsListingPaginator(
         yield ('type', 'links')
 
 class SavedCommentsListingPaginator(
-    Sort[object],
-    SubredditDetail[object],
+    Sort[ExtraSubmissionFieldsComment],
+    SubredditDetail[ExtraSubmissionFieldsComment],
     ExtraSubmissionFieldsCommentListingPaginator,
 ):
     def _generate_params(self) -> Iterable[tuple[str, str]]:

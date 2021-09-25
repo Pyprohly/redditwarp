@@ -5,11 +5,10 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import ExtraSubmissionFieldsComment
     from ...models.submission_SYNC import Submission
-    from ...models.comment_SYNC import Comment
 
 from functools import cached_property
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.p_user_pull_sync import (
     OverviewListingPaginator,
     CommentsListingPaginator,
@@ -28,72 +27,72 @@ class Pull:
         self._client = client
 
     def __call__(self, name: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[OverviewListingPaginator, object]:
+            ) -> PaginatorChainingWrapper[OverviewListingPaginator, object]:
         return self.overview(name, amount)
 
     def overview(self, name: str, amount: Optional[int] = None, *,
             sort: str = 'new',
-            ) -> PaginatorChainingIterator[OverviewListingPaginator, object]:
+            ) -> PaginatorChainingWrapper[OverviewListingPaginator, object]:
         p = OverviewListingPaginator(self._client, f'/user/{name}/overview')
         p.sort = sort
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def comments(self, name: str, amount: Optional[int] = None, *,
             sort: str = 'new',
-            ) -> PaginatorChainingIterator[CommentsListingPaginator, ExtraSubmissionFieldsComment]:
+            ) -> PaginatorChainingWrapper[CommentsListingPaginator, ExtraSubmissionFieldsComment]:
         p = CommentsListingPaginator(self._client, f'/user/{name}/comments')
         p.sort = sort
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def submitted(self, name: str, amount: Optional[int] = None, *,
             sort: str = 'hot',
-            ) -> PaginatorChainingIterator[SubmittedListingPaginator, Submission]:
+            ) -> PaginatorChainingWrapper[SubmittedListingPaginator, Submission]:
         p = SubmittedListingPaginator(self._client, f'/user/{name}/submitted')
         p.sort = sort
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def awards_received(self, name: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[GildedListingPaginator, object]:
+            ) -> PaginatorChainingWrapper[GildedListingPaginator, object]:
         p = GildedListingPaginator(self._client, f'/user/{name}/gilded')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def awards_given(self, name: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[GildedListingPaginator, object]:
+            ) -> PaginatorChainingWrapper[GildedListingPaginator, object]:
         p = GildedListingPaginator(self._client, f'/user/{name}/gilded/given')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def upvoted(self, name: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[UpvotedListingPaginator, Submission]:
+            ) -> PaginatorChainingWrapper[UpvotedListingPaginator, Submission]:
         p = UpvotedListingPaginator(self._client, f'/user/{name}/upvoted')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def downvoted(self, name: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[DownvotedListingPaginator, Submission]:
+            ) -> PaginatorChainingWrapper[DownvotedListingPaginator, Submission]:
         p = DownvotedListingPaginator(self._client, f'/user/{name}/downvoted')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def hidden(self, name: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[HiddenListingPaginator, Submission]:
+            ) -> PaginatorChainingWrapper[HiddenListingPaginator, Submission]:
         p = HiddenListingPaginator(self._client, f'/user/{name}/hidden')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     class _saved:
         def __init__(self, outer: Pull) -> None:
             self._client = outer._client
 
         def __call__(self, name: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingIterator[SavedListingPaginator, object]:
+                ) -> PaginatorChainingWrapper[SavedListingPaginator, object]:
             p = SavedListingPaginator(self._client, f'/user/{name}/saved')
-            return PaginatorChainingIterator(p, amount)
+            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
         def submissions(self, name: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingIterator[SavedSubmissionsListingPaginator, Submission]:
+                ) -> PaginatorChainingWrapper[SavedSubmissionsListingPaginator, Submission]:
             p = SavedSubmissionsListingPaginator(self._client, f'/user/{name}/saved')
-            return PaginatorChainingIterator(p, amount)
+            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
         def comments(self, name: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingIterator[SavedCommentsListingPaginator, Comment]:
+                ) -> PaginatorChainingWrapper[SavedCommentsListingPaginator, ExtraSubmissionFieldsComment]:
             p = SavedCommentsListingPaginator(self._client, f'/user/{name}/saved')
-            return PaginatorChainingIterator(p, amount)
+            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     saved = cached_property(_saved)

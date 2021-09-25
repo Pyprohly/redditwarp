@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from .pull_SYNC import Pull
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.p_user_pull_sync import ExtraSubmissionFieldsCommentListingPaginator
 
 class FrontPage:
@@ -15,6 +15,6 @@ class FrontPage:
         self._client = client
         self.pull = Pull(client)
 
-    def pull_new_comments(self, amount: Optional[int] = None) -> PaginatorChainingIterator[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
+    def pull_new_comments(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
         p = ExtraSubmissionFieldsCommentListingPaginator(self._client, '/comments')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)

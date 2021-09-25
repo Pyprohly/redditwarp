@@ -24,7 +24,7 @@ def make_request(
     *,
     params: Optional[Mapping[str, str]] = None,
     headers: Optional[Mapping[str, str]] = None,
-    data: Optional[Union[Mapping[str, str], str, bytes]] = None,
+    data: Optional[Union[Mapping[str, str], bytes]] = None,
     json: Any = None,
     files: Optional[RequestFiles] = None,
     timeout: float = -2,

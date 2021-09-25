@@ -21,17 +21,23 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
     yield ('method', r.verb)
     yield ('url', r.uri)
     yield ('params', r.params)
-    yield ('headers', r.headers)
 
+    headers = dict(r.headers)
     pld = r.payload
     if pld is None:
         pass
 
     elif isinstance(pld, payload.Bytes):
+        pld.apply_content_type(headers)
         yield ('data', pld.data)
 
     elif isinstance(pld, payload.Text):
-        yield ('data', pld.text)
+        pld.apply_content_type(headers)
+        yield ('data', pld.text.encode())
+
+    elif isinstance(pld, payload.TextData):
+        pld.apply_content_type(headers)
+        yield ('data', pld.data)
 
     elif isinstance(pld, payload.JSON):
         yield ('json', pld.json)
@@ -50,7 +56,7 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
 
         if not file_plds:
             # httpx won't send a multipart if no files
-            raise NotImplementedError('multipart without file fields not supported')
+            raise Exception('multipart without file fields not supported')
 
         yield ('data', {ty.name: ty.value for ty in text_plds})
         yield ('files', {
@@ -59,7 +65,9 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
         })
 
     else:
-        raise NotImplementedError('unsupported payload type')
+        raise Exception('unsupported payload type')
+
+    yield ('headers', headers)
 
 
 class Session(SessionBase):

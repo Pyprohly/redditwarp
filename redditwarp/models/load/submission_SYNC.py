@@ -18,14 +18,14 @@ from ..submission_SYNC import (
 def load_submission(d: Mapping[str, Any], client: Client) -> Submission:
     if d.get('post_hint') == 'image':
         return ImagePost(d, client)
-    elif d['is_video']:
+    if d['is_video']:
         return VideoPost(d, client)
-    elif d.get('is_gallery', False):
+    if d.get('is_gallery', False):
         return GalleryPost(d, client)
-    elif 'poll_data' in d:
+    if 'poll_data' in d:
         return PollPost(d, client)
-    elif 'crosspost_parent' in d:
+    if 'crosspost_parent' in d:
         return CrosspostPost(d, client)
-    elif d['is_self']:
+    if d['is_self']:
         return TextPost(d, client)
     return LinkPost(d, client)

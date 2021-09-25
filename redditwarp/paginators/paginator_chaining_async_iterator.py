@@ -6,7 +6,7 @@ from .async_paginator import AsyncPaginator
 
 E = TypeVar('E')
 
-class BasePaginatorChainingAsyncIterator(AsyncIterator[E]):
+class PaginatorChainingAsyncIterator(AsyncIterator[E]):
     def __init__(self, paginator: AsyncPaginator[E], amount: Optional[int] = None) -> None:
         self._pgr: AsyncPaginator[E] = paginator
         self.remaining = amount
@@ -38,7 +38,13 @@ class BasePaginatorChainingAsyncIterator(AsyncIterator[E]):
 __bound = 'AsyncPaginator[E]'
 TAsyncPaginator = TypeVar('TAsyncPaginator', bound=AsyncPaginator)  # type: ignore[type-arg]
 
-class PaginatorChainingAsyncIterator(BasePaginatorChainingAsyncIterator[E], Generic[TAsyncPaginator, E]):
-    def __init__(self, paginator: TAsyncPaginator, amount: Optional[int] = None) -> None:
-        super().__init__(paginator, amount)
+class PaginatorChainingAsyncWrapper(AsyncIterator[E], Generic[TAsyncPaginator, E]):
+    def __init__(self, chainer: PaginatorChainingAsyncIterator[E], paginator: TAsyncPaginator) -> None:
+        self.chainer: PaginatorChainingAsyncIterator[E] = chainer
         self.paginator: TAsyncPaginator = paginator
+
+    def __aiter__(self) -> AsyncIterator[E]:
+        return self.chainer.__aiter__()
+
+    async def __anext__(self) -> E:
+        return await self.chainer.__anext__()

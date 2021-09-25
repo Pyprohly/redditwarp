@@ -27,7 +27,7 @@ def test_simple_iteration() -> None:
         [2, 3],
         [4, 5, 6],
     ])
-    pci: PaginatorChainingIterator[MyPaginator, int] = PaginatorChainingIterator(p)
+    pci: PaginatorChainingIterator[int] = PaginatorChainingIterator(p)
     assert list(pci) == [1,2,3,4,5,6]
 
 def test_current_iter() -> None:
@@ -35,7 +35,7 @@ def test_current_iter() -> None:
         [0, 1, 2],
         [3, 4],
     ])
-    pci: PaginatorChainingIterator[MyPaginator, int] = PaginatorChainingIterator(p)
+    pci: PaginatorChainingIterator[int] = PaginatorChainingIterator(p)
 
     assert next(pci) == 0
     assert list(pci.current_iter) == [1, 2]
@@ -51,7 +51,7 @@ def test_amount() -> None:
         [10, 20, 30, 40],
         [50, 60, 70, 80],
     ])
-    pci: PaginatorChainingIterator[MyPaginator, int] = PaginatorChainingIterator(p, 6)
+    pci: PaginatorChainingIterator[int] = PaginatorChainingIterator(p, 6)
     assert pci.remaining == 6
     assert next(pci) == 10
     assert pci.remaining == 5
@@ -73,7 +73,7 @@ def test_efficient_pagination_limit() -> None:
         list(range(23)),
     ])
     p.limit = 100
-    pci: PaginatorChainingIterator[MyPaginator, int] = PaginatorChainingIterator(p, 123)
+    pci: PaginatorChainingIterator[int] = PaginatorChainingIterator(p, 123)
     for _ in range(100):
         next(pci)
     assert pci.remaining == 23

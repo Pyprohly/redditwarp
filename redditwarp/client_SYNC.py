@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Union
 if TYPE_CHECKING:
     from types import TracebackType
-    from .auth.typedefs import AuthorizationGrant
+    from .auth.typedefs import ClientCredentials, AuthorizationGrant
     from .http.payload import RequestFiles
 
 from .http.util.json_load import json_loads_response
@@ -36,6 +36,10 @@ class CoreClient:
     _TSelf = TypeVar('_TSelf', bound='CoreClient')
 
     @classmethod
+    def from_creds(cls: Type[_TSelf], client_creds: ClientCredentials, grant: AuthorizationGrant) -> _TSelf:
+        return cls(*client_creds, grant=grant)
+
+    @classmethod
     def from_http(cls: Type[_TSelf], http: RedditHTTPClient) -> _TSelf:
         """Alternative constructor for testing purposes or advanced uses.
 
@@ -64,7 +68,7 @@ class CoreClient:
         session = new_session()
         authorizer = Authorizer(token=Token(access_token))
         requestor = RateLimited(Authorized(session, authorizer))
-        http = RedditHTTPClient(session, requestor, authorizer=authorizer)
+        http = RedditHTTPClient(session, requestor, authorizer)
         return cls.from_http(http)
 
     @classmethod
@@ -89,14 +93,15 @@ class CoreClient:
             username=get('username'),
             password=get('password'),
         )
-        if 'user_agent' in section:
-            self.set_user_agent(get('user_agent'))
+        if x := get('user_agent'):
+            self.set_user_agent(x)
         return self
 
     def __init__(self,
             client_id: str, client_secret: str,
             refresh_token: Optional[str] = None,
-            access_token: Optional[str] = None, *,
+            access_token: Optional[str] = None,
+            *,
             username: Optional[str] = None, password: Optional[str] = None,
             grant: Optional[AuthorizationGrant] = None):
         """
@@ -153,7 +158,7 @@ class CoreClient:
             (None if access_token is None else Token(access_token)),
         )
         requestor = RateLimited(Authorized(session, authorizer))
-        http = RedditHTTPClient(session, requestor, authorizer=authorizer)
+        http = RedditHTTPClient(session, requestor, authorizer)
         token_client.headers = http.headers
         self._init(http)
 
@@ -181,7 +186,7 @@ class CoreClient:
         *,
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
-        data: Optional[Union[Mapping[str, str], str, bytes]] = None,
+        data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
@@ -216,8 +221,6 @@ class CoreClient:
         ----------
         access_token: str
         """
-        if self.http.authorizer is None:
-            raise RuntimeError('The HTTP client is missing an authorizer')
         self.http.authorizer.token = Token(access_token)
 
     def set_user_agent(self, s: Optional[str]) -> None:

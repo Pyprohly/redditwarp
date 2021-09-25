@@ -60,5 +60,7 @@ def register(
 transport_module_spec_list = [
     load_spec('.httpx_sync', __package__),
     load_spec('.requests', __package__),
+    load_spec('.urllib3', __package__),
+    load_spec('.python_urllib', __package__),
 ]
 transport_info_registry: MutableMapping[str, TransportInfo] = {}

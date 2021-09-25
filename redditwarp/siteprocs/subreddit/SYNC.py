@@ -15,7 +15,7 @@ from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.p_user_pull_sync import ExtraSubmissionFieldsCommentListingPaginator
 from ...paginators.implementations.listing.p_subreddit_search_sync import SearchSubredditsListingPaginator
 from ... import exceptions
@@ -68,9 +68,9 @@ class Subreddit:
 
         return CallChunkChainingIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
-    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingIterator[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
+    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingWrapper[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
         p = ExtraSubmissionFieldsCommentListingPaginator(self._client, f'/r/{sr}/comments')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def get_settings(self, sr: str) -> Mapping[str, Any]:
         root = self._client.request('GET', f'/r/{sr}/about/edit')
@@ -114,9 +114,9 @@ class Subreddit:
 
     def explore(self, query: str, amount: Optional[int] = None, *,
             show_users: bool = False,
-            ) -> PaginatorChainingIterator[SearchSubredditsListingPaginator, SubredditModel]:
+            ) -> PaginatorChainingWrapper[SearchSubredditsListingPaginator, SubredditModel]:
         p = SearchSubredditsListingPaginator(self._client, '/subreddits/search', query, show_users=show_users)
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def explore_names(self, name: str) -> Sequence[str]:
         root = self._client.request('GET', '/api/search_reddit_names', params={'query': name})

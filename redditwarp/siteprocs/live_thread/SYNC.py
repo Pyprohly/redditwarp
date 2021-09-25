@@ -11,7 +11,7 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...util.base_conversion import to_base36
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.live_update_listing_paginator import LiveUpdateListingPaginator
 from ... import exceptions
 
@@ -66,9 +66,9 @@ class LiveThread:
         return load_live_update(root['data'], self._client)
 
     def pull(self, idt: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingIterator[LiveUpdateListingPaginator, LiveUpdate]:
+            ) -> PaginatorChainingWrapper[LiveUpdateListingPaginator, LiveUpdate]:
         p = LiveUpdateListingPaginator(self._client, f'/live/{idt}')
-        return PaginatorChainingIterator(p, amount)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def post_live_update(self, idt: str, body: str) -> None:
         self._client.request('POST', f'/api/live/{idt}/update', data={'body': body})
