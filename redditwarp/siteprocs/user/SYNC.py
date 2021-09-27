@@ -14,7 +14,7 @@ from .pull_SYNC import Pull
 from .pull_user_subreddits_SYNC import PullUserSubreddits
 from ...models.load.user_SYNC import load_user
 from ...models.load.moderated_subreddit_list import load_moderated_subreddit_list_item
-from ... import exceptions
+from ... import http
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.p_user_search_sync import SearchUsersListingPaginator
 
@@ -29,8 +29,8 @@ class User:
     def get_by_name(self, name: str) -> Optional[UserModel]:
         try:
             root = self._client.request('GET', f'/user/{name}/about')
-        except exceptions.HTTPStatusError as e:
-            if e.response.status == 404:
+        except http.exceptions.StatusCodeException as e:
+            if e.status_code == 404:
                 return None
             raise
         return load_user(root['data'], self._client)

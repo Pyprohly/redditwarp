@@ -19,7 +19,7 @@ class MySession(SessionBase):
         self.response_data = response_data
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return Response(self.response_status, self.response_headers, self.response_data, request=request)
+        return Response(self.response_status, self.response_headers, self.response_data)
 
 class MyListingPaginator(ListingPaginator[str]):
     def __init__(self,
@@ -53,26 +53,18 @@ def test_none_limit() -> None:
     p.limit = None
     p.next_result()
 
-    if http.last_response is None:
-        raise Exception
-    response = http.last_response
-    if response.request is None:
-        raise Exception
-    request = response.request
+    req = http.last.request
+    assert req is not None
 
-    assert 'limit' not in request.params
+    assert 'limit' not in req.params
 
     p.limit = 14
     p.next_result()
 
-    if http.last_response is None:
-        raise Exception
-    response = http.last_response
-    if response.request is None:
-        raise Exception
-    request = response.request
+    req = http.last.request
+    assert req is not None
 
-    assert request.params['limit'] == '14'
+    assert req.params['limit'] == '14'
 
 def test_dont_send_empty_cursor() -> None:
     p = MyListingPaginator(client, '')
@@ -90,14 +82,10 @@ def test_dont_send_empty_cursor() -> None:
     p.limit = None
     p.next_result()
 
-    if http.last_response is None:
-        raise Exception
-    response = http.last_response
-    if response.request is None:
-        raise Exception
-    request = response.request
+    req = http.last.request
+    assert req is not None
 
-    assert 'after' not in request.params
+    assert 'after' not in req.params
 
 def test_return_value_and_count() -> None:
     p = MyListingPaginator(client, '')

@@ -21,7 +21,7 @@ class MySession(SessionBase):
         self.response_data = response_data
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return Response(self.response_status, self.response_headers, self.response_data, request=request)
+        return Response(self.response_status, self.response_headers, self.response_data)
 
 class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
     def __init__(self,
@@ -56,26 +56,18 @@ async def test_none_limit() -> None:
     p.limit = None
     await p.next_result()
 
-    if http.last_response is None:
-        raise Exception
-    response = http.last_response
-    if response.request is None:
-        raise Exception
-    request = response.request
+    req = http.last.request
+    assert req is not None
 
-    assert 'limit' not in request.params
+    assert 'limit' not in req.params
 
     p.limit = 14
     await p.next_result()
 
-    if http.last_response is None:
-        raise Exception
-    response = http.last_response
-    if response.request is None:
-        raise Exception
-    request = response.request
+    req = http.last.request
+    assert req is not None
 
-    assert request.params['limit'] == '14'
+    assert req.params['limit'] == '14'
 
 @pytest.mark.asyncio
 async def test_dont_send_empty_cursor() -> None:
@@ -94,14 +86,10 @@ async def test_dont_send_empty_cursor() -> None:
     p.limit = None
     await p.next_result()
 
-    if http.last_response is None:
-        raise Exception
-    response = http.last_response
-    if response.request is None:
-        raise Exception
-    request = response.request
+    req = http.last.request
+    assert req is not None
 
-    assert 'after' not in request.params
+    assert 'after' not in req.params
 
 @pytest.mark.asyncio
 async def test_return_value_and_count() -> None:

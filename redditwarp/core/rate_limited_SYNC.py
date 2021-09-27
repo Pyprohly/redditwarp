@@ -18,27 +18,27 @@ class RateLimited(RequestorDecorator):
         self.reset = 0
         self.remaining = 0
         self.used = 0
-        self._burst_control_tb = TokenBucket(6, .5)
-        self._prev_request = 0.
-        self._last_request = time.monotonic()
+        self._burst_control = TokenBucket(5, .5)
+        self._prev_request_time = 0.
+        self._last_request_time = time.monotonic()
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         s: float = self.reset
         if self.remaining > 0:
             s = self.reset / self.remaining
 
-        h = self._burst_control_tb.hard_consume(1)
-        if h and s < 1:
+        h = self._burst_control.hard_consume(1)
+        if h and s < 2 and self.remaining > 1:
             # Burst this request, but only if the API didn't
-            # want us to wait for more than a second.
+            # want us to wait for more than two seconds.
             s = 0
 
         self.sleep(s)
 
-        self._prev_request = self._last_request
-        self._last_request = time.monotonic()
-
         response = self.requestor.send(request, timeout=timeout)
+
+        self._prev_request_time = self._last_request_time
+        self._last_request_time = time.monotonic()
 
         self.scan_ratelimit_headers(response.headers)
         return response
@@ -49,12 +49,12 @@ class RateLimited(RequestorDecorator):
             self.remaining = int(float(headers['x-ratelimit-remaining']))
             self.used = int(headers['x-ratelimit-used'])
         elif self.reset > 0:
-            self.reset = max(0, self.reset - int(self._last_request - self._prev_request))
+            self.reset = max(0, self.reset - int(self._last_request_time - self._prev_request_time))
             self.remaining -= 1
             self.used += 1
         else:
-            self.reset = 100
-            self.remaining = 200
+            self.reset = 600
+            self.remaining = 300
             self.used = 0
 
     def sleep(self, s: float) -> None:

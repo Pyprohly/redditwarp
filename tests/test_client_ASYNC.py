@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp import exceptions
+from redditwarp.http import exceptions as http_exceptions
 from redditwarp.client_ASYNC import Client
 from redditwarp.core.reddit_http_client_ASYNC import RedditHTTPClient
 from redditwarp.http.session_base_ASYNC import SessionBase
@@ -30,7 +31,7 @@ class MyHTTPClient(RedditHTTPClient):
         self.response_data = response_data
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return Response(self.response_status, self.response_headers, self.response_data, request=request)
+        return Response(self.response_status, self.response_headers, self.response_data)
 
 
 @pytest.mark.asyncio
@@ -64,14 +65,14 @@ class TestRequestExceptions:
         async def test_json_decode_failed(self) -> None:
             http = MyHTTPClient(414, {'Content-Type': 'text/plain'}, b'Error: URI Too Long')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTTPStatusError):
+            with pytest.raises(http_exceptions.StatusCodeException):
                 await client.request('', '')
 
         @pytest.mark.asyncio
         async def test_json_decode_suceeded(self) -> None:
             http = MyHTTPClient(404, {'Content-Type': 'application/json; charset=UTF-8'}, b'{"message": "Not Found", "error": 404}')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTTPStatusError):
+            with pytest.raises(http_exceptions.StatusCodeException):
                 await client.request('', '')
 
     class TestResponseContentError:

@@ -1,50 +1,26 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
+    from ..http.request import Request
     from ..http.response import Response
-    from ..auth.token import Token
 
 from .. import auth
 from ..auth.const import TOKEN_OBTAINMENT_URL
+from .. import http
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..exceptions import ArgInfoExceptionMixin
+from ..auth.exceptions import ResponseContentError, raise_for_token_server_response_error
 
 class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 
-class UnknownTokenType(ArgInfoException):
-    def __init__(self, arg: object = None, *, token: Token):
-        super().__init__(arg)
-        self.token = token
-
-class ResponseException(ArgInfoException):
-    def __init__(self, arg: object = None, *, response: Response) -> None:
-        super().__init__(arg)
-        self.response = response
-
-    def get_default_message(self) -> str:
-        return str(self.response)
-
-class AuthError(ResponseException):
-    pass
-
-class CredentialsError(AuthError):
-    pass
-
-class ResponseContentError(ResponseException):
-    pass
-
-
-class BadUserAgent(ResponseException):
-    pass
-
-class BlacklistedUserAgent(ResponseException):
-    pass
-
-class FaultyUserAgent(ResponseException):
-    pass
+def raise_for_reddit_token_server_response_error(json_dict: Any) -> None:
+    error = json_dict.get('error')
+    if not isinstance(error, str):
+        return
+    raise_for_token_server_response_error(json_dict)
 
 
 class UnidentifiedResponseContentError(ResponseContentError):
@@ -53,72 +29,74 @@ class UnidentifiedResponseContentError(ResponseContentError):
 class HTMLDocumentResponseContentError(ResponseContentError):
     pass
 
-def handle_auth_response_exception(e: auth.exceptions.ResponseException) -> Exception:
-    resp = e.response
-    status = resp.status
+class CredentialsError(ArgInfoException):
+    pass
+
+class ClientCredentialsError(CredentialsError):
+    pass
+
+class GrantCredentialsError(CredentialsError):
+    pass
+
+class BadUserAgent(ArgInfoException):
+    pass
+
+class BlacklistedUserAgent(BadUserAgent):
+    pass
+
+class FaultyUserAgent(BadUserAgent):
+    pass
+
+def handle_reddit_auth_response_exception(e: Exception, req: Request, resp: Response) -> Exception:
+    headers = CaseInsensitiveDict(req.headers)
 
     if isinstance(e, auth.exceptions.ResponseContentError):
-        if status == 403:
-            if req := resp.request:
-                ua = req.headers['User-Agent']
-                msg = None
-
-                if ua.startswith('Bot'):
-                    msg = "User agent strings must not start with the string 'Bot'"
-
-                for s in (
-                    'scraping',
-                    'searchme',
-                ):
-                    if s in ua:
-                        msg = f'{s!r} is a known blacklisted user-agent pattern. Remove it from your user-agent string.'
-                        break
-
-                raise BlacklistedUserAgent(msg, response=resp) from e
-
-        content_type = resp.headers.get('Content-Type', '')
-        if content_type.startswith('text/html'):
+        if resp.status == 403:
             msg = None
-            data = resp.data
-            if b'Our CDN was unable to reach our servers' in data:
+            ua = headers['User-Agent']
+            if ua.startswith('Bot'):
+                msg = "User agent strings must not start with the string 'Bot'"
+            for s in 'scraping searchme'.split():
+                if s in ua:
+                    msg = f"{s!r} is a known blacklisted user-agent pattern. Remove it from your user-agent string."
+                    break
+            raise BlacklistedUserAgent(msg) from e
+
+        if resp.headers.get('Content-Type', '').startswith('text/html'):
+            msg = None
+            if b'Our CDN was unable to reach our servers' in resp.data:
                 msg = '"Our CDN was unable to reach our servers"'
-            raise HTMLDocumentResponseContentError(msg, response=resp) from e
-        raise UnidentifiedResponseContentError(response=resp) from e
+            raise HTMLDocumentResponseContentError(msg) from e
+        raise UnidentifiedResponseContentError from e
 
-    elif isinstance(e, auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant):
-        raise CredentialsError('Check your grant credentials', response=resp) from e
+    elif isinstance(e, auth.exceptions.TokenServerResponseError):
+        if e.error_name == 'invalid_grant':
+            raise GrantCredentialsError('Check your grant credentials') from e
 
-    elif isinstance(e, auth.exceptions.HTTPStatusError):
-        if status == 401:
-            if req := resp.request:
-                if not (uri := req.uri).startswith("https://www.reddit.com"):
-                    e.arg = f'bad access token URL: got {uri!r}, need {TOKEN_OBTAINMENT_URL!r}'
-                    raise
-                if 'Authorization' not in req.headers:
-                    e.arg = 'Authorization header missing from request'
-                    raise
-                if req.headers['Authorization'][:6].lower() != 'basic ':
-                    e.arg = 'Authorization header value must start with "Basic "'
-                    raise
-            raise CredentialsError('Check your client credentials', response=resp) from e
+        elif e.error_name == 'unsupported_grant_type':
+            content_type = headers.get('Content-Type', '')
+            expected_content_type = 'application/x-www-form-urlencoded'
+            if content_type != expected_content_type:
+                e.arg = f'bad Content-Type header: got {content_type!r}, need {expected_content_type!r}'
 
-        elif status == 429:
-            if req := resp.request:
-                ua = req.headers['User-Agent']
-                if 'curl' in ua:
-                    raise FaultyUserAgent(
-                        "the pattern 'curl' in your user-agent string is known to interfere with rate limits. Remove it from your user-agent string.",
-                        response=resp,
-                    ) from e
+    elif isinstance(e, http.exceptions.StatusCodeException):
+        if resp.status == 401:
+            if not (url := req.uri).startswith("https://www.reddit.com"):
+                e.arg = f'bad access token URL: got {url!r}, need {TOKEN_OBTAINMENT_URL!r}'
+                raise e
+            if 'Authorization' not in headers:
+                e.arg = 'Authorization header missing from request'
+                raise e
+            if headers['Authorization'][:6].lower() != 'basic ':
+                e.arg = 'Authorization header value must start with "Basic"'
+                raise e
+            raise ClientCredentialsError('Check your client credentials') from e
 
-    elif isinstance(e, auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType):
-        if req := resp.request:
-            headers = CaseInsensitiveDict(req.headers)
-            if 'Content-Type' in headers:
-                content_type = req.headers.get('Content-Type', '')
-                expected_content_type = 'application/x-www-form-urlencoded'
-                if not content_type.startswith(expected_content_type):
-                    e.arg = f'bad Content-Type header: got {content_type!r}, need {expected_content_type!r}'
+        elif resp.status == 429:
+            ua = headers['User-Agent']
+            if 'curl' in ua:
+                msg = "The pattern 'curl', in your user-agent string, is known to interfere with rate limits. Remove it from your user-agent string."
+                raise FaultyUserAgent(msg) from e
 
     raise e
     return Exception

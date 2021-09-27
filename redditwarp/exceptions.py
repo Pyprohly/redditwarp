@@ -5,9 +5,6 @@ if TYPE_CHECKING:
     from .http.response import Response
 
 from dataclasses import dataclass
-from http import HTTPStatus
-
-from . import http
 
 class ArgInfoExceptionMixin(Exception):
     def __init__(self, arg: object = None) -> None:
@@ -26,6 +23,7 @@ class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 
+
 class ClientException(ArgInfoException):
     pass
 
@@ -36,41 +34,19 @@ class ResultRejectedException(ClientException):
     pass
 
 
-class ResponseException(ArgInfoException):
-    def __init__(self, arg: object = None, *, response: Response):
-        super().__init__(arg)
-        self.response = response
 
-class HTTPStatusError(ResponseException):
-    pass
-
-def raise_for_status(resp: Response) -> None:
-    try:
-        resp.raise_for_status()
-    except http.exceptions.StatusCodeException:
-        sts = resp.status
-        msg = str(sts)
-        try:
-            msg = f"{sts} {HTTPStatus(sts).phrase}"
-        except ValueError:
-            pass
-        raise HTTPStatusError(msg, response=resp) from None
-
-
-class ResponseContentError(ResponseException):
+class ResponseContentError(ArgInfoException):
     """A base exception class denoting that something in the response body
     from an API request is amiss. Either an error was indicated by the API
     or the structure is of something the client isn't prepared to handle,
     so the response was rejected.
     """
 
-class UnidentifiedResponseContentError(ResponseContentError):
-    """The response body contains data that the client isn't prepared to handle."""
-
-
 class UnacceptableHTMLDocumentReceivedError(ResponseContentError):
     pass
 
+class UnidentifiedResponseContentError(ResponseContentError):
+    """The response body contains data that the client isn't prepared to handle."""
 
 def raise_for_response_content_error(resp: Response) -> None:
     content_type = resp.headers.get('Content-Type', '')
@@ -83,38 +59,31 @@ def raise_for_response_content_error(resp: Response) -> None:
             msg = '"Our CDN was unable to reach our servers"'
         if b'title>reddit.com: page not found</title' in data:
             msg = 'page not found'
-        raise UnacceptableHTMLDocumentReceivedError(msg, response=resp)
+        raise UnacceptableHTMLDocumentReceivedError(msg)
 
 def handle_non_json_response(resp: Response) -> Exception:
     raise_for_response_content_error(resp)
-    raise_for_status(resp)
-    raise UnidentifiedResponseContentError(response=resp)
+    resp.raise_for_status()
+    raise UnidentifiedResponseContentError
     return Exception
 
-def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
-    raise_for_variant1_reddit_api_error(resp, data)
-    raise_for_variant2_reddit_api_error(resp, data)
 
 
-class ApplicationException(ResponseException):
-    """The remote API wishes to formally inform the client that a service request was carried
+class ApplicationServiceException(ArgInfoException):
+    """The remote API wishes to explicitly inform the client that a service request was carried
     out unsuccessfully."""
 
-class RedditAPIError(ApplicationException):
+class RedditAPIError(ApplicationServiceException):
     def __init__(self,
         arg: object = None, *,
-        response: Response,
         codename: str,
         detail: str,
         field: str,
     ) -> None:
-        super().__init__(arg=arg, response=response)
+        super().__init__(arg)
         self.codename = codename
         self.detail = detail
         self.field = field
-
-    def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} ({self.response})>'
 
     def get_default_message(self) -> str:
         return f"{self.codename}: {self.detail}"
@@ -122,14 +91,12 @@ class RedditAPIError(ApplicationException):
 class Variant1RedditAPIError(RedditAPIError):
     def __init__(self,
         arg: object = None, *,
-        response: Response,
         codename: str,
         detail: str,
         fields: Sequence[str],
     ):
         super().__init__(
             arg=arg,
-            response=response,
             codename=codename,
             detail=detail,
             field=fields[0] if fields else '',
@@ -148,7 +115,6 @@ def raise_for_variant1_reddit_api_error(resp: Response, data: Mapping[str, Any])
         detail = data['explanation']
         fields = data.get('fields', ())
         raise Variant1RedditAPIError(
-            response=resp,
             codename=codename,
             detail=detail,
             fields=fields,
@@ -161,7 +127,7 @@ class Variant2RedditAPIError(RedditAPIError):
     out unsuccessfully.
     """
 
-    def __init__(self, arg: object = None, *, response: Response, errors: Sequence[RedditErrorItem]):
+    def __init__(self, arg: object = None, *, errors: Sequence[RedditErrorItem]):
         """
         Parameters
         ----------
@@ -171,16 +137,11 @@ class Variant2RedditAPIError(RedditAPIError):
         err = errors[0]
         super().__init__(
             arg=arg,
-            response=response,
             codename=err.codename,
             detail=err.detail,
             field=err.field,
         )
         self.errors = errors
-
-    def __repr__(self) -> str:
-        err_names = [err.codename for err in self.errors]
-        return f'<{self.__class__.__name__} ({self.response}) {err_names}>'
 
     def get_default_message(self) -> str:
         err_count = len(self.errors)
@@ -214,4 +175,8 @@ def try_parse_reddit_error_items(data: Mapping[str, Any]) -> Optional[List[Reddi
 def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
     error_list = try_parse_reddit_error_items(data)
     if error_list is not None:
-        raise Variant2RedditAPIError(response=resp, errors=error_list)
+        raise Variant2RedditAPIError(errors=error_list)
+
+def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
+    raise_for_variant1_reddit_api_error(resp, data)
+    raise_for_variant2_reddit_api_error(resp, data)

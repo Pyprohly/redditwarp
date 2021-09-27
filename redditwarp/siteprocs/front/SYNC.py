@@ -10,7 +10,7 @@ from .pull_SYNC import Pull
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.p_user_pull_sync import ExtraSubmissionFieldsCommentListingPaginator
 
-class FrontPage:
+class Front:
     def __init__(self, client: Client):
         self._client = client
         self.pull = Pull(client)

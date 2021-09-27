@@ -8,8 +8,6 @@ if TYPE_CHECKING:
 
 from collections import deque
 
-from .. import http
-from .. import auth
 from ..http.requestor_decorator_SYNC import RequestorDecorator
 
 class RecordMessages(RequestorDecorator):
@@ -28,9 +26,6 @@ class RecordMessages(RequestorDecorator):
         resp = None
         try:
             resp = self.requestor.send(request, timeout=timeout)
-        except Exception as e:
-            resp = self.extract_response_from_exception(e)
-            raise
         finally:
             self.last_request = request
             self.last_transmit = (request, resp)
@@ -48,15 +43,6 @@ class RecordMessages(RequestorDecorator):
         if resp is None:
             raise Exception
         return resp
-
-    def extract_response_from_exception(self, e: Exception) -> Optional[Response]:
-        exception_classes = (
-            http.exceptions.ResponseException,
-            auth.exceptions.ResponseException,
-        )
-        if isinstance(e, exception_classes):
-            return e.response
-        return None
 
 
 class RecordLastMessages(RequestorDecorator):
@@ -79,9 +65,6 @@ class RecordLastMessages(RequestorDecorator):
         resp = None
         try:
             resp = self.requestor.send(request, timeout=timeout)
-        except Exception as e:
-            resp = self.extract_response_from_exception(e)
-            raise
         finally:
             self.last.request = request
             self.last.transmit = (request, resp)
@@ -99,12 +82,3 @@ class RecordLastMessages(RequestorDecorator):
         if resp is None:
             raise Exception
         return resp
-
-    def extract_response_from_exception(self, e: Exception) -> Optional[Response]:
-        exception_classes = (
-            http.exceptions.ResponseException,
-            auth.exceptions.ResponseException,
-        )
-        if isinstance(e, exception_classes):
-            return e.response
-        return None

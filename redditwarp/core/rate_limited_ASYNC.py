@@ -24,37 +24,33 @@ class RateLimited(RequestorDecorator):
         self.reset = 0
         self.remaining = 0
         self.used = 0
-        self._rate_limiting_tb = TokenBucket(10, 1)
-        self._prev_request = 0.
-        self._last_request = time.monotonic()
+        self._rate_limiter = TokenBucket(10, 1)
+        self._prev_request_time = 0.
+        self._last_request_time = time.monotonic()
         self._lock = asyncio.Lock()
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         s: float = self.reset
         if self.remaining > 0:
-            # Note: value not precise due to concurrency.
+            # Can't rely solely on this because of concurrency.
             s = self.reset / self.remaining
 
-        tb = self._rate_limiting_tb
+        tb = self._rate_limiter
         async with self._lock:
-            # If the API wants us to wait for longer than a second, oblige.
-            if s >= 1:
+            # If the API wants us to wait for longer than two seconds, oblige.
+            if s >= 2:
                 await self.sleep(s)
-                # And don't add tokens for the time spent sleeping here.
+                # Don't add tokens for the time spent sleeping here.
                 tb.do_consume(s)
 
-            # If not enough tokens...
             if not tb.try_consume(1):
-                # Wait until enough...
                 await self.sleep(tb.get_cooldown(1))
-                # Immediately consume...
                 tb.do_consume(1)
-                # Then proceed.
-
-        self._prev_request = self._last_request
-        self._last_request = time.monotonic()
 
         response = await self.requestor.send(request, timeout=timeout)
+
+        self._prev_request_time = self._last_request_time
+        self._last_request_time = time.monotonic()
 
         self.scan_ratelimit_headers(response.headers)
         return response
@@ -65,12 +61,12 @@ class RateLimited(RequestorDecorator):
             self.remaining = int(float(headers['x-ratelimit-remaining']))
             self.used = int(headers['x-ratelimit-used'])
         elif self.reset > 0:
-            self.reset = max(0, self.reset - int(self._last_request - self._prev_request))
+            self.reset = max(0, self.reset - int(self._last_request_time - self._prev_request_time))
             self.remaining -= 1
             self.used += 1
         else:
-            self.reset = 100
-            self.remaining = 200
+            self.reset = 600
+            self.remaining = 300
             self.used = 0
 
     async def sleep(self, s: float) -> None:

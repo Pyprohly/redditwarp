@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Iterable
 if TYPE_CHECKING:
     from ..request import Request
+    from ..response import Response
 
 import httpx  # type: ignore[import]
 
@@ -10,7 +11,7 @@ from .SYNC import register
 from ..session_base_SYNC import SessionBase
 from .. import exceptions
 from .. import payload
-from ..response import Response
+from ..response import UResponse
 
 def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]]:
     timeout_obj = httpx.Timeout(etv, pool=20)
@@ -87,11 +88,10 @@ class Session(SessionBase):
         except Exception as e:
             raise exceptions.TransportError from e
 
-        return Response(
+        return UResponse(
             status=response.status_code,
             headers=response.headers,
             data=response.content,
-            request=request,
             underlying_object=response,
         )
 

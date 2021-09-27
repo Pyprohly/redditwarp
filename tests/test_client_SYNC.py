@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp import exceptions
+from redditwarp.http import exceptions as http_exceptions
 from redditwarp.client_SYNC import Client
 from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
 from redditwarp.http.session_base_SYNC import SessionBase
@@ -30,7 +31,7 @@ class MyHTTPClient(RedditHTTPClient):
         self.response_data = response_data
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return Response(self.response_status, self.response_headers, self.response_data, request=request)
+        return Response(self.response_status, self.response_headers, self.response_data)
 
 
 def test_request() -> None:
@@ -60,13 +61,13 @@ class TestRequestExceptions:
         def test_json_decode_failed(self) -> None:
             http = MyHTTPClient(414, {'Content-Type': 'text/plain'}, b'Error: URI Too Long')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTTPStatusError):
+            with pytest.raises(http_exceptions.StatusCodeException):
                 client.request('', '')
 
         def test_json_decode_suceeded(self) -> None:
             http = MyHTTPClient(404, {'Content-Type': 'application/json; charset=UTF-8'}, b'{"message": "Not Found", "error": 404}')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.HTTPStatusError):
+            with pytest.raises(http_exceptions.StatusCodeException):
                 client.request('', '')
 
     class TestResponseContentError:

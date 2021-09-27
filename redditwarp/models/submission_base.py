@@ -10,7 +10,7 @@ from .reports import ModReport, UserReport
 from .load.reports import load_mod_report, load_user_report
 
 class BaseSubmission(Artifact):
-    class Me:
+    class _Me:
         def __init__(self, d: Mapping[str, Any]):
             # User context fields
             self.saved: bool = d['saved']  # False if no user context
@@ -19,8 +19,8 @@ class BaseSubmission(Artifact):
             self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
             self.is_following_event: bool = d.get('is_followed', False)  # False if no user context
 
-    class Author:
-        class AuthorFlair:
+    class _Author:
+        class _AuthorFlair:
             def __init__(self, d: Mapping[str, Any]):
                 self.template_uuid: Optional[str] = d['author_flair_template_id']
                 author_flair_text: Optional[str] = d['author_flair_text']
@@ -38,9 +38,9 @@ class BaseSubmission(Artifact):
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
             self.has_premium: bool = d['author_premium']
-            self.flair = self.AuthorFlair(d)
+            self.flair = self._AuthorFlair(d)
 
-    class Subreddit:
+    class _Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id = int(self.id36, 36)
@@ -51,20 +51,20 @@ class BaseSubmission(Artifact):
             self.quarantined: bool = d['quarantine']
             self.subscriber_count: int = d['subreddit_subscribers']
 
-    class Moderator:
-        class Approved:
+    class _Moderator:
+        class _Approved:
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['approved_by']
                 self.ut: int = d['approved_at_utc']
                 self.at = datetime.fromtimestamp(self.ut, timezone.utc)
 
-        class Removed:
+        class _Removed:
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['banned_by']
                 self.ut: int = d['banned_at_utc']
                 self.at = datetime.fromtimestamp(self.ut, timezone.utc)
 
-        class Reports:
+        class _Reports:
             def __init__(self, d: Mapping[str, Any]):
                 self.ignoring: bool = d['ignore_reports']
                 self.num_reports: int = d['num_reports']
@@ -76,19 +76,19 @@ class BaseSubmission(Artifact):
 
             self.approved = None
             if d['approved_by']:
-                self.approved = self.Approved(d)
+                self.approved = self._Approved(d)
 
             self.removed = None
             if d['banned_by']:
-                self.removed = self.Removed(d)
+                self.removed = self._Removed(d)
 
-            self.reports = self.Reports(d)
+            self.reports = self._Reports(d)
 
             self.removal_reason_by: Optional[str] = d['mod_reason_by']
             self.removal_reason_title: Optional[str] = d['mod_reason_title']
             self.removal_note: Optional[str] = d['mod_note']
 
-    class Event:
+    class _Event:
         def __init__(self, d: Mapping[str, Any]):
             self.start_ut = int(d['event_start'])
             self.start_at = datetime.fromtimestamp(self.start_ut, timezone.utc)
@@ -96,7 +96,7 @@ class BaseSubmission(Artifact):
             self.end_at = datetime.fromtimestamp(self.end_ut, timezone.utc)
             self.is_live: bool = d['event_is_live']
 
-    class Flair:
+    class _Flair:
         def __init__(self, d: Mapping[str, Any]):
             self.has_flair: bool = d['link_flair_text'] is not None
             self.bg_color: str = d['link_flair_background_color']
@@ -107,7 +107,7 @@ class BaseSubmission(Artifact):
             self.fg_light_or_dark: str = d['link_flair_text_color']
             self.type: str = d['link_flair_type']
 
-    class Reports:
+    class _Reports:
         def __init__(self, d: Mapping[str, Any]):
             self.ignoring: bool = d['ignore_reports']
             self.num_reports: int = d['num_reports']
@@ -154,36 +154,36 @@ class BaseSubmission(Artifact):
 
         self.event = None
         if 'event_start' in d:
-            self.event = self.Event(d)
+            self.event = self._Event(d)
 
-        self.me = self.Me(d)
+        self.me = self._Me(d)
 
-        self.subreddit = self.Subreddit(d)
+        self.subreddit = self._Subreddit(d)
 
         s: str = d['author']
         self.author_name = s
         self.author = None
         if not s.startswith('['):
-            self.author = self.Author(d)
+            self.author = self._Author(d)
 
         self.mod = None
         # `spam`, `ignore_reports`, `approved`, `removed`, and `rte_mode`
         # are all fields that aren't available when the current user is
         # not a moderator of the subreddit (or there’s no user context).
         if 'spam' in d:
-            self.mod = self.Moderator(d)
+            self.mod = self._Moderator(d)
 
-        self.flair = self.Flair(d)
+        self.flair = self._Flair(d)
 
         self.reports = None
         if d['num_reports'] is not None:
-            self.reports = self.Reports(d)
+            self.reports = self._Reports(d)
 
 
 class BaseLinkPost(BaseSubmission):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        self.link_url: str = d['url_overridden_by_dest']
+        self.link: str = d['url_overridden_by_dest']
 
 class BaseTextPost(BaseSubmission):
     def __init__(self, d: Mapping[str, Any]):

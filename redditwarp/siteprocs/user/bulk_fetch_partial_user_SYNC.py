@@ -10,7 +10,7 @@ from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
-from ... import exceptions
+from ... import http
 
 class BulkFetchPartialUser:
     def __init__(self, client: Client):
@@ -27,8 +27,8 @@ class BulkFetchPartialUser:
 
             try:
                 root = self._client.request('GET', '/api/user_data_by_account_ids', params={'ids': ids_str})
-            except exceptions.HTTPStatusError as e:
-                if e.response.status == 404:
+            except http.exceptions.StatusCodeException as e:
+                if e.status_code == 404:
                     return []
                 raise
             return [load_partial_user(v, k) for k, v in root.items()]
@@ -43,8 +43,8 @@ class BulkFetchPartialUser:
 
             try:
                 root = self._client.request('GET', '/api/user_data_by_account_ids', params={'ids': ids_str})
-            except exceptions.HTTPStatusError as e:
-                if e.response.status == 404:
+            except http.exceptions.StatusCodeException as e:
+                if e.status_code == 404:
                     return []
                 raise
             return [load_partial_user(v, k) for k, v in root.items()]

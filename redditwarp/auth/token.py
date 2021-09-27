@@ -10,7 +10,7 @@ class Token:
     expires_in: Optional[int] = None
     refresh_token: Optional[str] = None
     scope: Optional[str] = None
-    d: Mapping[str, Any] = field(repr=False, default_factory=dict)
+    d: Mapping[str, object] = field(repr=False, default_factory=dict)
 
     T = TypeVar('T', bound='Token')
 

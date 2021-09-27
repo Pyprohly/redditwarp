@@ -19,6 +19,7 @@ from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator,
 from ...paginators.implementations.listing.p_user_pull_sync import ExtraSubmissionFieldsCommentListingPaginator
 from ...paginators.implementations.listing.p_subreddit_search_sync import SearchSubredditsListingPaginator
 from ... import exceptions
+from ... import http
 from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
@@ -36,13 +37,12 @@ class Subreddit:
     def get_by_name(self, name: str) -> Optional[SubredditModel]:
         try:
             root = self._client.request('GET', f'/r/{name}/about')
-        except (
+        except exceptions.UnacceptableHTMLDocumentReceivedError:
+            # Name was too long or contained invalid characters.
+            return None
+        except http.exceptions.StatusCodeException as e:
             # A special subreddit name (`all`, `popular`, `friends`, `mod`) was specified.
-            exceptions.HTTPStatusError,
-            # Name contained invalid characters.
-            exceptions.UnacceptableHTMLDocumentReceivedError,
-        ) as e:
-            if e.response.status == 404:
+            if e.status_code == 404:
                 return None
             raise
 
@@ -125,8 +125,8 @@ class Subreddit:
     def exists(self, name: str) -> bool:
         try:
             self._client.request('GET', '/api/search_reddit_names', params={'query': name, 'exact': '1'})
-        except exceptions.HTTPStatusError as e:
-            if e.response.status == 404:
+        except http.exceptions.StatusCodeException as e:
+            if e.status_code == 404:
                 return False
             raise
         return True

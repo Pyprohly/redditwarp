@@ -13,7 +13,7 @@ from ...iterators.call_chunk_SYNC import CallChunk
 from ...util.base_conversion import to_base36
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.live_update_listing_paginator import LiveUpdateListingPaginator
-from ... import exceptions
+from ... import http
 
 class LiveThread:
     def __init__(self, client: Client):
@@ -22,8 +22,8 @@ class LiveThread:
     def get(self, idt: str) -> Optional[LiveThreadModel]:
         try:
             root = self._client.request('GET', f'/live/{idt}/about')
-        except exceptions.HTTPStatusError as e:
-            if e.response.status == 404:
+        except http.exceptions.StatusCodeException as e:
+            if e.status_code == 404:
                 return None
             raise
         return load_live_thread(root['data'], self._client)

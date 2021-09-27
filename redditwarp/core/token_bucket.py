@@ -9,18 +9,18 @@ class TokenBucket:
         self.rate = rate
         self.time_func = time_func
         self._value = capacity
-        self._last_update = time_func()
+        self._last_checkpoint_time = time_func()
 
     def _checkpoint_time(self) -> float:
         now = self.time_func()
-        delta = now - self._last_update
-        self._last_update = now
+        delta = now - self._last_checkpoint_time
+        self._last_checkpoint_time = now
         return delta
 
     def _replenish(self) -> None:
         if self._value < self.capacity:
-            new_tokens = self.rate * self._checkpoint_time()
-            self._value = min(self._value + new_tokens, self.capacity)
+            accretion = self.rate * self._checkpoint_time()
+            self._value = min(self._value + accretion, self.capacity)
 
     def get_value(self) -> float:
         """Return the number of tokens in the bucket."""
@@ -46,12 +46,12 @@ class TokenBucket:
 
     def hard_consume(self, n: float) -> bool:
         """Consume up to `n` tokens."""
-        t = self.get_value()
-        self._value = max(t - n, 0)
-        return n <= t
+        u = self.get_value()
+        self._value = max(u - n, 0)
+        return n <= u
 
     def consume_all(self) -> None:
-        """Empty the token bucket. Like `self.hard_consume(float('inf'))`."""
+        """Empty the token bucket completely. Like `self.hard_consume(float('inf'))`."""
         self._checkpoint_time()
         self._value = 0
 
@@ -59,13 +59,13 @@ class TokenBucket:
         """Return the duration the client should wait before the consume
         methods will return `True` again.
 
-        There is no "`wait_consume()`" method as this class aims not to be IO-bound so
-        here is the logic for implementing such method::
+        There is no `wait_consume()` method on this class because it aims to not be IO-bound.
+        Here is the logic for implementing such a method::
 
             async with lock:
-                t = 3
+                t = 1
                 if not tb.try_consume(t):
                     await asyncio.sleep(tb.get_cooldown(t))
                     tb.do_consume(t)
         """
-        return max(0, (n - self.get_value()) / self.rate)
+        return max((n - self.get_value()) / self.rate, 0)

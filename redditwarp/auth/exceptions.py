@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, ClassVar, Any
 if TYPE_CHECKING:
     from typing import Mapping
     from ..http.response import Response
+    from .token import Token
 
 from urllib.request import parse_http_list, parse_keqv_list
 
-from .. import http
 from ..exceptions import ArgInfoExceptionMixin
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 
@@ -15,40 +15,26 @@ class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
 
-class ResponseException(ArgInfoException):
-    def __init__(self, arg: object = None, *, response: Response) -> None:
+class ResponseContentError(ArgInfoException):
+    pass
+
+class UnknownTokenType(ArgInfoException):
+    def __init__(self, arg: object = None, *, token: Token):
         super().__init__(arg)
-        self.response = response
+        self.token = token
 
-    def get_default_message(self) -> str:
-        return str(self.response)
-
-class HTTPStatusError(ResponseException):
-    pass
-
-def raise_for_status(resp: Response) -> None:
-    try:
-        resp.raise_for_status()
-    except http.exceptions.StatusCodeException as e:
-        raise HTTPStatusError(response=resp) from e
-
-
-class ResponseContentError(ResponseException):
-    pass
-
-
-class OAuth2ResponseError(ResponseException):
+class OAuth2ResponseError(ArgInfoException):
     """
     As detailed in the OAuth2 spec. For more information see
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     ERROR_NAME: ClassVar[str] = ''
 
-    def __init__(self, arg: object = None, *, response: Response,
+    def __init__(self, arg: object = None, *,
             error_name: str = '',
             description: str = '',
             help_uri: str = '') -> None:
-        super().__init__(arg=arg, response=response)
+        super().__init__(arg)
         self.error_name = error_name
         self.description = description
         self.help_uri = help_uri
@@ -57,7 +43,6 @@ class OAuth2ResponseError(ResponseException):
         if self.description:
             return repr(self.description)
         return ''
-
 
 class TokenServerResponseError(OAuth2ResponseError):
     pass
@@ -97,26 +82,17 @@ token_server_response_error_by_error_name = {
     ]
 }
 
-def raise_for_token_server_response_error(resp: Response, json_dict: Any) -> None:
+def raise_for_token_server_response_error(json_dict: Any) -> None:
     error_name = json_dict.get('error')
     if error_name is None:
         return
 
-    cls = token_server_response_error_by_error_name.get(
-            error_name, UnrecognizedTokenServerResponseError)
+    cls = token_server_response_error_by_error_name.get(error_name, UnrecognizedTokenServerResponseError)
     raise cls(
-        response=resp,
         error_name=error_name,
         description=json_dict.get('error_description', ''),
         help_uri=json_dict.get('error_uri', ''),
     )
-
-def raise_for_reddit_token_server_response_error(resp: Response, json_dict: Any) -> None:
-    error = json_dict.get('error')
-    if not isinstance(error, str):
-        return
-    raise_for_token_server_response_error(resp, json_dict)
-
 
 class ResourceServerResponseError(OAuth2ResponseError):
     pass
@@ -144,7 +120,7 @@ resource_server_response_error_by_error_name = {
     ]
 }
 
-def raise_for_resource_server_response_error(resp: Response, json_dict: Any) -> None:
+def raise_for_resource_server_response_error(json_dict: Any) -> None:
     error_name = json_dict.get('error')
     if error_name is None:
         return
@@ -152,7 +128,6 @@ def raise_for_resource_server_response_error(resp: Response, json_dict: Any) -> 
     cls = resource_server_response_error_by_error_name.get(
             error_name, UnrecognizedResourceServerResponseError)
     raise cls(
-        response=resp,
         error_name=error_name,
         description=json_dict.get('error_description', ''),
         help_uri=json_dict.get('error_uri', ''),

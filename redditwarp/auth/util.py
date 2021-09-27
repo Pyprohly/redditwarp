@@ -33,7 +33,7 @@ def ___authorization_url(  # UNUSED: scrapped idea
 
 def basic_auth(client_credentials: ClientCredentials) -> str:
     ci, cs = client_credentials
-    return 'Basic ' + b64encode(f'{ci}:{cs}'.encode()).decode()
+    return "Basic " + b64encode(f"{ci}:{cs}".encode()).decode()
 
 def apply_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
     request.headers['Authorization'] = basic_auth(client_credentials)
@@ -43,15 +43,10 @@ def auto_grant_factory(
     username: Optional[str],
     password: Optional[str],
 ) -> grants.AuthorizationGrant:
-    """Produce a simple non-expiring grant from the provided credentials.
-
-    Return either:
-
-        * Refresh Token
-        * Resource Owner Password Credentials
-        * Client Credentials
-    """
+    """Produce an authorization grant from the provided credentials."""
     if refresh_token:
+        if username or password:
+            raise ValueError("`refresh_token` cannot be used with `username` or `password`")
         return grants.RefreshTokenGrant(refresh_token)
     if username and password:
         return grants.ResourceOwnerPasswordCredentialsGrant(username, password)

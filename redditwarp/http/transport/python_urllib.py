@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Iterable
 if TYPE_CHECKING:
     from ..request import Request
+    from ..response import Response
 
 import sys
 import urllib.request
@@ -15,7 +16,7 @@ from .SYNC import register
 from ..session_base_SYNC import SessionBase
 from .. import exceptions
 from .. import payload
-from ..response import Response
+from ..response import UResponse
 from ..util.merge_query_params import merge_query_params
 from ..util.case_insensitive_dict import CaseInsensitiveDict
 
@@ -78,11 +79,10 @@ class Session(SessionBase):
         except Exception as e:
             raise exceptions.TransportError from e
 
-        return Response(
+        return UResponse(
             status=response.status,
             headers=CaseInsensitiveDict(dict(response.headers)),
             data=content,
-            request=request,
             underlying_object=response,
         )
 

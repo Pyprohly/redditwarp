@@ -4,11 +4,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import MutableMapping, List, Optional, Dict
 
-import pytest
-
-from redditwarp import auth
-from redditwarp import core
-from redditwarp.http import exceptions as http_exceptions
 from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
 from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.response import Response
@@ -42,11 +37,9 @@ class NeutralSession(SessionBase):
         self.response_status = response_status
         self.response_headers = {} if response_headers is None else response_headers
         self.response_data = response_data
-        self.history: List[Request] = []
         self.exception = exception
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
-        self.history.append(request)
         if self.exception is not None:
             raise self.exception
         return Response(self.response_status, self.response_headers, self.response_data)
@@ -144,124 +137,3 @@ class TestLastMessageRecord:
         assert http.last.transmit == (req2, None)
 
         assert list(http.last.transmit_queue) == [(req1, resp1), (req2, None)]
-
-
-class TestRequestExceptions:
-    class TestHTTP:
-        def test_response_exception_response_object_stored_in_last_response(self) -> None:
-            response = Response(999, {}, b'')
-            exc = http_exceptions.ResponseException(response=response)
-            session = BadSession(exc)
-            http = RedditHTTPClient(session=session)
-            with pytest.raises(http_exceptions.ResponseException):
-                http.request('', '')
-            assert http.last_response is exc.response
-
-    class TestAuth:
-        def test_response_exception_response_object_stored_in_last_response(self) -> None:
-            response = Response(999, {}, b'')
-            exc = auth.exceptions.ResponseException(response=response)
-            session = BadSession(exc)
-            http = RedditHTTPClient(session=session)
-            with pytest.raises(auth.exceptions.ResponseException):
-                http.request('', '')
-            assert http.last_response is exc.response
-
-        class TestResponseContentError:
-            def test_UnidentifiedResponseContentError(self) -> None:
-                response = Response(999, {}, b'')
-                exc = auth.exceptions.ResponseContentError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(core.exceptions.UnidentifiedResponseContentError):
-                    http.request('', '')
-
-            def test_HTMLDocumentResponseContentError(self) -> None:
-                response = Response(999, {'Content-Type': 'text/html'}, b'')
-                exc = auth.exceptions.ResponseContentError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(core.exceptions.HTMLDocumentResponseContentError):
-                    http.request('', '')
-
-                response = Response(999, {'Content-Type': 'text/html'}, b'Our CDN was unable to reach our servers')
-                exc = auth.exceptions.ResponseContentError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(core.exceptions.HTMLDocumentResponseContentError) as exc_info:
-                    http.request('', '')
-                assert exc_info.value.arg is not None
-
-            def test_BlacklistedUserAgent(self) -> None:
-                request = Request('', '', headers={'User-Agent': 'xscrapingx'})
-                response = Response(403, {}, b'<!doctype html>', request=request)
-                exc = auth.exceptions.ResponseContentError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(core.exceptions.BlacklistedUserAgent):
-                    http.request('', '')
-
-        class TestHTTPStatusError:
-            def test_incorrect_access_token_url(self) -> None:
-                request = Request('GET', 'https://reddit.com/api/v1/access_token')
-                response = Response(401, {}, b'', request)
-                exc = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
-                    http.request('', '')
-                assert exc_info.match('token URL')
-
-            def test_no_authorization_header(self) -> None:
-                request = Request('GET', 'https://www.reddit.com/api/v1/access_token')
-                response = Response(401, {}, b'', request)
-                exc = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
-                    http.request('', '')
-                assert exc_info.match('Authorization')
-
-            def test_authorization_header_no_basic(self) -> None:
-                request = Request('GET', 'https://www.reddit.com/api/v1/access_token', headers={'Authorization': 'asdf'})
-                response = Response(401, {}, b'', request)
-                exc = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(auth.exceptions.HTTPStatusError) as exc_info:
-                    http.request('', '')
-                assert exc_info.match('Basic')
-
-            def test_CredentialsError(self) -> None:
-                response = Response(400, {}, b'{"error": "invalid_grant"}')
-                exc = auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(core.exceptions.CredentialsError):
-                    http.request('', '')
-
-                response = Response(401, {}, b'')
-                exc2 = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc2)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(core.exceptions.CredentialsError):
-                    http.request('', '')
-
-            def test_FaultyUserAgent(self) -> None:
-                request = Request('', '', headers={'User-Agent': 'xcurlx'})
-                response = Response(429, {}, b'', request=request)
-                exc = auth.exceptions.HTTPStatusError(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(core.exceptions.FaultyUserAgent):
-                    http.request('', '')
-
-            def test_UnsupportedGrantType(self) -> None:
-                request = Request('', '', headers={'Content-Type': 'application/json'})
-                response = Response(200, {}, b'', request=request)
-                exc = auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType(response=response)
-                session = BadSession(exc)
-                http = RedditHTTPClient(session=session)
-                with pytest.raises(auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType) as exc_info:
-                    http.request('', '')
-                assert exc_info.value.arg is not None

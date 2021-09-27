@@ -8,7 +8,7 @@ from .submission.SYNC import Submission
 from .comment.SYNC import Comment
 from .subreddit.SYNC import Subreddit
 from .comment_tree.SYNC import CommentTree
-from .frontpage.SYNC import FrontPage
+from .front.SYNC import Front
 from .user.SYNC import User
 from .account.SYNC import Account
 from .collection.SYNC import Collection
@@ -28,7 +28,7 @@ class ClientProcedures:
         self.comment = Comment(client)
         self.subreddit = Subreddit(client)
         self.comment_tree = CommentTree(client)
-        self.frontpage = FrontPage(client)
+        self.front = Front(client)
         self.user = User(client)
         self.account = Account(client)
         self.collection = Collection(client)

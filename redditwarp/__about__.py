@@ -66,8 +66,8 @@ __title__ = 'RedditWarp'
 __summary__ = 'The unofficial, advanced Reddit API wrapper for Python development'
 __uri__ = "https://github.com/Pyprohly/redditwarp"
 
-#__version__ = '.'.join(map(str, version_info[:3]))
-__version__ = 'alpha'
+__version_info__ = version_info
+__version__ = '.'.join(map(str, version_info[:3]))
 
 __author__ = 'u/Pyprohly'
 

@@ -33,6 +33,7 @@ import redditwarp
 from redditwarp.http.transport.SYNC import load_transport
 from redditwarp.auth.SYNC import TokenRevocationClient
 from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
+from redditwarp.core.reddit_http_client_SYNC import get_user_agent
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -63,13 +64,8 @@ access_token_needs_revoking: bool = args.a
 refresh_token_needs_revoking: bool = args.r
 
 session = ti.new_session()
-user_agent = (
-    f"RedditWarp/{redditwarp.__version__} "
-    f"{ti.name}/{ti.version} "
-    "redditwarp.cli.revoke_token"
-)
-headers = {'User-Agent': user_agent}
-requestor = ApplyDefaultParamsAndHeaders(session, headers=headers)
+user_agent = get_user_agent(session) + " redditwarp.cli.revoke_token"
+requestor = ApplyDefaultParamsAndHeaders(session, headers={'User-Agent': user_agent})
 revoke_token_client = TokenRevocationClient(
     requestor,
     redditwarp.auth.const.TOKEN_REVOCATION_URL,

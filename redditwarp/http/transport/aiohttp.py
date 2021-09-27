@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Iterable
 if TYPE_CHECKING:
     from ..request import Request
+    from ..response import Response
 
 import asyncio
 
@@ -12,7 +13,7 @@ from .ASYNC import register
 from ..session_base_ASYNC import SessionBase
 from .. import exceptions
 from .. import payload
-from ..response import Response
+from ..response import UResponse
 from ..util.case_insensitive_dict import CaseInsensitiveDict
 
 def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]]:
@@ -105,11 +106,10 @@ class Session(SessionBase):
 
         aiohttp_headers: Any = response.headers
         headers = CaseInsensitiveDict(dict(aiohttp_headers))
-        return Response(
+        return UResponse(
             status=response.status,
             headers=headers,
             data=content,
-            request=request,
             underlying_object=response,
         )
 

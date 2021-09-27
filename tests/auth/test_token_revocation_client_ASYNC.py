@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp.auth.token_revocation_client_ASYNC import TokenRevocationClient
-from redditwarp.auth.exceptions import HTTPStatusError
+from redditwarp.http.exceptions import StatusCodeException
 from redditwarp.http.requestor_ASYNC import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
@@ -78,7 +78,7 @@ async def test_revoke_token__exceptions() -> None:
         requestor,
         '', ('cid', 'cse'),
     )
-    with pytest.raises(HTTPStatusError):
+    with pytest.raises(StatusCodeException):
         await o.revoke_token('', '')
 
 @pytest.mark.asyncio

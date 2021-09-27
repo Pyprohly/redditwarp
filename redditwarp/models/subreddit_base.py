@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 from .artifact import Artifact
 
 class BaseSubreddit(Artifact):
-    class Me:
-        class MeFlair:
+    class _Me:
+        class _MeFlair:
             def __init__(self, d: Mapping[str, Any]):
                 self.enabled: bool = d['user_sr_flair_enabled']
 
@@ -55,9 +55,9 @@ class BaseSubreddit(Artifact):
             self.is_muted: bool = d['user_is_muted']
             self.is_subscribed: bool = d['user_is_subscriber']
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
-            self.flair = self.MeFlair(d)
+            self.flair = self._MeFlair(d)
 
-    class SubredditFlair:
+    class _SubredditFlair:
         def __init__(self, d: Mapping[str, Any]):
             self.user_flairs_enabled: bool = d['user_flair_enabled_in_sr']
             self.link_flairs_enabled: bool = d['link_flair_enabled']
@@ -106,6 +106,6 @@ class BaseSubreddit(Artifact):
         self.me = None
         # Just checking if a user context is available.
         if d['user_is_moderator'] is not None:
-            self.me = self.Me(d)
+            self.me = self._Me(d)
 
-        self.flair = self.SubredditFlair(d)
+        self.flair = self._SubredditFlair(d)

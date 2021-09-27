@@ -47,7 +47,8 @@ from pprint import pp
 
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport
-from redditwarp.auth.SYNC import RedditTokenObtainmentClient
+from redditwarp.core.SYNC import RedditTokenObtainmentClient
+from redditwarp.core.reddit_http_client_SYNC import get_user_agent
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -144,27 +145,18 @@ pp(dict(grant))
 print()
 
 session = ti.new_session()
-user_agent = (
-    f"RedditWarp/{redditwarp.__version__} "
-    f"Python/{'.'.join(map(str, sys.version_info[:2]))} "
-    f"{ti.name}/{ti.version} "
-    "redditwarp.cli.refresh_token"
-)
-headers = {'User-Agent': user_agent}
+user_agent = get_user_agent(session) + " redditwarp.cli.refresh_token"
 token_client = RedditTokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
     (client_id, client_secret),
     grant,
-    headers,
+    headers={'User-Agent': user_agent},
 )
 
 print('Obtaining token(s) from token server...\n')
 
-try:
-    token = token_client.fetch_token()
-except redditwarp.auth.exceptions.ResponseException as e:
-    raise redditwarp.core.exceptions.handle_auth_response_exception(e)
+token = token_client.fetch_token()
 
 print(f'''\
      Access token: {token.access_token}

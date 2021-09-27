@@ -10,7 +10,7 @@ from .http.util.json_load import json_loads_response
 from .http.transport.SYNC import new_session
 from .auth import Token
 from .auth.util import auto_grant_factory
-from .auth.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
+from .core.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL
 from .core.reddit_http_client_SYNC import RedditHTTPClient
 from .core.authorizer_SYNC import Authorizer, Authorized
@@ -18,7 +18,6 @@ from .core.rate_limited_SYNC import RateLimited
 from .util.praw_config import get_praw_config
 from .util.except_without_context import except_without_context
 from .exceptions import (
-    raise_for_status,
     handle_non_json_response,
     raise_for_json_object_data,
 )
@@ -208,7 +207,7 @@ class CoreClient:
             if isinstance(json_data, Mapping):
                 raise_for_json_object_data(resp, json_data)
 
-        raise_for_status(resp)
+        resp.raise_for_status()
         return json_data
 
     def set_access_token(self, access_token: str) -> None:

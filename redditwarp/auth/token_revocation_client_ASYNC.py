@@ -8,7 +8,6 @@ if TYPE_CHECKING:
 from ..http.request import Request
 from ..http.payload import URLEncodedFormData
 from .util import apply_basic_auth
-from .exceptions import raise_for_status
 
 class TokenRevocationClient:
     def __init__(self, requestor: Requestor, uri: str,
@@ -26,8 +25,7 @@ class TokenRevocationClient:
         apply_basic_auth(r, self.client_credentials)
 
         resp = await self.requestor.send(r)
-
-        raise_for_status(resp)
+        resp.raise_for_status()
 
     async def revoke_access_token(self, token: str) -> None:
         await self.revoke_token(token, 'access_token')

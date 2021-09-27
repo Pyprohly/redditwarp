@@ -11,9 +11,12 @@ if TYPE_CHECKING:
 import time
 
 from ..http.requestor_decorator_SYNC import RequestorDecorator
-from .exceptions import UnknownTokenType
 from ..auth.grants import RefreshTokenGrant
-from ..auth.exceptions import extract_www_authenticate_bearer_auth_params, raise_for_resource_server_response_error
+from ..auth.exceptions import (
+    UnknownTokenType,
+    extract_www_authenticate_bearer_auth_params,
+    raise_for_resource_server_response_error,
+)
 
 class Authorizer:
     """Knows how to authorize requests."""
@@ -101,6 +104,6 @@ class Authorized(RequestorDecorator):
 
             auth_params = extract_www_authenticate_bearer_auth_params(resp)
 
-        raise_for_resource_server_response_error(resp, auth_params)
+        raise_for_resource_server_response_error(auth_params)
 
         return resp

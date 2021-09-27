@@ -7,7 +7,7 @@ import pytest
 from redditwarp.core.authorizer_ASYNC import Authorizer, Authorized
 from redditwarp.auth.token import Token
 from redditwarp.auth.token_obtainment_client_ASYNC import TokenObtainmentClient
-from redditwarp.core.exceptions import UnknownTokenType
+from redditwarp.auth.exceptions import UnknownTokenType
 from redditwarp.http.requestor_ASYNC import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response

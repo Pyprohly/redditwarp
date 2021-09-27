@@ -1,4 +1,5 @@
 
 from .reddit_http_client_ASYNC import RedditHTTPClient
+from .reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
 from .authorizer_ASYNC import Authorizer, Authorized
 from .rate_limited_ASYNC import RateLimited

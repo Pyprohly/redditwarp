@@ -5,18 +5,15 @@ if TYPE_CHECKING:
     from typing import Optional, Mapping, MutableMapping
     from ..http.session_base_SYNC import SessionBase
     from .authorizer_SYNC import Authorizer
-    from ..http.request import Request
     from ..http.response import Response
     from ..http.requestor_SYNC import Requestor
 
-import sys
+import platform
 
 from .. import __about__
-from .. import auth
 from ..auth.const import RESOURCE_BASE_URL
 from ..http.http_client_SYNC import HTTPClient
 from ..http.transport.SYNC import transport_info_registry
-from .exceptions import handle_auth_response_exception
 from .record_messages_requestor_SYNC import RecordLastMessages
 
 class RedditHTTPClient(HTTPClient):
@@ -60,12 +57,6 @@ class RedditHTTPClient(HTTPClient):
         self.user_agent = self.user_agent_start = get_user_agent(session)
         self.base_url = RESOURCE_BASE_URL
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
-        try:
-            return super().send(request, timeout=timeout)
-        except auth.exceptions.ResponseException as e:
-            raise handle_auth_response_exception(e)
-
     def get_authorizer(self) -> Authorizer:
         if self._authorizer is None:
             raise RuntimeError('value not set')
@@ -75,14 +66,14 @@ class RedditHTTPClient(HTTPClient):
         self._authorizer = value
 
 def get_user_agent(session: object) -> str:
-    transport_token = ''
-    ti = transport_info_registry.get(session.__module__)
-    if ti is not None:
-        transport_token = f" {ti.name}/{ti.version}"
+    tokens = [
+        f"{__about__.__title__}/{__about__.__version__}",
+        f"Python/{platform.python_version()}",
+    ]
 
-    py_version = '.'.join(map(str, sys.version_info[:2]))
-    return (
-        f"{__about__.__title__}/{__about__.__version__}"
-        f" Python/{py_version}"
-        f"{transport_token}"
-    )
+    if session:
+        ti = transport_info_registry.get(session.__module__)
+        if ti:
+            tokens.append(f"{ti.name}/{ti.version}")
+
+    return ' '.join(tokens)

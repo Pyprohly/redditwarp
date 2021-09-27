@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from .SYNC import CommentTree as Outer
 
 from ...util.base_conversion import to_base36
-from ...exceptions import HTTPStatusError
+from ... import http
 
 class Get:
     def __init__(self, outer: Outer):
@@ -55,8 +55,8 @@ class Get:
                 depth=depth,
                 context=context,
             )
-        except HTTPStatusError as e:
-            if e.response.status == 404:
+        except http.exceptions.StatusCodeException as e:
+            if e.status_code == 404:
                 return None
             raise
         return v

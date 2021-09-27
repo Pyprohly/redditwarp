@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from ...models.partial_user import PartialUser
 from ...models.load.partial_user import load_partial_user
 from ...util.base_conversion import to_base36
-from ... import exceptions
+from ... import http
 
 class GetPartialUser:
     def __init__(self, client: Client):
@@ -25,8 +25,8 @@ class GetPartialUser:
         try:
             root = self._client.request('GET', '/api/user_data_by_account_ids',
                     params={'ids': full_id36})
-        except exceptions.HTTPStatusError as e:
-            if e.response.status == 404:
+        except http.exceptions.StatusCodeException as e:
+            if e.status_code == 404:
                 return None
             raise
         obj_data = root[full_id36]

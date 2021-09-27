@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union
 if TYPE_CHECKING:
     from ..request import Request
+    from ..response import Response
 
 import json
 
@@ -12,7 +13,7 @@ from .SYNC import register
 from ..session_base_SYNC import SessionBase
 from .. import exceptions
 from .. import payload
-from ..response import Response
+from ..response import UResponse
 from ..util.merge_query_params import merge_query_params
 
 class Session(SessionBase):
@@ -75,11 +76,10 @@ class Session(SessionBase):
         except Exception as e:
             raise exceptions.TransportError from e
 
-        return Response(
+        return UResponse(
             status=response.status,
             headers=response.headers,
             data=response.data,
-            request=request,
             underlying_object=response,
         )
 
