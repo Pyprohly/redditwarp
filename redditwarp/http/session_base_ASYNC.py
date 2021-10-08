@@ -55,23 +55,23 @@ class SessionBase(Requestor):
         raise ValueError('a default timeout value could not be determined')
 
     class _TimeoutAsContextManager:
-        def __init__(self, subject: SessionBase, timeout: float) -> None:
-            self._subject = subject
+        def __init__(self, veto_timeout: contextvars.ContextVar[float], timeout: float) -> None:
+            self._veto_timeout = veto_timeout
             self._timeout = timeout
-            self._veto_timeout = subject._veto_timeout
             self._reset_token_stack: MutableSequence[contextvars.Token[float]] = deque()
 
         def __enter__(self) -> None:
-            self._reset_token_stack.append(self._veto_timeout.set(self._timeout))
+            tkn = self._veto_timeout.set(self._timeout)
+            self._reset_token_stack.append(tkn)
 
         def __exit__(self,
             exc_type: Optional[Type[BaseException]],
             exc_value: Optional[BaseException],
-            traceback: Optional[TracebackType],
+            exc_traceback: Optional[TracebackType],
         ) -> Optional[bool]:
-            token = self._reset_token_stack.pop()
-            self._veto_timeout.reset(token)
+            tkn = self._reset_token_stack.pop()
+            self._veto_timeout.reset(tkn)
             return None
 
     def timeout_as(self, timeout: float) -> _TimeoutAsContextManager:
-        return self._TimeoutAsContextManager(self, timeout)
+        return self._TimeoutAsContextManager(self._veto_timeout, timeout)

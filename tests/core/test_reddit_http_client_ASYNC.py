@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp.core.reddit_http_client_ASYNC import RedditHTTPClient
+from redditwarp.core.recorded_ASYNC import Recorded, Last
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.response import Response
 from redditwarp.http.request import Request
@@ -75,7 +76,9 @@ class TestLastMessageRecord:
     @pytest.mark.asyncio
     async def test_last_request(self) -> None:
         session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-        http = RedditHTTPClient(session=session)
+        recorder = Recorded(session)
+        last = Last(recorder)
+        http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.request is None
         req1 = Request('', '')
         await http.send(req1)
@@ -94,7 +97,9 @@ class TestLastMessageRecord:
     @pytest.mark.asyncio
     async def test_last_response(self) -> None:
         session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-        http = RedditHTTPClient(session=session)
+        recorder = Recorded(session)
+        last = Last(recorder)
+        http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.response is None
         resp = await http.send(Request('', ''))
         assert http.last.response is resp
@@ -111,7 +116,9 @@ class TestLastMessageRecord:
     @pytest.mark.asyncio
     async def test_last_transfer(self) -> None:
         session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-        http = RedditHTTPClient(session=session)
+        recorder = Recorded(session)
+        last = Last(recorder)
+        http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.transfer is None
         req1 = Request('', '')
         resp1 = await http.send(req1)
@@ -129,7 +136,9 @@ class TestLastMessageRecord:
     @pytest.mark.asyncio
     async def test_last_transmit(self) -> None:
         session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
-        http = RedditHTTPClient(session=session)
+        recorder = Recorded(session)
+        last = Last(recorder)
+        http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.transmit is None
         req1 = Request('', '')
         resp1 = await http.send(req1)

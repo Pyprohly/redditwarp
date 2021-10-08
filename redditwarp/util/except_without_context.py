@@ -74,8 +74,7 @@ class except_without_context(ContextManager[bool]):
     def __exit__(self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_traceback: Optional[TracebackType],
     ) -> Optional[bool]:
-        if exc_type is not None and issubclass(exc_type, self.exceptions):
-            self.yes = True
+        self.yes = exc_type is not None and issubclass(exc_type, self.exceptions)
         return True

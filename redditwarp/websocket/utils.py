@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 import struct
 
 from . import const

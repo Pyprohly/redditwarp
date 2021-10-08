@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Optional, Mapping
-    from .typedefs import ClientCredentials
     from ..http.request import Request
 
 from base64 import b64encode
@@ -31,12 +30,22 @@ def ___authorization_url(  # UNUSED: scrapped idea
     params = {k: v for k, v in params.items() if v}
     return f'{url}?{urlencode(params)}'
 
-def basic_auth(client_credentials: ClientCredentials) -> str:
-    ci, cs = client_credentials
-    return "Basic " + b64encode(f"{ci}:{cs}".encode()).decode()
 
-def apply_basic_auth(request: Request, client_credentials: ClientCredentials) -> None:
-    request.headers['Authorization'] = basic_auth(client_credentials)
+def basic_auth(userid: str, password: str, *,
+        scheme: str = "Basic") -> str:
+    b64_user_pass = b64encode(f"{userid}:{password}".encode()).decode()
+    return f"{scheme} {b64_user_pass}"
+
+def apply_basic_auth(
+    request: Request,
+    userid: str,
+    password: str,
+    *,
+    scheme: str = "Basic",
+    header: str = "Authorization",
+) -> None:
+    request.headers[header] = basic_auth(userid, password, scheme=scheme)
+
 
 def auto_grant_factory(
     refresh_token: Optional[str],

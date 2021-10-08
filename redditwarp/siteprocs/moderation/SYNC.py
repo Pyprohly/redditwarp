@@ -9,6 +9,7 @@ if TYPE_CHECKING:
         BannedUserItem,
         MutedUserItem,
     )
+    from ...models.mod_log_action_entry import ModLogActionEntry
 
 from functools import cached_property
 
@@ -22,6 +23,8 @@ from .pull_users_SYNC import PullUsers
 from .legacy_SYNC import Legacy
 from .pull_SYNC import Pull
 from ...util.base_conversion import to_base36
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
+from ...paginators.implementations.listing.p_moderation_pull_actions_sync import ModerationActionsPaginator
 
 class Moderation:
     def __init__(self, client: Client):
@@ -29,6 +32,12 @@ class Moderation:
         self.legacy = Legacy(client)
         self.pull_users = PullUsers(client)
         self.pull = Pull(client)
+
+    def pull_actions(self, sr: str, amount: Optional[int] = None, *,
+            action: str = '', mod: str = '',
+            ) -> PaginatorChainingWrapper[ModerationActionsPaginator, ModLogActionEntry]:
+        p = ModerationActionsPaginator(self._client, f'/r/{sr}/about/log', action=action, mod=mod)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def get_moderator(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators', params={'username': user})

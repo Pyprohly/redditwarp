@@ -49,10 +49,7 @@ class _LazyImport:
             raise ValueError('dotted module name not supported')
 
         module = self(other)
-        spec = module.__spec__
-        if spec is None:
-            raise RuntimeError('module spec missing')
         caller_frame = sys._getframe(1)
-        caller_frame.f_globals[spec.name] = module
+        caller_frame.f_globals[other] = module
 
 lazy_import = _LazyImport()

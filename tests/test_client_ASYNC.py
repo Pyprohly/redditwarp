@@ -80,7 +80,7 @@ class TestRequestExceptions:
         async def test_UnidentifiedResponseContentError(self) -> None:
             http = MyHTTPClient(200, {}, b'{"some": "data"}')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.UnidentifiedResponseContentError):
+            with pytest.raises(ValueError):
                 await client.request('', '')
 
         @pytest.mark.asyncio

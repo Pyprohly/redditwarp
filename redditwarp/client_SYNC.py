@@ -15,18 +15,9 @@ from .auth.const import TOKEN_OBTAINMENT_URL
 from .core.reddit_http_client_SYNC import RedditHTTPClient
 from .core.authorizer_SYNC import Authorizer, Authorized
 from .core.rate_limited_SYNC import RateLimited
+from .core.recorded_SYNC import Recorded, Last
 from .util.praw_config import get_praw_config
-from .util.except_without_context import except_without_context
-from .exceptions import (
-    handle_non_json_response,
-    raise_for_json_object_data,
-)
-
-from .util.imports import lazy_import
-if TYPE_CHECKING:
-    from .siteprocs import SYNC as siteprocs
-else:
-    siteprocs = lazy_import('.siteprocs.SYNC', __package__)
+from .exceptions import raise_for_response_content_error, raise_for_reddit_api_error
 
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
@@ -65,9 +56,11 @@ class CoreClient:
         access_token: str
         """
         session = new_session()
+        recorder = Recorded(session)
+        last = Last(recorder)
         authorizer = Authorizer(token=Token(access_token))
-        requestor = RateLimited(Authorized(session, authorizer))
-        http = RedditHTTPClient(session, requestor, authorizer)
+        requestor = RateLimited(Authorized(recorder, authorizer))
+        http = RedditHTTPClient(session, requestor, authorizer=authorizer, last=last)
         return cls.from_http(http)
 
     @classmethod
@@ -146,6 +139,8 @@ class CoreClient:
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
         session = new_session()
+        recorder = Recorded(session)
+        last = Last(recorder)
         token_client = RedditTokenObtainmentClient(
             session,
             TOKEN_OBTAINMENT_URL,
@@ -156,8 +151,8 @@ class CoreClient:
             token_client,
             (None if access_token is None else Token(access_token)),
         )
-        requestor = RateLimited(Authorized(session, authorizer))
-        http = RedditHTTPClient(session, requestor, authorizer)
+        requestor = RateLimited(Authorized(recorder, authorizer))
+        http = RedditHTTPClient(session, requestor, authorizer=authorizer, last=last)
         token_client.headers = http.headers
         self._init(http)
 
@@ -171,7 +166,7 @@ class CoreClient:
     def __exit__(self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_traceback: Optional[TracebackType],
     ) -> Optional[bool]:
         self.close()
         return None
@@ -197,23 +192,25 @@ class CoreClient:
 
         json_data = None
         if resp.data:
-            with except_without_context(ValueError) as xcpt:
+            try:
                 json_data = json_loads_response(resp)
-            if xcpt:
-                raise handle_non_json_response(resp)
+            except ValueError:
+                raise_for_response_content_error(resp)
+                resp.raise_for_status()
+                raise
 
             self.last_value = json_data
 
             if isinstance(json_data, Mapping):
-                raise_for_json_object_data(resp, json_data)
+                raise_for_reddit_api_error(resp, json_data)
 
         resp.raise_for_status()
         return json_data
 
     def set_access_token(self, access_token: str) -> None:
-        """Manually set the access token.
+        """Manually set the current access token.
 
-        Tip: the currently set access token can be found with
+        Tip: the current access token can be found with
         `self.http.authorizer.token.access_token`
 
         Parameters
@@ -231,4 +228,5 @@ class CoreClient:
 class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
-        self.p = siteprocs.ClientProcedures(self)
+        from .siteprocs.SYNC import ClientProcedures
+        self.p = ClientProcedures(self)

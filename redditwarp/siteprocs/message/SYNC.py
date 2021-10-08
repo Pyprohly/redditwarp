@@ -16,7 +16,7 @@ class Message:
         self._client = client
         self.pull = Pull(client)
 
-    def send_message(self, to: str, subject: str, body: str) -> None:
+    def send(self, to: str, subject: str, body: str) -> None:
         req_data = {
             'to': to,
             'subject': subject,
@@ -24,7 +24,7 @@ class Message:
         }
         self._client.request('POST', '/api/compose', data=req_data)
 
-    def send_subreddit_message(self, sr: str, to: str, subject: str, body: str) -> None:
+    def send_from_sr(self, sr: str, to: str, subject: str, body: str) -> None:
         req_data = {
             'from_sr': sr,
             'to': to,
@@ -33,7 +33,7 @@ class Message:
         }
         self._client.request('POST', '/api/compose', data=req_data)
 
-    def reply_to_message(self, idn: int, body: str) -> ComposedMessage:
+    def reply(self, idn: int, body: str) -> ComposedMessage:
         data = {
             'thing_id': 't4_' + to_base36(idn),
             'text': body,
@@ -43,14 +43,17 @@ class Message:
         root = result['json']['data']['things'][0]['data']
         return load_composed_message(root, self._client)
 
-    def delete_message(self, idn: int) -> None:
+    def delete(self, idn: int) -> None:
         self._client.request('POST', '/api/del_msg', data={'id': 't4_' + to_base36(idn)})
 
-    def mark_message_read(self, idn: int) -> None:
+    def mark_read(self, idn: int) -> None:
         self._client.request('POST', '/api/read_message', data={'id': 't4_' + to_base36(idn)})
 
-    def mark_message_unread(self, idn: int) -> None:
+    def mark_unread(self, idn: int) -> None:
         self._client.request('POST', '/api/unread_message', data={'id': 't4_' + to_base36(idn)})
+
+    def mark_all_read(self) -> None:
+        self._client.request('POST', '/api/read_all_messages')
 
     def mark_comment_read(self, idn: int) -> None:
         self._client.request('POST', '/api/read_message', data={'id': 't1_' + to_base36(idn)})
@@ -58,13 +61,10 @@ class Message:
     def mark_comment_unread(self, idn: int) -> None:
         self._client.request('POST', '/api/read_message', data={'id': 't1_' + to_base36(idn)})
 
-    def mark_all_read(self) -> None:
-        self._client.request('POST', '/api/read_all_messages')
-
-    def collapse_message(self, idn: int) -> None:
+    def collapse(self, idn: int) -> None:
         self._client.request('POST', '/api/collapse_message', data={'id': 't4_' + to_base36(idn)})
 
-    def uncollapse_message(self, idn: int) -> None:
+    def uncollapse(self, idn: int) -> None:
         self._client.request('POST', '/api/uncollapse_message', data={'id': 't4_' + to_base36(idn)})
 
     class _block_author:

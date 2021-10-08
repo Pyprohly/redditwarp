@@ -45,9 +45,6 @@ class ResponseContentError(ArgInfoException):
 class UnacceptableHTMLDocumentReceivedError(ResponseContentError):
     pass
 
-class UnidentifiedResponseContentError(ResponseContentError):
-    """The response body contains data that the client isn't prepared to handle."""
-
 def raise_for_response_content_error(resp: Response) -> None:
     content_type = resp.headers.get('Content-Type', '')
     if content_type.startswith('text/html'):
@@ -60,12 +57,6 @@ def raise_for_response_content_error(resp: Response) -> None:
         if b'title>reddit.com: page not found</title' in data:
             msg = 'page not found'
         raise UnacceptableHTMLDocumentReceivedError(msg)
-
-def handle_non_json_response(resp: Response) -> Exception:
-    raise_for_response_content_error(resp)
-    resp.raise_for_status()
-    raise UnidentifiedResponseContentError
-    return Exception
 
 
 
@@ -177,6 +168,6 @@ def raise_for_variant2_reddit_api_error(resp: Response, data: Mapping[str, Any])
     if error_list is not None:
         raise Variant2RedditAPIError(errors=error_list)
 
-def raise_for_json_object_data(resp: Response, data: Mapping[str, Any]) -> None:
+def raise_for_reddit_api_error(resp: Response, data: Mapping[str, Any]) -> None:
     raise_for_variant1_reddit_api_error(resp, data)
     raise_for_variant2_reddit_api_error(resp, data)

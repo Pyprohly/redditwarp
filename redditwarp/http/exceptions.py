@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Type
 
-from http.client import responses
+from http import HTTPStatus
 
 from ..exceptions import ArgInfoExceptionMixin
 
@@ -25,7 +25,10 @@ class StatusCodeException(ArgInfoException):
 
     def get_default_message(self) -> str:
         sts = self.status_code
-        return str(sts) + ((x := responses.get(sts, '')) and f' {x}')
+        try:
+            return f"{sts} {HTTPStatus(sts).phrase}"
+        except ValueError:
+            return f"{sts}"
 
 class StatusCodeExceptionTypes:
     class InformationalResponseException(StatusCodeException):

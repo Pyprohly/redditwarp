@@ -2,6 +2,7 @@
 from typing import Sequence, Any, MutableMapping, Callable
 from redditwarp.client_SYNC import Client
 from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
+from redditwarp.core.recorded_SYNC import Recorded, Last
 from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
@@ -34,7 +35,9 @@ class MyListingPaginator(ListingPaginator[str]):
         return [d['name'] for d in data['children']]
 
 session = MySession(200, {'Content-Type': 'application/json'}, b'')
-http = RedditHTTPClient(session)
+recorder = Recorded(session)
+last = Last(recorder)
+http = RedditHTTPClient(session=session, requestor=recorder, last=last)
 client = Client.from_http(http)
 
 def test_none_limit() -> None:
@@ -89,7 +92,7 @@ def test_dont_send_empty_cursor() -> None:
 
 def test_return_value_and_count() -> None:
     p = MyListingPaginator(client, '')
-    assert p.count == 0
+    assert p.after_count == 0
 
     session.response_data = b'''\
 {
@@ -107,7 +110,7 @@ def test_return_value_and_count() -> None:
 '''
     result = p.next_result()
     assert len(result) == 2
-    assert p.count == 2
+    assert p.after_count == 2
 
     session.response_data = b'''\
 {
@@ -127,7 +130,7 @@ def test_return_value_and_count() -> None:
 '''
     result = p.next_result()
     assert len(result) == 3
-    assert p.count == 5
+    assert p.after_count == 5
 
 def test_cursor_extractor() -> None:
     p = MyListingPaginator(client, '')
@@ -336,7 +339,7 @@ def test_dist_none_value() -> None:
     #   GET /live/{thread_id}
 
     p = MyListingPaginator(client, '')
-    assert p.count == 0
+    assert p.after_count == 0
 
     session.response_data = b'''\
 {
@@ -354,4 +357,4 @@ def test_dist_none_value() -> None:
 '''
     result = p.next_result()
     assert len(result) == 2
-    assert p.count == 2
+    assert p.after_count == 2

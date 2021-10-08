@@ -56,7 +56,8 @@ class Session(SessionBase):
                 response = self.http.urlopen(r.verb, url, headers=headers, body=json.dumps(pld.json).encode(), timeout=tmo)
 
             elif isinstance(pld, payload.URLEncodedFormData):
-                response = self.http.request_encode_body(r.verb, url, headers=headers, body=pld.data, timeout=tmo)
+                fields0: dict[str, str] = dict(pld.data)
+                response = self.http.request_encode_body(r.verb, url, headers=headers, fields=fields0, timeout=tmo)
 
             elif isinstance(pld, payload.MultipartFormData):
                 fields: dict[str, Union[str, tuple[str, payload.FileObjectType, str]]] = {}
@@ -84,7 +85,7 @@ class Session(SessionBase):
         )
 
     def close(self) -> None:
-        pass
+        self.http.clear()
 
 def new_session() -> Session:
     http = urllib3.PoolManager()

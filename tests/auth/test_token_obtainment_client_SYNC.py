@@ -9,10 +9,10 @@ import pytest
 from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
 from redditwarp.auth.util import basic_auth
 from redditwarp.auth.exceptions import (
-    ResponseContentError,
     TokenServerResponseErrorTypes,
     UnrecognizedTokenServerResponseError,
 )
+from redditwarp import http
 from redditwarp.http.requestor_SYNC import Requestor
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
@@ -57,7 +57,7 @@ def test_fetch_json_dict() -> None:
     assert req.uri == uri
     assert isinstance(req.payload, URLEncodedFormData)
     assert req.payload.data == {'grant_type': 'epyt_tnarg', 'data1': 'blah', 'data2': ''}
-    assert req.headers['Authorization'] == basic_auth(client_credentials)
+    assert req.headers['Authorization'] == basic_auth(*client_credentials)
 
 def test_fetch_json_dict__exceptions() -> None:
     o = TokenObtainmentClient(
@@ -70,7 +70,7 @@ def test_fetch_json_dict__exceptions() -> None:
         response_headers={},
         response_data=b'{"error": "invalid_client"}',
     )
-    with pytest.raises(ResponseContentError):
+    with pytest.raises(http.exceptions.StatusCodeException):
         o.fetch_data()
 
     o.requestor = MockRequestor(

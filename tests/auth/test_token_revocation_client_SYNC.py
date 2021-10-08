@@ -58,14 +58,6 @@ def test_revoke_token() -> None:
     assert isinstance(req.payload, URLEncodedFormData)
     assert req.payload.data == {'token': 'b1'}
 
-    o.revoke_token('c1', None)
-    assert len(requestor.history) == 3
-    req = requestor.history[2]
-    assert req.verb == 'POST'
-    assert req.uri == uri
-    assert isinstance(req.payload, URLEncodedFormData)
-    assert req.payload.data == {'token': 'c1'}
-
 def test_revoke_token__exceptions() -> None:
     requestor = MockRequestor(
         response_status=502,

@@ -6,17 +6,13 @@ if TYPE_CHECKING:
     from ..http.response import Response
     from .token import Token
 
-from urllib.request import parse_http_list, parse_keqv_list
+import re
 
 from ..exceptions import ArgInfoExceptionMixin
-from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 
 class ArgInfoException(ArgInfoExceptionMixin):
     pass
 
-
-class ResponseContentError(ArgInfoException):
-    pass
 
 class UnknownTokenType(ArgInfoException):
     def __init__(self, arg: object = None, *, token: Token):
@@ -133,25 +129,15 @@ def raise_for_resource_server_response_error(json_dict: Any) -> None:
         help_uri=json_dict.get('error_uri', ''),
     )
 
-def parse_www_authenticate(val: str) -> Mapping[str, Mapping[str, str]]:
-    # https://datatracker.ietf.org/doc/html/rfc7235#section-4.1
-    dct: dict[str, list[str]] = {}
-    lst: list[str] = []
-    for strng in parse_http_list(val):
-        left, _, right = strng.partition(' ')
-        if '=' in left:
-            lst.append(strng)
-        else:
-            lst = dct[left] = []
-            lst.append(right)
-    return CaseInsensitiveDict({
-        k: CaseInsensitiveDict(parse_keqv_list(v))
-        for k, v in dct.items()
-    })
+_auth_param_pattern = r'''(?P<key>(\w+))=((?P<q>\")(?P<value>([^\"]*))(?P=q)|(?P=value))'''
+_auth_param_regex = re.compile(_auth_param_pattern)
 
-def extract_www_authenticate_bearer_auth_params(resp: Response) -> Mapping[str, str]:
+def extract_www_authenticate_auth_params(resp: Response) -> Mapping[str, str]:
     try:
         www_authenticate = resp.headers['WWW-Authenticate']
     except KeyError:
         return {}
-    return parse_www_authenticate(www_authenticate)['Bearer']
+
+    # Parsing the WWW-Authenticate header in a RFC-2617 spec compliant way is a daunting task.
+    # Just use regex for now.
+    return {m['key']: m['value'] for m in _auth_param_regex.finditer(www_authenticate)}

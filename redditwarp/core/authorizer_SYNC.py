@@ -14,31 +14,24 @@ from ..http.requestor_decorator_SYNC import RequestorDecorator
 from ..auth.grants import RefreshTokenGrant
 from ..auth.exceptions import (
     UnknownTokenType,
-    extract_www_authenticate_bearer_auth_params,
+    extract_www_authenticate_auth_params,
     raise_for_resource_server_response_error,
 )
 
 class Authorizer:
-    """Knows how to authorize requests."""
-
     def __init__(self,
         token_client: Optional[TokenObtainmentClient] = None,
         token: Optional[Token] = None,
     ):
         self.token_client = token_client
         self.token = token
-        self.expiry_skew = 30
-        self.expiry_time: Optional[int] = None
+        self.renewal_time: Optional[int] = None
+        self.renewal_skew: int = 30
         self.expires_in_fallback: Optional[int] = None
         self.time_func: Callable[[], float] = time.monotonic
 
-    def token_expired(self) -> bool:
-        if self.expiry_time is None:
-            return False
-        return self.current_time() > self.expiry_time
-
-    def can_renew_token(self) -> bool:
-        return self.token_client is not None
+    def current_time(self) -> float:
+        return self.time_func()
 
     def renew_token(self) -> None:
         if self.token_client is None:
@@ -52,32 +45,29 @@ class Authorizer:
         if tk.refresh_token:
             self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
 
-        if tk.expires_in is None:
-            if self.expires_in_fallback is None:
-                self.expiry_time = None
-            else:
-                self.expiry_time = int(self.current_time()) + self.expires_in_fallback - self.expiry_skew
+        expires_in: Optional[int] = tk.expires_in
+        if expires_in is None:
+            expires_in = self.expires_in_fallback
+        if expires_in is None:
+            self.renewal_time = None
         else:
-            self.expiry_time = int(self.current_time()) + tk.expires_in - self.expiry_skew
+            self.renewal_time = int(self.current_time()) + expires_in - self.renewal_skew
 
-    def maybe_renew_token(self) -> None:
-        """Attempt to renew the token if it is unavailable or has expired."""
-        if (self.token is None) or self.token_expired():
-            self.renew_token()
+    def should_renew_token(self) -> bool:
+        if self.token is None:
+            return True
+        if self.renewal_time is None:
+            return False
+        return self.current_time() >= self.renewal_time
+
+    def can_renew_token(self) -> bool:
+        return self.token_client is not None
 
     def prepare_request(self, request: Request) -> None:
         tk = self.token
         if tk is None:
             raise RuntimeError('no token is set')
         request.headers['Authorization'] = f'{tk.token_type} {tk.access_token}'
-
-    def current_time(self) -> float:
-        return self.time_func()
-
-    def remaining_time(self) -> Optional[float]:
-        if self.expiry_time is None:
-            return None
-        return self.expiry_time - self.current_time()
 
 
 class Authorized(RequestorDecorator):
@@ -88,21 +78,23 @@ class Authorized(RequestorDecorator):
         self.authorizer = authorizer
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
-        self.authorizer.maybe_renew_token()
-        self.authorizer.prepare_request(request)
+        authorizer = self.authorizer
+        if authorizer.should_renew_token():
+            authorizer.renew_token()
+        authorizer.prepare_request(request)
 
         resp = self.requestor.send(request, timeout=timeout)
 
-        auth_params = extract_www_authenticate_bearer_auth_params(resp)
+        auth_params = extract_www_authenticate_auth_params(resp)
         invalid_token = auth_params.get('error', '') == 'invalid_token'
 
-        if invalid_token and self.authorizer.can_renew_token():
-            self.authorizer.renew_token()
-            self.authorizer.prepare_request(request)
+        if invalid_token and authorizer.can_renew_token():
+            authorizer.renew_token()
+            authorizer.prepare_request(request)
 
             resp = self.requestor.send(request, timeout=timeout)
 
-            auth_params = extract_www_authenticate_bearer_auth_params(resp)
+            auth_params = extract_www_authenticate_auth_params(resp)
 
         raise_for_resource_server_response_error(auth_params)
 

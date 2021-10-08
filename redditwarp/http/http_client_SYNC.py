@@ -46,7 +46,7 @@ class HTTPClient:
     def __exit__(self,
         exc_type: Optional[Type[BaseException]],
         exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_traceback: Optional[TracebackType],
     ) -> Optional[bool]:
         self.close()
         return None

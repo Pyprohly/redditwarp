@@ -45,31 +45,22 @@
 #############################################################################
 
 
-from typing import NamedTuple
+version_major = 0
+version_minor = 1
+version_micro = 0
+version_extra = 'a0.dev0'
 
-class VersionInfo(NamedTuple):
-    major: int
-    minor: int
-    micro: int
-    releaselevel: str
-    serial: int
+version_triad = (version_major, version_minor, version_micro)
+version_string = '.'.join(map(str, version_triad)) + version_extra
 
-version_info = VersionInfo(
-    major=0,
-    minor=1,
-    micro=0,
-    releaselevel='alpha',
-    serial=0,
-)
 
 __title__ = 'RedditWarp'
-__summary__ = 'The unofficial, advanced Reddit API wrapper for Python development'
+__summary__ = "The unofficial, neoteric Reddit API library for Python"
 __uri__ = "https://github.com/Pyprohly/redditwarp"
 
-__version_info__ = version_info
-__version__ = '.'.join(map(str, version_info[:3]))
+__version__ = version_string
 
-__author__ = 'u/Pyprohly'
+__author__ = 'Pyprohly'
 
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2020 Pyprohly'

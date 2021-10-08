@@ -4,6 +4,7 @@ import pytest
 from typing import Sequence, Any, MutableMapping, Callable
 from redditwarp.client_ASYNC import Client
 from redditwarp.core.reddit_http_client_ASYNC import RedditHTTPClient
+from redditwarp.core.recorded_ASYNC import Recorded, Last
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
@@ -36,7 +37,9 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
         return [d['name'] for d in data['children']]
 
 session = MySession(200, {'Content-Type': 'application/json'}, b'')
-http = RedditHTTPClient(session)
+recorder = Recorded(session)
+last = Last(recorder)
+http = RedditHTTPClient(session=session, requestor=recorder, last=last)
 client = Client.from_http(http)
 
 @pytest.mark.asyncio
@@ -94,7 +97,7 @@ async def test_dont_send_empty_cursor() -> None:
 @pytest.mark.asyncio
 async def test_return_value_and_count() -> None:
     p = MyListingAsyncPaginator(client, '')
-    assert p.count == 0
+    assert p.after_count == 0
 
     session.response_data = b'''\
 {
@@ -112,7 +115,7 @@ async def test_return_value_and_count() -> None:
 '''
     result = await p.next_result()
     assert len(result) == 2
-    assert p.count == 2
+    assert p.after_count == 2
 
     session.response_data = b'''\
 {
@@ -132,7 +135,7 @@ async def test_return_value_and_count() -> None:
 '''
     result = await p.next_result()
     assert len(result) == 3
-    assert p.count == 5
+    assert p.after_count == 5
 
 @pytest.mark.asyncio
 async def test_cursor_extractor() -> None:
@@ -340,7 +343,7 @@ async def test_next_available() -> None:
 @pytest.mark.asyncio
 async def test_dist_none_value() -> None:
     p = MyListingAsyncPaginator(client, '')
-    assert p.count == 0
+    assert p.after_count == 0
 
     session.response_data = b'''\
 {
@@ -358,4 +361,4 @@ async def test_dist_none_value() -> None:
 '''
     result = await p.next_result()
     assert len(result) == 2
-    assert p.count == 2
+    assert p.after_count == 2

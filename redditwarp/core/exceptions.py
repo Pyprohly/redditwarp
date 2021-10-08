@@ -10,7 +10,7 @@ from ..auth.const import TOKEN_OBTAINMENT_URL
 from .. import http
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..exceptions import ArgInfoExceptionMixin
-from ..auth.exceptions import ResponseContentError, raise_for_token_server_response_error
+from ..auth.exceptions import raise_for_token_server_response_error
 
 class ArgInfoException(ArgInfoExceptionMixin):
     pass
@@ -22,6 +22,9 @@ def raise_for_reddit_token_server_response_error(json_dict: Any) -> None:
         return
     raise_for_token_server_response_error(json_dict)
 
+
+class ResponseContentError(ArgInfoException):
+    pass
 
 class UnidentifiedResponseContentError(ResponseContentError):
     pass
@@ -50,7 +53,7 @@ class FaultyUserAgent(BadUserAgent):
 def handle_reddit_auth_response_exception(e: Exception, req: Request, resp: Response) -> Exception:
     headers = CaseInsensitiveDict(req.headers)
 
-    if isinstance(e, auth.exceptions.ResponseContentError):
+    if isinstance(e, ValueError):
         if resp.status == 403:
             msg = None
             ua = headers['User-Agent']
@@ -87,7 +90,7 @@ def handle_reddit_auth_response_exception(e: Exception, req: Request, resp: Resp
             if 'Authorization' not in headers:
                 e.arg = 'Authorization header missing from request'
                 raise e
-            if headers['Authorization'][:6].lower() != 'basic ':
+            if not headers['Authorization'][:5].lower().startswith('basic'):
                 e.arg = 'Authorization header value must start with "Basic"'
                 raise e
             raise ClientCredentialsError('Check your client credentials') from e

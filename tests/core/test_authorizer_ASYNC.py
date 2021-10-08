@@ -50,27 +50,27 @@ class TestAuthorizer:
             token=None,
             token_client=token_client,
         )
-        o.expiry_skew = 40
+        o.renewal_skew = 40
 
-        o.expiry_time = 9999
+        o.renewal_time = 9999
         o.expires_in_fallback = None
         await o.renew_token()
         assert o.token is my_token
-        assert o.expiry_time is None
+        assert o.renewal_time is None
 
-        o.expiry_time = 9999
+        o.renewal_time = 9999
         token_client.my_token = get_token(expires_in=234)
         o.expires_in_fallback = None
         await o.renew_token()
         expires_in = token_client.my_token.expires_in
         assert expires_in is not None
-        assert o.expiry_time == int(o.current_time()) + expires_in - o.expiry_skew
+        assert o.renewal_time == int(o.current_time()) + expires_in - o.renewal_skew
 
-        o.expiry_time = 9999
+        o.renewal_time = 9999
         token_client.my_token = get_token(expires_in=None)
         o.expires_in_fallback = 125
         await o.renew_token()
-        assert o.expiry_time == int(o.current_time()) + o.expires_in_fallback - o.expiry_skew
+        assert o.renewal_time == int(o.current_time()) + o.expires_in_fallback - o.renewal_skew
 
     @pytest.mark.asyncio
     async def test_renew_token__no_token_client(self) -> None:

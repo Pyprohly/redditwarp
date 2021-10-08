@@ -10,7 +10,6 @@ from .__about__ import (
     __summary__,
     __uri__,
     __version__,
-    version_info,
     __author__,
     __license__,
     __copyright__,
@@ -22,6 +21,5 @@ from . import websocket
 from . import iterators
 from . import paginators
 from . import models
-from . import siteprocs
 from . import util
 from . import exceptions

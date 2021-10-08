@@ -11,20 +11,20 @@ from redditwarp.http.response import Response
 from redditwarp.core.exceptions import handle_reddit_auth_response_exception
 
 def test_UnidentifiedResponseContentError() -> None:
-    exc = auth.exceptions.ResponseContentError()
+    exc = ValueError()
     req = Request('', '')
     resp = Response(999, {}, b'')
     with pytest.raises(core.exceptions.UnidentifiedResponseContentError):
         handle_reddit_auth_response_exception(exc, req, resp)
 
 def test_HTMLDocumentResponseContentError() -> None:
-    exc = auth.exceptions.ResponseContentError()
+    exc = ValueError()
     req = Request('', '')
     resp = Response(999, {'Content-Type': 'text/html'}, b'')
     with pytest.raises(core.exceptions.HTMLDocumentResponseContentError):
         handle_reddit_auth_response_exception(exc, req, resp)
 
-    exc = auth.exceptions.ResponseContentError()
+    exc = ValueError()
     req = Request('', '')
     resp = Response(999, {'Content-Type': 'text/html'}, b'Our CDN was unable to reach our servers')
     with pytest.raises(core.exceptions.HTMLDocumentResponseContentError) as exc_info:
@@ -32,7 +32,7 @@ def test_HTMLDocumentResponseContentError() -> None:
     assert exc_info.value.arg is not None
 
 def test_BlacklistedUserAgent() -> None:
-    exc = auth.exceptions.ResponseContentError()
+    exc = ValueError()
     req = Request('', '', headers={'User-Agent': 'xscrapingx'})
     resp = Response(403, {}, b'<!doctype html>')
     with pytest.raises(core.exceptions.BlacklistedUserAgent):
@@ -66,13 +66,13 @@ def test_CredentialsError() -> None:
     exc: Exception = auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant(error_name='invalid_grant')
     req = Request('', '')
     resp = Response(400, {}, b'{"error": "invalid_grant"}')
-    with pytest.raises(core.exceptions.CredentialsError):
+    with pytest.raises(core.exceptions.GrantCredentialsError):
         handle_reddit_auth_response_exception(exc, req, resp)
 
     exc = http.exceptions.StatusCodeException(status_code=401)
     req = Request('GET', 'https://www.reddit.com/api/v1/access_token', headers={'Authorization': 'Basic waterfall'})
     resp = Response(401, {}, b'')
-    with pytest.raises(core.exceptions.CredentialsError):
+    with pytest.raises(core.exceptions.ClientCredentialsError):
         handle_reddit_auth_response_exception(exc, req, resp)
 
 def test_FaultyUserAgent() -> None:

@@ -74,7 +74,7 @@ class TestRequestExceptions:
         def test_UnidentifiedResponseContentError(self) -> None:
             http = MyHTTPClient(200, {}, b'{"some": "data"}')
             client = Client.from_http(http)
-            with pytest.raises(exceptions.UnidentifiedResponseContentError):
+            with pytest.raises(ValueError):
                 client.request('', '')
 
         def test_UnacceptableHTMLDocumentReceivedError(self) -> None:

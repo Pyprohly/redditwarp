@@ -28,7 +28,7 @@ class RateLimited(RequestorDecorator):
             s = self.reset / self.remaining
 
         h = self._burst_control.hard_consume(1)
-        if h and s < 2 and self.remaining > 1:
+        if h and s < 2 and self.remaining > 20:
             # Burst this request, but only if the API didn't
             # want us to wait for more than two seconds.
             s = 0

@@ -1,5 +1,5 @@
 
-from typing import Mapping
+from typing import Tuple, Mapping
 
-ClientCredentials = tuple[str, str]
+ClientCredentials = Tuple[str, str]
 AuthorizationGrant = Mapping[str, str]

@@ -23,23 +23,30 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
         self.uri = uri
         self.params = {} if params is None else params
         self.cursor_extractor = cursor_extractor
-        self.count = 0
+        self.after_count = 0
+        self.before_count = 0
         self.show_all = False
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from self.params.items()
-        yield ('count', str(self.count))
+
         if self.limit is not None:
             yield ('limit', str(self.limit))
         if self.show_all:
             yield ('show', 'all')
 
         if self.direction:
+            if self.after_count != 0:
+                yield ('count', str(self.after_count))
+
             if self.after:
                 yield ('after', self.after)
             elif not self.has_after:
                 raise MissingCursorException('after')
         else:
+            if self.before_count != 0:
+                yield ('count', str(self.before_count))
+
             if self.before:
                 yield ('before', self.before)
             elif not self.has_before:
@@ -50,10 +57,15 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
         root = self.client.request('GET', self.uri, params=params)
         return root['data']
 
-    def process_data(self, data: Mapping[str, Any]) -> None:
+    def _process_data(self, data: Mapping[str, Any]) -> None:
         children = data['children']
 
-        self.count += z if (z := data['dist']) else len(children)
+        dist: int = x if (x := data['dist']) else len(children)
+        if self.direction:
+            self.after_count += dist
+        else:
+            self.after_count -= dist
+        self.before_count = self.after_count - dist + 1
 
         after = data['after'] or ''
         before = data['before'] or ''
@@ -66,5 +78,5 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
 
     def _next_data(self) -> Mapping[str, Any]:
         data = self._fetch_data()
-        self.process_data(data)
+        self._process_data(data)
         return data

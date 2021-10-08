@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .typedefs import ClientCredentials
     from ..http.requestor_SYNC import Requestor
@@ -16,14 +16,13 @@ class TokenRevocationClient:
         self.uri = uri
         self.client_credentials = client_credentials
 
-    def revoke_token(self, token: str, token_type_hint: Optional[str] = None) -> None:
+    def revoke_token(self, token: str, token_type_hint: str = '') -> None:
         data = {'token': token}
         if token_type_hint:
             data['token_type_hint'] = token_type_hint
 
         r = Request('POST', self.uri, payload=URLEncodedFormData(data))
-        apply_basic_auth(r, self.client_credentials)
-
+        apply_basic_auth(r, *self.client_credentials)
         resp = self.requestor.send(r)
         resp.raise_for_status()
 
