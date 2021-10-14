@@ -57,10 +57,12 @@ version_string = '.'.join(map(str, version_triad)) + version_extra
 __title__ = 'RedditWarp'
 __summary__ = "The unofficial, neoteric Reddit API library for Python"
 __uri__ = "https://github.com/Pyprohly/redditwarp"
+__url__ = __uri__
 
 __version__ = version_string
 
 __author__ = 'Pyprohly'
+__email__ = ''
 
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2020 Pyprohly'

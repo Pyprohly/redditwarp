@@ -17,7 +17,7 @@ from .core.authorizer_SYNC import Authorizer, Authorized
 from .core.rate_limited_SYNC import RateLimited
 from .core.recorded_SYNC import Recorded, Last
 from .util.praw_config import get_praw_config
-from .exceptions import raise_for_response_content_error, raise_for_reddit_api_error
+from .exceptions import raise_for_non_json_response, raise_for_reddit_error
 
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
@@ -185,24 +185,24 @@ class CoreClient:
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
     ) -> Any:
-        self.last_value = None
-
-        resp = self.http.request(verb, uri, params=params, headers=headers,
-                data=data, json=json, files=files, timeout=timeout)
-
         json_data = None
-        if resp.data:
-            try:
-                json_data = json_loads_response(resp)
-            except ValueError:
-                raise_for_response_content_error(resp)
-                resp.raise_for_status()
-                raise
+        try:
+            resp = self.http.request(verb, uri, params=params, headers=headers,
+                    data=data, json=json, files=files, timeout=timeout)
 
+            if resp.data:
+                try:
+                    json_data = json_loads_response(resp)
+                except ValueError as cause:
+                    try:
+                        raise_for_non_json_response(resp)
+                    except Exception as exc:
+                        raise exc from cause
+                    raise
+
+                raise_for_reddit_error(json_data)
+        finally:
             self.last_value = json_data
-
-            if isinstance(json_data, Mapping):
-                raise_for_reddit_api_error(resp, json_data)
 
         resp.raise_for_status()
         return json_data

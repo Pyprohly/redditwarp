@@ -42,13 +42,13 @@ def test_fetch_json_dict() -> None:
     uri = 'abcdef'
     client_credentials = ('cid', 'cse')
     grant = {'grant_type': 'epyt_tnarg', 'data1': 'blah', 'data2': ''}
-    o = TokenObtainmentClient(
+    toc = TokenObtainmentClient(
         requestor,
         uri,
         client_credentials,
         grant,
     )
-    resp_json = o.fetch_data()
+    resp_json = toc.fetch_data()
 
     assert resp_json == {'a': 100, "some": "text"}
     assert len(requestor.history) == 1
@@ -60,42 +60,42 @@ def test_fetch_json_dict() -> None:
     assert req.headers['Authorization'] == basic_auth(*client_credentials)
 
 def test_fetch_json_dict__exceptions() -> None:
-    o = TokenObtainmentClient(
+    toc = TokenObtainmentClient(
         Requestor(),
         '', ('cid', 'cse'), {},
     )
 
-    o.requestor = MockRequestor(
+    toc.requestor = MockRequestor(
         response_status=599,
         response_headers={},
         response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(http.exceptions.StatusCodeException):
-        o.fetch_data()
+        toc.fetch_data()
 
-    o.requestor = MockRequestor(
+    toc.requestor = MockRequestor(
         response_status=599,
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"error": "invalid_client"}',
     )
     with pytest.raises(TokenServerResponseErrorTypes.InvalidClient):
-        o.fetch_data()
+        toc.fetch_data()
 
-    o.requestor = MockRequestor(
+    toc.requestor = MockRequestor(
         response_status=599,
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"error": "asdf"}',
     )
     with pytest.raises(UnrecognizedTokenServerResponseError):
-        o.fetch_data()
+        toc.fetch_data()
 
-    o.requestor = MockRequestor(
+    toc.requestor = MockRequestor(
         response_status=401,
         response_headers={'Content-Type': 'application/json'},
         response_data=b'{"message": "Unauthorized", "error": 401}',
     )
     with pytest.raises(UnrecognizedTokenServerResponseError):
-        o.fetch_data()
+        toc.fetch_data()
 
 def test_fetch_token() -> None:
     class MyTokenObtainmentClient(TokenObtainmentClient):

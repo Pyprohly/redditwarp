@@ -22,7 +22,7 @@ class CustomFeed:
     def get(self, user: str, feed: str) -> Optional[CustomFeedModel]:
         try:
             root = self._client.request('GET', f'/api/multi/user/{user}/m/{feed}')
-        except exceptions.RedditAPIError as e:
+        except exceptions.RedditError as e:
             if e.codename == 'MULTI_NOT_FOUND':
                 return None
             raise
@@ -96,7 +96,7 @@ class CustomFeed:
     def contains(self, user: str, feed: str, sr_name: str) -> bool:
         try:
             self._client.request('GET', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}')
-        except exceptions.RedditAPIError as e:
+        except exceptions.RedditError as e:
             if e.codename == 'SUBREDDIT_NOEXIST':
                 return False
             raise

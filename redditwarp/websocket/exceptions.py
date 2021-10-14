@@ -1,30 +1,27 @@
 
 from __future__ import annotations
 
-from ..exceptions import ArgInfoExceptionMixin
+from ..exceptions import ArgExcMixin
 
-class RootException(Exception):
-    pass
-
-class ArgInfoException(ArgInfoExceptionMixin, RootException):
+class ArgExc(ArgExcMixin):
     pass
 
 
-class TransportError(ArgInfoException):
+class TransportError(ArgExc):
     pass
 
-class TimeoutException(ArgInfoException):
+class TimeoutException(ArgExc):
     pass
 
 
-class MessageTypeMismatchException(RootException):
+class MessageTypeMismatchException(ArgExc):
     pass
 
-class ProtocolViolationException(RootException):
+class ProtocolViolationException(ArgExc):
     pass
 
-class InvalidStateException(RootException):
+class InvalidStateException(ArgExc):
     pass
 
-class ConnectionClosedException(RootException):
+class ConnectionClosedException(ArgExc):
     pass

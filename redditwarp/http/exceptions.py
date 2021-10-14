@@ -4,19 +4,19 @@ from typing import Type
 
 from http import HTTPStatus
 
-from ..exceptions import ArgInfoExceptionMixin
+from ..exceptions import ArgExcMixin
 
-class ArgInfoException(ArgInfoExceptionMixin):
+class ArgExc(ArgExcMixin):
     pass
 
 
-class TransportError(ArgInfoException):
+class TransportError(ArgExc):
     pass
 
-class TimeoutException(ArgInfoException):
+class TimeoutException(ArgExc):
     pass
 
-class StatusCodeException(ArgInfoException):
+class StatusCodeException(ArgExc):
     STATUS_CODE = 0
 
     def __init__(self, arg: object = None, *, status_code: int) -> None:

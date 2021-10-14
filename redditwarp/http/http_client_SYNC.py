@@ -17,6 +17,8 @@ from .request import make_request
 T = TypeVar('T')
 
 class HTTPClient:
+    make_request = staticmethod(make_request)
+
     @property
     def session(self) -> SessionBase:
         return self._session
@@ -72,7 +74,7 @@ class HTTPClient:
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
     ) -> Response:
-        r = make_request(verb, uri, params=params, headers=headers,
+        r = self.make_request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files)
         return self.send(r, timeout=timeout)
 

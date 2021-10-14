@@ -60,52 +60,84 @@ async def test_last_value() -> None:
     assert client.last_value is None
 
 class TestRequestExceptions:
-    class TestHTTPStatusError:
-        @pytest.mark.asyncio
-        async def test_json_decode_failed(self) -> None:
-            http = MyHTTPClient(414, {'Content-Type': 'text/plain'}, b'Error: URI Too Long')
-            client = Client.from_http(http)
-            with pytest.raises(http_exceptions.StatusCodeException):
-                await client.request('', '')
+    @pytest.mark.asyncio
+    async def test_json_decode_failed_and_status_code_exception(self) -> None:
+        http = MyHTTPClient(414, {'Content-Type': 'text/plain'}, b'Error: URI Too Long')
+        client = Client.from_http(http)
+        with pytest.raises(http_exceptions.StatusCodeException):
+            await client.request('', '')
 
-        @pytest.mark.asyncio
-        async def test_json_decode_suceeded(self) -> None:
-            http = MyHTTPClient(404, {'Content-Type': 'application/json; charset=UTF-8'}, b'{"message": "Not Found", "error": 404}')
-            client = Client.from_http(http)
-            with pytest.raises(http_exceptions.StatusCodeException):
-                await client.request('', '')
+    @pytest.mark.asyncio
+    async def test_json_decode_succeeded_but_status_code_exception(self) -> None:
+        http = MyHTTPClient(404, {'Content-Type': 'application/json; charset=UTF-8'}, b'{"message": "Not Found", "error": 404}')
+        client = Client.from_http(http)
+        with pytest.raises(http_exceptions.StatusCodeException):
+            await client.request('', '')
 
-    class TestResponseContentError:
-        @pytest.mark.asyncio
-        async def test_UnidentifiedResponseContentError(self) -> None:
-            http = MyHTTPClient(200, {}, b'{"some": "data"}')
-            client = Client.from_http(http)
-            with pytest.raises(ValueError):
-                await client.request('', '')
+    @pytest.mark.asyncio
+    async def test_no_content_type_in_response(self) -> None:
+        http = MyHTTPClient(200, {}, b'{"some": "data"}')
+        client = Client.from_http(http)
+        with pytest.raises(ValueError):
+            await client.request('', '')
 
-        @pytest.mark.asyncio
-        async def test_UnacceptableHTMLDocumentReceivedError(self) -> None:
-            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'<!DOCTYPE html>')
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError):
-                await client.request('', '')
+    @pytest.mark.asyncio
+    async def test_non_json_response(self) -> None:
+        http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'<!DOCTYPE html>')
+        client = Client.from_http(http)
+        with pytest.raises(ValueError):
+            await client.request('', '')
 
-            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'>user agent required</')
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
-                await client.request('', '')
-            assert exc_info.value.arg is not None
+        http = MyHTTPClient(403, {'Content-Type': 'text/html'}, b'>user agent required</')
+        client = Client.from_http(http)
+        with pytest.raises(exceptions.UserAgentRequired) as exc_info:
+            await client.request('', '')
+        assert exc_info.value.arg is not None
 
-            http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'>Our CDN was unable to reach our servers</')
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.UnacceptableHTMLDocumentReceivedError) as exc_info:
-                await client.request('', '')
-            assert exc_info.value.arg is not None
+        http = MyHTTPClient(500, {'Content-Type': 'text/html'}, b'>Our CDN was unable to reach our servers</')
+        client = Client.from_http(http)
+        with pytest.raises(http_exceptions.StatusCodeException) as exc_info1:
+            await client.request('', '')
+        assert isinstance(arg := exc_info1.value.arg, str) and 'CDN' in arg
 
-    class TestRedditAPIError:
-        @pytest.mark.asyncio
-        async def test_Variant2RedditAPIError(self) -> None:
-            b = b'''\
+    @pytest.mark.asyncio
+    async def test_variant1_reddit_error(self) -> None:
+        b = b'''\
+{
+    "explanation": "Please log in to do that.",
+    "message": "Forbidden",
+    "reason": "USER_REQUIRED"
+}
+'''
+        http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
+        client = Client.from_http(http)
+        with pytest.raises(exceptions.RedditError) as exc_info:
+            await client.request('', '')
+        exc = exc_info.value
+        assert exc.codename == "USER_REQUIRED"
+        assert exc.explanation == "Please log in to do that."
+        assert exc.field == ""
+
+        b = b'''\
+{
+    "fields": ["title"],
+    "explanation": "this is too long (max: 50)",
+    "message": "Bad Request",
+    "reason": "TOO_LONG"
+}
+'''
+        http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
+        client = Client.from_http(http)
+        with pytest.raises(exceptions.RedditError) as exc_info:
+            await client.request('', '')
+        exc = exc_info.value
+        assert exc.codename == "TOO_LONG"
+        assert exc.explanation == "this is too long (max: 50)"
+        assert exc.field == "title"
+
+    @pytest.mark.asyncio
+    async def test_variant2_reddit_error(self) -> None:
+        b = b'''\
 {
     "json": {
         "errors": [
@@ -115,52 +147,11 @@ class TestRequestExceptions:
     }
 }
 '''
-            http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.Variant2RedditAPIError) as exc_info:
-                await client.request('', '')
-            exc = exc_info.value
-            assert exc.codename == 'NO_TEXT'
-            assert exc.detail == 'we need something here'
-            assert exc.field == 'title'
-            assert exc.errors == [
-                exceptions.RedditErrorItem("NO_TEXT", "we need something here", "title"),
-                exceptions.RedditErrorItem("BAD_URL", "you should check that url", "url"),
-            ]
-
-        @pytest.mark.asyncio
-        async def test_Variant1RedditAPIError(self) -> None:
-            b = b'''\
-{
-    "explanation": "Please log in to do that.",
-    "message": "Forbidden",
-    "reason": "USER_REQUIRED"
-}
-'''
-            http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.Variant1RedditAPIError) as exc_info:
-                await client.request('', '')
-            exc = exc_info.value
-            assert exc.codename == "USER_REQUIRED"
-            assert exc.detail == "Please log in to do that."
-            assert exc.field == ""
-            assert not exc.fields
-
-            b = b'''\
-{
-    "fields": ["title"],
-    "explanation": "this is too long (max: 50)",
-    "message": "Bad Request",
-    "reason": "TOO_LONG"
-}
-'''
-            http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
-            client = Client.from_http(http)
-            with pytest.raises(exceptions.Variant1RedditAPIError) as exc_info:
-                await client.request('', '')
-            exc = exc_info.value
-            assert exc.codename == "TOO_LONG"
-            assert exc.detail == "this is too long (max: 50)"
-            assert exc.field == "title"
-            assert exc.fields[0] == "title"
+        http = MyHTTPClient(200, {'Content-Type': 'application/json'}, b)
+        client = Client.from_http(http)
+        with pytest.raises(exceptions.RedditError) as exc_info:
+            await client.request('', '')
+        exc = exc_info.value
+        assert exc.codename == 'NO_TEXT'
+        assert exc.explanation == 'we need something here'
+        assert exc.field == 'title'

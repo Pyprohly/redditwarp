@@ -37,17 +37,12 @@ class Subreddit:
     def get_by_name(self, name: str) -> Optional[SubredditModel]:
         try:
             root = self._client.request('GET', f'/r/{name}/about')
-        except exceptions.UnacceptableHTMLDocumentReceivedError:
-            # Name was too long or contained invalid characters.
-            return None
         except http.exceptions.StatusCodeException as e:
-            # A special subreddit name (`all`, `popular`, `friends`, `mod`) was specified.
             if e.status_code == 404:
                 return None
             raise
 
         if root['kind'] != 't5':
-            # The subreddit was not found.
             return None
 
         return load_subreddit(root['data'], self._client)

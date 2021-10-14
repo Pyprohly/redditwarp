@@ -8,13 +8,16 @@ from dataclasses import dataclass, field
 
 from .payload import make_payload
 
-@dataclass(eq=False)
+@dataclass(eq=False, repr=False)
 class Request:
     verb: str
     uri: str
     params: MutableMapping[str, str] = field(default_factory=dict)
     headers: MutableMapping[str, str] = field(default_factory=dict)
     payload: Optional[Payload] = None
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} [{self.verb}]>'
 
 BLANK_REQUEST = Request('', '')
 

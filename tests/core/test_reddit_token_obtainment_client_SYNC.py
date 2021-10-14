@@ -9,7 +9,7 @@ import pytest
 from redditwarp.http.requestor_SYNC import Requestor
 from redditwarp.http.response import Response
 from redditwarp.core.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
-from redditwarp.http.exceptions import StatusCodeException
+from redditwarp.core.exceptions import AuthError
 
 class MockRequestor(Requestor):
     def __init__(self, response: Response) -> None:
@@ -19,7 +19,7 @@ class MockRequestor(Requestor):
         return self.response
 
 
-def test_StatusCodeException() -> None:
+def test_fetch_json_dict_exception() -> None:
     requestor = MockRequestor(
             Response(401, {'Content-Type': 'application/json'},
                 b'{"message": "Unauthorized", "error": 401}'))
@@ -28,5 +28,5 @@ def test_StatusCodeException() -> None:
         '', ('cid', 'cse'), {},
         headers={},
     )
-    with pytest.raises(StatusCodeException):
+    with pytest.raises(AuthError):
         toc.fetch_data()

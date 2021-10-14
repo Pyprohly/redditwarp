@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from dataclasses import dataclass
 from .exceptions import status_successful, raise_now, raise_for_status
 
-@dataclass(eq=False)
+@dataclass(eq=False, repr=False)
 class Response:
     status: int
     headers: MutableMapping[str, str]
@@ -29,6 +29,6 @@ class Response:
     def raise_for_status(self) -> None:
         raise_for_status(self.status)
 
-@dataclass(eq=False)
+@dataclass(eq=False, repr=False)
 class UResponse(Response):
     underlying_object: object = None

@@ -50,9 +50,9 @@ class except_without_context(ContextManager[bool]):
 
     Example 3::
 
-        with except_without_context(PermissionError) as xcpt:
+        with except_without_context(PermissionError) as ewc:
             raise PermissionError
-        if xcpt:
+        if ewc:
             f()
 
     Result::

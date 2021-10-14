@@ -36,12 +36,12 @@ def test_revoke_token() -> None:
     )
     uri = 'abcdef'
     client_credentials = ('cid', 'cse')
-    o = TokenRevocationClient(
+    trc = TokenRevocationClient(
         requestor,
         uri,
         client_credentials,
     )
-    o.revoke_token('a1', 'a2')
+    trc.revoke_token('a1', 'a2')
 
     assert len(requestor.history) == 1
     req = requestor.history[0]
@@ -50,7 +50,7 @@ def test_revoke_token() -> None:
     assert isinstance(req.payload, URLEncodedFormData)
     assert req.payload.data == {'token': 'a1', 'token_type_hint': 'a2'}
 
-    o.revoke_token('b1', '')
+    trc.revoke_token('b1', '')
     assert len(requestor.history) == 2
     req = requestor.history[1]
     assert req.verb == 'POST'
@@ -64,12 +64,12 @@ def test_revoke_token__exceptions() -> None:
         response_headers={},
         response_data=b'',
     )
-    o = TokenRevocationClient(
+    trc = TokenRevocationClient(
         requestor,
         '', ('cid', 'cse'),
     )
     with pytest.raises(StatusCodeException):
-        o.revoke_token('', '')
+        trc.revoke_token('', '')
 
 def test_revoke_access_token() -> None:
     class MyTokenRevocationClient(TokenRevocationClient):
@@ -77,8 +77,8 @@ def test_revoke_access_token() -> None:
             assert token == 'abc'
             assert token_type_hint == 'access_token'
 
-    o = MyTokenRevocationClient(Requestor(), '', ('', ''))
-    o.revoke_access_token('abc')
+    trc = MyTokenRevocationClient(Requestor(), '', ('', ''))
+    trc.revoke_access_token('abc')
 
 def test_revoke_refresh_token() -> None:
     class MyTokenRevocationClient(TokenRevocationClient):
@@ -86,5 +86,5 @@ def test_revoke_refresh_token() -> None:
             assert token == 'def'
             assert token_type_hint == 'refresh_token'
 
-    o = MyTokenRevocationClient(Requestor(), '', ('', ''))
-    o.revoke_refresh_token('def')
+    trc = MyTokenRevocationClient(Requestor(), '', ('', ''))
+    trc.revoke_refresh_token('def')

@@ -8,18 +8,18 @@ if TYPE_CHECKING:
 
 import re
 
-from ..exceptions import ArgInfoExceptionMixin
+from ..exceptions import ArgExcMixin
 
-class ArgInfoException(ArgInfoExceptionMixin):
+class ArgExc(ArgExcMixin):
     pass
 
 
-class UnknownTokenType(ArgInfoException):
+class UnknownTokenType(ArgExc):
     def __init__(self, arg: object = None, *, token: Token):
         super().__init__(arg)
         self.token = token
 
-class OAuth2ResponseError(ArgInfoException):
+class OAuth2ResponseError(ArgExc):
     """
     As detailed in the OAuth2 spec. For more information see
     https://tools.ietf.org/html/rfc6749#section-5.2

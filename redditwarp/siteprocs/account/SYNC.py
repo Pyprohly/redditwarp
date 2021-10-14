@@ -48,7 +48,7 @@ class Account:
     def get_friend(self, name: str) -> Optional[UserRelationshipItem]:
         try:
             root = self._client.request('GET', f'/api/v1/me/friends/{name}')
-        except exceptions.RedditAPIError as e:
+        except exceptions.RedditError as e:
             if e.codename == 'USER_DOESNT_EXIST':
                 return None
             raise
@@ -67,7 +67,7 @@ class Account:
     def remove_friend(self, name: str) -> bool:
         try:
             self._client.request('DELETE', f'/api/v1/me/friends/{name}')
-        except exceptions.RedditAPIError as e:
+        except exceptions.RedditError as e:
             if e.codename == 'NOT_FRIEND':
                 return False
             raise
