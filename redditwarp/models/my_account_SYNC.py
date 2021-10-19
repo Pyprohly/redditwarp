@@ -2,9 +2,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
-    from ..client_ASYNC import Client
+    from ..client_SYNC import Client
 
-from .account_base import (
+from .my_account_base import (
     BaseMyAccount,
 )
 

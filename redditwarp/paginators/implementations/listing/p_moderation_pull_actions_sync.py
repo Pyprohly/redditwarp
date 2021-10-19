@@ -5,10 +5,10 @@ if TYPE_CHECKING:
     from ....client_SYNC import Client
 
 from .listing_paginator import ListingPaginator
-from ....models.mod_log_action_entry import ModLogActionEntry
-from ....models.load.mod_log_action_entry import load_mod_log_action_entry
+from ....models.moderation_action_log_entry import ModerationActionLogEntry
+from ....models.load.moderation_action_log_entry import load_mod_log_action_entry
 
-class ModerationActionsPaginator(ListingPaginator[ModLogActionEntry]):
+class ModerationActionLogPaginator(ListingPaginator[ModerationActionLogEntry]):
     def __init__(self,
         client: Client,
         uri: str,
@@ -31,6 +31,6 @@ class ModerationActionsPaginator(ListingPaginator[ModLogActionEntry]):
         if self.mod:
             yield ('mod', self.mod)
 
-    def next_result(self) -> Sequence[ModLogActionEntry]:
+    def next_result(self) -> Sequence[ModerationActionLogEntry]:
         data = self._next_data()
         return [load_mod_log_action_entry(d['data']) for d in data['children']]

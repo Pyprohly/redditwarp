@@ -8,10 +8,10 @@ TOutput = TypeVar('TOutput')
 class CallChunk(Generic[TInput, TOutput]):
     def __init__(self,
         operation: Callable[[TInput], Awaitable[TOutput]],
-        data: TInput,
+        operand: TInput,
     ) -> None:
         self.operation = operation
-        self.data = data
+        self.operand = operand
 
     async def __call__(self) -> TOutput:
-        return await self.operation(self.data)
+        return await self.operation(self.operand)

@@ -87,9 +87,9 @@ class RedditError(APIException):
                 if fd:
                     return f'{co}: {xp} -> {fd}'
                 return f'{co}: {xp}'
+            if fd:
+                return f'{co} -> {fd}'
             return co
-        if xp:
-            return xp
         return ''
 
 
@@ -111,6 +111,11 @@ def raise_for_reddit_error(json_data: Any) -> None:
         and isinstance(explanation := json_data.get('explanation'), str)
     ):
         raise RedditError(codename=codename, explanation=explanation, field='')
+    elif (
+        isinstance(codename := json_data.get('reason'), str)
+        and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
+    ):
+        raise RedditError(codename=codename, explanation='', field=field)
     elif isinstance(reason := json_data.get('reason'), str):
         if ' ' in reason:
             raise APIException(reason)

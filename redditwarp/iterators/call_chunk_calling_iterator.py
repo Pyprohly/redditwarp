@@ -6,7 +6,7 @@ from .stubborn_caller_iterator import StubbornCallerIterator
 from .call_chunk_SYNC import CallChunk, TInput, TOutput
 
 class CallChunkCallingIterator(Iterator[TOutput], Generic[TInput, TOutput]):
-    """Evaluate call chunks and chain them together."""
+    """Evaluate call chunks and return their results."""
 
     @property
     def current(self) -> Optional[CallChunk[TInput, TOutput]]:

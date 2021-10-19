@@ -17,13 +17,13 @@ def test_raise_for_reddit_error() -> None:
     assert exc.explanation == 'Please log in to do that.'
     assert exc.field == ''
 
-    json_data = {"fields": ["json"], "explanation": "Sorry, something went wrong. Double-check things and try again.", "message": "Bad Request", "reason": "JSON_PARSE_ERROR"}
+    json_data = {"fields": ["subject"], "explanation": "we need something here", "message": "Bad Request", "reason": "NO_TEXT"}
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'JSON_PARSE_ERROR'
-    assert exc.explanation == "Sorry, something went wrong. Double-check things and try again."
-    assert exc.field == 'json'
+    assert exc.codename == 'NO_TEXT'
+    assert exc.explanation == "we need something here"
+    assert exc.field == 'subject'
 
     json_data = {"json": {"errors": [["NO_LINKS", "that subreddit only allows text posts", "sr"], ["RATELIMIT", "you are doing that too much. try again in 13 minutes.", "ratelimit"]]}}
     with pytest.raises(RedditError) as exc_info:
@@ -53,3 +53,11 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(APIException) as exc_info1:
         raise_for_reddit_error(json_data)
     assert str(exc_info1.value) == "Must pass an id or list of ids."
+
+    json_data = {"fields": ["to"], "explanation": null, "message": "Bad Request", "reason": "MUTED_FROM_SUBREDDIT"}
+    with pytest.raises(RedditError) as exc_info:
+        raise_for_reddit_error(json_data)
+    exc = exc_info.value
+    assert exc.codename == 'MUTED_FROM_SUBREDDIT'
+    assert exc.explanation == ''
+    assert exc.field == 'to'

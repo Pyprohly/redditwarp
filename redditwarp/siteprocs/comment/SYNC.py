@@ -181,10 +181,10 @@ class Comment:
             title: str,
             message: str,
             *,
-            expose: bool = False) -> None:
+            exposed: bool = False) -> None:
         target = 't1_' + to_base36(comment_id)
         json_data = {
-            'type': 'private' + ('_exposed' if expose else ''),
+            'type': 'private' + ('_exposed' if exposed else ''),
             'item_id': [target],
             'title': title,
             'message': message,

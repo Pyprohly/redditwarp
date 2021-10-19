@@ -17,6 +17,8 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
+from ...paginators.implementations.listing.p_misc_search_submissions_sync import SearchSubmissionsListingPaginator
 from ...models.load.comment_SYNC import load_comment
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
@@ -361,23 +363,23 @@ class Submission:
         data = {'id': 't3_' + to_base36(submission_id)}
         self._client.request('POST', '/api/unhide', data=data)
 
-    def bulk_hide(self, submission_ids: Sequence[int]) -> CallChunkCallingIterator[Sequence[int], None]:
+    def bulk_hide(self, submission_ids: Iterable[int]) -> CallChunkCallingIterator[Sequence[int], None]:
         def mass_hide(ids: Sequence[int]) -> None:
             id36s = map(to_base36, ids)
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
-            self._client.request('POST', '/api/hide', params={'id': ids_str})
+            self._client.request('POST', '/api/hide', data={'id': ids_str})
 
         return CallChunkCallingIterator(CallChunk(mass_hide, chunk) for chunk in chunked(submission_ids, 300))
 
-    def bulk_unhide(self, submission_ids: Sequence[int]) -> CallChunkCallingIterator[Sequence[int], None]:
-        def mass_hide(ids: Sequence[int]) -> None:
+    def bulk_unhide(self, submission_ids: Iterable[int]) -> CallChunkCallingIterator[Sequence[int], None]:
+        def mass_unhide(ids: Sequence[int]) -> None:
             id36s = map(to_base36, ids)
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
-            self._client.request('POST', '/api/unhide', params={'id': ids_str})
+            self._client.request('POST', '/api/unhide', data={'id': ids_str})
 
-        return CallChunkCallingIterator(CallChunk(mass_hide, chunk) for chunk in chunked(submission_ids, 300))
+        return CallChunkCallingIterator(CallChunk(mass_unhide, chunk) for chunk in chunked(submission_ids, 300))
 
     def mark_nsfw(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
@@ -551,12 +553,22 @@ class Submission:
             title: str,
             message: str,
             *,
-            expose: bool = False) -> None:
+            exposed: bool = False) -> None:
         target = 't3_' + to_base36(submission_id)
         json_data = {
-            'type': 'private' + ('_exposed' if expose else ''),
+            'type': 'private' + ('_exposed' if exposed else ''),
             'item_id': [target],
             'title': title,
             'message': message,
         }
         self._client.request('POST', '/api/v1/modactions/removal_link_message', json=json_data)
+
+    def search_submissions(self, sr: str, query: str, amount: Optional[int] = None, *,
+        time_filter: str = 'all', sort: str = 'relevance',
+    ) -> PaginatorChainingWrapper[SearchSubmissionsListingPaginator, SubmissionModel]:
+        if not sr:
+            raise ValueError('sr must not be empty')
+        p = SearchSubmissionsListingPaginator(self._client, f'/r/{sr}/search',
+                params={'q': query, 'restrict_sr': '1'},
+                time_filter=time_filter, sort=sort)
+        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)

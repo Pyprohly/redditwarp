@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.flair import FlairTemplate, FlairChoices, UserFlairAssociation
-    from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-    from ...paginators.implementations.user_flair_association_paginator_sync import UserFlairAssociationPaginator
 
 import csv
 from io import StringIO
@@ -14,6 +12,8 @@ from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
+from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
+from ...paginators.implementations.user_flair_association_paginator_sync import UserFlairAssociationPaginator
 from ...models.load.flair import (
     load_variant2_flair_template,
     load_variant1_flair_template,
@@ -53,7 +53,7 @@ class Flair:
         sr_name: str,
         data: Iterable[Tuple[str, str, str]],
     ) -> CallChunkChainingIterator[Tuple[str, str, str], bool]:
-        def bulk_update_user_flairs_operation(data: Sequence[Tuple[str, str, str]]) -> Sequence[bool]:
+        def mass_update_user_flairs(data: Sequence[Tuple[str, str, str]]) -> Sequence[bool]:
             sio = StringIO()
             csv.writer(sio).writerows(data)
             s = sio.getvalue()
@@ -61,7 +61,7 @@ class Flair:
             return [i['ok'] for i in root]
 
         itr = map(
-            lambda xs: CallChunk(bulk_update_user_flairs_operation, xs),
+            lambda xs: CallChunk(mass_update_user_flairs, xs),
             chunked(data, 100),
         )
         return CallChunkChainingIterator(itr)
@@ -339,7 +339,7 @@ class Flair:
         sr_name: str,
         amount: Optional[int] = None,
     ) -> PaginatorChainingWrapper[UserFlairAssociationPaginator, UserFlairAssociation]:
-        p = UserFlairAssociationPaginator(self._client, '/r/{sr_name}/api/flairlist')
+        p = UserFlairAssociationPaginator(self._client, f'/r/{sr_name}/api/flairlist')
         return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def show_my_flair(self, sr_name: str) -> None:

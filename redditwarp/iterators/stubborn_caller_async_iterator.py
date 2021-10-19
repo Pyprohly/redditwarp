@@ -18,6 +18,6 @@ class StubbornCallerAsyncIterator(AsyncIterator[T]):
                 self.current = next(self._itr)
             except StopIteration:
                 raise StopAsyncIteration
-        value = await self.current()
+        result = await self.current()
         self.current = None
-        return value
+        return result

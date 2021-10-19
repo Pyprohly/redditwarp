@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.flair import UserFlairAssociation
 
-from ..exceptions import MissingCursorException
-from ...models.load.flair import load_user_flair_association
 from ..bidirectional_cursor_paginator import BidirectionalCursorPaginator
+from ..exceptions import MissingCursorException
+from ...models.flair import UserFlairAssociation
+from ...models.load.flair import load_user_flair_association
 
 class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssociation]):
     def __init__(self,
@@ -22,7 +22,8 @@ class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssoci
         self.uri = uri
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
-        yield ('limit', str(self.limit))
+        if self.limit is not None:
+            yield ('limit', str(self.limit))
 
         if self.direction:
             if self.after:

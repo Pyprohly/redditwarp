@@ -14,23 +14,23 @@ class BaseComposedMessage(BaseMessage):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id = int(d['id'], 36)
-        self.created_ut = int(d['created_utc'])
-        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        self.timestamp = int(d['created_utc'])
+        self.datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
         dest: str = d['dest']
         self.dest: str = dest
-        self.recipient_name_prefixed: str = 'r/'+dest if dest.startswith('#') else 'u/'+dest
+        self.prefixed_recipient: str = '%s/%s' % ('ur'[dest.startswith('#')], dest)
         self.subject: str = d['subject']
         self.body: str = d['body']
         self.body_html: str = d['body_html']
         self.unread: bool = d['new']
         self.distinguished: str = d['distinguished'] or ''
-        self.sender: str = d['author'] or ''
-        self.sender_id: Optional[int] = (
+        self.author_name: Optional[str] = d['author']
+        self.author_id: Optional[int] = (
             int(v.partition('_')[2], 36)
             if (v := d['author_fullname']) else
             None
         )
-        self.via: str = '' if dest.startswith('#') else (d['subreddit'] or '')
+        self.via: Optional[str] = None if dest.startswith('#') else d['subreddit']
 
 class BaseCommentMessage(BaseMessage):
     class _SubmissionInfo:
@@ -43,8 +43,8 @@ class BaseCommentMessage(BaseMessage):
     class _CommentInfo:
         def __init__(self, d: Mapping[str, Any]):
             self.id = int(d['id'], 36)
-            self.created_ut = int(d['created_utc'])
-            self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+            self.timestamp = int(d['created_utc'])
+            self.datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
             self.context = d['context']
             self.rel_permalink: str = self.context.partition('?')[0]
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink

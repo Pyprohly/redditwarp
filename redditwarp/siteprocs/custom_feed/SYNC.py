@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Any
+from typing import TYPE_CHECKING, Optional, Sequence, Any, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.custom_feed import CustomFeed as CustomFeedModel
@@ -106,7 +106,7 @@ class CustomFeed:
         json_str = self._json_encode({"name": "abc"})
         self._client.request('PUT', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}', data={'model': json_str})
 
-    def bulk_add_to(self, user: str, feed: str, sr_names: Sequence[str]) -> CallChunkCallingIterator[Sequence[str], None]:
+    def bulk_add_to(self, user: str, feed: str, sr_names: Iterable[str]) -> CallChunkCallingIterator[Sequence[str], None]:
         def mass_add_to(sr_names: Sequence[str]) -> None:
             data = {'path': f'/user/{user}/m/{feed}', 'sr_names': (','.join(sr_names))}
             self._client.request('POST', '/api/multi/add_srs_bulk', data=data)

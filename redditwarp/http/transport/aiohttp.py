@@ -99,10 +99,10 @@ class Session(SessionBase):
         try:
             async with self.session.request(**kwargs) as response:
                 content = await response.content.read()
-        except asyncio.TimeoutError as e:
-            raise exceptions.TimeoutException from e
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except asyncio.TimeoutError as cause:
+            raise exceptions.TimeoutException from cause
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
         aiohttp_headers: Any = response.headers
         headers = CaseInsensitiveDict(dict(aiohttp_headers))

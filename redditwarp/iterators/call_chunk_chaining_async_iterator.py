@@ -20,19 +20,19 @@ class CallChunkChainingAsyncIterator(AsyncIterator[TOutput], Generic[TInput, TOu
 
     @property
     def current_iter(self) -> Iterator[TOutput]:
-        return self._chain_iter.current_iter
+        return self._chain_itr.current_iter
 
     @current_iter.setter
     def current_iter(self, value: Iterator[TOutput]) -> None:
-        self._chain_iter.current_iter = value
+        self._chain_itr.current_iter = value
 
     def __init__(self, chunks: Iterable[CallChunk[Sequence[TInput], Sequence[TOutput]]]) -> None:
         self.chunks = chunks
         self._call_iter = StubbornCallerAsyncIterator(chunks)
-        self._chain_iter = UnfalteringChainingAsyncIterator(self._call_iter)
+        self._chain_itr = UnfalteringChainingAsyncIterator(self._call_iter)
 
     def __aiter__(self) -> AsyncIterator[TOutput]:
         return self
 
     async def __anext__(self) -> TOutput:
-        return await self._chain_iter.__anext__()
+        return await self._chain_itr.__anext__()

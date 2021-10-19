@@ -17,7 +17,7 @@ from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
 from ...paginators.implementations.listing.p_user_pull_sync import ExtraSubmissionFieldsCommentListingPaginator
-from ...paginators.implementations.listing.p_subreddit_search_sync import SearchSubredditsListingPaginator
+from ...paginators.implementations.listing.p_subreddit_explore_sync import ExploreSubredditsListingPaginator
 from ... import exceptions
 from ... import http
 from ...http.util.json_load import json_loads_response
@@ -35,6 +35,8 @@ class Subreddit:
         self.pulls = Pulls(client)
 
     def get_by_name(self, name: str) -> Optional[SubredditModel]:
+        if not name:
+            raise ValueError('`name` must not be empty')
         try:
             root = self._client.request('GET', f'/r/{name}/about')
         except http.exceptions.StatusCodeException as e:
@@ -107,10 +109,11 @@ class Subreddit:
     def get_post_requirements(self, sr: str) -> Mapping[str, Any]:
         return self._client.request('GET', f'/api/v1/{sr}/post_requirements')
 
-    def explore(self, query: str, amount: Optional[int] = None, *,
-            show_users: bool = False,
-            ) -> PaginatorChainingWrapper[SearchSubredditsListingPaginator, SubredditModel]:
-        p = SearchSubredditsListingPaginator(self._client, '/subreddits/search', query, show_users=show_users)
+    def explore(self, query: str, amount: Optional[int] = None,
+            ) -> PaginatorChainingWrapper[ExploreSubredditsListingPaginator, SubredditModel]:
+        if not query:
+            raise ValueError('query cannot be empty')
+        p = ExploreSubredditsListingPaginator(self._client, '/subreddits/search', query)
         return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def explore_names(self, name: str) -> Sequence[str]:

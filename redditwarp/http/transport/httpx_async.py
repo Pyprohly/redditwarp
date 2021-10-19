@@ -83,10 +83,10 @@ class Session(SessionBase):
         kwargs = dict(_generate_request_kwargs(request, etv))
         try:
             response = await self.client.request(**kwargs)
-        except httpx.TimeoutException as e:
-            raise exceptions.TimeoutException from e
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except httpx.TimeoutException as cause:
+            raise exceptions.TimeoutException from cause
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
         return UResponse(
             status=response.status_code,

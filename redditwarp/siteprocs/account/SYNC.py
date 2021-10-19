@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Tuple, Mapping, Any
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.account_SYNC import MyAccount
+    from ...models.my_account_SYNC import MyAccount
     from ...models.user_relationship_item import UserRelationshipItem, FriendRelationshipItem
     from ...models.trophy import Trophy
     from ...models.karma_breakdown_entry import KarmaBreakdownEntry
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 from functools import cached_property
 
 from .pull_subreddits_SYNC import PullSubreddits
-from ...models.load.account_SYNC import load_account
+from ...models.load.my_account_SYNC import load_account
 from ...models.load.user_relationship_item import load_user_relationship_item, load_friend_relationship_item
 from ...models.load.karma_breakdown_entry import load_karma_breakdown_entry
 from ...models.load.trophy import load_trophy

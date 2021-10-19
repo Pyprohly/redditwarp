@@ -9,7 +9,7 @@ if TYPE_CHECKING:
         BannedUserItem,
         MutedUserItem,
     )
-    from ...models.mod_log_action_entry import ModLogActionEntry
+    from ...models.moderation_action_log_entry import ModerationActionLogEntry
 
 from functools import cached_property
 
@@ -24,7 +24,7 @@ from .legacy_SYNC import Legacy
 from .pull_SYNC import Pull
 from ...util.base_conversion import to_base36
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.p_moderation_pull_actions_sync import ModerationActionsPaginator
+from ...paginators.implementations.listing.p_moderation_pull_actions_sync import ModerationActionLogPaginator
 
 class Moderation:
     def __init__(self, client: Client):
@@ -35,8 +35,8 @@ class Moderation:
 
     def pull_actions(self, sr: str, amount: Optional[int] = None, *,
             action: str = '', mod: str = '',
-            ) -> PaginatorChainingWrapper[ModerationActionsPaginator, ModLogActionEntry]:
-        p = ModerationActionsPaginator(self._client, f'/r/{sr}/about/log', action=action, mod=mod)
+            ) -> PaginatorChainingWrapper[ModerationActionLogPaginator, ModerationActionLogEntry]:
+        p = ModerationActionLogPaginator(self._client, f'/r/{sr}/about/log', action=action, mod=mod)
         return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
     def get_moderator(self, sr: str, user: str) -> Optional[ModeratorUserItem]:

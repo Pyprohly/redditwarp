@@ -6,14 +6,14 @@ TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
 
 class CallChunk(Generic[TInput, TOutput]):
-    """Perform `.operation` on `.data` when called."""
+    """Perform `.operation` on `.operand` when called."""
 
     def __init__(self,
         operation: Callable[[TInput], TOutput],
-        data: TInput,
+        operand: TInput,
     ) -> None:
         self.operation = operation
-        self.data = data
+        self.operand = operand
 
     def __call__(self) -> TOutput:
-        return self.operation(self.data)
+        return self.operation(self.operand)

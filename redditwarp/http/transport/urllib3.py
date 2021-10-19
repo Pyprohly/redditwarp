@@ -72,10 +72,10 @@ class Session(SessionBase):
             else:
                 raise Exception('unsupported payload type')
 
-        except urllib3.exceptions.MaxRetryError as e:
-            raise exceptions.TimeoutException from e
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except urllib3.exceptions.ReadTimeoutError as cause:
+            raise exceptions.TimeoutException from cause
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
         return UResponse(
             status=response.status,

@@ -70,14 +70,14 @@ class Session(SessionBase):
         try:
             with urllib.request.urlopen(req, timeout=t) as response:
                 content = response.read()
-        except socket.timeout as e:
-            raise exceptions.TimeoutException from e
-        except urllib.error.URLError as e:
-            if str(e.reason) == 'timed out':
-                raise exceptions.TimeoutException from e
+        except socket.timeout as cause:
+            raise exceptions.TimeoutException from cause
+        except urllib.error.URLError as cause:
+            if str(cause.reason) == 'timed out':
+                raise exceptions.TimeoutException from cause
             raise
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
         return UResponse(
             status=response.status,

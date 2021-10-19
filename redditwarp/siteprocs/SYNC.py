@@ -20,6 +20,7 @@ from .message.SYNC import Message
 from .moderation.SYNC import Moderation
 from .draft.SYNC import Draft
 from .misc.SYNC import Misc
+from .modmail.SYNC import Modmail
 
 class ClientProcedures:
     def __init__(self, client: Client):
@@ -40,3 +41,4 @@ class ClientProcedures:
         self.moderation = Moderation(client)
         self.draft = Draft(client)
         self.misc = Misc(client)
+        self.modmail = Modmail(client)

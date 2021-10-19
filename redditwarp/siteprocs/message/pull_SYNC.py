@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...models.message_SYNC import Message, ComposedMessage, CommentMessage
 
 from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.p_message_listing_paginator import (
+from ...paginators.implementations.listing.message_listing_paginator import (
     MessageListingPaginator,
     ComposedMessageListingPaginator,
     CommentMessageListingPaginator,

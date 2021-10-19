@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from .artifact import Artifact
 
-class ModeratedSubredditListItem(Artifact):
+class ModeratedSubreddit(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             self.is_subscribed: bool = d['user_is_subscriber']
@@ -16,8 +16,6 @@ class ModeratedSubredditListItem(Artifact):
         full_id36: str = d['name']
         self.id36: str = full_id36[3:]
         self.id = int(self.id36, 36)
-        self.created_ut = int(d['created_utc'])
-        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['display_name']
         self.type: str = d['subreddit_type']
         self.subscriber_count: int = d['subscribers']
@@ -28,3 +26,12 @@ class ModeratedSubredditListItem(Artifact):
         self.me = None
         if 'user_is_subscriber' in d:
             self.me = self.Me(d)
+
+class ModeratedUserSubreddit(ModeratedSubreddit):
+    pass
+
+class ModeratedRegularSubreddit(ModeratedSubreddit):
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        self.created_ut = int(d['created_utc'])
+        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)

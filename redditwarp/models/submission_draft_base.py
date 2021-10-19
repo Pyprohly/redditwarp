@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Sequence, TypeVar, overload, Iterator, Union, Generic
 
 from .submission_draft import Draft
+from .subreddit_base import BaseSubreddit
 
 class BaseDraftList(Sequence[Draft]):
     def __init__(self, drafts: Sequence[Draft]):
@@ -24,11 +25,11 @@ class BaseDraftList(Sequence[Draft]):
     def __getitem__(self, index: Union[int, slice]) -> Union[Draft, Sequence[Draft]]:
         return self.drafts[index]
 
-T = TypeVar('T')
+TSubreddit = TypeVar('TSubreddit', bound=BaseSubreddit)
 
-class GenericBaseDraftList(BaseDraftList, Generic[T]):
+class GenericBaseDraftList(BaseDraftList, Generic[TSubreddit]):
     def __init__(self,
             drafts: Sequence[Draft],
-            subreddits: Sequence[T]):
+            subreddits: Sequence[TSubreddit]):
         super().__init__(drafts)
         self.subreddits = subreddits
