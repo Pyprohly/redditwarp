@@ -92,7 +92,6 @@ class CoreClient:
     def __init__(self,
             client_id: str, client_secret: str,
             refresh_token: Optional[str] = None,
-            access_token: Optional[str] = None,
             *,
             username: Optional[str] = None, password: Optional[str] = None,
             grant: Optional[AuthorizationGrant] = None):
@@ -105,11 +104,6 @@ class CoreClient:
             grant type) you won't be given a client secret. The Reddit docs say to use an
             empty string in this case.
         refresh_token: Optional[str]
-        access_token: Optional[str]
-            Initialize the client :class:`~.Authorizer` with an access token.
-            The token will continue to be used until the server indicates
-            an invalid token, in which case the configured grant will used to
-            exchange for a new access token.
         username: Optional[str]
             Reddit account username.
             Must be used with :param:`password`.
@@ -147,10 +141,7 @@ class CoreClient:
             (client_id, client_secret),
             grant,
         )
-        authorizer = Authorizer(
-            token_client,
-            (None if access_token is None else Token(access_token)),
-        )
+        authorizer = Authorizer(token_client)
         requestor = RateLimited(Authorized(recorder, authorizer))
         http = RedditHTTPClient(session, requestor, authorizer=authorizer, last=last)
         token_client.headers = http.headers
@@ -210,7 +201,7 @@ class CoreClient:
     def set_access_token(self, access_token: str) -> None:
         """Manually set the current access token.
 
-        Tip: the current access token can be found with
+        Tip: the current access token is found at
         `self.http.authorizer.token.access_token`
 
         Parameters
@@ -220,7 +211,10 @@ class CoreClient:
         self.http.authorizer.token = Token(access_token)
 
     def set_user_agent(self, s: Optional[str]) -> None:
-        ua = self.http.user_agent_start
+        """Set a customer user agent description.
+
+        To view or set the current user agent string, see `self.http.user_agent`."""
+        ua = self.http.user_agent_lead
         if s is not None:
             ua += self._USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR + s
         self.http.user_agent = ua

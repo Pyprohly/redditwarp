@@ -53,7 +53,7 @@ class Submission:
                     data={'filepath': filename, 'mimetype': mimetype})
             return load_media_upload_lease(result)
 
-        def deposit(self, upload_lease: MediaUploadLease, file: IO[bytes]) -> None:
+        def deposit_file(self, file: IO[bytes], upload_lease: MediaUploadLease) -> None:
             sess = self._client.http.session
             req = sess.make_request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file})
             resp = sess.send(req, timeout=-1)
@@ -61,7 +61,7 @@ class Submission:
 
         def upload(self, file: IO[bytes]) -> MediaUploadLease:
             upload_lease = self.obtain_upload_lease(file.name)
-            self.deposit(upload_lease, file)
+            self.deposit_file(file, upload_lease)
             return upload_lease
 
     upload_media = cached_property(_upload_media)
@@ -419,7 +419,7 @@ class Submission:
             'state': '1',
         }
         if slot is not None:
-            data['slot'] = str(slot)
+            data['num'] = str(slot)
         self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
     def unsticky(self, submission_id: int) -> None:
@@ -432,18 +432,18 @@ class Submission:
     def pin_to_profile(self, submission_id: int, slot: Optional[int] = None) -> None:
         data = {
             'id': 't3_' + to_base36(submission_id),
-            'state': '1',
             'to_profile': '1',
+            'state': '1',
         }
         if slot is not None:
-            data['slot'] = str(slot)
+            data['num'] = str(slot)
         self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
     def unpin_from_profile(self, submission_id: int) -> None:
         data = {
             'id': 't3_' + to_base36(submission_id),
-            'state': '0',
             'to_profile': '1',
+            'state': '0',
         }
         self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 

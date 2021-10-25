@@ -48,6 +48,13 @@ def test_CredentialsError() -> None:
     with pytest.raises(exceptions.GrantCredentialsError):
         raise_for_reddit_auth_response_exception(exc, req, resp)
 
+    exc = auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant(error_name='invalid_grant')
+    req = Request('', '', payload=http.payload.URLEncodedFormData({'grant_type': 'password'}))
+    resp = Response(400, {}, b'{"error": "invalid_grant"}')
+    with pytest.raises(exceptions.GrantCredentialsError) as exc_info:
+        raise_for_reddit_auth_response_exception(exc, req, resp)
+    assert '2FA' in str(exc_info.value)
+
     exc = http.exceptions.StatusCodeException(status_code=401)
     req = Request('GET', 'https://www.reddit.com/api/v1/access_token', headers={'Authorization': 'Basic waterfall'})
     resp = Response(401, {}, b'')

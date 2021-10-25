@@ -55,7 +55,7 @@ class RedditHTTPClient(HTTPClient):
         super().__init__(session, requestor, params=params, headers=headers)
         self._authorizer = authorizer
         self._last = last
-        self.user_agent = self.user_agent_start = get_user_agent(session)
+        self.user_agent = self.user_agent_lead = get_user_agent(session)
         self.base_url = RESOURCE_BASE_URL
 
     def get_authorizer(self) -> Authorizer:

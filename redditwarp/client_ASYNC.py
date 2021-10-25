@@ -72,7 +72,6 @@ class CoreClient:
     def __init__(self,
             client_id: str, client_secret: str,
             refresh_token: Optional[str] = None,
-            access_token: Optional[str] = None,
             *,
             username: Optional[str] = None, password: Optional[str] = None,
             grant: Optional[AuthorizationGrant] = None):
@@ -91,10 +90,7 @@ class CoreClient:
             (client_id, client_secret),
             grant,
         )
-        authorizer = Authorizer(
-            token_client,
-            (None if access_token is None else Token(access_token)),
-        )
+        authorizer = Authorizer(token_client)
         requestor = RateLimited(Authorized(recorder, authorizer))
         http = RedditHTTPClient(session, requestor, authorizer=authorizer, last=last)
         token_client.headers = http.headers
@@ -155,7 +151,7 @@ class CoreClient:
         self.http.authorizer.token = Token(access_token)
 
     def set_user_agent(self, s: Optional[str]) -> None:
-        ua = self.http.user_agent_start
+        ua = self.http.user_agent_lead
         if s is not None:
             ua += self._USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR + s
         self.http.user_agent = ua

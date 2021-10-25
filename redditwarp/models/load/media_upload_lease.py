@@ -5,7 +5,7 @@ from ..media_upload_lease import MediaUploadLease
 
 def load_media_upload_lease(d: Mapping[str, Any]) -> MediaUploadLease:
     lease_data = d['args']
-    endpoint = 'https:' + lease_data['action']
+    endpoint = f'https:{x}' if (x := lease_data['action']).startswith('//') else x
     fields = {field['name']: field['value'] for field in lease_data['fields']}
     s3_object_key = fields['key']
     asset = d['asset']

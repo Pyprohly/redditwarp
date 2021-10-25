@@ -50,7 +50,12 @@ def raise_for_reddit_auth_response_exception(e: Exception, req: Request, resp: R
 
     if isinstance(e, auth.exceptions.TokenServerResponseError):
         if e.error_name == 'invalid_grant':
-            raise GrantCredentialsError('Check your grant credentials')
+            msg = 'Check your grant credentials'
+            if isinstance(pld := req.payload, http.payload.URLEncodedFormData):
+                grant = pld.data
+                if grant.get('grant_type') == 'password':
+                    msg = "Check your grant credentials.\n\nTip: If you have 2FA enabled the password grant won't work. You must use a refresh token instead."
+            raise GrantCredentialsError(msg)
 
         elif e.error_name == 'unsupported_grant_type':
             content_type = req_headers.get('Content-Type', '')
@@ -70,15 +75,15 @@ def raise_for_reddit_auth_response_exception(e: Exception, req: Request, resp: R
             raise ClientCredentialsError('Check your client credentials')
 
         if status == 403:
-            msg = None
             ua = req_headers['User-Agent']
             if ua.startswith('Bot'):
-                msg = "User-Agent strings must not start with 'Bot'."
+                raise BlacklistedUserAgent("User-Agent strings must not start with 'Bot'.")
             for s in ['scraping', 'searchme']:
                 if s in ua:
-                    msg = f"{s!r} is a known blacklisted User-Agent pattern. Remove it from your User-Agent string."
-                    break
-            raise BlacklistedUserAgent(msg)
+                    raise BlacklistedUserAgent(
+                        f"{s!r} is a known blacklisted User-Agent pattern."
+                        " Remove it from your User-Agent string."
+                    )
 
         elif status == 429:
             ua = req_headers['User-Agent']

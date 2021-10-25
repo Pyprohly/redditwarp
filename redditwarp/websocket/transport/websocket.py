@@ -101,7 +101,7 @@ def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) 
     return WebSocketClient(ws)
 
 
-name = websocket.__name__
+name = 'websocket-client'
 version = websocket.__version__
 register(
     adaptor_module_name=__name__,
