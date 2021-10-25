@@ -36,14 +36,14 @@ class BaseSubmission(Artifact):
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['author']
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
-            self.id = int(self.id36, 36)
+            self.id: int = int(self.id36, 36)
             self.has_premium: bool = d['author_premium']
-            self.flair = self._AuthorFlair(d)
+            self.flair: BaseSubmission._Author._AuthorFlair = self._AuthorFlair(d)
 
     class _Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
-            self.id = int(self.id36, 36)
+            self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
             #: One of `public`, `private`, `restricted`, `archived`,
             #: `employees_only`, `gold_only`, or `gold_restricted`.
@@ -56,13 +56,13 @@ class BaseSubmission(Artifact):
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['approved_by']
                 self.ut: int = d['approved_at_utc']
-                self.at = datetime.fromtimestamp(self.ut, timezone.utc)
+                self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
         class _Removed:
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['banned_by']
                 self.ut: int = d['banned_at_utc']
-                self.at = datetime.fromtimestamp(self.ut, timezone.utc)
+                self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
         class _Reports:
             def __init__(self, d: Mapping[str, Any]):
@@ -74,15 +74,15 @@ class BaseSubmission(Artifact):
         def __init__(self, d: Mapping[str, Any]):
             self.spam: bool = d['spam']
 
-            self.approved = None
+            self.approved: Optional[BaseSubmission._Moderator._Approved] = None
             if d['approved_by']:
                 self.approved = self._Approved(d)
 
-            self.removed = None
+            self.removed: Optional[BaseSubmission._Moderator._Removed] = None
             if d['banned_by']:
                 self.removed = self._Removed(d)
 
-            self.reports = self._Reports(d)
+            self.reports: BaseSubmission._Moderator._Reports = self._Reports(d)
 
             self.removal_reason_by: Optional[str] = d['mod_reason_by']
             self.removal_reason_title: Optional[str] = d['mod_reason_title']
@@ -90,10 +90,10 @@ class BaseSubmission(Artifact):
 
     class _Event:
         def __init__(self, d: Mapping[str, Any]):
-            self.start_ut = int(d['event_start'])
-            self.start_at = datetime.fromtimestamp(self.start_ut, timezone.utc)
-            self.end_ut = int(d['event_end'])
-            self.end_at = datetime.fromtimestamp(self.end_ut, timezone.utc)
+            self.start_ut: int = int(d['event_start'])
+            self.start_at: datetime = datetime.fromtimestamp(self.start_ut, timezone.utc)
+            self.end_ut: int = int(d['event_end'])
+            self.end_at: datetime = datetime.fromtimestamp(self.end_ut, timezone.utc)
             self.is_live: bool = d['event_is_live']
 
     class _Flair:
@@ -117,9 +117,9 @@ class BaseSubmission(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id36: str = d['id']
-        self.id = int(self.id36, 36)
-        self.created_ut = int(d['created_utc'])
-        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        self.id: int = int(self.id36, 36)
+        self.created_ut: int = int(d['created_utc'])
+        self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.title: str = d['title']
         #: Works even if score is hidden (`hide_score` JSON field is `True`).
@@ -131,7 +131,7 @@ class BaseSubmission(Artifact):
         self.permalink: str = AUTHORIZATION_BASE_URL + d['permalink']
 
         a: Any = d['edited']
-        self.edited = bool(a)
+        self.edited: bool = bool(a)
         self.edited_ut: Optional[int] = int(a) if self.edited else None
         self.edited_at: Optional[datetime] = None
         if self.edited_ut is not None:
@@ -152,30 +152,30 @@ class BaseSubmission(Artifact):
         self.pinned: bool = d['pinned']
         self.distinguished: str = d['distinguished'] or ''
 
-        self.event = None
+        self.event: Optional[BaseSubmission._Event] = None
         if 'event_start' in d:
             self.event = self._Event(d)
 
-        self.me = self._Me(d)
+        self.me: BaseSubmission._Me = self._Me(d)
 
-        self.subreddit = self._Subreddit(d)
+        self.subreddit: BaseSubmission._Subreddit = self._Subreddit(d)
 
         s: str = d['author']
-        self.author_name = s
-        self.author = None
+        self.author_name: str = s
+        self.author: Optional[BaseSubmission._Author] = None
         if not s.startswith('['):
             self.author = self._Author(d)
 
-        self.mod = None
+        self.mod: Optional[BaseSubmission._Moderator] = None
         # `spam`, `ignore_reports`, `approved`, `removed`, and `rte_mode`
         # are all fields that aren't available when the current user is
         # not a moderator of the subreddit (or there’s no user context).
         if 'spam' in d:
             self.mod = self._Moderator(d)
 
-        self.flair = self._Flair(d)
+        self.flair: BaseSubmission._Flair = self._Flair(d)
 
-        self.reports = None
+        self.reports: Optional[BaseSubmission._Reports] = None
         if d['num_reports'] is not None:
             self.reports = self._Reports(d)
 

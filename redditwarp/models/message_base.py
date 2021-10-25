@@ -13,9 +13,9 @@ class BaseMessage(Artifact):
 class BaseComposedMessage(BaseMessage):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        self.id = int(d['id'], 36)
-        self.timestamp = int(d['created_utc'])
-        self.datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
+        self.id: int = int(d['id'], 36)
+        self.timestamp: int = int(d['created_utc'])
+        self.datetime: datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
         dest: str = d['dest']
         self.dest: str = dest
         self.prefixed_recipient: str = '%s/%s' % ('ur'[dest.startswith('#')], dest)
@@ -42,10 +42,10 @@ class BaseCommentMessage(BaseMessage):
 
     class _CommentInfo:
         def __init__(self, d: Mapping[str, Any]):
-            self.id = int(d['id'], 36)
-            self.timestamp = int(d['created_utc'])
-            self.datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
-            self.context = d['context']
+            self.id: int = int(d['id'], 36)
+            self.timestamp: int = int(d['created_utc'])
+            self.datetime: datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
+            self.context: str = d['context']
             self.rel_permalink: str = self.context.partition('?')[0]
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
@@ -62,12 +62,12 @@ class BaseCommentMessage(BaseMessage):
             self.body: str = d['body']
             self.body_html: str = d['body_html']
             self.author_name: str = d['author']
-            self.author_id = int(d['author_fullname'].partition('_')[2], 36)
+            self.author_id: int = int(d['author_fullname'].partition('_')[2], 36)
 
             self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.type: str = d['type']
-        self.submission = self._SubmissionInfo(d)
-        self.comment = self._CommentInfo(d)
+        self.submission: BaseCommentMessage._SubmissionInfo = self._SubmissionInfo(d)
+        self.comment: BaseCommentMessage._CommentInfo = self._CommentInfo(d)

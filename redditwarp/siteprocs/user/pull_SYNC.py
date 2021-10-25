@@ -95,4 +95,4 @@ class Pull:
             p = SavedCommentsListingPaginator(self._client, f'/user/{name}/saved')
             return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
-    saved = cached_property(_saved)
+    saved: cached_property[_saved] = cached_property(_saved)

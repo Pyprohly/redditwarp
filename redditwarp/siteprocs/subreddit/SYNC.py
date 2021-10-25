@@ -29,10 +29,10 @@ from .pulls_SYNC import Pulls
 class Subreddit:
     def __init__(self, client: Client):
         self._client = client
-        self.get = Get(client)
-        self.fetch = Fetch(client)
-        self.pull = Pull(client)
-        self.pulls = Pulls(client)
+        self.get: Get = Get(client)
+        self.fetch: Fetch = Fetch(client)
+        self.pull: Pull = Pull(client)
+        self.pulls: Pulls = Pulls(client)
 
     def get_by_name(self, name: str) -> Optional[SubredditModel]:
         if not name:

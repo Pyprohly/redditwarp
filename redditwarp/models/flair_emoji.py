@@ -21,11 +21,11 @@ class SubredditFlairEmojis(Sequence[FlairEmoji]):
             subreddit_emojis: Sequence[FlairEmoji],
             reddit_emojis: Sequence[FlairEmoji],
             subreddit_id36: str):
-        self.subreddit_emojis = subreddit_emojis
-        self.reddit_emojis = reddit_emojis
+        self.subreddit_emojis: Sequence[FlairEmoji] = subreddit_emojis
+        self.reddit_emojis: Sequence[FlairEmoji] = reddit_emojis
         #self.all_emojis: Sequence[FlairEmoji] = list(self.subreddit_emojis) + list(self.reddit_emojis)
-        self.subreddit_id36 = subreddit_id36
-        self.subreddit_id = int(subreddit_id36, 36)
+        self.subreddit_id36: str = subreddit_id36
+        self.subreddit_id: int = int(subreddit_id36, 36)
 
     def __len__(self) -> int:
         return len(self.subreddit_emojis)

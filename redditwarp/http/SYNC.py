@@ -1,3 +1,3 @@
 
-from .session_base_SYNC import SessionBase
-from .http_client_SYNC import HTTPClient
+from .session_base_SYNC import SessionBase as SessionBase
+from .http_client_SYNC import HTTPClient as HTTPClient

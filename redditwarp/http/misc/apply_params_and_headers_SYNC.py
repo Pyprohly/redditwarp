@@ -13,8 +13,8 @@ class ApplyParamsAndHeaders(RequestorDecorator):
             params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):
         super().__init__(requestor)
-        self.params = {} if params is None else params
-        self.headers = {} if headers is None else headers
+        self.params: Mapping[str, str] = {} if params is None else params
+        self.headers: Mapping[str, str] = {} if headers is None else headers
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         request.params.update(self.params)
@@ -26,8 +26,8 @@ class ApplyDefaultParamsAndHeaders(RequestorDecorator):
             params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):
         super().__init__(requestor)
-        self.params = {} if params is None else params
-        self.headers = {} if headers is None else headers
+        self.params: Mapping[str, str] = {} if params is None else params
+        self.headers: Mapping[str, str] = {} if headers is None else headers
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         (pd := request.params).update({**self.params, **pd})

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Type, Optional, Mapping, Union
+from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.typedefs import ClientCredentials, AuthorizationGrant
@@ -24,17 +24,17 @@ class CoreClient:
     _TSelf = TypeVar('_TSelf', bound='CoreClient')
 
     @classmethod
-    def from_creds(cls: Type[_TSelf], client_creds: ClientCredentials, grant: AuthorizationGrant) -> _TSelf:
+    def from_creds(cls: type[_TSelf], client_creds: ClientCredentials, grant: AuthorizationGrant) -> _TSelf:
         return cls(*client_creds, grant=grant)
 
     @classmethod
-    def from_http(cls: Type[_TSelf], http: RedditHTTPClient) -> _TSelf:
+    def from_http(cls: type[_TSelf], http: RedditHTTPClient) -> _TSelf:
         self = cls.__new__(cls)
         self._init(http)
         return self
 
     @classmethod
-    def from_access_token(cls: Type[_TSelf], access_token: str) -> _TSelf:
+    def from_access_token(cls: type[_TSelf], access_token: str) -> _TSelf:
         session = new_session()
         recorder = Recorded(session)
         last = Last(recorder)
@@ -44,7 +44,7 @@ class CoreClient:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_ini(cls: Type[_TSelf], site_name: str) -> _TSelf:
+    def from_praw_ini(cls: type[_TSelf], site_name: str) -> _TSelf:
         config = get_praw_config()
         section_name = site_name or config.default_section
         try:
@@ -97,14 +97,14 @@ class CoreClient:
         self._init(http)
 
     def _init(self, http: RedditHTTPClient) -> None:
-        self.http = http
+        self.http: RedditHTTPClient = http
         self.last_value: Any = None
 
     async def __aenter__(self: _TSelf) -> _TSelf:
         return self
 
     async def __aexit__(self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
@@ -160,4 +160,4 @@ class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
         #from .siteprocs.ASYNC import ClientProcedures
-        self.p = ...#siteprocs.ClientProcedures(self)
+        #self.p: ClientProcedures = ...#siteprocs.ClientProcedures(self)

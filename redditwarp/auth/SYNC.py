@@ -1,3 +1,3 @@
 
-from .token_obtainment_client_SYNC import TokenObtainmentClient
-from .token_revocation_client_SYNC import TokenRevocationClient
+from .token_obtainment_client_SYNC import TokenObtainmentClient as TokenObtainmentClient
+from .token_revocation_client_SYNC import TokenRevocationClient as TokenRevocationClient

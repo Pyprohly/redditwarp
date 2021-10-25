@@ -19,7 +19,7 @@ class SearchUsersListingPaginator(
         query: str,
     ):
         super().__init__(client, uri)
-        self.query = query
+        self.query: str = query
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

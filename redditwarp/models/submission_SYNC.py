@@ -18,7 +18,7 @@ from .submission_base import (
 class Submission(BaseSubmission):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client
 
 class LinkPost(Submission, BaseLinkPost):
     pass

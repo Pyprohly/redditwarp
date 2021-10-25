@@ -52,4 +52,4 @@ class _LazyImport:
         caller_frame = sys._getframe(1)
         caller_frame.f_globals[other] = module
 
-lazy_import = _LazyImport()
+lazy_import: _LazyImport = _LazyImport()

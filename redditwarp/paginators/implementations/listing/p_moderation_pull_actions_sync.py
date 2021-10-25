@@ -19,10 +19,10 @@ class ModerationActionLogPaginator(ListingPaginator[ModerationActionLogEntry]):
     ) -> None:
         cursor_extractor = lambda x: x['data']['id']
         super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
-        self.client = client
-        self.uri = uri
-        self.action = action
-        self.mod = mod
+        self.client: Client = client
+        self.uri: str = uri
+        self.action: str = action
+        self.mod: str = mod
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

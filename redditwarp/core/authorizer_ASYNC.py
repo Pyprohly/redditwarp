@@ -29,8 +29,8 @@ class Authorizer:
         token_client: Optional[TokenObtainmentClient] = None,
         token: Optional[Token] = None,
     ):
-        self.token_client = token_client
-        self.token = token
+        self.token_client: Optional[TokenObtainmentClient] = token_client
+        self.token: Optional[Token] = token
         self.renewal_time: Optional[int] = None
         self.renewal_skew: int = 30
         self.expires_in_fallback: Optional[int] = None
@@ -79,7 +79,7 @@ class Authorizer:
 class Authorized(RequestorDecorator):
     def __init__(self, requestor: Requestor, authorizer: Authorizer) -> None:
         super().__init__(requestor)
-        self.authorizer = authorizer
+        self.authorizer: Authorizer = authorizer
         self._lock = asyncio.Lock()
         self._valve = asyncio.Event()
         self._valve.set()

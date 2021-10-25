@@ -16,7 +16,7 @@ from .conversation_SYNC import Conversation
 class Modmail:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.conversation = Conversation(client)
+        self.conversation: Conversation = Conversation(client)
 
     def get_unread_counts(self) -> Mapping[str, int]:
         return self._client.request('GET', '/api/mod/conversations/unread/count')

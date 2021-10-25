@@ -76,7 +76,7 @@ class Session(SessionBase):
         httpx_client: httpx.AsyncClient,
     ) -> None:
         super().__init__()
-        self.client = httpx_client
+        self.client: httpx.AsyncClient = httpx_client
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         etv = self._get_effective_timeout_value(timeout)
@@ -104,8 +104,8 @@ def new_session() -> Session:
     cl = httpx.AsyncClient()#pool_limits=limits)
     return Session(cl)
 
-name = httpx.__name__
-version = httpx.__version__
+name: str = httpx.__name__
+version: str = httpx.__version__
 register(
     adaptor_module_name=__name__,
     name=name,

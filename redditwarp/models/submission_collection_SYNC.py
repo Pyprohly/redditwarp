@@ -14,7 +14,7 @@ from .load.submission_SYNC import load_submission
 class SubmissionCollectionDetails(BaseSubmissionCollectionDetails):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client
 
 class SubmissionCollection(
     SubmissionCollectionDetails,

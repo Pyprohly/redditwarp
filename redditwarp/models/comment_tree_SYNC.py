@@ -20,7 +20,7 @@ class CommentSubtreeTreeNode(ICommentSubtreeTreeNode, GeneralTreeNode[T, 'Commen
         more: Optional[MoreComments],
     ):
         super().__init__(value, children)
-        self.more = more
+        self.more: Optional[MoreComments] = more
 
 class MoreCommentsTreeNode(CommentSubtreeTreeNode[None]):
     pass

@@ -19,7 +19,7 @@ class MoreComments(BaseMoreComments):
         client: Client,
     ):
         super().__init__(submission_id36, comment_id36, sort, d=d)
-        self.client = client
+        self.client: Client = client
 
     def __call__(self, *,
         depth: Optional[int] = None,
@@ -58,8 +58,8 @@ class LoadMoreComments(MoreComments):
         client: Client,
     ):
         super().__init__(submission_id36, comment_id36, sort, d=d, client=client)
-        self.children_id36 = children_id36
-        self.count = count
+        self.children_id36: Sequence[str] = children_id36
+        self.count: int = count
 
     def __call__(self, *,
         depth: Optional[int] = None,

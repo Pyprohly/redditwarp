@@ -10,8 +10,8 @@ class CallChunk(Generic[TInput, TOutput]):
         operation: Callable[[TInput], Awaitable[TOutput]],
         operand: TInput,
     ) -> None:
-        self.operation = operation
-        self.operand = operand
+        self.operation: Callable[[TInput], Awaitable[TOutput]] = operation
+        self.operand: TInput = operand
 
     async def __call__(self) -> TOutput:
         return await self.operation(self.operand)

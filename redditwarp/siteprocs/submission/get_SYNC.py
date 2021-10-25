@@ -52,8 +52,8 @@ class Get(_Common[Submission]):
 
     def __init__(self, client: Client):
         super().__init__(client)
-        self.as_textpost = self._AsTextPost(client)
-        self.as_linkpost = self._AsLinkPost(client)
+        self.as_textpost: Get._AsTextPost = self._AsTextPost(client)
+        self.as_linkpost: Get._AsLinkPost = self._AsLinkPost(client)
 
     def _load_object(self, m: Mapping[str, Any]) -> Optional[Submission]:
         return load_submission(m, self._client)

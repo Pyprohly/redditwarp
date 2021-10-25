@@ -43,7 +43,7 @@ import socket
 import urllib.parse
 import webbrowser
 import signal
-import functools
+from functools import partial
 from pprint import pp
 
 import redditwarp
@@ -67,7 +67,7 @@ def get_client_secret(args: argparse.Namespace) -> str:
     v = args.client_secret_opt or args.client_secret
     return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', v)
 
-@functools.partial(signal.signal, signal.SIGINT)
+@partial(signal.signal, signal.SIGINT)
 def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
     print('KeyboardInterrupt', file=sys.stderr)
     sys.exit(130)

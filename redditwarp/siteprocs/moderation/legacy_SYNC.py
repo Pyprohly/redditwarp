@@ -17,7 +17,7 @@ from .legacy_pull_users_SYNC import LegacyPullUsers
 class Legacy:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.pull_users = LegacyPullUsers(client)
+        self.pull_users: LegacyPullUsers = LegacyPullUsers(client)
 
     def list_moderators(self, sr: str) -> Sequence[ModeratorListItem]:
         root = self._client.request('GET', f'/r/{sr}/about/moderators')

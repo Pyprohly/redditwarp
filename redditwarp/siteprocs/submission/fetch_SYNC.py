@@ -54,8 +54,8 @@ class Fetch(_Common[Submission]):
 
     def __init__(self, outer: Outer, client: Client):
         super().__init__(client)
-        self.as_textpost = self._AsTextPost(client)
-        self.as_linkpost = self._AsLinkPost(client)
+        self.as_textpost: Fetch._AsTextPost = self._AsTextPost(client)
+        self.as_linkpost: Fetch._AsLinkPost = self._AsLinkPost(client)
 
     def _load_object(self, m: Mapping[str, Any]) -> Submission:
         return load_submission(m, self._client)

@@ -19,8 +19,8 @@ from .get_SYNC import Get
 class Comment:
     def __init__(self, client: Client):
         self._client = client
-        self.fetch = Fetch(self, client)
-        self.get = Get(client)
+        self.fetch: Fetch = Fetch(self, client)
+        self.get: Get = Get(client)
 
     def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[int, CommentModel]:
         def mass_fetch(ids: Sequence[int]) -> Sequence[CommentModel]:

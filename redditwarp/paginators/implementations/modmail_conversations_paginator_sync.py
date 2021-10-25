@@ -20,12 +20,12 @@ class ModmailConversationsPaginator(CursorPaginator[Tuple[Conversation, Message]
         limit: Optional[int] = 100,
     ):
         super().__init__()
-        self.limit = limit
-        self.client = client
-        self.uri = uri
-        self.mailbox = mailbox
-        self.subreddit_names = subreddit_names
-        self.sort = sort
+        self.limit: Optional[int] = limit
+        self.client: Client = client
+        self.uri: str = uri
+        self.mailbox: str = mailbox
+        self.subreddit_names: Sequence[str] = subreddit_names
+        self.sort: str = sort
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         if self.limit is not None:
@@ -49,9 +49,9 @@ class ModmailConversationsPaginator(CursorPaginator[Tuple[Conversation, Message]
         entries = data['conversationIds']
 
         if entries:
-            self.after = entries[-1]
+            self.after: str = entries[-1]
 
-        self.has_after = bool(entries)
+        self.has_after: bool = bool(entries)
         return data
 
     def next_result(self) -> Sequence[Tuple[Conversation, Message]]:

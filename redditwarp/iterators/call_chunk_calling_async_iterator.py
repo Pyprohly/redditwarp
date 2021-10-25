@@ -20,7 +20,7 @@ class CallChunkCallingAsyncIterator(AsyncIterator[TOutput], Generic[TInput, TOut
         self._call_iter.current = value
 
     def __init__(self, chunks: Iterable[CallChunk[TInput, TOutput]]) -> None:
-        self.chunks = chunks
+        self.chunks: Iterable[CallChunk[TInput, TOutput]] = chunks
         self._call_iter = StubbornCallerAsyncIterator(chunks)
 
     def __aiter__(self) -> AsyncIterator[TOutput]:

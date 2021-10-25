@@ -19,11 +19,11 @@ from ..events import Event, Frame, Message, TextMessage, BytesMessage
 from ..const import Opcode, Side, ConnectionState
 
 class WebSocketClient(WebSocketConnection):
-    side = Side.CLIENT
+    side: int = Side.CLIENT
 
     def __init__(self, ws: websockets.legacy.client.WebSocketClientProtocol):
         super().__init__()
-        self.ws = ws
+        self.ws: websockets.legacy.client.WebSocketClientProtocol = ws
 
     async def send_frame(self, m: Frame) -> None:
         if self.state == ConnectionState.CLOSED:
@@ -146,8 +146,8 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
     return WebSocketClient(ws)
 
 
-name = websockets.__name__
-version = websockets.__version__  # type: ignore[attr-defined]
+name: str = websockets.__name__
+version: str = websockets.__version__  # type: ignore[attr-defined]
 register(
     adaptor_module_name=__name__,
     name=name,

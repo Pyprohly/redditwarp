@@ -13,7 +13,7 @@ from ...paginators.implementations.listing.p_user_pull_sync import ExtraSubmissi
 class Front:
     def __init__(self, client: Client):
         self._client = client
-        self.pull = Pull(client)
+        self.pull: Pull = Pull(client)
 
     def pull_new_comments(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
         p = ExtraSubmissionFieldsCommentListingPaginator(self._client, '/comments')

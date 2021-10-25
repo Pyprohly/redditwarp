@@ -7,14 +7,14 @@ from datetime import datetime, timezone
 
 class ModeratorListItem:
     def __init__(self, d: Mapping[str, Any]):
-        self.d = d
+        self.d: Mapping[str, Any] = d
         full_id36: str = d['id']
         _, _, id36 = full_id36.partition('_')
-        self.id36 = id36
-        self.id = int(id36, 36)
+        self.id36: str = id36
+        self.id: int = int(id36, 36)
         self.name: str = d['name']
         #self.rel_id: str = d['rel_id']
-        self.added_ut = int(d['date'])
+        self.added_ut: int = int(d['date'])
         self.flair_text: str = d['author_flair_text']
         self.flair_css_class: str = d['author_flair_css_class']
         self.permissions: Collection[str] = d['mod_permissions']

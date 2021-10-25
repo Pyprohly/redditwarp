@@ -91,7 +91,7 @@ class Session(SessionBase):
         aiohttp_client: aiohttp.ClientSession,
     ) -> None:
         super().__init__()
-        self.session = aiohttp_client
+        self.session: aiohttp.ClientSession = aiohttp_client
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         etv = self._get_effective_timeout_value(timeout)
@@ -121,8 +121,8 @@ def new_session() -> Session:
     se = aiohttp.ClientSession(connector=connector)
     return Session(se)
 
-name = aiohttp.__name__
-version = aiohttp.__version__
+name: str = aiohttp.__name__
+version: str = aiohttp.__version__
 register(
     adaptor_module_name=__name__,
     name=name,

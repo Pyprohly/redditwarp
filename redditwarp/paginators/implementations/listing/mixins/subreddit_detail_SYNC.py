@@ -18,7 +18,7 @@ class SubredditDetail(ListingPaginator[T]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
         super().__init__(client, uri, limit=limit, params=params, cursor_extractor=cursor_extractor)
-        self.sr_detail = False
+        self.sr_detail: bool = False
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

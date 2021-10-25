@@ -55,7 +55,7 @@ class BaseSubreddit(Artifact):
             self.is_muted: bool = d['user_is_muted']
             self.is_subscribed: bool = d['user_is_subscriber']
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
-            self.flair = self._MeFlair(d)
+            self.flair: BaseSubreddit._Me._MeFlair = self._MeFlair(d)
 
     class _SubredditFlair:
         def __init__(self, d: Mapping[str, Any]):
@@ -69,9 +69,9 @@ class BaseSubreddit(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id36: str = d['id']
-        self.id = int(self.id36, 36)
-        self.created_ut = int(d['created_utc'])
-        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        self.id: int = int(self.id36, 36)
+        self.created_ut: int = int(d['created_utc'])
+        self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.name: str = d['display_name']
         #: One of `public`, `private`, `restricted`, `archived`,
@@ -92,8 +92,8 @@ class BaseSubreddit(Artifact):
         self.submit_link_label: str = d['submit_link_label']
 
         submission_type: str = d['submission_type']
-        self.allows_text_submissions = submission_type in ('any', 'self')
-        self.allows_link_submissions = submission_type in ('any', 'link')
+        self.allows_text_submissions: bool = submission_type in ('any', 'self')
+        self.allows_link_submissions: bool = submission_type in ('any', 'link')
 
         #: One of `confidence` (best), `old`, `top`, `qa`, `controversial`, or `new`.
         self.suggested_comment_sort: Optional[str] = d['suggested_comment_sort']
@@ -103,9 +103,9 @@ class BaseSubreddit(Artifact):
 
         self.icon_img: str = d['icon_img']
 
-        self.me = None
+        self.me: Optional[BaseSubreddit._Me] = None
         # Just checking if a user context is available.
         if d['user_is_moderator'] is not None:
             self.me = self._Me(d)
 
-        self.flair = self._SubredditFlair(d)
+        self.flair: BaseSubreddit._SubredditFlair = self._SubredditFlair(d)

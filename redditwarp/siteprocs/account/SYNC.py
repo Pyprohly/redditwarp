@@ -21,7 +21,7 @@ from ...util.base_conversion import to_base36
 class Account:
     def __init__(self, client: Client):
         self._client = client
-        self.pull_subreddits = PullSubreddits(client)
+        self.pull_subreddits: PullSubreddits = PullSubreddits(client)
 
     def fetch(self) -> MyAccount:
         root = self._client.request('GET', '/api/v1/me')
@@ -94,7 +94,7 @@ class Account:
         def by_id36(self, id36: str) -> None:
             self._client.request('POST', '/api/block_user', data={'account_id': id36})
 
-    block_user = cached_property(_block_user)
+    block_user: cached_property[_block_user] = cached_property(_block_user)
 
     class _unblock_user:
         def __init__(self, outer: Account) -> None:
@@ -119,7 +119,7 @@ class Account:
             }
             self._client.request('POST', '/api/unfriend', data=data)
 
-    unblock_user = cached_property(_unblock_user)
+    unblock_user: cached_property[_unblock_user] = cached_property(_unblock_user)
 
     def trusted(self) -> Sequence[UserRelationshipItem]:
         root = self._client.request('GET', '/prefs/trusted')

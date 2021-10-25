@@ -8,9 +8,9 @@ from .artifact import IArtifact
 
 class ModerationActionLogEntry(IArtifact):
     def __init__(self, d: Mapping[str, Any]) -> None:
-        self.d = d
+        self.d: Mapping[str, Any] = d
         self.action_name: str = d['action']
         self.agent_name: str = d['mod']
-        self.agent_id = int(d['mod_id36'], 36)
-        self.timestamp = int(d['created_utc'])
-        self.datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
+        self.agent_id: int = int(d['mod_id36'], 36)
+        self.timestamp: int = int(d['created_utc'])
+        self.datetime: datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)

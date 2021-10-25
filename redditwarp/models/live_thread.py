@@ -4,20 +4,20 @@ from typing import Mapping, Any, Sequence, Iterator, Union, overload
 
 class Contributor:
     def __init__(self, d: Mapping[str, Any]):
-        self.d = d
+        self.d: Mapping[str, Any] = d
         self.name: str = d['name']
         full_id36: str = d['id']
         _, _, id36 = full_id36.partition('_')
         self.id36: str = id36
-        self.id = int(id36, 36)
+        self.id: int = int(id36, 36)
         self.permissions: Sequence[str] = d['permissions']
 
 class ContributorList(Sequence[Contributor]):
     def __init__(self,
             contributors: Sequence[Contributor],
             invitations: Sequence[Contributor]):
-        self.contributors = contributors
-        self.invitations = invitations
+        self.contributors: Sequence[Contributor] = contributors
+        self.invitations: Sequence[Contributor] = invitations
 
     def __len__(self) -> int:
         return len(self.contributors)

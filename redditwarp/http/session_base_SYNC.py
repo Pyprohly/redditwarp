@@ -1,12 +1,12 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, Mapping, Optional, Union, Any
 if TYPE_CHECKING:
-    from typing import Optional, Type
     from collections.abc import MutableSequence
     from types import TracebackType
     from .request import Request
     from .response import Response
+    from .payload import RequestFiles
 
 import contextvars
 from collections import deque
@@ -19,7 +19,28 @@ T = TypeVar('T')
 DEFAULT_TIMEOUT = 100.
 
 class SessionBase(Requestor):
-    make_request = staticmethod(make_request)
+    @staticmethod
+    def make_request(
+        verb: str,
+        uri: str,
+        *,
+        params: Optional[Mapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
+        data: Optional[Union[Mapping[str, str], bytes]] = None,
+        json: Any = None,
+        files: Optional[RequestFiles] = None,
+        timeout: float = -2,
+    ) -> Request:
+        return make_request(
+            verb,
+            uri,
+            params=params,
+            headers=headers,
+            data=data,
+            json=json,
+            files=files,
+            timeout=timeout,
+        )
 
     def __init__(self) -> None:
         self.timeout: float = DEFAULT_TIMEOUT
@@ -29,7 +50,7 @@ class SessionBase(Requestor):
         return self
 
     def __exit__(self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> Optional[bool]:
@@ -77,7 +98,7 @@ class SessionBase(Requestor):
             self._reset_token_stack.append(tkn)
 
         def __exit__(self,
-            exc_type: Optional[Type[BaseException]],
+            exc_type: Optional[type[BaseException]],
             exc_value: Optional[BaseException],
             exc_traceback: Optional[TracebackType],
         ) -> Optional[bool]:

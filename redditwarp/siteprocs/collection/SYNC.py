@@ -17,10 +17,10 @@ from .reorder_SYNC import Reorder
 class Collection:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.create = Create(client)
-        self.add_post = AddPost(client)
-        self.remove_post = RemovePost(client)
-        self.reorder = Reorder(client)
+        self.create: Create = Create(client)
+        self.add_post: AddPost = AddPost(client)
+        self.remove_post: RemovePost = RemovePost(client)
+        self.reorder: Reorder = Reorder(client)
 
     def get(self, uuid: str) -> Optional[SubmissionCollection]:
         params = {'collection_id': uuid}
@@ -49,7 +49,8 @@ class Collection:
             root = self._client.request('GET', '/api/v1/collections/subreddit_collections', params=params)
             return [load_submission_collection_details(d, self._client) for d in root]
 
-    get_subreddit_collections_details = cached_property(_get_subreddit_collections_details)
+    get_subreddit_collections_details: cached_property[_get_subreddit_collections_details] = \
+            cached_property(_get_subreddit_collections_details)
 
     def delete(self, uuid: str) -> None:
         params = {'collection_id': uuid}

@@ -21,10 +21,10 @@ from ...paginators.implementations.listing.p_user_search_sync import SearchUsers
 class User:
     def __init__(self, client: Client):
         self._client = client
-        self.get_partial_user = GetPartialUser(client)
-        self.bulk_fetch_partial_user = BulkFetchPartialUser(client)
-        self.pull = Pull(client)
-        self.pull_user_subreddits = PullUserSubreddits(client)
+        self.get_partial_user: GetPartialUser = GetPartialUser(client)
+        self.bulk_fetch_partial_user: BulkFetchPartialUser = BulkFetchPartialUser(client)
+        self.pull: Pull = Pull(client)
+        self.pull_user_subreddits: PullUserSubreddits = PullUserSubreddits(client)
 
     def get_by_name(self, name: str) -> Optional[UserModel]:
         if not name:

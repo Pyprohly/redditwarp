@@ -13,7 +13,7 @@ from .comment_base import (
 class Comment(BaseComment):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client
 
 class ExtraSubmissionFieldsComment(Comment, BaseExtraSubmissionFieldsComment):
     pass

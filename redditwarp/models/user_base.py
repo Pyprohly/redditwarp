@@ -21,9 +21,9 @@ class BaseUser(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id36: str = d['id']
-        self.id = int(self.id36, 36)
-        self.created_ut = int(d['created_utc'])
-        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        self.id: int = int(self.id36, 36)
+        self.created_ut: int = int(d['created_utc'])
+        self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['name']
 
         #: Karma accumulated from posting.
@@ -48,4 +48,4 @@ class BaseUser(Artifact):
 
         self.icon_img: str = d['icon_img']
 
-        self.subreddit = self._Subreddit(d['subreddit'])
+        self.subreddit: BaseUser._Subreddit = self._Subreddit(d['subreddit'])

@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Type
+from typing import Mapping
 
 from http import HTTPStatus
 
@@ -21,7 +21,7 @@ class StatusCodeException(ArgExc):
 
     def __init__(self, arg: object = None, *, status_code: int) -> None:
         super().__init__(arg)
-        self.status_code = status_code
+        self.status_code: int = status_code
 
     def get_default_message(self) -> str:
         sts = self.status_code
@@ -68,7 +68,7 @@ class StatusCodeExceptionTypes:
     class GatewayTimeout(ServerErrorResponseException):
         STATUS_CODE = 504
 
-status_code_exception_class_by_status_code = {
+status_code_exception_class_by_status_code: Mapping[int, type[StatusCodeException]] = {
     cls.STATUS_CODE: cls
     for cls in [
         # Client errors
@@ -89,7 +89,7 @@ status_code_exception_class_by_status_code = {
     ]
 }
 
-def get_status_code_exception_class_by_status_code(n: int) -> Type[StatusCodeException]:
+def get_status_code_exception_class_by_status_code(n: int) -> type[StatusCodeException]:
     klass = status_code_exception_class_by_status_code.get(n)
     if klass is None:
         klass = StatusCodeException

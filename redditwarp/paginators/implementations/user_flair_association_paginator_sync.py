@@ -17,9 +17,9 @@ class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssoci
         limit: Optional[int] = 1000,
     ):
         super().__init__()
-        self.limit = limit
-        self.client = client
-        self.uri = uri
+        self.limit: Optional[int] = limit
+        self.client: Client = client
+        self.uri: str = uri
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         if self.limit is not None:
@@ -44,11 +44,11 @@ class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssoci
         before = data.get('before', '')
 
         if children:
-            self.after = after
-            self.before = before
+            self.after: str = after
+            self.before: str = before
 
-        self.has_after = bool(after)
-        self.has_before = bool(before)
+        self.has_after: bool = bool(after)
+        self.has_before: bool = bool(before)
         return data
 
     def next_result(self) -> Sequence[UserFlairAssociation]:

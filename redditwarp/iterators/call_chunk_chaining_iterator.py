@@ -29,7 +29,7 @@ class CallChunkChainingIterator(Iterator[TOutput], Generic[TInput, TOutput]):
         self._chain_itr.current_iter = value
 
     def __init__(self, chunks: Iterable[CallChunk[Sequence[TInput], Sequence[TOutput]]]) -> None:
-        self.chunks = chunks
+        self.chunks: Iterable[CallChunk[Sequence[TInput], Sequence[TOutput]]] = chunks
         self._call_iter = StubbornCallerIterator(chunks)
         self._chain_itr = UnfalteringChainingIterator(self._call_iter)
 

@@ -20,7 +20,7 @@ class CallChunkCallingIterator(Iterator[TOutput], Generic[TInput, TOutput]):
         self._call_iter.current = value
 
     def __init__(self, chunks: Iterable[CallChunk[TInput, TOutput]]) -> None:
-        self.chunks = chunks
+        self.chunks: Iterable[CallChunk[TInput, TOutput]] = chunks
         self._call_iter = StubbornCallerIterator(chunks)
 
     def __iter__(self) -> Iterator[TOutput]:

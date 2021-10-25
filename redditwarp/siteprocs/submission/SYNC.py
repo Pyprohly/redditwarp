@@ -26,8 +26,8 @@ from .get_SYNC import Get
 class Submission:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.fetch = Fetch(self, client)
-        self.get = Get(client)
+        self.fetch: Fetch = Fetch(self, client)
+        self.get: Get = Get(client)
 
     def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[int, SubmissionModel]:
         def mass_fetch(ids: Sequence[int]) -> Sequence[SubmissionModel]:
@@ -64,7 +64,7 @@ class Submission:
             self.deposit_file(file, upload_lease)
             return upload_lease
 
-    upload_media = cached_property(_upload_media)
+    upload_media: cached_property[_upload_media] = cached_property(_upload_media)
 
     def create_text_post(self,
         sr: str,

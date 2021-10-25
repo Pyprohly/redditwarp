@@ -16,12 +16,12 @@ from ..events import Event, Frame, Message, TextMessage, BytesMessage
 from ..const import Side, ConnectionState
 
 class WebSocketClient(WebSocketConnection):
-    side = Side.CLIENT
+    side: int = Side.CLIENT
 
     def __init__(self, ws: aiohttp.ClientWebSocketResponse, session: aiohttp.ClientSession):
         super().__init__()
-        self.ws = ws
-        self.session = session
+        self.ws: aiohttp.ClientWebSocketResponse = ws
+        self.session: aiohttp.ClientSession = session
 
     async def send_frame(self, m: Frame) -> None:
         raise RuntimeError('operation not supported')
@@ -134,7 +134,7 @@ class WebSocketClient(WebSocketConnection):
         await self.session.close()
 
         if self.ws.close_code:
-            self.close_code = self.ws.close_code
+            self.close_code: int = self.ws.close_code
 
         await self.shutdown()
 
@@ -159,8 +159,8 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
     return WebSocketClient(ws, session)
 
 
-name = aiohttp.__name__
-version = aiohttp.__version__
+name: str = aiohttp.__name__
+version: str = aiohttp.__version__
 register(
     adaptor_module_name=__name__,
     name=name,

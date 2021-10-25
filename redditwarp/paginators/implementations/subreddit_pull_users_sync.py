@@ -30,8 +30,8 @@ class ModerationPullUsersPaginator(BidirectionalCursorPaginator[T]):
         limit: Optional[int] = 100,
     ):
         super().__init__()
-        self.client = client
-        self.uri = uri
+        self.client: Client = client
+        self.uri: str = uri
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         if self.limit is not None:
@@ -53,10 +53,10 @@ class ModerationPullUsersPaginator(BidirectionalCursorPaginator[T]):
         root = self.client.request('GET', self.uri, params=params)
         after = root['after'] or ''
         before = root['before'] or ''
-        self.after = after
-        self.before = before
-        self.has_after = bool(after)
-        self.has_before = bool(before)
+        self.after: str = after
+        self.before: str = before
+        self.has_after: bool = bool(after)
+        self.has_before: bool = bool(before)
         return root
 
 

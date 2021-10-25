@@ -77,7 +77,7 @@ class Session(SessionBase):
         requests_session: requests.Session,
     ) -> None:
         super().__init__()
-        self.session = requests_session
+        self.session: requests.Session = requests_session
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         etv = self._get_effective_timeout_value(timeout)
@@ -105,8 +105,8 @@ def new_session() -> Session:
     se.mount('https://', retry_adapter)
     return Session(se)
 
-name = requests.__name__
-version = requests.__version__
+name: str = requests.__name__
+version: str = requests.__version__
 register(
     adaptor_module_name=__name__,
     name=name,

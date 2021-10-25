@@ -7,7 +7,7 @@ from .subreddit_base import BaseSubreddit
 
 class BaseDraftList(Sequence[Draft]):
     def __init__(self, drafts: Sequence[Draft]):
-        self.drafts = drafts
+        self.drafts: Sequence[Draft] = drafts
 
     def __len__(self) -> int:
         return len(self.drafts)
@@ -32,4 +32,4 @@ class GenericBaseDraftList(BaseDraftList, Generic[TSubreddit]):
             drafts: Sequence[Draft],
             subreddits: Sequence[TSubreddit]):
         super().__init__(drafts)
-        self.subreddits = subreddits
+        self.subreddits: Sequence[TSubreddit] = subreddits

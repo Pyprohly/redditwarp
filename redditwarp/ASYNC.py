@@ -1,2 +1,2 @@
 
-from .client_ASYNC import Client
+from .client_ASYNC import Client as Client

@@ -6,8 +6,8 @@ if TYPE_CHECKING:
 
 class SubmissionCommentTreeWrapper:
     def __init__(self, node: SubmissionTreeNode, sort: Optional[str]):
-        self.node = node
-        self.sort = sort
+        self.node: SubmissionTreeNode = node
+        self.sort: Optional[str] = sort
 
     def is_continued(self) -> bool:
         if children := self.node.children:

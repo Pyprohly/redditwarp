@@ -12,9 +12,9 @@ from .util import apply_basic_auth
 class TokenRevocationClient:
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials):
-        self.requestor = requestor
-        self.uri = uri
-        self.client_credentials = client_credentials
+        self.requestor: Requestor = requestor
+        self.uri: str = uri
+        self.client_credentials: tuple[str, str] = client_credentials
 
     async def revoke_token(self, token: str, token_type_hint: str = '') -> None:
         data = {'token': token}

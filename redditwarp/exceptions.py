@@ -9,7 +9,7 @@ from . import http
 class ArgExcMixin(Exception):
     def __init__(self, arg: object = None) -> None:
         super().__init__()
-        self.arg = arg
+        self.arg: object = arg
 
     def __str__(self) -> str:
         if self.arg is None:
@@ -73,9 +73,9 @@ class RedditError(APIException):
         field: str,
     ) -> None:
         super().__init__(arg)
-        self.codename = codename
-        self.explanation = explanation
-        self.field = field
+        self.codename: str = codename
+        self.explanation: str = explanation
+        self.field: str = field
 
     def get_default_message(self) -> str:
         co = self.codename

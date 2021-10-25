@@ -29,8 +29,8 @@ class RequestDistributor(Requestor):
 class RequestDirector(RequestorDecorator):
     def __init__(self, requestor: Requestor, target: RequestDistributor, receiver: Requestor):
         super().__init__(requestor)
-        self.target = target
-        self.receiver = receiver
+        self.target: RequestDistributor = target
+        self.receiver: Requestor = receiver
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         directions = self.target.directions

@@ -15,9 +15,9 @@ from .token_bucket import TokenBucket
 class RateLimited(RequestorDecorator):
     def __init__(self, requestor: Requestor) -> None:
         super().__init__(requestor)
-        self.reset = 0
-        self.remaining = 0
-        self.used = 0
+        self.reset: int = 0
+        self.remaining: int = 0
+        self.used: int = 0
         self._burst_control = TokenBucket(5, .5)
         self._prev_request_time = 0.
         self._last_request_time = time.monotonic()

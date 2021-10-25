@@ -92,8 +92,8 @@ class Session(SessionBase):
 def new_session() -> Session:
     return Session()
 
-name = 'python-urllib'
-version = '%d.%d' % sys.version_info[:2]
+name: str = 'python-urllib'
+version: str = '%d.%d' % sys.version_info[:2]
 register(
     adaptor_module_name=__name__,
     name=name,

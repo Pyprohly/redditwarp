@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Dict, Collection, TypeVar, Iterator, Iterable, Tuple, Mapping, IO, cast, Generic
+from typing import Any, Dict, Collection, TypeVar, Iterator, Iterable, Tuple, Mapping, IO, cast, Generic, Callable
 
 import inspect
 from ast import literal_eval
@@ -9,11 +9,11 @@ from pprint import PrettyPrinter
 from io import StringIO
 
 
-rep = reprlib.Repr()
+rep: reprlib.Repr = reprlib.Repr()
 rep.maxlevel = 1
 rep.maxstring = 250
 rep.maxother = 250
-reprepr = rep.repr
+reprepr: Callable[[Any], str] = rep.repr
 
 class StrReprStr(str):
     def __repr__(self) -> str:
@@ -26,8 +26,8 @@ def neat_repr_dict(d: Dict[Any, Any]) -> Dict[Any, Any]:
     }
 
 
-ppr = PrettyPrinter()
-ppr_format = ppr._format  # type: ignore[attr-defined]
+ppr: PrettyPrinter = PrettyPrinter()
+ppr_format: Any = ppr._format  # type: ignore[attr-defined]
 
 def pretty_format(obj: object) -> str:
     # This function ensures `obj`'s pretty-print-formatted string is

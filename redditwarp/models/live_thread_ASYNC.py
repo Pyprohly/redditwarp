@@ -9,9 +9,9 @@ from .live_thread_base import BaseLiveThread, BaseLiveUpdate
 class LiveThread(BaseLiveThread):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client
 
 class LiveUpdate(BaseLiveUpdate):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client

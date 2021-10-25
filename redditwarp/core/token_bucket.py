@@ -5,9 +5,9 @@ import time
 class TokenBucket:
     def __init__(self, capacity: float, rate: float,
             time_func: Callable[[], float] = time.monotonic) -> None:
-        self.capacity = capacity
-        self.rate = rate
-        self.time_func = time_func
+        self.capacity: float = capacity
+        self.rate: float = rate
+        self.time_func: Callable[[], float] = time_func
         self._value = capacity
         self._last_checkpoint_time = time_func()
 

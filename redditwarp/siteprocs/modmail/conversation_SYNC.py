@@ -28,7 +28,7 @@ from .conversation_pulls_SYNC import Pulls
 class Conversation:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.pulls = Pulls(client)
+        self.pulls: Pulls = Pulls(client)
 
     def fetch(self, idn: int, *, mark_read: bool = False) -> OptionalUserDossierConversationAggregate:
         convo_id36 = to_base36(idn)

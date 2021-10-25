@@ -18,10 +18,10 @@ from ..util.merge_query_params import merge_query_params
 
 class Session(SessionBase):
     def __init__(self,
-        http: urllib3.PoolManager,
+        http: urllib3.poolmanager.PoolManager,
     ) -> None:
         super().__init__()
-        self.http = http
+        self.http: urllib3.poolmanager.PoolManager = http
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         etv = self._get_effective_timeout_value(timeout)
@@ -91,8 +91,8 @@ def new_session() -> Session:
     http = urllib3.PoolManager()
     return Session(http)
 
-name = urllib3.__name__
-version = urllib3.__version__
+name: str = urllib3.__name__
+version: str = urllib3.__version__
 register(
     adaptor_module_name=__name__,
     name=name,

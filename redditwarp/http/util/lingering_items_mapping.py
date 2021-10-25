@@ -17,7 +17,7 @@ class LingeringItemsMapping(MutableMapping[K, V]):
         self._store = m
         if lingering_item_keys is None:
             lingering_item_keys = set()
-        self.lingering_item_keys = lingering_item_keys
+        self.lingering_item_keys: MutableSet[K] = lingering_item_keys
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._store})'

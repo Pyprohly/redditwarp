@@ -12,8 +12,8 @@ class CallChunk(Generic[TInput, TOutput]):
         operation: Callable[[TInput], TOutput],
         operand: TInput,
     ) -> None:
-        self.operation = operation
-        self.operand = operand
+        self.operation: Callable[[TInput], TOutput] = operation
+        self.operand: TInput = operand
 
     def __call__(self) -> TOutput:
         return self.operation(self.operand)

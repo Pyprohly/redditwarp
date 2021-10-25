@@ -17,7 +17,7 @@ class ArgExc(ArgExcMixin):
 class UnknownTokenType(ArgExc):
     def __init__(self, arg: object = None, *, token: Token):
         super().__init__(arg)
-        self.token = token
+        self.token: Token = token
 
 class OAuth2ResponseError(ArgExc):
     """
@@ -31,9 +31,9 @@ class OAuth2ResponseError(ArgExc):
             description: str = '',
             help_uri: str = '') -> None:
         super().__init__(arg)
-        self.error_name = error_name
-        self.description = description
-        self.help_uri = help_uri
+        self.error_name: str = error_name
+        self.description: str = description
+        self.help_uri: str = help_uri
 
     def get_default_message(self) -> str:
         if self.description:
@@ -65,7 +65,7 @@ class TokenServerResponseErrorTypes:
 class UnrecognizedTokenServerResponseError(TokenServerResponseError):
     pass
 
-token_server_response_error_by_error_name = {
+token_server_response_error_by_error_name: Mapping[str, type[TokenServerResponseError]] = {
     cls.ERROR_NAME: cls
     for cls in [
         TokenServerResponseError,
@@ -106,7 +106,7 @@ class ResourceServerResponseErrorTypes:
 class UnrecognizedResourceServerResponseError(ResourceServerResponseError):
     pass
 
-resource_server_response_error_by_error_name = {
+resource_server_response_error_by_error_name: Mapping[str, type[ResourceServerResponseError]] = {
     cls.ERROR_NAME: cls
     for cls in [
         ResourceServerResponseError,

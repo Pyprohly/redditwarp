@@ -10,14 +10,14 @@ from .utils import parse_close, serialize_close
 
 class WebSocketConnection:
     DEFAULT_TIMEOUT = 4
-    side = Side.NONE
+    side: int = Side.NONE
 
     def __init__(self) -> None:
         self.default_timeout: float = self.DEFAULT_TIMEOUT
-        self.state = ConnectionState.OPEN
-        self.close_code = -1
-        self.close_reason = ''
-        self.subprotocol = ''
+        self.state: ConnectionState = ConnectionState.OPEN
+        self.close_code: int = -1
+        self.close_reason: str = ''
+        self.subprotocol: str = ''
 
     async def __aiter__(self) -> AsyncIterator[Event]:
         async for event in self.cycle():
@@ -121,6 +121,8 @@ class HalfImplementedWebSocketConnection(WebSocketConnection):
 
     async def _process_close(self, m: Frame) -> AsyncIterator[Event]:
         self.set_state(ConnectionState.CLOSE_RECEIVED)
+        self.close_code: int
+        self.close_reason: str
         self.close_code, self.close_reason = parse_close(m.data)
 
         if self.state == ConnectionState.OPEN:

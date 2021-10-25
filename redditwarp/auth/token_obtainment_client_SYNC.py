@@ -20,10 +20,10 @@ class TokenObtainmentClient:
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials,
             grant: AuthorizationGrant):
-        self.requestor = requestor
-        self.uri = uri
-        self.client_credentials = client_credentials
-        self.grant = grant
+        self.requestor: Requestor = requestor
+        self.uri: str = uri
+        self.client_credentials: tuple[str, str] = client_credentials
+        self.grant: Mapping[str, str] = grant
 
     def fetch_data(self) -> Mapping[str, Any]:
         r = Request('POST', self.uri, payload=URLEncodedFormData(self.grant))

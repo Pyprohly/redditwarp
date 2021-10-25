@@ -23,8 +23,8 @@ class SearchSubmissionsListingPaginator(
         sort: str = 'relevance',
     ):
         super().__init__(client, uri, params=params)
-        self.time_filter = time_filter
-        self.sort = sort
+        self.time_filter: str = time_filter
+        self.sort: str = sort
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

@@ -17,12 +17,12 @@ from .modmail_base import (
 class Conversation(BaseConversation):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client
 
 class Message(BaseMessage):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client
 
 class ModmailModAction(BaseModmailModAction):
     pass

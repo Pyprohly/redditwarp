@@ -11,4 +11,4 @@ from .subreddit_base import (
 class Subreddit(BaseSubreddit):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)
-        self.client = client
+        self.client: Client = client

@@ -19,8 +19,8 @@ class ExploreSubredditsListingPaginator(
         show_users: bool = False,
     ):
         super().__init__(client, uri)
-        self.query = query
-        self.show_users = show_users
+        self.query: str = query
+        self.show_users: bool = show_users
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

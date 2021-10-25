@@ -1,2 +1,2 @@
 
-from .client_SYNC import Client
+from .client_SYNC import Client as Client

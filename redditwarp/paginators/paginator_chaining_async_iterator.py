@@ -9,7 +9,7 @@ E = TypeVar('E')
 class PaginatorChainingAsyncIterator(AsyncIterator[E]):
     def __init__(self, paginator: AsyncPaginator[E], amount: Optional[int] = None) -> None:
         self._pgr: AsyncPaginator[E] = paginator
-        self.remaining = amount
+        self.remaining: Optional[int] = amount
         self.current_iter: Iterator[E] = iter(())
 
     def __aiter__(self) -> AsyncIterator[E]:

@@ -79,7 +79,7 @@ class FlairEmoji:
             }
             self._client.request('POST', f'/api/v1/{sr}/emoji', data=data)
 
-    create = cached_property(_create)
+    create: cached_property[_create] = cached_property(_create)
 
     def set_emoji_permissions(self,
         sr: str,

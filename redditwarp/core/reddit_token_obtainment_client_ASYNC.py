@@ -18,7 +18,7 @@ class RedditTokenObtainmentClient(TokenObtainmentClient):
             grant: AuthorizationGrant,
             headers: Optional[Mapping[str, str]] = None):
         super().__init__(requestor, uri, client_credentials, grant)
-        self.headers = {} if headers is None else headers
+        self.headers: Mapping[str, str] = {} if headers is None else headers
 
     async def fetch_data(self) -> Mapping[str, Any]:
         r = Request('POST', self.uri, payload=URLEncodedFormData(self.grant))

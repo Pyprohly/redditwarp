@@ -12,10 +12,10 @@ class BaseMoreComments:
         *,
         d: Mapping[str, Any],
     ):
-        self.submission_id36 = submission_id36
-        self.comment_id36 = comment_id36
-        self.sort = sort
-        self.d = d
+        self.submission_id36: str = submission_id36
+        self.comment_id36: str = comment_id36
+        self.sort: str = sort
+        self.d: Mapping[str, Any] = d
 
     @cached_property
     def submission_id(self) -> int:

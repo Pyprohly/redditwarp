@@ -14,7 +14,7 @@ from .pull_SYNC import Pull
 class Message:
     def __init__(self, client: Client):
         self._client = client
-        self.pull = Pull(client)
+        self.pull: Pull = Pull(client)
 
     def send(self, to: str, subject: str, body: str) -> None:
         req_data = {
@@ -83,4 +83,4 @@ class Message:
         def of_submission(self, idn: int) -> None:
             self._client.request('POST', '/api/block', data={'id': 't3_' + to_base36(idn)})
 
-    block_author = cached_property(_block_author)
+    block_author: cached_property[_block_author] = cached_property(_block_author)

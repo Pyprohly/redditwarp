@@ -15,11 +15,11 @@ from ..const import Opcode, Side, ConnectionState
 from ..utils import parse_close
 
 class WebSocketClient(HalfImplementedWebSocketConnection):
-    side = Side.CLIENT
+    side: int = Side.CLIENT
 
     def __init__(self, ws: websocket.WebSocket):
         super().__init__()
-        self.ws = ws
+        self.ws: websocket.WebSocket = ws
 
     def _get_necessary_timeout(self, timeout: float = -2) -> Optional[float]:
         t: Optional[float] = timeout
@@ -62,6 +62,8 @@ class WebSocketClient(HalfImplementedWebSocketConnection):
 
     def _process_close(self, m: Frame) -> Iterator[Event]:
         self.set_state(ConnectionState.CLOSE_RECEIVED)
+        self.close_code: int
+        self.close_reason: str
         self.close_code, self.close_reason = parse_close(m.data)
         yield m
 
@@ -101,8 +103,8 @@ def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) 
     return WebSocketClient(ws)
 
 
-name = 'websocket-client'
-version = websocket.__version__
+name: str = 'websocket-client'
+version: str = websocket.__version__
 register(
     adaptor_module_name=__name__,
     name=name,

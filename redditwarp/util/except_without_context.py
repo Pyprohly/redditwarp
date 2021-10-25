@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Type, ContextManager
+from typing import TYPE_CHECKING, Optional, ContextManager
 if TYPE_CHECKING:
     from types import TracebackType
 
@@ -64,15 +64,15 @@ class except_without_context(ContextManager[bool]):
     Just right.
     """
 
-    def __init__(self, *exceptions: Type[BaseException]):
-        self.exceptions = exceptions
-        self.yes = False
+    def __init__(self, *exceptions: type[BaseException]):
+        self.exceptions: tuple[type[BaseException], ...] = exceptions
+        self.yes: bool = False
 
     def __bool__(self) -> bool:
         return self.yes
 
     def __exit__(self,
-        exc_type: Optional[Type[BaseException]],
+        exc_type: Optional[type[BaseException]],
         exc_value: Optional[BaseException],
         exc_traceback: Optional[TracebackType],
     ) -> Optional[bool]:

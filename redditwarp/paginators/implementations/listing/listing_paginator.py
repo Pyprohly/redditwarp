@@ -19,13 +19,13 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
         super().__init__(limit=limit)
-        self.client = client
-        self.uri = uri
-        self.params = {} if params is None else params
-        self.cursor_extractor = cursor_extractor
-        self.after_count = 0
-        self.before_count = 0
-        self.show_all = False
+        self.client: Client = client
+        self.uri: str = uri
+        self.params: Mapping[str, str] = {} if params is None else params
+        self.cursor_extractor: Callable[[Any], str] = cursor_extractor
+        self.after_count: int = 0
+        self.before_count: int = 0
+        self.show_all: bool = False
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from self.params.items()
@@ -70,11 +70,11 @@ class ListingPaginator(BidirectionalCursorPaginator[T]):
         after = data['after'] or ''
         before = data['before'] or ''
         if children:
-            self.after = after if after else self.cursor_extractor(children[-1])
-            self.before = before if before else self.cursor_extractor(children[0])
+            self.after: str = after if after else self.cursor_extractor(children[-1])
+            self.before: str = before if before else self.cursor_extractor(children[0])
 
-        self.has_after = bool(after)
-        self.has_before = bool(before)
+        self.has_after: bool = bool(after)
+        self.has_before: bool = bool(before)
 
     def _next_data(self) -> Mapping[str, Any]:
         data = self._fetch_data()

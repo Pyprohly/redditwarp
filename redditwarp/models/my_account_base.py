@@ -21,9 +21,9 @@ class BaseMyAccount(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id36: str = d['id']
-        self.id = int(self.id36, 36)
-        self.created_ut = int(d['created_utc'])
-        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        self.id: int = int(self.id36, 36)
+        self.created_ut: int = int(d['created_utc'])
+        self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['name']
         self.has_mail: bool = d['has_mail']
         self.has_mod_mail: bool = d['has_mod_mail']
@@ -33,4 +33,4 @@ class BaseMyAccount(Artifact):
         self.is_suspended: bool = d['is_suspended']
         self.nsfw: bool = d['over_18']
 
-        self.subreddit = self._Subreddit(d['subreddit'])
+        self.subreddit: BaseMyAccount._Subreddit = self._Subreddit(d['subreddit'])

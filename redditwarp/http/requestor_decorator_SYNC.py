@@ -9,7 +9,7 @@ from .requestor_SYNC import Requestor
 
 class RequestorDecorator(Requestor):
     def __init__(self, requestor: Requestor) -> None:
-        self.requestor = requestor
+        self.requestor: Requestor = requestor
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         return self.requestor.send(request, timeout=timeout)

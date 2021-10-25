@@ -49,7 +49,7 @@ class Pull:
             p = ModQueueCommentListingPaginator(self._client, f'/r/{sr}/about/modqueue')
             return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
-    modqueue = cached_property(_modqueue)
+    modqueue: cached_property[_modqueue] = cached_property(_modqueue)
 
     class _reports:
         def __init__(self, outer: Pull) -> None:
@@ -71,7 +71,7 @@ class Pull:
             p = ReportsCommentListingPaginator(self._client, f'/r/{sr}/about/reports')
             return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
-    reports = cached_property(_reports)
+    reports: cached_property[_reports] = cached_property(_reports)
 
     class _spam:
         def __init__(self, outer: Pull) -> None:
@@ -93,7 +93,7 @@ class Pull:
             p = SpamCommentListingPaginator(self._client, f'/r/{sr}/about/spam')
             return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
-    spam = cached_property(_spam)
+    spam: cached_property[_spam] = cached_property(_spam)
 
     class _edited:
         def __init__(self, outer: Pull) -> None:
@@ -115,7 +115,7 @@ class Pull:
             p = EditedCommentListingPaginator(self._client, f'/r/{sr}/about/edited')
             return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
 
-    edited = cached_property(_edited)
+    edited: cached_property[_edited] = cached_property(_edited)
 
     def unmoderated(self, sr: str, amount: Optional[int] = None,
             ) -> PaginatorChainingWrapper[UnmoderatedSubmissionListingPaginator, Submission]:

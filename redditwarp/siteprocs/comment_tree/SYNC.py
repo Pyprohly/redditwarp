@@ -12,8 +12,8 @@ from .fetch_SYNC import Fetch
 class CommentTree:
     def __init__(self, client: Client):
         self._client = client
-        self.get = Get(self)
-        self.fetch = Fetch(self)
+        self.get: Get = Get(self)
+        self.fetch: Fetch = Fetch(self)
 
     def more_children(self,
         submission_id36: str,

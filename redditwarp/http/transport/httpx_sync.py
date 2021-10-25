@@ -76,7 +76,7 @@ class Session(SessionBase):
         httpx_client: httpx.Client,
     ) -> None:
         super().__init__()
-        self.client = httpx_client
+        self.client: httpx.Client = httpx_client
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         etv = self._get_effective_timeout_value(timeout)
@@ -102,8 +102,8 @@ def new_session() -> Session:
     cl = httpx.Client()
     return Session(cl)
 
-name = httpx.__name__
-version = httpx.__version__
+name: str = httpx.__name__
+version: str = httpx.__version__
 register(
     adaptor_module_name=__name__,
     name=name,

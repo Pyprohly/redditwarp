@@ -31,26 +31,26 @@ class Bytes(Content):
     CONTENT_TYPE_HINT = 'application/octet-stream'
 
     def __init__(self, data: bytes):
-        self.data = data
+        self.data: bytes = data
 
 class URLEncodedFormData(Content):
     CONTENT_TYPE_HINT = 'application/x-www-form-urlencoded'
 
     def __init__(self, data: Mapping[str, str]):
-        self.data = data
+        self.data: Mapping[str, str] = data
 
 class Text(Content):
     CONTENT_TYPE_HINT = 'text/plain'
 
     def __init__(self, text: str):
-        self.text = text
+        self.text: str = text
 
 class TextData(Content):
     CONTENT_TYPE_HINT = 'text/plain'
 
     def __init__(self, data: bytes, *, charset: str = ''):
-        self.data = data
-        self.charset = charset
+        self.data: bytes = data
+        self.charset: str = charset
 
     def get_content_type(self) -> str:
         return self.CONTENT_TYPE_HINT + ((x := self.charset) and f'; charset={x}')
@@ -59,17 +59,17 @@ class JSON(Content):
     CONTENT_TYPE_HINT = 'application/json'
 
     def __init__(self, json: Any):
-        self.json = json
+        self.json: Any = json
 
 
 class MultipartFormDataField(Payload):
     def __init__(self, name: str):
-        self.name = name
+        self.name: str = name
 
 class MultipartTextField(MultipartFormDataField):
     def __init__(self, name: str, value: str):
         super().__init__(name)
-        self.value = value
+        self.value: str = value
 
 class MultipartFileField(MultipartFormDataField):
     def __init__(self,
@@ -78,9 +78,9 @@ class MultipartFileField(MultipartFormDataField):
             filename: str,
             content_type: str):
         super().__init__(name)
-        self.file = file
-        self.filename = filename
-        self.content_type = content_type
+        self.file: FileObjectType = file
+        self.filename: str = filename
+        self.content_type: str = content_type
 
 class Multipart(Payload):
     CONTENT_TYPE_HINT = 'multipart/*'
@@ -88,7 +88,7 @@ class Multipart(Payload):
 class MultipartFormData(Multipart):
     CONTENT_TYPE_HINT = 'multipart/form-data'
     def __init__(self, parts: Sequence[MultipartFormDataField]):
-        self.parts = parts
+        self.parts: Sequence[MultipartFormDataField] = parts
 
 
 def guess_mimetype_from_filename(fname: str) -> str:

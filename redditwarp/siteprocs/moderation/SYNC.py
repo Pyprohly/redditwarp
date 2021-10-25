@@ -29,9 +29,9 @@ from ...paginators.implementations.listing.p_moderation_pull_actions_sync import
 class Moderation:
     def __init__(self, client: Client):
         self._client = client
-        self.legacy = Legacy(client)
-        self.pull_users = PullUsers(client)
-        self.pull = Pull(client)
+        self.legacy: Legacy = Legacy(client)
+        self.pull_users: PullUsers = PullUsers(client)
+        self.pull: Pull = Pull(client)
 
     def pull_actions(self, sr: str, amount: Optional[int] = None, *,
             action: str = '', mod: str = '',
@@ -254,4 +254,4 @@ class Moderation:
             idt = to_base36(reason_id)
             self._client.request('DELETE', f'/api/v1/{sr}/removal_reasons/{idt}')
 
-    removal_reason = cached_property(_removal_reason)
+    removal_reason: cached_property[_removal_reason] = cached_property(_removal_reason)

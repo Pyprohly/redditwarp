@@ -13,25 +13,25 @@ class BaseSubmissionCollectionDetails(Artifact):
 
         full_id36: str = d['subreddit_id']
         _, _, id36 = full_id36.partition('_')
-        self.subreddit_id36 = id36
-        self.subreddit_id = int(id36, 36)
+        self.subreddit_id36: str = id36
+        self.subreddit_id: int = int(id36, 36)
 
         full_id36 = d['author_id']
         _, _, id36 = full_id36.partition('_')
-        self.author_id36 = id36
-        self.author_id = int(id36, 36)
+        self.author_id36: str = id36
+        self.author_id: int = int(id36, 36)
 
         self.author_name: str = d['author_name']
         self.title: str = d['title']
         self.description: str = d['description']
 
         self.created_ut: float = d['created_at_utc']
-        self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.last_post_added_ut: float = d['last_update_utc']
-        self.last_post_added_at = datetime.fromtimestamp(self.last_post_added_ut, timezone.utc)
+        self.last_post_added_at: datetime = datetime.fromtimestamp(self.last_post_added_ut, timezone.utc)
 
         self.display_layout: Optional[str] = d['display_layout']
-        self.layout = 'TIMELINE'
+        self.layout: str = 'TIMELINE'
         if self.display_layout is not None:
             self.layout = self.display_layout
 

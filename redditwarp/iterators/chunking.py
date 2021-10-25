@@ -15,7 +15,7 @@ class ChunkingIterator(Iterator[Sequence[T]]):
 
     def __init__(self, src: Iterable[T], size: int) -> None:
         self._itr = iter(src)
-        self.size = size
+        self.size: int = size
 
     def __iter__(self) -> Iterator[Sequence[T]]:
         return self

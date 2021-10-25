@@ -16,9 +16,9 @@ class BaseConversation(IArtifact):
         link: str
 
     def __init__(self, d: Mapping[str, Any]) -> None:
-        self.d = d
+        self.d: Mapping[str, Any] = d
         self.id36: str = d['id']
-        self.id = int(self.id36, 36)
+        self.id: int = int(self.id36, 36)
         self.subject: str = d['subject']
         self.progress: int = d['state']
         self.message_count: int = d['numMessages']
@@ -27,7 +27,7 @@ class BaseConversation(IArtifact):
         self.is_repliable: bool = d['isRepliable']
         self.is_highlighted: bool = d['isHighlighted']
 
-        self.legacy_message = None
+        self.legacy_message: Optional[BaseConversation._LegacyMessage] = None
         if (x := d['legacyFirstMessageId']) is not None:
             self.legacy_message = self._LegacyMessage(
                 id36=x,
@@ -41,12 +41,12 @@ class BaseConversation(IArtifact):
         self.last_unread: Optional[datetime] = None if (x := d['lastUnread']) is None else datetime.fromisoformat(x)
         owner = d['owner']
         self.subreddit_name: str = owner['displayName']
-        self.subreddit_id = int(owner['id'][3:], 36)
+        self.subreddit_id: int = int(owner['id'][3:], 36)
 
 class BaseMessage(IArtifact):
     def __init__(self, d: Mapping[str, Any]) -> None:
-        self.d = d
-        self.id = int(d['id'], 36)
+        self.d: Mapping[str, Any] = d
+        self.id: int = int(d['id'], 36)
         author = d['author']
         self.author_name: str = author['name']
         self.author_id: int = author['id']
@@ -57,8 +57,8 @@ class BaseMessage(IArtifact):
 
 class BaseModmailModAction(IArtifact):
     def __init__(self, d: Mapping[str, Any]) -> None:
-        self.d = d
-        self.id = int(d['id'], 36)
+        self.d: Mapping[str, Any] = d
+        self.id: int = int(d['id'], 36)
         self.action_type: int = d['actionTypeId']
         self.agent_name: str = d['author']['name']
         self.agent_id: int = d['author']['id']
@@ -85,10 +85,10 @@ class BaseUserDossier(IArtifact):
             self.permalink: str
 
     def __init__(self, d: Mapping[str, Any]) -> None:
-        self.d = d
-        self.id = int(d['id'][3:], 36)
+        self.d: Mapping[str, Any] = d
+        self.id: int = int(d['id'][3:], 36)
         self.name: str = d['name']
-        self.created_at = datetime.fromisoformat(d['created'])
+        self.created_at: datetime = datetime.fromisoformat(d['created'])
         self.is_shadow_banned: bool = d['isShadowBanned']
         self.is_approved: bool = d['approveStatus']['isApproved']
         mute_status = d['muteStatus']
@@ -116,10 +116,10 @@ class GenericBaseConversationAggregate(Generic[TConversation, TMessage, TModmail
             messages: Sequence[TMessage],
             mod_actions: Sequence[TModmailModAction],
             history: Sequence[object]) -> None:
-        self.conversation = conversation
-        self.messages = messages
-        self.mod_actions = mod_actions
-        self.history = history
+        self.conversation: TConversation = conversation
+        self.messages: Sequence[TMessage] = messages
+        self.mod_actions: Sequence[TModmailModAction] = mod_actions
+        self.history: Sequence[object] = history
 
 TUserDossier = TypeVar('TUserDossier', bound=BaseUserDossier)
 
@@ -134,7 +134,7 @@ class GenericBaseUserDossierConversationAggregate(
             history: Sequence[object],
             user_dossier: TUserDossier) -> None:
         super().__init__(conversation, messages, mod_actions, history)
-        self.user_dossier = user_dossier
+        self.user_dossier: TUserDossier = user_dossier
 
 class GenericBaseOptionalUserDossierConversationAggregate(
     GenericBaseConversationAggregate[TConversation, TMessage, TModmailModAction],
@@ -147,4 +147,4 @@ class GenericBaseOptionalUserDossierConversationAggregate(
             history: Sequence[object],
             user_dossier: Optional[TUserDossier]) -> None:
         super().__init__(conversation, messages, mod_actions, history)
-        self.user_dossier = user_dossier
+        self.user_dossier: Optional[TUserDossier] = user_dossier
