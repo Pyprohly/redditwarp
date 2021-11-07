@@ -28,7 +28,7 @@ def ___authorization_url(  # UNUSED: scrapped idea
         **(extra_params or {}),
     }
     params = {k: v for k, v in params.items() if v}
-    return f'{url}?{urlencode(params)}'
+    return '%s?%s' % (url, urlencode(params))
 
 
 def basic_auth(userid: str, password: str, *,

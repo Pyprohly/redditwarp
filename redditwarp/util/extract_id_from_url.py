@@ -15,8 +15,8 @@ def extract_submission_id_from_url(url: str) -> int:
     def popq() -> str:
         try:
             return parts.popleft()
-        except IndexError as e:
-            raise ValueError from e
+        except IndexError as cause:
+            raise ValueError from cause
 
     t = popq()
     assert t == '/'
@@ -56,8 +56,8 @@ def extract_comment_id_from_url(url: str) -> int:
     def popq() -> str:
         try:
             return parts.popleft()
-        except IndexError as e:
-            raise ValueError from e
+        except IndexError as cause:
+            raise ValueError from cause
 
     t = popq()
     assert t == '/'

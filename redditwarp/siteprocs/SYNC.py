@@ -21,8 +21,9 @@ from .moderation.SYNC import Moderation
 from .draft.SYNC import Draft
 from .misc.SYNC import Misc
 from .modmail.SYNC import Modmail
+from .widget.SYNC import Widget
 
-class ClientProcedures:
+class SiteProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.submission: Submission = Submission(client)
@@ -42,3 +43,4 @@ class ClientProcedures:
         self.draft: Draft = Draft(client)
         self.misc: Misc = Misc(client)
         self.modmail: Modmail = Modmail(client)
+        self.widget: Widget = Widget(client)

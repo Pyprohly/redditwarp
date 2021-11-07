@@ -1,15 +1,10 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping
+from typing import TYPE_CHECKING, Sequence, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.modmail import ModmailModeratedSubreddit
 
-from ...util.base_conversion import to_base36
-from ...iterators.chunking import chunked
-from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
-from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from ...iterators.call_chunk_SYNC import CallChunk
 from ...models.load.modmail import load_modmail_moderated_subreddit
 from .conversation_SYNC import Conversation
 

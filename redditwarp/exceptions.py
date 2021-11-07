@@ -98,37 +98,44 @@ def raise_for_reddit_error(json_data: Any) -> None:
         return
 
     error_record: Sequence[Any]
-    if json_data.keys() == {'error', 'message'}:
-        return  # Treat as StatusCodeException, not APIException
+    if json_data.keys() >= {'error', 'message'} and isinstance(reason := json_data.get('reason'), str):
+        raise APIException(reason)
+    elif json_data.keys() >= {'error', 'message'}:
+        return
     elif (
         isinstance(codename := json_data.get('reason'), str)
         and isinstance(explanation := json_data.get('explanation'), str)
         and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
     ):
         raise RedditError(codename=codename, explanation=explanation, field=field)
+    elif (
+        isinstance(codename := json_data.get('reason'), str)
+        and json_data.get('explanation') is None
+        and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
+    ):
+        raise RedditError(codename=codename, explanation='', field=field)
+    elif (
+        isinstance(reason := json_data.get('reason'), str)
+        and json_data.get('explanation') is None
+        and list(json_data.get('fields', [])) == [None]
+    ):
+        if ' ' in reason:
+            raise APIException(reason)
+        raise RedditError(codename=reason, explanation='', field='')
     elif (
         isinstance(codename := json_data.get('reason'), str)
         and isinstance(explanation := json_data.get('explanation'), str)
     ):
         raise RedditError(codename=codename, explanation=explanation, field='')
     elif (
-        isinstance(codename := json_data.get('reason'), str)
-        and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
-    ):
-        raise RedditError(codename=codename, explanation='', field=field)
-    elif isinstance(reason := json_data.get('reason'), str):
-        if ' ' in reason:
-            raise APIException(reason)
-        raise RedditError(codename=reason, explanation='', field='')
-    elif (
-        (error_record := next(iter(json_data.get('json', {}).get('errors', [])), []))
+        (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
         and isinstance(codename := error_record[0], str)
         and isinstance(explanation := error_record[1], str)
         and isinstance(field := error_record[2], str)
     ):
         raise RedditError(codename=codename, explanation=explanation, field=field)
     elif (
-        (error_record := next(iter(json_data.get('json', {}).get('errors', [])), []))
+        (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
         and isinstance(codename := error_record[0], str)
         and isinstance(explanation := error_record[1], str)
     ):

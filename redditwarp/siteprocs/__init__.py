@@ -1,2 +1,2 @@
 
-from . import (SYNC, ASYNC)
+from . import (SYNC, ASYNC)  # noqa: F401

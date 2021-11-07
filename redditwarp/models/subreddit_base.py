@@ -79,13 +79,13 @@ class BaseSubreddit(Artifact):
         self.type: str = d['subreddit_type']
 
         self.subscriber_count: int = d['subscribers']
-        self.active_user_count: int = d['active_user_count']
+        self.viewing_count: int = d['active_user_count']
 
         self.title: str = d['title']
+        self.public_description: str = d['public_description']
+        self.public_description_html: str = d['public_description_html']
         self.sidebar_description: str = d['description']
         self.sidebar_description_html: str = d['description_html']
-        self.summary: str = d['public_description']
-        self.summary_html: str = d['public_description_html']
         self.submitting_form_note: str = d['submit_text']
         self.submitting_form_note_html: str = d['submit_text_html']
         self.submit_text_label: str = d['submit_text_label']

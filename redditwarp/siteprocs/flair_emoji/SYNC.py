@@ -6,10 +6,8 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...models.flair_emoji import SubredditFlairEmojis
-from ...models.load.flair_emoji import load_flair_emoji
-from ...models.flair_emoji_upload_lease import FlairEmojiUploadLease
-from ...models.load.flair_emoji_upload_lease import load_flair_emoji_upload_lease
+from ...models.flair_emoji import FlairEmojiUploadLease, SubredditFlairEmojis
+from ...models.load.flair_emoji import load_flair_emoji_upload_lease, load_flair_emoji
 from ...http.payload import guess_mimetype_from_filename
 
 class FlairEmoji:

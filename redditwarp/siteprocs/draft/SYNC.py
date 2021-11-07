@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Mapping
+from typing import TYPE_CHECKING, Optional, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_draft import Draft as DraftModel
@@ -9,7 +9,6 @@ if TYPE_CHECKING:
 from ...models.load.submission_draft import load_public_draft
 from ...models.load.submission_draft_SYNC import load_draft_list
 from ...util.base_conversion import to_base36
-from ... import exceptions
 
 class Draft:
     def __init__(self, client: Client):

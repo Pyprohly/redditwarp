@@ -60,12 +60,12 @@ class Session(SessionBase):
                 response = self.http.request_encode_body(r.verb, url, headers=headers, fields=fields0, timeout=tmo)
 
             elif isinstance(pld, payload.MultipartFormData):
-                fields: dict[str, Union[str, tuple[str, payload.FileObjectType, str]]] = {}
+                fields: dict[str, Union[str, tuple[str, Union[str, bytes], str]]] = {}
                 for part in pld.parts:
                     if isinstance(part, payload.MultipartTextField):
                         fields[part.name] = part.value
                     elif isinstance(part, payload.MultipartFileField):
-                        fields[part.name] = (part.filename, part.file, part.content_type)
+                        fields[part.name] = (part.filename, part.file.read(), part.content_type)
 
                 response = self.http.request_encode_body(r.verb, url, headers=headers, fields=fields, timeout=tmo)
 

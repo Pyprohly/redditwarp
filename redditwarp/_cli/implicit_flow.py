@@ -15,21 +15,21 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from types import FrameType
 
+
 import argparse
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
 parser._optionals.title = __import__('gettext').gettext('named arguments')
 add = parser.add_argument
 add('client_id', nargs='?')
-add('client_secret', nargs='?')
 add('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
-add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 add('--scope', default='*', help='an OAuth2 scope string')
 add('--redirect-uri', default='http://localhost:8080', help='\N{ZERO WIDTH SPACE}')
 add('--duration', choices=['temporary', 'permanent'], default='permanent', help=argparse.SUPPRESS)
 add('--no-web-browser', action='store_true', help="don't launch a browser")
 add('--web-browser-name', help="the web browser to open")
 args = parser.parse_args()
+
 
 import sys
 import os
@@ -38,6 +38,7 @@ import socket
 import urllib.parse
 import webbrowser
 import signal
+from functools import partial
 
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport
@@ -50,26 +51,28 @@ def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
         print(v)
     return v
 
-def get_client_id(args: argparse.Namespace) -> str:
-    v = args.client_id_opt or args.client_id
-    return get_client_cred_input('Client ID: ', 'redditwarp_client_id', v)
-
-def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
-    print('KeyboardInterrupt', file=sys.stderr)
-    sys.exit(130)
-
-signal.signal(signal.SIGINT, handle_sigint)
+if not sys.flags.interactive:
+    @partial(signal.signal, signal.SIGINT)
+    def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
+        print('KeyboardInterrupt', file=sys.stderr)
+        sys.exit(130)
 
 load_transport()
 
-client_id = get_client_id(args)
+client_id = get_client_cred_input(
+        (args.client_id_opt or args.client_id),
+        'Client ID: ', 'redditwarp_client_id')
 scope: str = args.scope
 redirect_uri: str = args.redirect_uri
 duration: str = args.duration
 no_web_browser: bool = args.no_web_browser
 web_browser_name: str = args.web_browser_name
-
 state = str(uuid.uuid4())
+
+port = urllib.parse.urlsplit(redirect_uri).port
+if port is None:
+    raise Exception('could not determine the port number from the redirect uri')
+
 browser = webbrowser.get(web_browser_name)
 
 print('\n        -~=~- Reddit OAuth2 Implicit Flow -~=~-\n')
@@ -82,7 +85,8 @@ params = {
     'scope': scope,
     'state': state,
 }
-url = f"{redditwarp.auth.const.AUTHORIZATION_URL}?{urllib.parse.urlencode(params)}"
+url = "%s?%s" % (redditwarp.auth.const.AUTHORIZATION_URL, urllib.parse.urlencode(params))
+
 print(url)
 print()
 
@@ -93,7 +97,7 @@ print('Step 2. Wait for the authorization server response and extract the author
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(('localhost', 8080))
+    server.bind(('localhost', port))
     server.listen(1)
 
     client, addr = server.accept()
@@ -101,11 +105,11 @@ with socket.socket() as server:
         data = client.recv(8192)
         client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-prompt = '> Enter the address bar URL: \\\n'
+prompt = 'Enter the address bar URL: \\\n'
 while not (redirected_url := input(prompt)):
     pass
 
-urlparts = urllib.parse.urlparse(redirected_url)
+urlparts = urllib.parse.urlsplit(redirected_url)
 dl = urllib.parse.parse_qs(urlparts.fragment)
 response_params = {k: v[0] for k, v in dl.items()}
 

@@ -90,3 +90,10 @@ def raise_for_reddit_auth_response_exception(e: Exception, req: Request, resp: R
             if 'curl' in ua:
                 msg = "The pattern 'curl', in your User-Agent string, is known to interfere with rate limits. Remove it from your User-Agent string."
                 raise FaultyUserAgent(msg)
+
+        elif status == 500:
+            if isinstance(pld := req.payload, http.payload.URLEncodedFormData):
+                grant = pld.data
+                if grant.get('grant_type') == 'authorization_code':
+                    e.arg = "The authorization code might be expired."
+                    raise e

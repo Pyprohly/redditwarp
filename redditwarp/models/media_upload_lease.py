@@ -12,9 +12,9 @@ class MediaUploadLease(IArtifact):
     endpoint: str
     fields: Mapping[str, str]
     s3_object_key: str
-    resource_location: str
+    location: str
     media_id: str
-    filename: str
+    declared_filename: str
     websocket_url: str
 
     if sys.version_info[:3] == (3, 9, 7):
@@ -24,16 +24,16 @@ class MediaUploadLease(IArtifact):
             endpoint: str,
             fields: Mapping[str, str],
             s3_object_key: str,
-            resource_location: str,
+            location: str,
             media_id: str,
-            filename: str,
+            declared_filename: str,
             websocket_url: str,
         ) -> None:
             self.d = d
             self.endpoint = endpoint
             self.fields = fields
             self.s3_object_key = s3_object_key
-            self.resource_location = resource_location
+            self.location = location
             self.media_id = media_id
-            self.filename = filename
+            self.declared_filename = declared_filename
             self.websocket_url = websocket_url

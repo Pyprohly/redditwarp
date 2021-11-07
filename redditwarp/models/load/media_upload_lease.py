@@ -14,8 +14,8 @@ def load_media_upload_lease(d: Mapping[str, Any]) -> MediaUploadLease:
         endpoint=endpoint,
         fields=fields,
         s3_object_key=fields['key'],
-        resource_location=f"{endpoint}/{s3_object_key}",
+        location=f"{endpoint}/{s3_object_key}",
         media_id=asset['asset_id'],
-        filename=asset['payload']['filepath'],
+        declared_filename=asset['payload']['filepath'],
         websocket_url=asset['websocket_url'],
     )

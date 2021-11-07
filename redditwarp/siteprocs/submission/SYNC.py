@@ -153,7 +153,7 @@ class Submission:
         event_start: str = '',
         event_end: str = '',
         event_tz: str = '',
-    ) -> int:
+    ) -> None:
         def g() -> Iterable[tuple[str, str]]:
             yield ('kind', 'image')
             yield ('sr', sr)
@@ -170,14 +170,13 @@ class Submission:
             if event_end: yield ('event_end', event_end)
             if event_tz: yield ('event_tz', event_tz)
 
-        root = self._client.request('POST', '/api/submit', data=dict(g()))
-        return int(root['json']['data']['id'], 36)
+        self._client.request('POST', '/api/submit', data=dict(g()))
 
     def create_video_post(self,
         sr: str,
         title: str,
-        video_upload_lease: MediaUploadLease,
-        thumbnail_upload_lease: MediaUploadLease,
+        video_url: str,
+        thumbnail_url: str,
         *,
         reply_notifications: bool = True,
         spoiler: bool = False,
@@ -195,8 +194,8 @@ class Submission:
             yield ('kind', 'videogif' if vgif else 'video')
             yield ('sr', sr)
             yield ('title', title)
-            yield ('url', video_upload_lease.resource_location)
-            yield ('video_poster_url', thumbnail_upload_lease.resource_location)
+            yield ('url', video_url)
+            yield ('video_poster_url', thumbnail_url)
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')

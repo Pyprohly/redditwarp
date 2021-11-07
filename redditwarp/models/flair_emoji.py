@@ -4,6 +4,16 @@ from typing import Mapping, Any, Sequence, Iterator, overload, Union
 
 from dataclasses import dataclass
 
+from .artifact import IArtifact
+
+@dataclass(repr=False, eq=False)
+class FlairEmojiUploadLease(IArtifact):
+    d: Mapping[str, Any]
+    endpoint: str
+    fields: Mapping[str, str]
+    s3_object_key: str
+    location: str
+
 @dataclass(repr=False, eq=False)
 class FlairEmoji:
     d: Mapping[str, Any]

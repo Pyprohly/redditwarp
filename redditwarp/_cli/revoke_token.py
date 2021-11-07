@@ -30,7 +30,7 @@ args = parser.parse_args()
 import sys
 import os
 import signal
-import functools
+from functools import partial
 
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport, new_session
@@ -38,7 +38,7 @@ from redditwarp.auth.SYNC import TokenRevocationClient
 from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
 from redditwarp.core.reddit_http_client_SYNC import get_user_agent
 
-def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
+def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:
         v = input(prompt)
     if v == '.':
@@ -46,21 +46,20 @@ def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
         print(v)
     return v
 
-def get_client_id(v: Optional[str]) -> str:
-    return get_client_cred_input('Client ID: ', 'redditwarp_client_id', v)
-
-def get_client_secret(v: Optional[str]) -> str:
-    return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', v)
-
-@functools.partial(signal.signal, signal.SIGINT)
-def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
-    print('KeyboardInterrupt', file=sys.stderr)
-    sys.exit(130)
+if not sys.flags.interactive:
+    @partial(signal.signal, signal.SIGINT)
+    def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
+        print('KeyboardInterrupt', file=sys.stderr)
+        sys.exit(130)
 
 load_transport()
 
-client_id = get_client_id(args.client_id_opt or args.client_id)
-client_secret = get_client_secret(args.client_secret_opt or args.client_secret)
+client_id = get_client_cred_input(
+        (args.client_id_opt or args.client_id),
+        'Client ID: ', 'redditwarp_client_id')
+client_secret = get_client_cred_input(
+        (args.client_secret_opt or args.client_secret),
+        'Client secret: ', 'redditwarp_client_secret')
 token: str = args.token or input('Token: ')
 access_token_needs_revoking: bool = args.a
 refresh_token_needs_revoking: bool = args.r

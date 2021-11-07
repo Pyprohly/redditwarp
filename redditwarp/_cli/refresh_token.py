@@ -30,6 +30,7 @@ if globalz.get('?access_token_only', False):
     add('--access-token-only', default=True, help=argparse.SUPPRESS)
 else:
     add('--access-token-only', action='store_true', help="get an access token and not a refresh token")
+add('--authorization-code-only', action='store_true', help=argparse.SUPPRESS)
 add('--no-web-browser', action='store_true', help="don't launch web browser")
 add('--web-browser-name', help="the web browser to open")
 args = parser.parse_args()
@@ -51,7 +52,7 @@ from redditwarp.http.transport.SYNC import load_transport, new_session
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
 from redditwarp.core.reddit_http_client_SYNC import get_user_agent
 
-def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
+def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:
         v = input(prompt)
     if v == '.':
@@ -59,30 +60,32 @@ def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
         print(v)
     return v
 
-def get_client_id(args: argparse.Namespace) -> str:
-    v = args.client_id_opt or args.client_id
-    return get_client_cred_input('Client ID: ', 'redditwarp_client_id', v)
-
-def get_client_secret(args: argparse.Namespace) -> str:
-    v = args.client_secret_opt or args.client_secret
-    return get_client_cred_input('Client secret: ', 'redditwarp_client_secret', v)
-
-@partial(signal.signal, signal.SIGINT)
-def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
-    print('KeyboardInterrupt', file=sys.stderr)
-    sys.exit(130)
+if not sys.flags.interactive:
+    @partial(signal.signal, signal.SIGINT)
+    def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
+        print('KeyboardInterrupt', file=sys.stderr)
+        sys.exit(130)
 
 load_transport()
 
-client_id = get_client_id(args)
-client_secret = get_client_secret(args)
+client_id = get_client_cred_input(
+        (args.client_id_opt or args.client_id),
+        'Client ID: ', 'redditwarp_client_id')
+client_secret = get_client_cred_input(
+        (args.client_secret_opt or args.client_secret),
+        'Client secret: ', 'redditwarp_client_secret')
 scope: str = args.scope
 redirect_uri: str = args.redirect_uri
 access_token_only: bool = args.access_token_only
+authorization_code_only: bool = args.authorization_code_only
 no_web_browser: bool = args.no_web_browser
 web_browser_name: Optional[str] = args.web_browser_name
-
 state = str(uuid.uuid4())
+
+port = urllib.parse.urlsplit(redirect_uri).port
+if port is None:
+    raise Exception('could not determine the port number from the redirect uri')
+
 browser = webbrowser.get(web_browser_name)
 
 print('\n        -~=~- Reddit OAuth2 Authorization Code Flow -~=~-\n')
@@ -109,7 +112,7 @@ print('Abort with ^C if the authorization request was rejected.\n')
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(('localhost', 8080))
+    server.bind(('localhost', port))
     server.listen(1)
     match = None
     while not match:
@@ -121,7 +124,7 @@ with socket.socket() as server:
 
         decoded = data.decode()
         print(f"```\n{decoded}\n```\n")
-        match = re.match(r"^GET /\?([^ ]*) HTTP", decoded)
+        match = re.match(r"^GET /.*?\?([^ ]*) HTTP", decoded)
 
 assert match is not None
 query = match[1]
@@ -135,7 +138,12 @@ code = response_params.get('code', '')
 if not code:
     raise Exception('authorization was declined by the user')
 
-print(f'Authorization code: {code}\n')
+print(f'Authorization code: {code}')
+
+if authorization_code_only:
+    sys.exit(0)
+
+print()
 
 print('* Step 3. Exchange the authorization code for an access/refresh token.\n')
 

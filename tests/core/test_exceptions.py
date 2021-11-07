@@ -75,3 +75,11 @@ def test_UnsupportedGrantType() -> None:
     with pytest.raises(exceptions.AuthError) as exc_info:
         raise_for_reddit_auth_response_exception(exc, req, resp)
     assert exc_info.value.arg is not None
+
+def test_500_http_error_on_auth_code_reuse() -> None:
+    exc = http.exceptions.StatusCodeException(status_code=500)
+    req = Request('', '', payload=http.payload.URLEncodedFormData({'grant_type': 'authorization_code'}))
+    resp = Response(200, {}, b'')
+    with pytest.raises(http.exceptions.StatusCodeException) as exc_info:
+        raise_for_reddit_auth_response_exception(exc, req, resp)
+    assert 'code' in str(exc_info.value)

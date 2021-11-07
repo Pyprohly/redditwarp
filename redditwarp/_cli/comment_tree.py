@@ -124,8 +124,6 @@ elif length < 12:
 else:
     idn = extract_submission_id_from_url(target)
 
-assert idn
-
 tree = client.p.comment_tree.get(idn)
 if tree is None:
     print('Submission not found', file=sys.stderr)
