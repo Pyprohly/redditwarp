@@ -1,7 +1,7 @@
 
 import pytest
 
-from redditwarp.exceptions import raise_for_reddit_error, APIException, RedditError
+from redditwarp.exceptions import raise_for_reddit_error, RedditError
 
 null = None
 
@@ -10,10 +10,20 @@ def test_raise_for_reddit_error() -> None:
     raise_for_reddit_error(json_data)
 
     json_data = {"reason": "private", "message": "Forbidden", "error": 403}
-    with pytest.raises(APIException) as exc_info:
+    with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
-    assert not isinstance(exc_info.value, RedditError)
-    assert str(exc_info.value) == "private"
+    exc = exc_info.value
+    assert exc.codename == 'private'
+    assert exc.explanation == ''
+    assert exc.field == ''
+
+    json_data = {"message": "Not Found", "reason": "INVALID_REVISION"}
+    with pytest.raises(RedditError) as exc_info:
+        raise_for_reddit_error(json_data)
+    exc = exc_info.value
+    assert exc.codename == 'INVALID_REVISION'
+    assert exc.explanation == ''
+    assert exc.field == ''
 
     json_data = {"explanation": "Please log in to do that.", "message": "Forbidden", "reason": "USER_REQUIRED"}
     with pytest.raises(RedditError) as exc_info:
@@ -48,9 +58,12 @@ def test_raise_for_reddit_error() -> None:
     assert exc.field == ''
 
     json_data = {"fields": [null], "explanation": null, "message": "Bad Request", "reason": "Must pass an id or list of ids."}
-    with pytest.raises(APIException) as exc_info:
+    with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
-    assert str(exc_info.value) == "Must pass an id or list of ids."
+    exc = exc_info.value
+    assert exc.codename == 'Must pass an id or list of ids.'
+    assert exc.explanation == ''
+    assert exc.field == ''
 
     json_data = {"json": {"errors": [["NO_LINKS", "that subreddit only allows text posts", "sr"], ["RATELIMIT", "you are doing that too much. try again in 13 minutes.", "ratelimit"]]}}
     with pytest.raises(RedditError) as exc_info:

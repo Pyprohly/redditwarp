@@ -45,8 +45,9 @@ class BaseSubmission(Artifact):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
-            #: One of `public`, `private`, `restricted`, `archived`,
-            #: `employees_only`, `gold_only`, or `gold_restricted`.
+
+            # One of `public`, `private`, `restricted`, `archived`,
+            # `employees_only`, `gold_only`, or `gold_restricted`.
             self.type: str = d['subreddit_type']
             self.quarantined: bool = d['quarantine']
             self.subscriber_count: int = d['subreddit_subscribers']
@@ -139,16 +140,17 @@ class BaseSubmission(Artifact):
 
         self.upvote_ratio: float = d['upvote_ratio']
         self.removal_category: Optional[str] = d['removed_by_category']
-        #: One of None, `confidence` (best), `top`, `new`, `controversial`, `old`, `qa`.
+        # One of None, `confidence` (best), `top`, `new`, `controversial`, `old`, `qa`.
         self.suggested_sort: Optional[str] = d['suggested_sort']
         self.stickied: bool = d['stickied']
         self.archived: bool = d['archived']
         self.locked: bool = d['locked']
         self.in_contest_mode: bool = d['contest_mode']
         self.nsfw: bool = d['over_18']
+        self.spoiler: bool = d['spoiler']
         self.crosspostable: bool = d['is_crosspostable']
         self.oc: bool = d['is_original_content']
-        self.robot_indexable: bool = d['is_robot_indexable']
+        self.is_robot_indexable: bool = d['is_robot_indexable']
         self.pinned: bool = d['pinned']
         self.distinguished: str = d['distinguished'] or ''
 
@@ -160,10 +162,10 @@ class BaseSubmission(Artifact):
 
         self.subreddit: BaseSubmission._Subreddit = self._Subreddit(d)
 
-        s: str = d['author']
-        self.author_name: str = s
+        author: str = d['author']
+        self.author_name: str = author
         self.author: Optional[BaseSubmission._Author] = None
-        if not s.startswith('['):
+        if not author.startswith('['):
             self.author = self._Author(d)
 
         self.mod: Optional[BaseSubmission._Moderator] = None

@@ -98,11 +98,7 @@ def raise_for_reddit_error(json_data: Any) -> None:
         return
 
     error_record: Sequence[Any]
-    if json_data.keys() >= {'error', 'message'} and isinstance(reason := json_data.get('reason'), str):
-        raise APIException(reason)
-    elif json_data.keys() >= {'error', 'message'}:
-        return
-    elif (
+    if (
         isinstance(codename := json_data.get('reason'), str)
         and isinstance(explanation := json_data.get('explanation'), str)
         and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
@@ -119,14 +115,18 @@ def raise_for_reddit_error(json_data: Any) -> None:
         and json_data.get('explanation') is None
         and list(json_data.get('fields', [])) == [None]
     ):
-        if ' ' in reason:
-            raise APIException(reason)
         raise RedditError(codename=reason, explanation='', field='')
     elif (
         isinstance(codename := json_data.get('reason'), str)
         and isinstance(explanation := json_data.get('explanation'), str)
     ):
         raise RedditError(codename=codename, explanation=explanation, field='')
+    elif json_data.keys() >= {'error', 'message'} and isinstance(reason := json_data.get('reason'), str):
+        raise RedditError(codename=reason, explanation='', field='')
+    elif json_data.keys() >= {'error', 'message'}:
+        return  # No useful information. Treat this as a StatusCodeException.
+    elif json_data.keys() >= {'message'} and isinstance(reason := json_data.get('reason'), str):
+        raise RedditError(codename=reason, explanation='', field='')
     elif (
         (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
         and isinstance(codename := error_record[0], str)

@@ -16,7 +16,7 @@ from .request import make_request
 
 T = TypeVar('T')
 
-DEFAULT_TIMEOUT = 100.
+DEFAULT_TIMEOUT: float = 100.
 
 class SessionBase(Requestor):
     @staticmethod
@@ -59,6 +59,21 @@ class SessionBase(Requestor):
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         raise NotImplementedError
+
+    async def request(self,
+        verb: str,
+        uri: str,
+        *,
+        params: Optional[Mapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
+        data: Optional[Union[Mapping[str, str], bytes]] = None,
+        json: Any = None,
+        files: Optional[RequestFiles] = None,
+        timeout: float = -2,
+    ) -> Response:
+        r = self.make_request(verb, uri, params=params, headers=headers,
+                data=data, json=json, files=files)
+        return await self.send(r, timeout=timeout)
 
     async def close(self) -> None:
         pass

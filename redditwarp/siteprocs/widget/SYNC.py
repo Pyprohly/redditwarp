@@ -295,9 +295,8 @@ class Widget:
             return load_widget_image_upload_lease(result)
 
         def deposit_file(self, file: IO[bytes], upload_lease: WidgetImageUploadLease) -> None:
-            sess = self._client.http.session
-            req = sess.make_request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file})
-            resp = sess.send(req, timeout=-1)
+            session = self._client.http.session
+            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file}, timeout=1000)
             resp.raise_for_status()
 
         def upload(self, file: IO[bytes], *, sr: str) -> WidgetImageUploadLease:

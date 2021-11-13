@@ -22,6 +22,7 @@ from .draft.SYNC import Draft
 from .misc.SYNC import Misc
 from .modmail.SYNC import Modmail
 from .widget.SYNC import Widget
+from .wiki.SYNC import Wiki
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -44,3 +45,4 @@ class SiteProcedures:
         self.misc: Misc = Misc(client)
         self.modmail: Modmail = Modmail(client)
         self.widget: Widget = Widget(client)
+        self.wiki: Wiki = Wiki(client)

@@ -57,7 +57,8 @@ class Session(SessionBase):
 
             elif isinstance(pld, payload.URLEncodedFormData):
                 fields0: dict[str, str] = dict(pld.data)
-                response = self.http.request_encode_body(r.verb, url, headers=headers, fields=fields0, timeout=tmo)
+                response = self.http.request_encode_body(r.verb, url, headers=headers, fields=fields0, timeout=tmo,
+                        encode_multipart=False)
 
             elif isinstance(pld, payload.MultipartFormData):
                 fields: dict[str, Union[str, tuple[str, Union[str, bytes], str]]] = {}

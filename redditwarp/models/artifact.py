@@ -4,7 +4,7 @@ from typing import Any, Mapping, Protocol, TypeVar
 from functools import cached_property
 
 from ..util.data_members_namespace import DataMembersNamespaceMapping
-from ..util.attribute_mapping_wrapper import PrettyPrintingAttributeMappingWrapper
+from ..util.attribute_mapping_proxy import AttributeMappingProxy
 
 class Artifact:
     _TSelf = TypeVar('_TSelf', bound='Artifact')
@@ -12,7 +12,7 @@ class Artifact:
     def __init__(self: _TSelf, d: Mapping[str, Any]):
         self.d: Mapping[str, Any] = d
         self.a: DataMembersNamespaceMapping[Artifact._TSelf] = DataMembersNamespaceMapping(self)
-        self.b: PrettyPrintingAttributeMappingWrapper[Any] = PrettyPrintingAttributeMappingWrapper(d)
+        self.b: AttributeMappingProxy[Any] = AttributeMappingProxy(d)
 
 class IArtifact(Protocol):
     d: Mapping[str, Any]
@@ -24,5 +24,5 @@ class IArtifact(Protocol):
         return DataMembersNamespaceMapping(self)
 
     @cached_property
-    def b(self) -> PrettyPrintingAttributeMappingWrapper[Any]:
-        return PrettyPrintingAttributeMappingWrapper(self.d)
+    def b(self) -> AttributeMappingProxy[Any]:
+        return AttributeMappingProxy(self.d)

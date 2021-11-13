@@ -28,4 +28,6 @@ def load_submission(d: Mapping[str, Any], client: Client) -> Submission:
         return CrosspostPost(d, client)
     if d['is_self']:
         return TextPost(d, client)
-    return LinkPost(d, client)
+    if 'url_overridden_by_dest' in d:
+        return LinkPost(d, client)
+    raise Exception('unknown post type')

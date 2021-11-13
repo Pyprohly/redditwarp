@@ -10,8 +10,6 @@ class BaseUser(Artifact):
     class _Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
-            #: One of `public`, `private`, `restricted`, `archived`,
-            #: `employees_only`, `gold_only`, or `gold_restricted`.
             self.type: str = d['subreddit_type']
             self.subscriber_count: int = d['subscribers']
             self.title: str = d['title']
@@ -44,7 +42,7 @@ class BaseUser(Artifact):
         #: Whether the user is a friend of the current user.
         self.is_friend: bool = d['is_friend']
         #: Is a moderator of any subreddit.
-        self.is_subreddit_moderator: bool = d['is_mod']
+        self.is_a_subreddit_moderator: bool = d['is_mod']
 
         self.icon_img: str = d['icon_img']
 
