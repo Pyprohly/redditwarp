@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Any, Sequence
 
-from ..reports import ModReport, UserReport
+from ..report import ModReport, UserReport
 
 def load_mod_report(arr: Sequence[Any]) -> ModReport:
     reason, agent_name = arr

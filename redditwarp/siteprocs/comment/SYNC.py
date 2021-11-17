@@ -153,7 +153,7 @@ class Comment:
         data = {'id': 't1_' + to_base36(idn), 'reason': reason}
         self._client.request('POST', '/api/unsnooze_reports', data=data)
 
-    def set_removal_reason(self,
+    def apply_removal_reason(self,
             comment_id: int,
             reason_id: Optional[int],
             note: Optional[str] = None) -> None:

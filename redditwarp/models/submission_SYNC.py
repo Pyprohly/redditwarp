@@ -8,28 +8,20 @@ from .submission_base import (
     BaseSubmission,
     BaseLinkPost,
     BaseTextPost,
-    BaseImagePost,
-    BaseVideoPost,
     BaseGalleryPost,
     BasePollPost,
-    BaseCrosspostPost,
+    GenericBaseCrosspostSubmission,
 )
 
 class Submission(BaseSubmission):
     def __init__(self, d: Mapping[str, Any], client: Client):
-        super().__init__(d)
         self.client: Client = client
+        super().__init__(d)
 
 class LinkPost(Submission, BaseLinkPost):
     pass
 
 class TextPost(Submission, BaseTextPost):
-    pass
-
-class ImagePost(Submission, BaseImagePost):
-    pass
-
-class VideoPost(Submission, BaseVideoPost):
     pass
 
 class GalleryPost(Submission, BaseGalleryPost):
@@ -38,5 +30,7 @@ class GalleryPost(Submission, BaseGalleryPost):
 class PollPost(Submission, BasePollPost):
     pass
 
-class CrosspostPost(Submission, BaseCrosspostPost):
-    pass
+class CrosspostSubmission(Submission, GenericBaseCrosspostSubmission[Submission]):
+    def _load_submission(self, d: Mapping[str, Any]) -> Submission:
+        from .load.submission_SYNC import load_submission
+        return load_submission(d, self.client)

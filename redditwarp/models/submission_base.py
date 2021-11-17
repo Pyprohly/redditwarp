@@ -1,26 +1,27 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Optional, Sequence
+from typing import Mapping, Any, Optional, Sequence, Generic, TypeVar
 
 from datetime import datetime, timezone
 
 from ..auth.const import AUTHORIZATION_BASE_URL
 from .artifact import Artifact
-from .reports import ModReport, UserReport
-from .load.reports import load_mod_report, load_user_report
+from .report import ModReport, UserReport
+from .load.report import load_mod_report, load_user_report
+
+from dataclasses import dataclass
 
 class BaseSubmission(Artifact):
-    class _Me:
+    class Me:
         def __init__(self, d: Mapping[str, Any]):
-            # User context fields
-            self.saved: bool = d['saved']  # False if no user context
-            self.hidden: bool = d['hidden']  # False if no user context
-            self.reply_notifications: bool = d['send_replies']  # False if no user context
-            self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
-            self.is_following_event: bool = d.get('is_followed', False)  # False if no user context
+            self.saved: bool = d['saved']
+            self.hidden: bool = d['hidden']
+            self.reply_notifications: bool = d['send_replies']
+            self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]
+            self.is_following_event: bool = d.get('is_followed', False)
 
-    class _Author:
-        class _AuthorFlair:
+    class Author:
+        class AuthorFlair:
             def __init__(self, d: Mapping[str, Any]):
                 self.template_uuid: Optional[str] = d['author_flair_template_id']
                 author_flair_text: Optional[str] = d['author_flair_text']
@@ -38,34 +39,31 @@ class BaseSubmission(Artifact):
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.has_premium: bool = d['author_premium']
-            self.flair: BaseSubmission._Author._AuthorFlair = self._AuthorFlair(d)
+            self.flair: BaseSubmission.Author.AuthorFlair = self.AuthorFlair(d)
 
-    class _Subreddit:
+    class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
-
-            # One of `public`, `private`, `restricted`, `archived`,
-            # `employees_only`, `gold_only`, or `gold_restricted`.
             self.type: str = d['subreddit_type']
             self.quarantined: bool = d['quarantine']
             self.subscriber_count: int = d['subreddit_subscribers']
 
-    class _Moderator:
-        class _Approved:
+    class Moderator:
+        class Approved:
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['approved_by']
                 self.ut: int = d['approved_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
-        class _Removed:
+        class Removed:
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['banned_by']
                 self.ut: int = d['banned_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
-        class _Reports:
+        class Reports:
             def __init__(self, d: Mapping[str, Any]):
                 self.ignoring: bool = d['ignore_reports']
                 self.num_reports: int = d['num_reports']
@@ -75,21 +73,21 @@ class BaseSubmission(Artifact):
         def __init__(self, d: Mapping[str, Any]):
             self.spam: bool = d['spam']
 
-            self.approved: Optional[BaseSubmission._Moderator._Approved] = None
+            self.approved: Optional[BaseSubmission.Moderator.Approved] = None
             if d['approved_by']:
-                self.approved = self._Approved(d)
+                self.approved = self.Approved(d)
 
-            self.removed: Optional[BaseSubmission._Moderator._Removed] = None
+            self.removed: Optional[BaseSubmission.Moderator.Removed] = None
             if d['banned_by']:
-                self.removed = self._Removed(d)
+                self.removed = self.Removed(d)
 
-            self.reports: BaseSubmission._Moderator._Reports = self._Reports(d)
+            self.reports: BaseSubmission.Moderator.Reports = self.Reports(d)
 
             self.removal_reason_by: Optional[str] = d['mod_reason_by']
             self.removal_reason_title: Optional[str] = d['mod_reason_title']
             self.removal_note: Optional[str] = d['mod_note']
 
-    class _Event:
+    class Event:
         def __init__(self, d: Mapping[str, Any]):
             self.start_ut: int = int(d['event_start'])
             self.start_at: datetime = datetime.fromtimestamp(self.start_ut, timezone.utc)
@@ -97,7 +95,7 @@ class BaseSubmission(Artifact):
             self.end_at: datetime = datetime.fromtimestamp(self.end_ut, timezone.utc)
             self.is_live: bool = d['event_is_live']
 
-    class _Flair:
+    class Flair:
         def __init__(self, d: Mapping[str, Any]):
             self.has_flair: bool = d['link_flair_text'] is not None
             self.bg_color: str = d['link_flair_background_color']
@@ -108,7 +106,7 @@ class BaseSubmission(Artifact):
             self.fg_light_or_dark: str = d['link_flair_text_color']
             self.type: str = d['link_flair_type']
 
-    class _Reports:
+    class Reports:
         def __init__(self, d: Mapping[str, Any]):
             self.ignoring: bool = d['ignore_reports']
             self.num_reports: int = d['num_reports']
@@ -123,7 +121,6 @@ class BaseSubmission(Artifact):
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.title: str = d['title']
-        #: Works even if score is hidden (`hide_score` JSON field is `True`).
         self.score: int = d['score']
         self.score_hidden: bool = d['hide_score']
         self.comment_count: int = d['num_comments']
@@ -140,7 +137,6 @@ class BaseSubmission(Artifact):
 
         self.upvote_ratio: float = d['upvote_ratio']
         self.removal_category: Optional[str] = d['removed_by_category']
-        # One of None, `confidence` (best), `top`, `new`, `controversial`, `old`, `qa`.
         self.suggested_sort: Optional[str] = d['suggested_sort']
         self.stickied: bool = d['stickied']
         self.archived: bool = d['archived']
@@ -148,38 +144,36 @@ class BaseSubmission(Artifact):
         self.in_contest_mode: bool = d['contest_mode']
         self.nsfw: bool = d['over_18']
         self.spoiler: bool = d['spoiler']
-        self.crosspostable: bool = d['is_crosspostable']
-        self.oc: bool = d['is_original_content']
+        self.num_crossposts: int = d['num_crossposts']
+        self.is_crosspostable: bool = d['is_crosspostable']
+        self.is_original_content: bool = d['is_original_content']
         self.is_robot_indexable: bool = d['is_robot_indexable']
         self.pinned: bool = d['pinned']
         self.distinguished: str = d['distinguished'] or ''
 
-        self.event: Optional[BaseSubmission._Event] = None
+        self.event: Optional[BaseSubmission.Event] = None
         if 'event_start' in d:
-            self.event = self._Event(d)
+            self.event = self.Event(d)
 
-        self.me: BaseSubmission._Me = self._Me(d)
+        self.me: BaseSubmission.Me = self.Me(d)
 
-        self.subreddit: BaseSubmission._Subreddit = self._Subreddit(d)
+        self.subreddit: BaseSubmission.Subreddit = self.Subreddit(d)
 
         author: str = d['author']
         self.author_name: str = author
-        self.author: Optional[BaseSubmission._Author] = None
+        self.author: Optional[BaseSubmission.Author] = None
         if not author.startswith('['):
-            self.author = self._Author(d)
+            self.author = self.Author(d)
 
-        self.mod: Optional[BaseSubmission._Moderator] = None
-        # `spam`, `ignore_reports`, `approved`, `removed`, and `rte_mode`
-        # are all fields that aren't available when the current user is
-        # not a moderator of the subreddit (or there’s no user context).
+        self.mod: Optional[BaseSubmission.Moderator] = None
         if 'spam' in d:
-            self.mod = self._Moderator(d)
+            self.mod = self.Moderator(d)
 
-        self.flair: BaseSubmission._Flair = self._Flair(d)
+        self.flair: BaseSubmission.Flair = self.Flair(d)
 
-        self.reports: Optional[BaseSubmission._Reports] = None
+        self.reports: Optional[BaseSubmission.Reports] = None
         if d['num_reports'] is not None:
-            self.reports = self._Reports(d)
+            self.reports = self.Reports(d)
 
 
 class BaseLinkPost(BaseSubmission):
@@ -193,17 +187,39 @@ class BaseTextPost(BaseSubmission):
         self.body: str = d['selftext']
         self.body_html: str = d['selftext_html']
 
-class BaseImagePost(BaseSubmission):
-    pass
-
-class BaseVideoPost(BaseSubmission):
-    pass
-
 class BaseGalleryPost(BaseSubmission):
-    pass
+    @dataclass(repr=False, eq=False)
+    class GalleryItem:
+        id: int
+        media_id: str
+        caption: str
+        outbound_link: str
+
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        self.gallery_link: str = d['url_overridden_by_dest']
+        self.gallery: Sequence[BaseGalleryPost.GalleryItem] = [
+            self.GalleryItem(
+                id=m['id'],
+                media_id=m['media_id'],
+                caption=m.get('caption', ''),
+                outbound_link=m.get('outbound_url', ''),
+            )
+            for m in d['gallery_data']['items']
+        ]
 
 class BasePollPost(BaseSubmission):
     pass
 
-class BaseCrosspostPost(BaseSubmission):
-    pass
+
+TOriginalSubmission = TypeVar('TOriginalSubmission', bound=BaseSubmission)
+
+class GenericBaseCrosspostSubmission(BaseSubmission, Generic[TOriginalSubmission]):
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        self.original_id36: str = d['crosspost_parent'][3:]
+        self.original_id: int = int(self.original_id36, 36)
+        self.original: TOriginalSubmission = self._load_submission(d['crosspost_parent_list'][0])
+
+    def _load_submission(self, d: Mapping[str, Any]) -> TOriginalSubmission:
+        raise NotImplementedError

@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from .artifact import Artifact
 
 class BaseMyAccount(Artifact):
-    class _Subreddit:
+    class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
             #: One of `public`, `private`, `restricted`, `archived`,
@@ -15,7 +15,7 @@ class BaseMyAccount(Artifact):
             self.type: str = d['subreddit_type']
             self.subscriber_count: int = d['subscribers']
             self.title: str = d['title']
-            self.summary_description: str = d['public_description']
+            self.public_description: str = d['public_description']
             self.nsfw: bool = d['over_18']
 
     def __init__(self, d: Mapping[str, Any]):
@@ -33,4 +33,4 @@ class BaseMyAccount(Artifact):
         self.is_suspended: bool = d['is_suspended']
         self.nsfw: bool = d['over_18']
 
-        self.subreddit: BaseMyAccount._Subreddit = self._Subreddit(d['subreddit'])
+        self.subreddit: BaseMyAccount.Subreddit = self.Subreddit(d['subreddit'])

@@ -8,13 +8,13 @@ if TYPE_CHECKING:
 import websocket  # type: ignore[import]
 
 from .SYNC import register
-from ..websocket_connection_SYNC import HalfImplementedWebSocketConnection
+from ..websocket_connection_SYNC import PartiallyImplementedWebSocketConnection
 from .. import exceptions
 from ..events import Event, Frame
 from ..const import Opcode, Side, ConnectionState
 from ..utils import parse_close
 
-class WebSocketClient(HalfImplementedWebSocketConnection):
+class WebSocketClient(PartiallyImplementedWebSocketConnection):
     side: int = Side.CLIENT
 
     def __init__(self, ws: websocket.WebSocket):
@@ -90,7 +90,7 @@ class WebSocketClient(HalfImplementedWebSocketConnection):
 def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketClient:
     t: Optional[float] = timeout
     if timeout == -2:
-        t = HalfImplementedWebSocketConnection.DEFAULT_TIMEOUT
+        t = PartiallyImplementedWebSocketConnection.DEFAULT_TIMEOUT
     elif timeout == -1:
         t = None
     elif timeout < 0:

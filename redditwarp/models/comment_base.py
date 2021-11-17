@@ -6,19 +6,18 @@ from datetime import datetime, timezone
 
 from ..auth.const import AUTHORIZATION_BASE_URL
 from .artifact import Artifact
-from .reports import ModReport, UserReport
-from .load.reports import load_mod_report, load_user_report
+from .report import ModReport, UserReport
+from .load.report import load_mod_report, load_user_report
 
 class BaseComment(Artifact):
-    class _Me:
+    class Me:
         def __init__(self, d: Mapping[str, Any]):
-            # User context fields
-            self.saved: bool = d['saved']  # False if no user context
-            self.reply_notifications: bool = d['send_replies']  # False if no user context
-            self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]  # None if no user context
+            self.saved: bool = d['saved']
+            self.reply_notifications: bool = d['send_replies']
+            self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]
 
-    class _Author:
-        class _AuthorFlair:
+    class Author:
+        class AuthorFlair:
             def __init__(self, d: Mapping[str, Any]):
                 self.template_uuid: Optional[str] = d['author_flair_template_id']
                 author_flair_text: Optional[str] = d['author_flair_text']
@@ -36,36 +35,34 @@ class BaseComment(Artifact):
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.has_premium: bool = d['author_premium']
-            self.flair: BaseComment._Author._AuthorFlair = self._AuthorFlair(d)
+            self.flair: BaseComment.Author.AuthorFlair = self.AuthorFlair(d)
 
-    class _Submission:
+    class Submission:
         def __init__(self, d: Mapping[str, Any]):
             self.id36: str = d['link_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
 
-    class _Subreddit:
+    class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
-            #: One of `public`, `private`, `restricted`, `archived`,
-            #: `employees_only`, `gold_only`, `gold_restricted`, `user`.
             self.type: str = d['subreddit_type']
 
-    class _Moderator:
-        class _Approved:
+    class Moderator:
+        class Approved:
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['approved_by']
                 self.ut: int = d['approved_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
-        class _Removed:
+        class Removed:
             def __init__(self, d: Mapping[str, Any]):
                 self.by: str = d['banned_by']
                 self.ut: int = d['banned_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
-        class _Reports:
+        class Reports:
             def __init__(self, d: Mapping[str, Any]):
                 self.ignoring: bool = d['ignore_reports']
                 self.num_reports: int = d['num_reports']
@@ -75,19 +72,24 @@ class BaseComment(Artifact):
         def __init__(self, d: Mapping[str, Any]):
             self.spam: bool = d['spam']
 
-            self.approved: Optional[BaseComment._Moderator._Approved] = None
+            self.approved: Optional[BaseComment.Moderator.Approved] = None
             if d['approved_by']:
-                self.approved = self._Approved(d)
+                self.approved = self.Approved(d)
 
-            self.removed: Optional[BaseComment._Moderator._Removed] = None
+            self.removed: Optional[BaseComment.Moderator.Removed] = None
             if d['banned_by']:
-                self.removed = self._Removed(d)
+                self.removed = self.Removed(d)
 
-            self.reports: BaseComment._Moderator._Reports = self._Reports(d)
+            self.reports: BaseComment.Moderator.Reports = self.Reports(d)
 
             self.removal_reason_by: Optional[str] = d['mod_reason_by']
             self.removal_reason_title: Optional[str] = d['mod_reason_title']
             self.removal_note: Optional[str] = d['mod_note']
+
+    class _Edited:
+        def __init__(self, d: Mapping[str, Any]):
+            self.ut: int = d['edited']
+            self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
@@ -105,18 +107,14 @@ class BaseComment(Artifact):
         self.rel_permalink: str = d['permalink']
         self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-        a: Any = d['edited']
-        self.edited: bool = bool(a)
-        self.edited_ut: Optional[int] = int(a) if self.edited else None
-        self.edited_at: Optional[datetime] = None
-        if self.edited_ut is not None:
-            self.edited_at = datetime.fromtimestamp(self.edited_ut, timezone.utc)
+        self.edited: Optional[BaseComment._Edited] = None
+        if d['edited']:
+            self.edited = self._Edited(d)
 
         self.is_submitter: bool = d['is_submitter']
         self.stickied: bool = d['stickied']
         self.archived: bool = d['archived']
         self.locked: bool = d['locked']
-        #: Whether the comment is collapsed by default, i.e., when it has been downvoted significantly.
         self.collapsed: bool = d['collapsed']
         self.distinguished: str = d['distinguished'] or ''
 
@@ -128,32 +126,29 @@ class BaseComment(Artifact):
             self.parent_comment_id36 = parent_id.partition('_')[2]
             self.parent_comment_id = int(self.parent_comment_id36, 36)
 
-        self.me: BaseComment._Me = self._Me(d)
+        self.me: BaseComment.Me = self.Me(d)
 
-        self.submission: BaseComment._Submission = self._Submission(d)
-        self.subreddit: BaseComment._Subreddit = self._Subreddit(d)
+        self.submission: BaseComment.Submission = self.Submission(d)
+        self.subreddit: BaseComment.Subreddit = self.Subreddit(d)
 
         s: str = d['author']
         self.author_name: str = s
-        self.author: Optional[BaseComment._Author] = None
+        self.author: Optional[BaseComment.Author] = None
         if not s.startswith('['):
-            self.author = self._Author(d)
+            self.author = self.Author(d)
 
-        self.mod: Optional[BaseComment._Moderator] = None
-        # `spam`, `ignore_reports`, `approved`, `removed`, and `rte_mode`
-        # are all fields that aren't available when the current user is
-        # not a moderator of the subreddit (or there’s no user context).
+        self.mod: Optional[BaseComment.Moderator] = None
         if 'spam' in d:
-            self.mod = self._Moderator(d)
+            self.mod = self.Moderator(d)
 
 
 class BaseExtraSubmissionFieldsComment(BaseComment):
     # For:
     # * `GET /comments`
     # * `GET /r/{subreddit}/comments`
-    # * `GET /user/{name}/overview` (and variants)
+    # * `GET /user/{username}/overview` (and variants)
 
-    class _Submission(BaseComment._Submission):
+    class Submission(BaseComment.Submission):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.comment_count: int = d['num_comments']
@@ -163,7 +158,7 @@ class BaseExtraSubmissionFieldsComment(BaseComment):
             self.rel_permalink: str = d['link_permalink']
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-    class _Subreddit(BaseComment._Subreddit):
+    class Subreddit(BaseComment.Subreddit):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.quarantined: bool = d['quarantine']

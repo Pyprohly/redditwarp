@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_SYNC import Submission as SubmissionModel
     from ...models.comment_SYNC import Comment
+    from ...dtos.submission import GalleryItem
 
 from functools import cached_property
 
@@ -73,7 +74,7 @@ class Submission:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        oc: bool = False,
+        original_content: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -89,7 +90,7 @@ class Submission:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
+            if original_content: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -108,7 +109,7 @@ class Submission:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        oc: bool = False,
+        original_content: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -126,7 +127,7 @@ class Submission:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
+            if original_content: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -145,7 +146,7 @@ class Submission:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        oc: bool = False,
+        original_content: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -161,7 +162,7 @@ class Submission:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
+            if original_content: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -180,7 +181,7 @@ class Submission:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        oc: bool = False,
+        original_content: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -198,7 +199,7 @@ class Submission:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
+            if original_content: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -211,12 +212,12 @@ class Submission:
     def create_gallery_post(self,
         sr: str,
         title: str,
-        items: Sequence[Mapping[str, str]],
+        items: Sequence[GalleryItem],
         *,
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        oc: bool = False,
+        original_content: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -224,14 +225,23 @@ class Submission:
         event_end: str = '',
         event_tz: str = '',
     ) -> int:
+        gallery_items_data: Sequence[Mapping[str, str]] = [
+            {
+                'media_id': m.media_id,
+                'caption': m.caption,
+                'outbound_url': m.outbound_link,
+            }
+            for m in items
+        ]
+
         def g() -> Iterable[tuple[str, object]]:
             yield ('sr', sr)
             yield ('title', title)
-            yield ('items', items)
+            yield ('items', gallery_items_data)
             yield ('sendreplies', reply_notifications)
             if spoiler: yield ('spoiler', True)
             if nsfw: yield ('nsfw', True)
-            if oc: yield ('original_content', True)
+            if original_content: yield ('original_content', True)
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -286,7 +296,7 @@ class Submission:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        oc: bool = False,
+        original_content: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -302,7 +312,7 @@ class Submission:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
+            if original_content: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -523,7 +533,7 @@ class Submission:
         data = {'id': 't3_' + to_base36(idn), 'reason': reason}
         self._client.request('POST', '/api/unsnooze_reports', data=data)
 
-    def set_removal_reason(self,
+    def apply_removal_reason(self,
             submission_id: int,
             reason_id: Optional[int],
             note: Optional[str] = None) -> None:

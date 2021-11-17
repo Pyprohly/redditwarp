@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, IO, Optional, Sequence, Any
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.widget_SYNC import (
+    from ...models.widget.SYNC import (
         TextAreaWidget,
         ButtonWidget,
         ImageWidget,
@@ -36,7 +36,7 @@ from functools import cached_property
 
 from ...http.payload import guess_mimetype_from_filename
 from ...models.widget import WidgetImageUploadLease
-from ...models.widget_SYNC import WidgetList
+from ...models.widget.SYNC import WidgetList
 from ...models.load.widget import load_widget_image_upload_lease
 from ...models.load.widget_SYNC import (
     load_widget,

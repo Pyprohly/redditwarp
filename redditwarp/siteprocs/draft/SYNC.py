@@ -23,7 +23,7 @@ class Draft:
         reply_notifications: Optional[bool] = None,
         spoiler: Optional[bool] = None,
         nsfw: Optional[bool] = None,
-        oc: Optional[bool] = None,
+        original_content: Optional[bool] = None,
         flair_text_override: Optional[str] = None,
     ) -> str:
         def g() -> Iterable[tuple[str, str]]:
@@ -35,7 +35,7 @@ class Draft:
             if reply_notifications is not None: yield ('send_replies', '01'[reply_notifications])
             if spoiler is not None: yield ('spoiler', '01'[spoiler])
             if nsfw is not None: yield ('nsfw', '01'[nsfw])
-            if oc is not None: yield ('original_content', '01'[oc])
+            if original_content is not None: yield ('original_content', '01'[original_content])
             if flair_text_override is not None: yield ('flair_text', flair_text_override)
 
         root = self._client.request('POST', '/api/v1/draft', data=dict(g()))
@@ -61,7 +61,7 @@ class Draft:
         reply_notifications: Optional[bool] = None,
         spoiler: Optional[bool] = None,
         nsfw: Optional[bool] = None,
-        oc: Optional[bool] = None,
+        original_content: Optional[bool] = None,
         flair_text_override: Optional[str] = None,
     ) -> str:
         def g() -> Iterable[tuple[str, str]]:
@@ -74,7 +74,7 @@ class Draft:
             if reply_notifications is not None: yield ('send_replies', '01'[reply_notifications])
             if spoiler is not None: yield ('spoiler', '01'[spoiler])
             if nsfw is not None: yield ('nsfw', '01'[nsfw])
-            if oc is not None: yield ('original_content', '01'[oc])
+            if original_content is not None: yield ('original_content', '01'[original_content])
             if flair_text_override is not None: yield ('flair_text', flair_text_override)
 
         root = self._client.request('PUT', '/api/v1/draft', data=dict(g()))

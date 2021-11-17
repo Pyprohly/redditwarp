@@ -9,7 +9,7 @@ from .events import Event, Frame, Message, BytesMessage, TextMessage
 from .utils import parse_close, serialize_close
 
 class WebSocketConnection:
-    DEFAULT_TIMEOUT = 4
+    DEFAULT_TIMEOUT: int = 4
     side: int = Side.NONE
 
     def __init__(self) -> None:
@@ -92,7 +92,7 @@ class WebSocketConnection:
         raise NotImplementedError
 
 
-class HalfImplementedWebSocketConnection(WebSocketConnection):
+class PartiallyImplementedWebSocketConnection(WebSocketConnection):
     def __init__(self) -> None:
         super().__init__()
         self._accumulator: MutableSequence[Frame] = []

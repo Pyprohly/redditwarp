@@ -7,44 +7,19 @@ from datetime import datetime, timezone
 from .artifact import Artifact
 
 class BaseSubreddit(Artifact):
-    class _Me:
-        class _MeFlair:
+    class Me:
+        class MeFlair:
             def __init__(self, d: Mapping[str, Any]):
                 self.enabled: bool = d['user_sr_flair_enabled']
-
-                # Ever had a flair before on the subreddit.
                 self.has_had_flair: bool = d['user_flair_text'] is not None
-
-                # empty string:
-                #   * No flair template.
-                # 'transparent':
-                #   * Flair template being used but no background color set.
-                # otherwise:
-                #   * A color hex string, starting with '#'.
                 self.bg_color: str = d['user_flair_background_color'] or ''
-
                 user_flair_css_class_temp: Optional[str] = d['user_flair_css_class']
                 self.has_had_css_class_when_no_flair_template: bool = user_flair_css_class_temp is not None
-
-                # `None`:
-                #   * Flair not configured.
-                #   * A flair template is being used and the CSS class was never set before.
-                # empty string:
-                #   * Starts off as empty string if no flair template is being used.
-                #   * CSS class was removed on a flair template.
                 self.css_class: str = user_flair_css_class_temp or ''
-
-                # Values: `left` or `right`.
                 self.position: str = d['user_flair_position']
-
-                # `None`:
-                #   * Flair not using a template.
                 self.template_uuid: Optional[str] = d['user_flair_template_id']
-
                 self.text: str = d['user_flair_text'] or ''
                 self.fg_light_or_dark: str = d['user_flair_text_color'] or ''
-
-                # Values: `text` or `richtext`.
                 self.type: str = d['user_flair_type']
 
         def __init__(self, d: Mapping[str, Any]):
@@ -55,9 +30,9 @@ class BaseSubreddit(Artifact):
             self.is_muted: bool = d['user_is_muted']
             self.is_subscribed: bool = d['user_is_subscriber']
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
-            self.flair: BaseSubreddit._Me._MeFlair = self._MeFlair(d)
+            self.flair: BaseSubreddit.Me.MeFlair = self.MeFlair(d)
 
-    class _SubredditFlair:
+    class SubredditFlair:
         def __init__(self, d: Mapping[str, Any]):
             self.user_flairs_enabled: bool = d['user_flair_enabled_in_sr']
             self.link_flairs_enabled: bool = d['link_flair_enabled']
@@ -74,8 +49,6 @@ class BaseSubreddit(Artifact):
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.name: str = d['display_name']
-        #: One of `public`, `private`, `restricted`, `archived`,
-        #: `employees_only`, `gold_only`, or `gold_restricted`.
         self.type: str = d['subreddit_type']
 
         self.subscriber_count: int = d['subscribers']
@@ -94,8 +67,9 @@ class BaseSubreddit(Artifact):
         submission_type: str = d['submission_type']
         self.allows_text_submissions: bool = submission_type in ('any', 'self')
         self.allows_link_submissions: bool = submission_type in ('any', 'link')
+        self.allows_gallery_submissions: bool = d['allow_galleries']
+        self.allows_poll_submissions: bool = d['allow_polls']
 
-        #: One of `confidence` (best), `old`, `top`, `qa`, `controversial`, or `new`.
         self.suggested_comment_sort: Optional[str] = d['suggested_comment_sort']
 
         self.nsfw: bool = d['over18']
@@ -103,9 +77,8 @@ class BaseSubreddit(Artifact):
 
         self.icon_img: str = d['icon_img']
 
-        self.me: Optional[BaseSubreddit._Me] = None
-        # Just checking if a user context is available.
+        self.me: Optional[BaseSubreddit.Me] = None
         if d['user_is_moderator'] is not None:
-            self.me = self._Me(d)
+            self.me = self.Me(d)
 
-        self.flair: BaseSubreddit._SubredditFlair = self._SubredditFlair(d)
+        self.flair: BaseSubreddit.SubredditFlair = self.SubredditFlair(d)

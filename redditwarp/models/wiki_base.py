@@ -13,13 +13,13 @@ from .artifact import IArtifact, Artifact
 # `awardee_karma`, `awarder_karma`, `total_karma` fields are missing.
 
 class BaseWikiPageRevisionAuthorUser(Artifact):
-    class _Subreddit:
+    class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
             self.type: str = d['subreddit_type']
             self.subscriber_count: int = d['subscribers']
             self.title: str = d['title']
-            self.summary_description: str = d['public_description']
+            self.public_description: str = d['public_description']
             self.nsfw: bool = d['over_18']
 
     def __init__(self, d: Mapping[str, Any]):
@@ -41,7 +41,7 @@ class BaseWikiPageRevisionAuthorUser(Artifact):
 
         self.icon_img: str = d['icon_img']
 
-        self.subreddit: BaseWikiPageRevisionAuthorUser._Subreddit = self._Subreddit(d['subreddit'])
+        self.subreddit: BaseWikiPageRevisionAuthorUser.Subreddit = self.Subreddit(d['subreddit'])
 
 
 

@@ -10,7 +10,7 @@ from .artifact import IArtifact
 
 class BaseConversation(IArtifact):
     @dataclass(repr=False, eq=False)
-    class _LegacyMessage:
+    class LegacyMessage:
         id: int
         id36: str
         link: str
@@ -27,9 +27,9 @@ class BaseConversation(IArtifact):
         self.is_repliable: bool = d['isRepliable']
         self.is_highlighted: bool = d['isHighlighted']
 
-        self.legacy_message: Optional[BaseConversation._LegacyMessage] = None
+        self.legacy_message: Optional[BaseConversation.LegacyMessage] = None
         if (x := d['legacyFirstMessageId']) is not None:
-            self.legacy_message = self._LegacyMessage(
+            self.legacy_message = self.LegacyMessage(
                 id36=x,
                 id=int(x, 36),
                 link="https://www.reddit.com/message/messages/" + x,

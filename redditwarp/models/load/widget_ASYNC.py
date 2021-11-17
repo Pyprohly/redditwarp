@@ -2,60 +2,66 @@
 from __future__ import annotations
 from typing import Mapping, Any, Optional
 
-from ..widget import (
-    ImageSize,
-    ButtonWidgetNamespace,
-    ImageWidgetNamespace,
-    CommunityListWidgetNamespace,
-    CalendarWidgetNamespace,
-    PostFlairWidgetNamespace,
-    CustomCSSWidgetNamespace,
-    ModeratorListWidgetNamespace,
-    RulesWidgetNamespace,
-    MenuBarNamespace,
+from ..widget.ASYNC import (
+    Widget,
+    TextAreaWidget,
+    ButtonWidget,
+    ImageWidget,
+    CommunityListWidget,
+    CalendarWidget,
+    PostFlairWidget,
+    CustomCSSWidget,
+    CommunityDetailsWidget,
+    ModeratorListWidget,
+    RulesWidget,
+    MenuBar,
 )
-from ..widget_base import (
-    BaseWidget,
-    BaseTextAreaWidget,
-    BaseButtonWidget,
-    BaseImageWidget,
-    BaseCommunityListWidget,
-    BaseCalendarWidget,
-    BasePostFlairWidget,
-    BaseCustomCSSWidget,
-    BaseCommunityDetailsWidget,
-    BaseModeratorListWidget,
-    BaseRulesWidget,
-    BaseMenuBar,
+from ..widget.image_size_named_tuple import ImageSize
+from ..widget.image import ImageWidgetItem
+from ..widget.button import (
+    HoverState,
+    TextHoverState,
+    ImageHoverState,
+    Button,
+    TextButton,
+    ImageButton,
 )
+from ..widget.community_list import CommunityListWidgetItem
+from ..widget.calendar import CalendarWidgetConfiguration
+from ..widget.post_flair import PostFlairWidgetItem
+from ..widget.custom_css import CustomCSSWidgetImageInfo
+from ..widget.moderator_list import ModeratorInfo
+from ..widget.rules import Rule
+from ..widget.menu_bar import Tab, LinkTab, SubmenuItem, SubmenuTab
 
-def load_base_widget(d: Mapping[str, Any]) -> BaseWidget:
+
+def load_widget(d: Mapping[str, Any]) -> Widget:
     kind = d['kind']
     if kind == 'textarea':
-        return load_base_text_area_widget(d)
+        return load_text_area_widget(d)
     elif kind == 'button':
-        return load_base_button_widget(d)
+        return load_button_widget(d)
     elif kind == 'image':
-        return load_base_image_widget(d)
+        return load_image_widget(d)
     elif kind == 'community-list':
-        return load_base_community_list_widget(d)
+        return load_community_list_widget(d)
     elif kind == 'calendar':
-        return load_base_calendar_widget(d)
+        return load_calendar_widget(d)
     elif kind == 'post-flair':
-        return load_base_post_flair_widget(d)
+        return load_post_flair_widget(d)
     elif kind == 'custom':
-        return load_base_custom_css_widget(d)
+        return load_custom_css_widget(d)
     elif kind == 'id-card':
-        return load_base_community_details_widget(d)
+        return load_community_details_widget(d)
     elif kind == 'moderators':
-        return load_base_moderator_list_widget(d)
+        return load_moderator_list_widget(d)
     elif kind == 'subreddit-rules':
-        return load_base_rules_widget(d)
+        return load_rules_widget(d)
     raise Exception
 
-def load_base_text_area_widget(d: Mapping[str, Any]) -> BaseTextAreaWidget:
+def load_text_area_widget(d: Mapping[str, Any]) -> TextAreaWidget:
     styles = d['styles']
-    return BaseTextAreaWidget(
+    return TextAreaWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -66,29 +72,29 @@ def load_base_text_area_widget(d: Mapping[str, Any]) -> BaseTextAreaWidget:
         text_html=d['textHtml'],
     )
 
-def load_base_button_widget(d: Mapping[str, Any]) -> BaseButtonWidget:
+def load_button_widget(d: Mapping[str, Any]) -> ButtonWidget:
     styles = d['styles']
-    buttons: list[ButtonWidgetNamespace.Button] = []
+    buttons: list[Button] = []
     for m in d['buttons']:
-        hover_state: Optional[ButtonWidgetNamespace.HoverState] = None
+        hover_state: Optional[HoverState] = None
         hs = m['hoverState']
         if hs is not None:
             if hs['kind'] == 'text':
-                hover_state = ButtonWidgetNamespace.TextHoverState(
+                hover_state = TextHoverState(
                     label=hs['text'],
                     text_color=hs.get('textColor', ''),
                     fill_color=hs.get('fillColor', ''),
                     stroke_color=hs['color'],
                 )
             else:
-                hover_state = ButtonWidgetNamespace.ImageHoverState(
+                hover_state = ImageHoverState(
                     image_url=hs['text'],
                     image_size=ImageSize(hs['width'], hs['height']),
                 )
 
-        btn: ButtonWidgetNamespace.Button
+        btn: Button
         if m['kind'] == 'text':
-            btn = ButtonWidgetNamespace.TextButton(
+            btn = TextButton(
                 label=m['text'],
                 link=m['url'],
                 hover_state=hover_state,
@@ -98,7 +104,7 @@ def load_base_button_widget(d: Mapping[str, Any]) -> BaseButtonWidget:
             )
             buttons.append(btn)
         else:
-            btn = ButtonWidgetNamespace.ImageButton(
+            btn = ImageButton(
                 label=m['text'],
                 link=m['linkUrl'],
                 hover_state=hover_state,
@@ -107,7 +113,7 @@ def load_base_button_widget(d: Mapping[str, Any]) -> BaseButtonWidget:
             )
             buttons.append(btn)
 
-    return BaseButtonWidget(
+    return ButtonWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -119,17 +125,17 @@ def load_base_button_widget(d: Mapping[str, Any]) -> BaseButtonWidget:
         buttons=buttons,
     )
 
-def load_base_image_widget(d: Mapping[str, Any]) -> BaseImageWidget:
+def load_image_widget(d: Mapping[str, Any]) -> ImageWidget:
     styles = d['styles']
     image_items = [
-        ImageWidgetNamespace.ImageWidgetItem(
+        ImageWidgetItem(
             url=m['url'],
             size=ImageSize(m['width'], m['height']),
             link=m['linkUrl'] or '',
         )
         for m in d['data']
     ]
-    return BaseImageWidget(
+    return ImageWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -139,10 +145,10 @@ def load_base_image_widget(d: Mapping[str, Any]) -> BaseImageWidget:
         items=image_items,
     )
 
-def load_base_community_list_widget(d: Mapping[str, Any]) -> BaseCommunityListWidget:
+def load_community_list_widget(d: Mapping[str, Any]) -> CommunityListWidget:
     styles = d['styles']
     subr_items = [
-        CommunityListWidgetNamespace.CommunityListWidgetItem(
+        CommunityListWidgetItem(
             name=m['name'],
             subscribers=m['subscribers'],
             icon_img=m['iconUrl'],
@@ -152,7 +158,7 @@ def load_base_community_list_widget(d: Mapping[str, Any]) -> BaseCommunityListWi
         )
         for m in d['data']
     ]
-    return BaseCommunityListWidget(
+    return CommunityListWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -162,10 +168,10 @@ def load_base_community_list_widget(d: Mapping[str, Any]) -> BaseCommunityListWi
         items=subr_items,
     )
 
-def load_base_calendar_widget(d: Mapping[str, Any]) -> BaseCalendarWidget:
+def load_calendar_widget(d: Mapping[str, Any]) -> CalendarWidget:
     styles = d['styles']
     m = d['configuration']
-    configuration = CalendarWidgetNamespace.CalendarWidgetConfiguration(
+    configuration = CalendarWidgetConfiguration(
         num_events=m['numEvents'],
         show_title=m['showTitle'],
         show_description=m['showDescription'],
@@ -173,7 +179,7 @@ def load_base_calendar_widget(d: Mapping[str, Any]) -> BaseCalendarWidget:
         show_date=m['showDate'],
         show_time=m['showTime'],
     )
-    return BaseCalendarWidget(
+    return CalendarWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -185,10 +191,10 @@ def load_base_calendar_widget(d: Mapping[str, Any]) -> BaseCalendarWidget:
         configuration=configuration,
     )
 
-def load_base_post_flair_widget(d: Mapping[str, Any]) -> BasePostFlairWidget:
+def load_post_flair_widget(d: Mapping[str, Any]) -> PostFlairWidget:
     styles = d['styles']
     templates = [
-        PostFlairWidgetNamespace.PostFlairWidgetItem(
+        PostFlairWidgetItem(
             d=m,
             uuid=m['templateId'],
             type=m['type'],
@@ -198,7 +204,7 @@ def load_base_post_flair_widget(d: Mapping[str, Any]) -> BasePostFlairWidget:
         )
         for m in d['templates']
     ]
-    return BasePostFlairWidget(
+    return PostFlairWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -210,10 +216,10 @@ def load_base_post_flair_widget(d: Mapping[str, Any]) -> BasePostFlairWidget:
         templates=templates,
     )
 
-def load_base_custom_css_widget(d: Mapping[str, Any]) -> BaseCustomCSSWidget:
+def load_custom_css_widget(d: Mapping[str, Any]) -> CustomCSSWidget:
     styles = d['styles']
     image_data = [
-        CustomCSSWidgetNamespace.CustomCSSWidgetImageInfo(
+        CustomCSSWidgetImageInfo(
             url=m['url'],
             width=m['width'],
             height=m['height'],
@@ -221,7 +227,7 @@ def load_base_custom_css_widget(d: Mapping[str, Any]) -> BaseCustomCSSWidget:
         )
         for m in d['imageData']
     ]
-    return BaseCustomCSSWidget(
+    return CustomCSSWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -234,9 +240,9 @@ def load_base_custom_css_widget(d: Mapping[str, Any]) -> BaseCustomCSSWidget:
         image_data=image_data,
     )
 
-def load_base_community_details_widget(d: Mapping[str, Any]) -> BaseCommunityDetailsWidget:
+def load_community_details_widget(d: Mapping[str, Any]) -> CommunityDetailsWidget:
     styles = d['styles']
-    return BaseCommunityDetailsWidget(
+    return CommunityDetailsWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -250,10 +256,10 @@ def load_base_community_details_widget(d: Mapping[str, Any]) -> BaseCommunityDet
         viewing_count=d.get('currentlyViewingCount', ''),
     )
 
-def load_base_moderator_list_widget(d: Mapping[str, Any]) -> BaseModeratorListWidget:
+def load_moderator_list_widget(d: Mapping[str, Any]) -> ModeratorListWidget:
     styles = d['styles']
     mods = [
-        ModeratorListWidgetNamespace.ModeratorInfo(
+        ModeratorInfo(
             name=m['name'],
             flair_type=m['authorFlairType'],
             flair_text=m['authorFlairText'] or '',
@@ -263,7 +269,7 @@ def load_base_moderator_list_widget(d: Mapping[str, Any]) -> BaseModeratorListWi
         )
         for m in d.get('mods', ())
     ]
-    return BaseModeratorListWidget(
+    return ModeratorListWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -274,10 +280,10 @@ def load_base_moderator_list_widget(d: Mapping[str, Any]) -> BaseModeratorListWi
         mods=mods,
     )
 
-def load_base_rules_widget(d: Mapping[str, Any]) -> BaseRulesWidget:
+def load_rules_widget(d: Mapping[str, Any]) -> RulesWidget:
     styles = d['styles']
     rules = [
-        RulesWidgetNamespace.Rule(
+        Rule(
             description=m['description'],
             description_html=m['descriptionHtml'],
             short_name=m['shortName'],
@@ -286,7 +292,7 @@ def load_base_rules_widget(d: Mapping[str, Any]) -> BaseRulesWidget:
         )
         for m in d.get('data', ())
     ]
-    return BaseRulesWidget(
+    return RulesWidget(
         d=d,
         idt=d['id'],
         kind=d['kind'],
@@ -298,15 +304,15 @@ def load_base_rules_widget(d: Mapping[str, Any]) -> BaseRulesWidget:
     )
 
 
-def load_base_menu_bar(d: Mapping[str, Any]) -> BaseMenuBar:
-    tabs: list[MenuBarNamespace.Tab] = []
-    tab: MenuBarNamespace.Tab
+def load_menu_bar(d: Mapping[str, Any]) -> MenuBar:
+    tabs: list[Tab] = []
+    tab: Tab
     for m in d['data']:
         if 'children' in m:
-            tab = MenuBarNamespace.SubmenuTab(
+            tab = SubmenuTab(
                 label=m['text'],
                 items=[
-                    MenuBarNamespace.SubmenuItem(
+                    SubmenuItem(
                         label=mi['text'],
                         link=mi['url'],
                     )
@@ -315,13 +321,13 @@ def load_base_menu_bar(d: Mapping[str, Any]) -> BaseMenuBar:
             )
             tabs.append(tab)
         else:
-            tab = MenuBarNamespace.LinkTab(
+            tab = LinkTab(
                 label=m['text'],
                 link=m['url'],
             )
             tabs.append(tab)
 
-    return BaseMenuBar(
+    return MenuBar(
         d=d,
         idt=d['id'],
         kind=d['kind'],

@@ -61,10 +61,10 @@ def raise_for_non_json_response(resp: Response) -> None:
         raise
 
 
-class APIException(ArgExc):
+class APIError(ArgExc):
     pass
 
-class RedditError(APIException):
+class RedditError(APIError):
     def __init__(self,
         arg: object = None,
         *,

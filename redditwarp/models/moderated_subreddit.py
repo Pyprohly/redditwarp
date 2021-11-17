@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from .artifact import Artifact
 
 class ModeratedSubreddit(Artifact):
-    class _Me:
+    class Me:
         def __init__(self, d: Mapping[str, Any]):
             self.is_subscribed: bool = d['user_is_subscriber']
 
@@ -23,9 +23,9 @@ class ModeratedSubreddit(Artifact):
         self.nsfw: bool = d['over_18']
         self.icon_img: str = d['icon_img']
 
-        self.me: Optional[ModeratedSubreddit._Me] = None
+        self.me: Optional[ModeratedSubreddit.Me] = None
         if 'user_is_subscriber' in d:
-            self.me = self._Me(d)
+            self.me = self.Me(d)
 
 class ModeratedUserSubreddit(ModeratedSubreddit):
     pass

@@ -7,8 +7,8 @@ import pytest
 
 from redditwarp.util.attribute_mapping_proxy import (
     AttributeMappingProxy,
-    MappingRecursiveAttributeMappingProxy,
-    MappingAndSequenceRecursiveAttributeMappingProxy,
+    DictRecursiveAttributeMappingProxy,
+    DictAndListRecursiveAttributeMappingProxy,
 )
 
 
@@ -60,23 +60,23 @@ class Test_AttributeMappingProxy:
             assert amp == other
 
 
-class Test_MappingRecursiveAttributeMappingProxy:
+class Test_DictRecursiveAttributeMappingProxy:
     def test_getattr(self) -> None:
         d = {'a': 1, 'b': {'bb': 22}, 'c': {'cc': {'ccc': 333}}}
-        amp = MappingRecursiveAttributeMappingProxy(d)
+        amp = DictRecursiveAttributeMappingProxy(d)
         assert amp.a == 1
-        assert amp.b == MappingRecursiveAttributeMappingProxy({'bb': 22})
+        assert amp.b == DictRecursiveAttributeMappingProxy({'bb': 22})
         assert amp.b.bb == 22
         assert amp.c.cc.ccc == 333
 
 
-class Test_MappingAndSequenceRecursiveAttributeMappingProxy:
+class Test_DictAndListRecursiveAttributeMappingProxy:
     def test_getattr(self) -> None:
         d: dict[str, Any] = {'a': {'aa': [{'b': 1}, {'b': 2}]}}
-        amp = MappingAndSequenceRecursiveAttributeMappingProxy(d)
+        amp = DictAndListRecursiveAttributeMappingProxy(d)
         assert amp.a.aa[0].b == 1
         assert amp.a.aa[1].b == 2
 
         d = {'a': [None, [{'b': {'c': [{'d': 2}]}}]]}
-        amp = MappingAndSequenceRecursiveAttributeMappingProxy(d)
+        amp = DictAndListRecursiveAttributeMappingProxy(d)
         assert amp.a[1][0].b.c[0].d == 2

@@ -1,20 +1,8 @@
 
 from __future__ import annotations
-from typing import Mapping, Any
+from typing import Mapping, Any, Optional
 
-from ..widget_base import (
-    BaseTextAreaWidget,
-    BaseButtonWidget,
-    BaseImageWidget,
-    BaseCommunityListWidget,
-    BaseCalendarWidget,
-    BasePostFlairWidget,
-    BaseCustomCSSWidget,
-    BaseCommunityDetailsWidget,
-    BaseModeratorListWidget,
-    BaseRulesWidget,
-)
-from ..widget_SYNC import (
+from ..widget.SYNC import (
     Widget,
     TextAreaWidget,
     ButtonWidget,
@@ -28,286 +16,321 @@ from ..widget_SYNC import (
     RulesWidget,
     MenuBar,
 )
-from .widget_base import (
-    load_base_widget,
-    load_base_text_area_widget,
-    load_base_button_widget,
-    load_base_image_widget,
-    load_base_community_list_widget,
-    load_base_calendar_widget,
-    load_base_post_flair_widget,
-    load_base_custom_css_widget,
-    load_base_community_details_widget,
-    load_base_moderator_list_widget,
-    load_base_rules_widget,
-    load_base_menu_bar,
+from ..widget.image_size_named_tuple import ImageSize
+from ..widget.image import ImageWidgetItem
+from ..widget.button import (
+    HoverState,
+    TextHoverState,
+    ImageHoverState,
+    Button,
+    TextButton,
+    ImageButton,
 )
+from ..widget.community_list import CommunityListWidgetItem
+from ..widget.calendar import CalendarWidgetConfiguration
+from ..widget.post_flair import PostFlairWidgetItem
+from ..widget.custom_css import CustomCSSWidgetImageInfo
+from ..widget.moderator_list import ModeratorInfo
+from ..widget.rules import Rule
+from ..widget.menu_bar import Tab, LinkTab, SubmenuItem, SubmenuTab
+
 
 def load_widget(d: Mapping[str, Any]) -> Widget:
-    u = load_base_widget(d)
-    if isinstance(u, BaseTextAreaWidget):
-        return TextAreaWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            text=u.text,
-            text_html=u.text_html,
-        )
-    if isinstance(u, BaseButtonWidget):
-        return ButtonWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            description=u.description,
-            description_html=u.description_html,
-            buttons=u.buttons,
-        )
-    if isinstance(u, BaseImageWidget):
-        return ImageWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            items=u.items,
-        )
-    if isinstance(u, BaseCommunityListWidget):
-        return CommunityListWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            items=u.items,
-        )
-    if isinstance(u, BaseCalendarWidget):
-        return CalendarWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            google_calendar_id=u.google_calendar_id,
-            requires_sync=u.requires_sync,
-            configuration=u.configuration,
-        )
-    if isinstance(u, BasePostFlairWidget):
-        return PostFlairWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            display=u.display,
-            order=u.order,
-            templates=u.templates,
-        )
-    if isinstance(u, BaseCustomCSSWidget):
-        return CustomCSSWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            text=u.text,
-            css=u.css,
-            height=u.height,
-            image_data=u.image_data,
-        )
-    if isinstance(u, BaseCommunityDetailsWidget):
-        return CommunityDetailsWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            public_description=u.public_description,
-            subscriber_text=u.subscriber_text,
-            viewing_text=u.viewing_text,
-            subscriber_count=u.subscriber_count,
-            viewing_count=u.viewing_count,
-        )
-    if isinstance(u, BaseModeratorListWidget):
-        return ModeratorListWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            mod_num=u.mod_num,
-            mods=u.mods,
-        )
-    if isinstance(u, BaseRulesWidget):
-        return RulesWidget(
-            d=u.d,
-            idt=u.idt,
-            kind=u.kind,
-            header_color=u.header_color,
-            background_color=u.background_color,
-            title=u.title,
-            display=u.display,
-            rules=u.rules,
-        )
-
+    kind = d['kind']
+    if kind == 'textarea':
+        return load_text_area_widget(d)
+    elif kind == 'button':
+        return load_button_widget(d)
+    elif kind == 'image':
+        return load_image_widget(d)
+    elif kind == 'community-list':
+        return load_community_list_widget(d)
+    elif kind == 'calendar':
+        return load_calendar_widget(d)
+    elif kind == 'post-flair':
+        return load_post_flair_widget(d)
+    elif kind == 'custom':
+        return load_custom_css_widget(d)
+    elif kind == 'id-card':
+        return load_community_details_widget(d)
+    elif kind == 'moderators':
+        return load_moderator_list_widget(d)
+    elif kind == 'subreddit-rules':
+        return load_rules_widget(d)
     raise Exception
 
-
 def load_text_area_widget(d: Mapping[str, Any]) -> TextAreaWidget:
-    u = load_base_text_area_widget(d)
+    styles = d['styles']
     return TextAreaWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        text=u.text,
-        text_html=u.text_html,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        text=d['text'],
+        text_html=d['textHtml'],
     )
 
 def load_button_widget(d: Mapping[str, Any]) -> ButtonWidget:
-    u = load_base_button_widget(d)
+    styles = d['styles']
+    buttons: list[Button] = []
+    for m in d['buttons']:
+        hover_state: Optional[HoverState] = None
+        hs = m['hoverState']
+        if hs is not None:
+            if hs['kind'] == 'text':
+                hover_state = TextHoverState(
+                    label=hs['text'],
+                    text_color=hs.get('textColor', ''),
+                    fill_color=hs.get('fillColor', ''),
+                    stroke_color=hs['color'],
+                )
+            else:
+                hover_state = ImageHoverState(
+                    image_url=hs['text'],
+                    image_size=ImageSize(hs['width'], hs['height']),
+                )
+
+        btn: Button
+        if m['kind'] == 'text':
+            btn = TextButton(
+                label=m['text'],
+                link=m['url'],
+                hover_state=hover_state,
+                text_color=m.get('textColor', ''),
+                fill_color=m.get('fillColor', ''),
+                stroke_color=m['color'],
+            )
+            buttons.append(btn)
+        else:
+            btn = ImageButton(
+                label=m['text'],
+                link=m['linkUrl'],
+                hover_state=hover_state,
+                image_url=m['url'],
+                image_size=ImageSize(m['width'], m['height']),
+            )
+            buttons.append(btn)
+
     return ButtonWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        description=u.description,
-        description_html=u.description_html,
-        buttons=u.buttons,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        description=d['description'],
+        description_html=d['descriptionHtml'],
+        buttons=buttons,
     )
 
 def load_image_widget(d: Mapping[str, Any]) -> ImageWidget:
-    u = load_base_image_widget(d)
+    styles = d['styles']
+    image_items = [
+        ImageWidgetItem(
+            url=m['url'],
+            size=ImageSize(m['width'], m['height']),
+            link=m['linkUrl'] or '',
+        )
+        for m in d['data']
+    ]
     return ImageWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        items=u.items,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        items=image_items,
     )
 
 def load_community_list_widget(d: Mapping[str, Any]) -> CommunityListWidget:
-    u = load_base_community_list_widget(d)
+    styles = d['styles']
+    subr_items = [
+        CommunityListWidgetItem(
+            name=m['name'],
+            subscribers=m['subscribers'],
+            icon_img=m['iconUrl'],
+            community_icon=m['communityIcon'],
+            primary_color=m['primaryColor'],
+            nsfw=m['isNSFW'],
+        )
+        for m in d['data']
+    ]
     return CommunityListWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        items=u.items,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        items=subr_items,
     )
 
 def load_calendar_widget(d: Mapping[str, Any]) -> CalendarWidget:
-    u = load_base_calendar_widget(d)
+    styles = d['styles']
+    m = d['configuration']
+    configuration = CalendarWidgetConfiguration(
+        num_events=m['numEvents'],
+        show_title=m['showTitle'],
+        show_description=m['showDescription'],
+        show_location=m['showLocation'],
+        show_date=m['showDate'],
+        show_time=m['showTime'],
+    )
     return CalendarWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        google_calendar_id=u.google_calendar_id,
-        requires_sync=u.requires_sync,
-        configuration=u.configuration,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        google_calendar_id=d['googleCalendarId'],
+        requires_sync=d['requiresSync'],
+        configuration=configuration,
     )
 
 def load_post_flair_widget(d: Mapping[str, Any]) -> PostFlairWidget:
-    u = load_base_post_flair_widget(d)
+    styles = d['styles']
+    templates = [
+        PostFlairWidgetItem(
+            d=m,
+            uuid=m['templateId'],
+            type=m['type'],
+            text=m['text'],
+            bg_color=m['backgroundColor'],
+            fg_light_or_dark=m['textColor'],
+        )
+        for m in d['templates']
+    ]
     return PostFlairWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        display=u.display,
-        order=u.order,
-        templates=u.templates,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        display=d['display'],
+        order=d['order'],
+        templates=templates,
     )
 
 def load_custom_css_widget(d: Mapping[str, Any]) -> CustomCSSWidget:
-    u = load_base_custom_css_widget(d)
+    styles = d['styles']
+    image_data = [
+        CustomCSSWidgetImageInfo(
+            url=m['url'],
+            width=m['width'],
+            height=m['height'],
+            name=m['name'],
+        )
+        for m in d['imageData']
+    ]
     return CustomCSSWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        text=u.text,
-        css=u.css,
-        height=u.height,
-        image_data=u.image_data,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        text=d['text'],
+        css=d['css'],
+        height=d['height'],
+        image_data=image_data,
     )
 
 def load_community_details_widget(d: Mapping[str, Any]) -> CommunityDetailsWidget:
-    u = load_base_community_details_widget(d)
+    styles = d['styles']
     return CommunityDetailsWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        public_description=u.public_description,
-        subscriber_text=u.subscriber_text,
-        viewing_text=u.viewing_text,
-        subscriber_count=u.subscriber_count,
-        viewing_count=u.viewing_count,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        public_description=d.get('description', ''),
+        subscriber_text=d['subscribersText'],
+        viewing_text=d['currentlyViewingText'],
+        subscriber_count=d.get('subscribersCount', ''),
+        viewing_count=d.get('currentlyViewingCount', ''),
     )
 
 def load_moderator_list_widget(d: Mapping[str, Any]) -> ModeratorListWidget:
-    u = load_base_moderator_list_widget(d)
+    styles = d['styles']
+    mods = [
+        ModeratorInfo(
+            name=m['name'],
+            flair_type=m['authorFlairType'],
+            flair_text=m['authorFlairText'] or '',
+            flair_fg_light_or_dark=m['authorFlairTextColor'],
+            flair_bg_color=m['authorFlairBackgroundColor'],
+            flair_has_had_flair=m['authorFlairText'] is not None,
+        )
+        for m in d.get('mods', ())
+    ]
     return ModeratorListWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        mod_num=u.mod_num,
-        mods=u.mods,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title='',
+        mod_num=d.get('totalMods', 0),
+        mods=mods,
     )
 
 def load_rules_widget(d: Mapping[str, Any]) -> RulesWidget:
-    u = load_base_rules_widget(d)
+    styles = d['styles']
+    rules = [
+        Rule(
+            description=m['description'],
+            description_html=m['descriptionHtml'],
+            short_name=m['shortName'],
+            violation_reason=m['violationReason'],
+            created_ut=m['createdUtc'],
+        )
+        for m in d.get('data', ())
+    ]
     return RulesWidget(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        header_color=u.header_color,
-        background_color=u.background_color,
-        title=u.title,
-        display=u.display,
-        rules=u.rules,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        header_color=styles['headerColor'] or '',
+        background_color=styles['backgroundColor'] or '',
+        title=d['shortName'],
+        display=d['display'],
+        rules=rules,
     )
 
 
 def load_menu_bar(d: Mapping[str, Any]) -> MenuBar:
-    u = load_base_menu_bar(d)
+    tabs: list[Tab] = []
+    tab: Tab
+    for m in d['data']:
+        if 'children' in m:
+            tab = SubmenuTab(
+                label=m['text'],
+                items=[
+                    SubmenuItem(
+                        label=mi['text'],
+                        link=mi['url'],
+                    )
+                    for mi in m['children']
+                ],
+            )
+            tabs.append(tab)
+        else:
+            tab = LinkTab(
+                label=m['text'],
+                link=m['url'],
+            )
+            tabs.append(tab)
+
     return MenuBar(
-        d=u.d,
-        idt=u.idt,
-        kind=u.kind,
-        show_wiki=u.show_wiki,
-        tabs=u.tabs,
+        d=d,
+        idt=d['id'],
+        kind=d['kind'],
+        show_wiki=d['showWiki'],
+        tabs=tabs,
     )

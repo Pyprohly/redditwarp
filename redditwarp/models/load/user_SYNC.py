@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 from ..user_SYNC import User
 
 
-def promote_from_base(base_user: BaseUser, client: Client) -> User:
-    return User(base_user.d, client)
+def promote_base_user(base: BaseUser, client: Client) -> User:
+    return User(base.d, client)
 
 
 def load_user(d: Mapping[str, Any], client: Client) -> User:

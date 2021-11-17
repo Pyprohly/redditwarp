@@ -26,14 +26,14 @@ normal_draft_column_names_map: Mapping[str, str] = {k: v[0] for k, v in draft_co
 public_draft_column_names_map: Mapping[str, str] = {k: v[1] for k, v in draft_column_names_table.items()}
 
 
-def _load_some_draft(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
+def _load_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
     if d[h['kind']] == 'markdown':
         return load_markdown_draft(d)
     if d[h['kind']] == 'richtext':
         return load_rich_text_draft(d)
     raise ValueError('unknown draft type')
 
-def _construct_some_draft(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
+def _construct_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
     created_utms: float = d[h['created']] / 1000
     modified_utms: float = d[h['modified']] / 1000
 
@@ -64,11 +64,11 @@ def _construct_some_draft(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
         reply_notifications=d[h['send_replies']],
         spoiler=d[h['spoiler']],
         nsfw=d[h['nsfw']],
-        oc=d[h['original_content']],
+        original_content=d[h['original_content']],
         flair=flair,
     )
 
-def _load_some_markdown_draft(d: Mapping[str, Any], h: Mapping[str, str]) -> MarkdownDraft:
+def _load_markdown_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> MarkdownDraft:
     u = construct_draft(d)
     return MarkdownDraft(
         d=u.d,
@@ -81,13 +81,13 @@ def _load_some_markdown_draft(d: Mapping[str, Any], h: Mapping[str, str]) -> Mar
         reply_notifications=u.reply_notifications,
         spoiler=u.spoiler,
         nsfw=u.nsfw,
-        oc=u.oc,
+        original_content=u.original_content,
         flair=u.flair,
         #,
         body=d['body'],
     )
 
-def _load_some_rich_text_draft(d: Mapping[str, Any], h: Mapping[str, str]) -> RichTextDraft:
+def _load_rich_text_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> RichTextDraft:
     u = construct_draft(d)
     return RichTextDraft(
         d=u.d,
@@ -100,32 +100,32 @@ def _load_some_rich_text_draft(d: Mapping[str, Any], h: Mapping[str, str]) -> Ri
         reply_notifications=u.reply_notifications,
         spoiler=u.spoiler,
         nsfw=u.nsfw,
-        oc=u.oc,
+        original_content=u.original_content,
         flair=u.flair,
     )
 
 
 def load_draft(d: Mapping[str, Any]) -> Draft:
-    return _load_some_draft(d, normal_draft_column_names_map)
+    return _load_draft_impl(d, normal_draft_column_names_map)
 
 def construct_draft(d: Mapping[str, Any]) -> Draft:
-    return _construct_some_draft(d, normal_draft_column_names_map)
+    return _construct_draft_impl(d, normal_draft_column_names_map)
 
 def load_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
-    return _load_some_markdown_draft(d, normal_draft_column_names_map)
+    return _load_markdown_draft_impl(d, normal_draft_column_names_map)
 
 def load_rich_text_draft(d: Mapping[str, Any]) -> RichTextDraft:
-    return _load_some_rich_text_draft(d, normal_draft_column_names_map)
+    return _load_rich_text_draft_impl(d, normal_draft_column_names_map)
 
 
 def load_public_draft(d: Mapping[str, Any]) -> Draft:
-    return _load_some_draft(d, public_draft_column_names_map)
+    return _load_draft_impl(d, public_draft_column_names_map)
 
 def construct_public_draft(d: Mapping[str, Any]) -> Draft:
-    return _construct_some_draft(d, public_draft_column_names_map)
+    return _construct_draft_impl(d, public_draft_column_names_map)
 
 def load_public_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
-    return _load_some_markdown_draft(d, public_draft_column_names_map)
+    return _load_markdown_draft_impl(d, public_draft_column_names_map)
 
 def load_public_rich_text_draft(d: Mapping[str, Any]) -> RichTextDraft:
-    return _load_some_rich_text_draft(d, public_draft_column_names_map)
+    return _load_rich_text_draft_impl(d, public_draft_column_names_map)

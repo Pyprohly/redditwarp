@@ -33,14 +33,14 @@ class BaseComposedMessage(BaseMessage):
         self.via: Optional[str] = None if dest.startswith('#') else d['subreddit']
 
 class BaseCommentMessage(BaseMessage):
-    class _SubmissionInfo:
+    class SubmissionInfo:
         def __init__(self, d: Mapping[str, Any]):
             self.title: str = d['link_title']
             context: str = d['context']
             self.id: int = int(context.split('/', 5)[4], 36)
             self.comment_count: int = d['num_comments']
 
-    class _CommentInfo:
+    class CommentInfo:
         def __init__(self, d: Mapping[str, Any]):
             self.id: int = int(d['id'], 36)
             self.timestamp: int = int(d['created_utc'])
@@ -69,5 +69,5 @@ class BaseCommentMessage(BaseMessage):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.type: str = d['type']
-        self.submission: BaseCommentMessage._SubmissionInfo = self._SubmissionInfo(d)
-        self.comment: BaseCommentMessage._CommentInfo = self._CommentInfo(d)
+        self.submission: BaseCommentMessage.SubmissionInfo = self.SubmissionInfo(d)
+        self.comment: BaseCommentMessage.CommentInfo = self.CommentInfo(d)

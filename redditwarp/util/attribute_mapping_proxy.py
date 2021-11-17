@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, TypeVar, Mapping, Iterable, Iterator, IO, Optional, Sequence, overload, Union
+from typing import Any, TypeVar, Mapping, Iterable, Iterator, IO, Sequence, overload, Union
 
 from pprint import PrettyPrinter
 
@@ -49,16 +49,14 @@ class AttributeMappingProxy(Mapping[str, V]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: Mapping[str, V],
+        obj: AttributeMappingProxy[V],
         stream: IO[str],
         indent: int,
         allowance: int,
         context: Mapping[int, Any],
         level: int,
-        *,
-        cls_name: Optional[str] = None,
     ) -> None:
-        cls_name = obj.__class__.__name__ if cls_name is None else cls_name
+        cls_name = obj.__class__.__name__
         stream.write(cls_name + '(')
         printer._format(  # type: ignore[attr-defined]
             dict(obj),
@@ -74,44 +72,75 @@ class AttributeMappingProxy(Mapping[str, V]):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
 
 
-class MappingRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
+class DictRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
     def __getattr__(self, name: str) -> Any:
         attr = super().__getattr__(name)
-        if isinstance(attr, Mapping):
-            return MappingRecursiveAttributeMappingProxy(attr)
+        if isinstance(attr, dict):
+            return DictRecursiveAttributeMappingProxy(attr)
         return attr
 
 
-class AttributeMappingProxySequence(Sequence[Any]):
-    def __init__(self, data: Sequence[Any]):
-        self._elements: Sequence[Any] = data
+class DictAndListRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
+    class ListProxy(Sequence[Any]):
+        def __init__(self, data: Sequence[Any]):
+            self._elements: Sequence[Any] = data
 
-    def __len__(self) -> int:
-        return len(self._elements)
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}({self._elements})'
 
-    def __contains__(self, item: object) -> bool:
-        return item in self._elements
+        def __abs__(self) -> Sequence[Any]:
+            return self._elements
 
-    def __iter__(self) -> Iterator[Any]:
-        return iter(self._elements)
+        def __len__(self) -> int:
+            return len(self._elements)
 
-    @overload
-    def __getitem__(self, index: int) -> Any: ...
-    @overload
-    def __getitem__(self, index: slice) -> Sequence[Any]: ...
-    def __getitem__(self, index: Union[int, slice]) -> Union[Any, Sequence[Any]]:
-        item = self._elements[index]
-        if isinstance(item, Mapping):
-            return MappingAndSequenceRecursiveAttributeMappingProxy(item)
-        if isinstance(item, Sequence):
-            return AttributeMappingProxySequence(item)
-        return item
+        def __contains__(self, item: object) -> bool:
+            return item in self._elements
 
-class MappingAndSequenceRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
+        def __iter__(self) -> Iterator[Any]:
+            return iter(self._elements)
+
+        @overload
+        def __getitem__(self, index: int) -> Any: ...
+        @overload
+        def __getitem__(self, index: slice) -> Sequence[Any]: ...
+        def __getitem__(self, index: Union[int, slice]) -> Union[Any, Sequence[Any]]:
+            item = self._elements[index]
+            if isinstance(item, dict):
+                return DictAndListRecursiveAttributeMappingProxy(item)
+            if isinstance(item, list):
+                return self.__class__(item)
+            return item
+
+        @staticmethod
+        def _pprint(
+            printer: PrettyPrinter,
+            obj: DictAndListRecursiveAttributeMappingProxy.ListProxy,
+            stream: IO[str],
+            indent: int,
+            allowance: int,
+            context: Mapping[int, Any],
+            level: int,
+        ) -> None:
+            cls_name = obj.__class__.__name__
+            stream.write(cls_name + '(')
+            printer._format(  # type: ignore[attr-defined]
+                list(obj),
+                stream,
+                indent + len(cls_name) + 1,
+                allowance + 1,
+                context,
+                level,
+            )
+            stream.write(')')
+
+        if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
+            PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
+
     def __getattr__(self, name: str) -> Any:
         attr = super().__getattr__(name)
-        if isinstance(attr, Mapping):
-            return MappingAndSequenceRecursiveAttributeMappingProxy(attr)
-        elif isinstance(attr, Sequence):
-            return AttributeMappingProxySequence(attr)
+        if isinstance(attr, dict):
+            return DictAndListRecursiveAttributeMappingProxy(attr)
+        elif isinstance(attr, list):
+            return self.ListProxy(attr)
         return attr

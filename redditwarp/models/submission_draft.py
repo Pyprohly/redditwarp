@@ -28,7 +28,7 @@ class Draft(IArtifact):
     reply_notifications: bool
     spoiler: bool
     nsfw: bool
-    oc: bool
+    original_content: bool
     flair: Optional[FlairInfo]
 
     if sys.version_info[:3] == (3, 9, 7):
@@ -44,7 +44,7 @@ class Draft(IArtifact):
             reply_notifications: bool,
             spoiler: bool,
             nsfw: bool,
-            oc: bool,
+            original_content: bool,
             flair: Optional[FlairInfo],
         ) -> None:
             self.d = d
@@ -57,7 +57,7 @@ class Draft(IArtifact):
             self.reply_notifications = reply_notifications
             self.spoiler = spoiler
             self.nsfw = nsfw
-            self.oc = oc
+            self.original_content = original_content
             self.flair = flair
 
 @dataclass(repr=False, eq=False)
