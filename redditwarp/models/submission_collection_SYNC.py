@@ -13,8 +13,8 @@ from .load.submission_SYNC import load_submission
 
 class SubmissionCollectionDetails(BaseSubmissionCollectionDetails):
     def __init__(self, d: Mapping[str, Any], client: Client):
-        super().__init__(d)
         self.client: Client = client
+        super().__init__(d)
 
 class SubmissionCollection(
     SubmissionCollectionDetails,

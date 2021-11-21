@@ -9,6 +9,7 @@ import json
 
 from ...models.load.custom_feed import load_custom_feed
 from ... import exceptions
+from ... import http
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
@@ -96,15 +97,19 @@ class CustomFeed:
     def contains(self, user: str, feed: str, sr_name: str) -> bool:
         try:
             self._client.request('GET', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}')
+        except http.exceptions.StatusCodeException as e:
+            if e.status_code == 500:
+                return False
+            raise
         except exceptions.RedditError as e:
             if e.codename == 'SUBREDDIT_NOEXIST':
                 return False
             raise
         return True
 
-    def add_to(self, user: str, feed: str, sr_name: str) -> None:
+    def add_to(self, feed: str, sr_name: str) -> None:
         json_str = self._json_encode({"name": "abc"})
-        self._client.request('PUT', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}', data={'model': json_str})
+        self._client.request('PUT', f'/api/multi/user/bacon/m/{feed}/r/{sr_name}', data={'model': json_str})
 
     def bulk_add_to(self, user: str, feed: str, sr_names: Iterable[str]) -> CallChunkCallingIterator[Sequence[str], None]:
         def mass_add_to(sr_names: Sequence[str]) -> None:

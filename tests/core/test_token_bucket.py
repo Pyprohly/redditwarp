@@ -4,7 +4,7 @@ from typing import TypeVar, Iterable, Iterator, Tuple
 
 import pytest
 
-from redditwarp.core.token_bucket import TokenBucket
+from redditwarp.util.token_bucket import TokenBucket
 
 T = TypeVar('T')
 

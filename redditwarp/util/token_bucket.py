@@ -11,7 +11,7 @@ class TokenBucket:
         self._value = capacity
         self._last_checkpoint_time = time_func()
 
-    def _checkpoint_time(self) -> float:
+    def _checkpoint(self) -> float:
         now = self.time_func()
         delta = now - self._last_checkpoint_time
         self._last_checkpoint_time = now
@@ -19,7 +19,7 @@ class TokenBucket:
 
     def _replenish(self) -> None:
         if self._value < self.capacity:
-            accretion = self.rate * self._checkpoint_time()
+            accretion = self.rate * self._checkpoint()
             self._value = min(self._value + accretion, self.capacity)
 
     def get_value(self) -> float:
@@ -38,10 +38,10 @@ class TokenBucket:
             return True
         return False
 
-    def do_consume(self, n: float) -> bool:
+    def do_consume(self, n: float) -> None:
         """Consume `n` tokens. If `n` tokens aren't available, raise an exception."""
         if self.try_consume(n):
-            return True
+            return
         raise RuntimeError(f'attempted to consume {n} tokens when {self._value} were available')
 
     def hard_consume(self, n: float) -> bool:
@@ -52,7 +52,7 @@ class TokenBucket:
 
     def consume_all(self) -> None:
         """Empty the token bucket completely. Like `self.hard_consume(float('inf'))`."""
-        self._checkpoint_time()
+        self._checkpoint()
         self._value = 0
 
     def get_cooldown(self, n: float) -> float:

@@ -75,8 +75,6 @@ class BaseSubreddit(Artifact):
         self.nsfw: bool = d['over18']
         self.quarantined: bool = d['quarantine']
 
-        self.icon_img: str = d['icon_img']
-
         self.me: Optional[BaseSubreddit.Me] = None
         if d['user_is_moderator'] is not None:
             self.me = self.Me(d)

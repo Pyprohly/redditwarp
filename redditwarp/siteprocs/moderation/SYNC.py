@@ -236,22 +236,20 @@ class Moderation:
             root = self._client.request('POST', f'/api/v1/{sr}/removal_reasons', data=data)
             return int(root['id'], 36)
 
-        def retrieve_map(self, sr: str) -> Mapping[int, tuple[str, str]]:
+        def retrieve_map(self, sr: str) -> Mapping[str, tuple[str, str]]:
             root = self._client.request('GET', f'/api/v1/{sr}/removal_reasons')
             order = root['order']
             object_map = root['data']
             return {
-                int(y, 36): (m['title'], m['message'])
+                y: (m['title'], m['message'])
                 for y in order for m in [object_map[y]]
             }
 
-        def update(self, sr: str, reason_id: int, title: str, message: str) -> None:
-            idt = to_base36(reason_id)
+        def update(self, sr: str, reason_id: str, title: str, message: str) -> None:
             data = {'title': title, 'message': message}
-            self._client.request('PUT', f'/api/v1/{sr}/removal_reasons/{idt}', data=data)
+            self._client.request('PUT', f'/api/v1/{sr}/removal_reasons/{reason_id}', data=data)
 
-        def delete(self, sr: str, reason_id: int) -> None:
-            idt = to_base36(reason_id)
-            self._client.request('DELETE', f'/api/v1/{sr}/removal_reasons/{idt}')
+        def delete(self, sr: str, reason_id: str) -> None:
+            self._client.request('DELETE', f'/api/v1/{sr}/removal_reasons/{reason_id}')
 
     removal_reason: cached_property[_removal_reason] = cached_property(_removal_reason)

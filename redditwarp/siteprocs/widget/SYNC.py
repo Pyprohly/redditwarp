@@ -287,7 +287,7 @@ class Widget:
         def __call__(self, file: IO[bytes], *, sr: str) -> WidgetImageUploadLease:
             return self.upload(file, sr=sr)
 
-        def obtain_upload_lease(self, filename: str, *, mimetype: Optional[str] = None, sr: str) -> WidgetImageUploadLease:
+        def obtain_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> WidgetImageUploadLease:
             if mimetype is None:
                 mimetype = guess_mimetype_from_filename(filename)
             result = self._client.request('POST', f'/api/v1/{sr}/emoji_asset_upload_s3',
@@ -300,7 +300,7 @@ class Widget:
             resp.raise_for_status()
 
         def upload(self, file: IO[bytes], *, sr: str) -> WidgetImageUploadLease:
-            upload_lease = self.obtain_upload_lease(file.name, sr=sr)
+            upload_lease = self.obtain_upload_lease(filename=file.name, sr=sr)
             self.deposit_file(file, upload_lease)
             return upload_lease
 

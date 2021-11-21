@@ -22,7 +22,6 @@ from .exceptions import raise_for_non_json_response, raise_for_reddit_error
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
 
-    _USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR = ' Bot !-- '
     _TSelf = TypeVar('_TSelf', bound='CoreClient')
 
     @classmethod
@@ -216,7 +215,7 @@ class CoreClient:
         To view or set the current user agent string, see `self.http.user_agent`."""
         ua = self.http.user_agent_lead
         if s is not None:
-            ua += self._USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR + s
+            ua = f'{ua} Bot !-- {s}'
         self.http.user_agent = ua
 
 class Client(CoreClient):

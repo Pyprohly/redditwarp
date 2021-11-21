@@ -80,3 +80,11 @@ def test_raise_for_reddit_error() -> None:
     assert exc.codename == 'LIVEUPDATE_NO_INVITE_FOUND'
     assert exc.explanation == "there is no pending invite for that thread"
     assert exc.field == ''
+
+    json_data = {"errors": ["BAD_CSS_NAME", "IMAGE_ERROR"], "img_src": "", "errors_values": ["bad image name", "Invalid image or general image error"]}
+    with pytest.raises(RedditError) as exc_info:
+        raise_for_reddit_error(json_data)
+    exc = exc_info.value
+    assert exc.codename == 'BAD_CSS_NAME'
+    assert exc.explanation == "bad image name"
+    assert exc.field == ''

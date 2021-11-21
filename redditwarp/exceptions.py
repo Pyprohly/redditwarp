@@ -81,7 +81,6 @@ class RedditError(APIError):
         co = self.codename
         xp = self.explanation
         fd = self.field
-
         if co:
             if xp:
                 if fd:
@@ -138,5 +137,10 @@ def raise_for_reddit_error(json_data: Any) -> None:
         (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
         and isinstance(codename := error_record[0], str)
         and isinstance(explanation := error_record[1], str)
+    ):
+        raise RedditError(codename=codename, explanation=explanation, field='')
+    elif (
+        isinstance(codename := next(iter(json_data.get('errors', [])), None), str)
+        and isinstance(explanation := next(iter(json_data.get('errors_values', [])), None), str)
     ):
         raise RedditError(codename=codename, explanation=explanation, field='')

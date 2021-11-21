@@ -155,11 +155,10 @@ class Comment:
 
     def apply_removal_reason(self,
             comment_id: int,
-            reason_id: Optional[int],
+            reason_id: Optional[str],
             note: Optional[str] = None) -> None:
         target = 't1_' + to_base36(comment_id)
-        reason = None if reason_id is None else to_base36(reason_id)
-        json_data = {'item_ids': [target], 'reason_id': reason, 'mod_note': note}
+        json_data = {'item_ids': [target], 'reason_id': reason_id, 'mod_note': note}
         self._client.request('POST', '/api/v1/modactions/removal_reasons', json=json_data)
 
     def send_removal_comment(self,

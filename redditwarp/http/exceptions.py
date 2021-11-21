@@ -17,7 +17,7 @@ class TimeoutException(ArgExc):
     pass
 
 class StatusCodeException(ArgExc):
-    STATUS_CODE = 0
+    STATUS_CODE: int = 0
 
     def __init__(self, arg: object = None, *, status_code: int) -> None:
         super().__init__(arg)

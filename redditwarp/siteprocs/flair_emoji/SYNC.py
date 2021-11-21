@@ -46,7 +46,7 @@ class FlairEmoji:
                     user_enabled=user_enabled,
                     mod_only=mod_only)
 
-        def obtain_upload_lease(self, filename: str, *, mimetype: Optional[str] = None, sr: str) -> FlairEmojiUploadLease:
+        def obtain_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> FlairEmojiUploadLease:
             if mimetype is None:
                 mimetype = guess_mimetype_from_filename(filename)
             result = self._client.request('POST', f'/api/v1/{sr}/emoji_asset_upload_s3',
@@ -59,7 +59,7 @@ class FlairEmoji:
             resp.raise_for_status()
 
         def upload(self, file: IO[bytes], *, sr: str) -> FlairEmojiUploadLease:
-            upload_lease = self.obtain_upload_lease(file.name, sr=sr)
+            upload_lease = self.obtain_upload_lease(filename=file.name, sr=sr)
             self.deposit_file(file, upload_lease)
             return upload_lease
 

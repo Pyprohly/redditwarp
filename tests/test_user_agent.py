@@ -3,7 +3,7 @@ from typing import TypeVar, Type, Optional, Sequence, Tuple
 
 from dataclasses import dataclass
 
-from redditwarp.user_agent import BOT_USER_AGENT_REGEX
+from redditwarp.util.user_agent import BOT_USER_AGENT_REGEX
 
 @dataclass
 class BotUserAgent:

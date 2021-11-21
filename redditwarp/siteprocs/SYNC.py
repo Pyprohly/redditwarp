@@ -23,6 +23,8 @@ from .misc.SYNC import Misc
 from .modmail.SYNC import Modmail
 from .widget.SYNC import Widget
 from .wiki.SYNC import Wiki
+from .legacy_reddit_subreddit_style.SYNC import LegacyRedditSubredditStyle
+from .redesign_reddit_subreddit_style.SYNC import RedesignRedditSubredditStyle
 
 class SiteProcedures:
     def __init__(self, client: Client):
@@ -46,3 +48,5 @@ class SiteProcedures:
         self.modmail: Modmail = Modmail(client)
         self.widget: Widget = Widget(client)
         self.wiki: Wiki = Wiki(client)
+        self.legacy_reddit_subreddit_style: LegacyRedditSubredditStyle = LegacyRedditSubredditStyle(client)
+        self.redesign_reddit_subreddit_style: RedesignRedditSubredditStyle = RedesignRedditSubredditStyle(client)

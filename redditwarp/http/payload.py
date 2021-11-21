@@ -19,7 +19,7 @@ class Payload:
     pass
 
 class Content(Payload):
-    CONTENT_TYPE_HINT = ''
+    CONTENT_TYPE_HINT: str = ''
 
     def get_content_type(self) -> str:
         return self.CONTENT_TYPE_HINT

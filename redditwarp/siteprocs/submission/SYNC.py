@@ -47,7 +47,7 @@ class Submission:
         def __call__(self, file: IO[bytes]) -> MediaUploadLease:
             return self.upload(file)
 
-        def obtain_upload_lease(self, filename: str, *, mimetype: Optional[str] = None) -> MediaUploadLease:
+        def obtain_upload_lease(self, *, filename: str, mimetype: Optional[str] = None) -> MediaUploadLease:
             if mimetype is None:
                 mimetype = guess_mimetype_from_filename(filename)
             result = self._client.request('POST', '/api/media/asset',
@@ -60,7 +60,7 @@ class Submission:
             resp.raise_for_status()
 
         def upload(self, file: IO[bytes]) -> MediaUploadLease:
-            upload_lease = self.obtain_upload_lease(file.name)
+            upload_lease = self.obtain_upload_lease(filename=file.name)
             self.deposit_file(file, upload_lease)
             return upload_lease
 
@@ -535,11 +535,10 @@ class Submission:
 
     def apply_removal_reason(self,
             submission_id: int,
-            reason_id: Optional[int],
+            reason_id: Optional[str],
             note: Optional[str] = None) -> None:
         target = 't3_' + to_base36(submission_id)
-        reason = None if reason_id is None else to_base36(reason_id)
-        json_data = {'item_ids': [target], 'reason_id': reason, 'mod_note': note}
+        json_data = {'item_ids': [target], 'reason_id': reason_id, 'mod_note': note}
         self._client.request('POST', '/api/v1/modactions/removal_reasons', json=json_data)
 
     def send_removal_comment(self,

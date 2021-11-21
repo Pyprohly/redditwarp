@@ -20,7 +20,6 @@ from .util.praw_config import get_praw_config
 from .exceptions import raise_for_non_json_response, raise_for_reddit_error
 
 class CoreClient:
-    _USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR = ' Bot !-- '
     _TSelf = TypeVar('_TSelf', bound='CoreClient')
 
     @classmethod
@@ -153,7 +152,7 @@ class CoreClient:
     def set_user_agent(self, s: Optional[str]) -> None:
         ua = self.http.user_agent_lead
         if s is not None:
-            ua += self._USER_AGENT_CUSTOM_DESCRIPTION_SEPARATOR + s
+            ua = f'{ua} Bot !-- {s}'
         self.http.user_agent = ua
 
 class Client(CoreClient):

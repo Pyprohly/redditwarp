@@ -16,7 +16,7 @@ else:
 import time
 
 from ..http.requestor_decorator_ASYNC import RequestorDecorator
-from .token_bucket import TokenBucket
+from ..util.token_bucket import TokenBucket
 
 class RateLimited(RequestorDecorator):
     def __init__(self, requestor: Requestor) -> None:
