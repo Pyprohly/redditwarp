@@ -6,9 +6,9 @@ if TYPE_CHECKING:
     from ..request import Request
     from ..response import Response
 
-from ..requestor_decorator_ASYNC import RequestorDecorator
+from ..requestor_augmenter_ASYNC import RequestorAugmenter
 
-class ApplyParamsAndHeaders(RequestorDecorator):
+class ApplyParamsAndHeaders(RequestorAugmenter):
     def __init__(self, requestor: Requestor, *,
             params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):
@@ -21,7 +21,7 @@ class ApplyParamsAndHeaders(RequestorDecorator):
         request.headers.update(self.headers)
         return await self.requestor.send(request, timeout=timeout)
 
-class ApplyDefaultParamsAndHeaders(RequestorDecorator):
+class ApplyDefaultParamsAndHeaders(RequestorAugmenter):
     def __init__(self, requestor: Requestor, *,
             params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):

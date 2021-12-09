@@ -58,7 +58,7 @@ def test_get_value(
     concomitants: Iterable[Tuple[float, float]],
 ) -> None:
     ci = CallIterator(time_values)
-    tb = TokenBucket(capacity, rate, ci)
+    tb = TokenBucket(capacity, rate, time_func=ci)
     assert tb.get_value() == capacity
     for m, n in concomitants:
         tb.try_consume(m)

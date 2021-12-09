@@ -15,10 +15,10 @@ else:
 
 import time
 
-from ..http.requestor_decorator_ASYNC import RequestorDecorator
+from ..http.requestor_augmenter_ASYNC import RequestorAugmenter
 from ..util.token_bucket import TokenBucket
 
-class RateLimited(RequestorDecorator):
+class RateLimited(RequestorAugmenter):
     def __init__(self, requestor: Requestor) -> None:
         super().__init__(requestor)
         self.reset: int = 0

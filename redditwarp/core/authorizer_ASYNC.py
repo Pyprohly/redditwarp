@@ -16,7 +16,7 @@ else:
 
 import time
 
-from ..http.requestor_decorator_ASYNC import RequestorDecorator
+from ..http.requestor_augmenter_ASYNC import RequestorAugmenter
 from ..auth.grants import RefreshTokenGrant
 from ..auth.exceptions import (
     UnknownTokenType,
@@ -36,7 +36,7 @@ class Authorizer:
         self.expires_in_fallback: Optional[int] = None
         self.time_func: Callable[[], float] = time.monotonic
 
-    def current_time(self) -> float:
+    def time(self) -> float:
         return self.time_func()
 
     async def renew_token(self) -> None:
@@ -54,17 +54,18 @@ class Authorizer:
         expires_in: Optional[int] = tk.expires_in
         if expires_in is None:
             expires_in = self.expires_in_fallback
+
         if expires_in is None:
             self.renewal_time = None
         else:
-            self.renewal_time = int(self.current_time()) + expires_in - self.renewal_skew
+            self.renewal_time = int(self.time()) + expires_in - self.renewal_skew
 
     def should_renew_token(self) -> bool:
         if self.token is None:
             return True
         if self.renewal_time is None:
             return False
-        return self.current_time() >= self.renewal_time
+        return self.time() >= self.renewal_time
 
     def can_renew_token(self) -> bool:
         return self.token_client is not None
@@ -76,7 +77,7 @@ class Authorizer:
         request.headers['Authorization'] = f'{tk.token_type} {tk.access_token}'
 
 
-class Authorized(RequestorDecorator):
+class Authorized(RequestorAugmenter):
     def __init__(self, requestor: Requestor, authorizer: Authorizer) -> None:
         super().__init__(requestor)
         self.authorizer: Authorizer = authorizer

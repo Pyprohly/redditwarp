@@ -12,21 +12,21 @@ from ....models.load.message_SYNC import (
 )
 
 class MessageListingPaginator(ListingPaginator[Message]):
-    def next_result(self) -> Sequence[Message]:
+    def fetch_next(self) -> Sequence[Message]:
         data = self._next_data()
         return [load_message(d['data'], self.client) for d in data['children']]
 
 class ComposedMessageListingPaginator(ListingPaginator[ComposedMessage]):
-    def next_result(self) -> Sequence[ComposedMessage]:
+    def fetch_next(self) -> Sequence[ComposedMessage]:
         data = self._next_data()
         return [load_composed_message(d['data'], self.client) for d in data['children']]
 
 class CommentMessageListingPaginator(ListingPaginator[CommentMessage]):
-    def next_result(self) -> Sequence[CommentMessage]:
+    def fetch_next(self) -> Sequence[CommentMessage]:
         data = self._next_data()
         return [load_comment_message(d['data'], self.client) for d in data['children']]
 
 class ThreadedMessagesListingPaginator(ListingPaginator[Sequence[ComposedMessage]]):
-    def next_result(self) -> Sequence[Sequence[ComposedMessage]]:
+    def fetch_next(self) -> Sequence[Sequence[ComposedMessage]]:
         data = self._next_data()
         return [load_threaded_message(d['data'], self.client) for d in data['children']]

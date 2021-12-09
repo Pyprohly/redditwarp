@@ -17,7 +17,7 @@ class Artifact:
 class IArtifact(Protocol):
     d: Mapping[str, Any]
 
-    _TSelf = TypeVar('_TSelf')
+    _TSelf = TypeVar('_TSelf', bound='IArtifact')
 
     @cached_property
     def a(self: _TSelf) -> DataMembersNamespaceMapping[_TSelf]:

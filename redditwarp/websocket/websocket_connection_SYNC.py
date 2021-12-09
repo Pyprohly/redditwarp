@@ -5,6 +5,7 @@ import time
 
 from .const import Opcode, ConnectionState, Side
 from . import exceptions
+from . import events
 from .events import Event, Frame, Message, BytesMessage, TextMessage
 from .utils import parse_close, serialize_close
 
@@ -21,9 +22,6 @@ class WebSocketConnection:
 
     def __iter__(self) -> Iterator[Event]:
         yield from self.cycle()
-
-    def set_state(self, state: ConnectionState) -> None:
-        self.state = state
 
     def recv_bytes(self, *, timeout: float = -2) -> bytes:
         """Receive the next message. If it's a BytesMessage then return its payload,
@@ -44,20 +42,26 @@ class WebSocketConnection:
             return event.data
         raise exceptions.MessageTypeMismatchException('bytes message received')
 
-    def cycle(self, t: Optional[float] = None) -> Iterator[Event]:
+    def cycle(self, t: float = -1) -> Iterator[Event]:
         """Yield events from `self.pulse()` over `t` seconds."""
-        if t is None:
+        if t == -1:
             while True:
-                yield from self.pulse(timeout=-1)
+                for event in self.pulse(timeout=-1):
+                    yield event
+                    if isinstance(event, events.ConnectionClosed):
+                        return
 
         else:
             tv = t
             tn = time.monotonic()
             while tv > 0:
                 try:
-                    yield from self.pulse(timeout=tv)
+                    for event in self.pulse(timeout=tv):
+                        yield event
+                        if isinstance(event, events.ConnectionClosed):
+                            return
                 except exceptions.TimeoutException:
-                    break
+                    return
 
                 now = time.monotonic()
                 tv -= now - tn
@@ -67,7 +71,7 @@ class WebSocketConnection:
         if self.close_code < 0:
             self.close_code = 1006
 
-        self.set_state(ConnectionState.CLOSED)
+        self.state = ConnectionState.CLOSED
 
     def send_frame(self, m: Frame) -> None:
         raise NotImplementedError
@@ -84,6 +88,7 @@ class WebSocketConnection:
     def pulse(self, *, timeout: float = -2) -> Iterator[Event]:
         """Process one frame’s worth of incoming data and possibly generate events for it."""
         raise NotImplementedError
+        yield
 
     def receive(self, *, timeout: float = -2) -> Message:
         raise NotImplementedError
@@ -115,22 +120,29 @@ class PartiallyImplementedWebSocketConnection(WebSocketConnection):
         else:
             self.send_bytes(data)
 
-    def _process_ping(self, m: Frame) -> Iterator[Event]:
+    def _process_ping_frame(self, m: Frame) -> Iterator[Event]:
         if self.state not in {ConnectionState.CLOSE_RECEIVED, ConnectionState.CLOSED}:
             pong = Frame.make(Opcode.PONG, m.data)
             self.send_frame(pong)
         yield m
 
-    def _process_close(self, m: Frame) -> Iterator[Event]:
-        self.set_state(ConnectionState.CLOSE_RECEIVED)
+    def _process_close_frame(self, m: Frame) -> Iterator[Event]:
+        self.state = ConnectionState.CLOSE_RECEIVED
         self.close_code: int
         self.close_reason: str
         self.close_code, self.close_reason = parse_close(m.data)
 
         if self.state == ConnectionState.OPEN:
             close = Frame.make(Opcode.CLOSE, m.data)
-            self.send_frame(close)
+            try:
+                self.send_frame(close)
+            except exceptions.ConnectionClosedException:
+                pass
+
+        self.shutdown()
+
         yield m
+        yield events.ConnectionClosed()
 
     def _process_data_frame(self, m: Frame) -> Iterator[Event]:
         yield m
@@ -148,9 +160,9 @@ class PartiallyImplementedWebSocketConnection(WebSocketConnection):
 
     def _process_frame(self, m: Frame) -> Iterator[Event]:
         if m.opcode == Opcode.PING:
-            yield from self._process_ping(m)
+            yield from self._process_ping_frame(m)
         elif m.opcode == Opcode.CLOSE:
-            yield from self._process_close(m)
+            yield from self._process_close_frame(m)
         elif m.opcode in {Opcode.CONTINUATION, Opcode.TEXT, Opcode.BINARY}:
             yield from self._process_data_frame(m)
 
@@ -166,17 +178,17 @@ class PartiallyImplementedWebSocketConnection(WebSocketConnection):
         frame = self._load_next_frame(timeout=timeout)
         yield from self._process_frame(frame)
 
-    def _get_cycle_value_from_timeout(self, timeout: float = -2) -> Optional[float]:
-        t: Optional[float] = timeout
+    def _get_cycle_value_from_timeout(self, timeout: float = -2) -> float:
+        t: float = timeout
         if timeout == -2:
             t = self.default_timeout
         elif timeout == -1:
-            t = None
+            t = -1
         elif timeout < 0:
             raise ValueError(f'invalid timeout value: {timeout}')
         return t
 
-    def _get_cycle_value_from_waitfor(self, waitfor: float = -2) -> Optional[float]:
+    def _get_cycle_value_from_waitfor(self, waitfor: float = -2) -> float:
         try:
             t = self._get_cycle_value_from_timeout(waitfor)
         except ValueError:
@@ -188,9 +200,11 @@ class PartiallyImplementedWebSocketConnection(WebSocketConnection):
         for event in self.cycle(t):
             if isinstance(event, Message):
                 return event
+            elif isinstance(event, events.ConnectionClosed):
+                raise exceptions.ConnectionClosedException()
         raise exceptions.TimeoutException
 
-    def _send_close(self, code: Optional[int] = 1000, reason: str = '') -> None:
+    def _send_close_frame(self, code: Optional[int] = 1000, reason: str = '') -> None:
         data = b''
         if code is not None:
             data = serialize_close(code, reason)
@@ -207,9 +221,9 @@ class PartiallyImplementedWebSocketConnection(WebSocketConnection):
         if self.state != ConnectionState.OPEN:
             return
 
-        self._send_close(code, reason)
+        self._send_close_frame(code, reason)
 
-        self.set_state(ConnectionState.CLOSE_SENT)
+        self.state: ConnectionState = ConnectionState.CLOSE_SENT
 
         for event in self.cycle(t):
             if isinstance(event, Frame):

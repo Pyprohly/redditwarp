@@ -47,7 +47,6 @@ def recursive_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tupl
         level: int = 0,
     ) -> Iterator[tuple[int, Comment]]:
         value = root.value
-
         if isinstance(value, Comment):
             yield (level, value)
 
@@ -64,9 +63,9 @@ def depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Com
     levels = deque([0])
     while stack:
         node = cast("CommentSubtreeTreeNode[object]", stack.pop())
-        value = node.value
         level = levels.pop()
 
+        value = node.value
         if isinstance(value, Comment):
             yield (level, value)
 
@@ -74,9 +73,8 @@ def depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Com
             stack.append(node.more())
             levels.append(level)
 
-        cl = node.children
-        stack.extend(reversed(cl))
-        levels.extend([level + 1] * len(cl))
+        stack.extend(reversed(node.children))
+        levels.extend([level + 1] * len(node.children))
 
 def breadth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
     level = 0
@@ -84,17 +82,15 @@ def breadth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, C
     while queue:
         batch = deque(queue)
         queue.clear()
-
         while batch:
             node = cast("CommentSubtreeTreeNode[object]", batch.popleft())
-            value = node.value
-
-            if value is None:
+            if node.value is None:
                 if node.more:
                     batch.appendleft(node.more())
                 batch.extendleft(reversed(node.children))
                 continue
 
+            value = node.value
             if isinstance(value, Comment):
                 yield (level, value)
 

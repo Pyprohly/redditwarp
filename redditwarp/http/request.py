@@ -19,7 +19,7 @@ class Request:
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} [{self.verb}]>'
 
-BLANK_REQUEST = Request('', '')
+BLANK_REQUEST: Request = Request('', '')
 
 def make_request(
     verb: str,

@@ -51,6 +51,6 @@ class UserFlairAssociationPaginator(BidirectionalCursorPaginator[UserFlairAssoci
         self.has_before: bool = bool(before)
         return data
 
-    def next_result(self) -> Sequence[UserFlairAssociation]:
+    def fetch_next(self) -> Sequence[UserFlairAssociation]:
         data = self._next_data()
         return [load_user_flair_association(d) for d in data['users']]

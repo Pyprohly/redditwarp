@@ -12,7 +12,7 @@ from ....models.load.submission_SYNC import load_submission
 from ....models.submission_SYNC import Submission
 
 class SubmissionAndExtraSubmissionFieldsCommentListingPaginator(ListingPaginator[object]):
-    def next_result(self) -> Sequence[object]:
+    def fetch_next(self) -> Sequence[object]:
         data = self._next_data()
         l = []
         for child in data['children']:
@@ -29,7 +29,7 @@ class SubmissionAndExtraSubmissionFieldsCommentListingPaginator(ListingPaginator
         return l
 
 class ExtraSubmissionFieldsCommentListingPaginator(ListingPaginator[ExtraSubmissionFieldsComment]):
-    def next_result(self) -> Sequence[ExtraSubmissionFieldsComment]:
+    def fetch_next(self) -> Sequence[ExtraSubmissionFieldsComment]:
         data = self._next_data()
         return [load_extra_submission_fields_comment(d['data'], self.client) for d in data['children']]
 

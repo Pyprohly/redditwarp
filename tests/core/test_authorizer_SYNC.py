@@ -28,7 +28,7 @@ class MyTokenObtainmentClient(TokenObtainmentClient):
         return self.my_token
 
 class MyAuthorizer(Authorizer):
-    def current_time(self) -> float:
+    def time(self) -> float:
         return 10
 
 
@@ -63,13 +63,13 @@ class TestAuthorizer:
         o.renew_token()
         expires_in = token_client.my_token.expires_in
         assert expires_in is not None
-        assert o.renewal_time == int(o.current_time()) + expires_in - o.renewal_skew
+        assert o.renewal_time == int(o.time()) + expires_in - o.renewal_skew
 
         o.renewal_time = 9999
         token_client.my_token = get_token(expires_in=None)
         o.expires_in_fallback = 125
         o.renew_token()
-        assert o.renewal_time == int(o.current_time()) + o.expires_in_fallback - o.renewal_skew
+        assert o.renewal_time == int(o.time()) + o.expires_in_fallback - o.renewal_skew
 
     def test_renew_token__no_token_client(self) -> None:
         with pytest.raises(RuntimeError):

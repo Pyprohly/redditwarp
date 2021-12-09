@@ -130,4 +130,5 @@ def load_more_children(d: Any, client: Client, submission_id36: str, sort: str) 
 
     # Use `None` for the node's value here because it's important we
     # don't allow any node to appear more than once in the tree.
+    # I.e., we discard the root comment object.
     return MoreCommentsTreeNode(None, roots, root_more)

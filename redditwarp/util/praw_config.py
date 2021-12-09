@@ -1,36 +1,35 @@
 
 from __future__ import annotations
-from typing import Optional, List, Callable
 
 import sys
 from os import path as op
 from os import getenv
 from configparser import ConfigParser
 
-def get_praw_ini_potential_locations() -> List[str]:
-    ini_file_name = 'praw.ini'
+def safe_getenv(key: str) -> str:
+    return getenv(key, '')
 
-    package_dir = ''
+def get_praw_ini_locations() -> list[str]:
+    pkg_dir = ''
     if __name__ != '__main__':
-        root_package_name, _, _ = __name__.partition('.')
-        modu = sys.modules[root_package_name]
-        package_dir = op.dirname(modu.__file__)
+        root_pkg_name, _, _ = __name__.partition('.')
+        root_pkg_module = sys.modules[root_pkg_name]
+        if root_pkg_module.__file__:
+            pkg_dir = op.dirname(root_pkg_module.__file__)
 
-    safe_getenv: Callable[[str], str] = lambda key: getenv(key, '')
     return [
-        op.join(*components, ini_file_name)
-        for components in [
-            (package_dir,),  # Package defaults
+        op.join(*path_components, 'praw.ini')
+        for path_components in [
+            (pkg_dir,),  # Package defaults
             (safe_getenv('APPDATA'),),  # Windows
-            (safe_getenv('HOME'), '.config'),  # Linux and macOS
+            (safe_getenv('HOME'), '.config',),  # Linux and macOS
             (safe_getenv('XDG_CONFIG_HOME'),),  # Linux
             ('.',),  # Current directory
         ]
-        if components[0]
+        if path_components[0]
     ]
 
-def get_praw_config(config: Optional[ConfigParser] = None) -> ConfigParser:
-    if config is None:
-        config = ConfigParser()
-    config.read(get_praw_ini_potential_locations())
+def get_praw_config() -> ConfigParser:
+    config = ConfigParser()
+    config.read(get_praw_ini_locations())
     return config

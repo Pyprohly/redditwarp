@@ -3,16 +3,16 @@ from typing import Callable
 import time
 
 class TokenBucket:
-    def __init__(self, capacity: float, rate: float,
+    def __init__(self, capacity: float, rate: float, *,
             time_func: Callable[[], float] = time.monotonic) -> None:
         self.capacity: float = capacity
         self.rate: float = rate
-        self.time_func: Callable[[], float] = time_func
+        self._time_func: Callable[[], float] = time_func
         self._value = capacity
         self._last_checkpoint_time = time_func()
 
     def _checkpoint(self) -> float:
-        now = self.time_func()
+        now = self._time_func()
         delta = now - self._last_checkpoint_time
         self._last_checkpoint_time = now
         return delta

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ..response import Response
 
 from ..requestor_SYNC import Requestor
-from ..requestor_decorator_SYNC import RequestorDecorator
+from ..requestor_augmenter_SYNC import RequestorAugmenter
 
 class DestinationNotEstablishedException(Exception):
     pass
@@ -26,7 +26,7 @@ class RequestDistributor(Requestor):
     def get_director(self, sender: Requestor, receiver: Requestor) -> RequestDirector:
         return RequestDirector(sender, self, receiver)
 
-class RequestDirector(RequestorDecorator):
+class RequestDirector(RequestorAugmenter):
     def __init__(self, requestor: Requestor, target: RequestDistributor, receiver: Requestor):
         super().__init__(requestor)
         self.target: RequestDistributor = target

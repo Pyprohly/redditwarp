@@ -14,7 +14,7 @@ class MyPaginator(Paginator[int]):
     def next_available(self) -> bool:
         return self.proceed
 
-    def next_result(self) -> Sequence[int]:
+    def fetch_next(self) -> Sequence[int]:
         self.index += 1
         if self.index >= len(self.seq) - 1:
             self.proceed = False

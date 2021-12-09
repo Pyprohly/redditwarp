@@ -61,28 +61,28 @@ class ModerationPullUsersPaginator(BidirectionalCursorPaginator[T]):
 
 
 class ModeratorsPaginator(ModerationPullUsersPaginator[ModeratorUserItem]):
-    def next_result(self) -> Sequence[ModeratorUserItem]:
+    def fetch_next(self) -> Sequence[ModeratorUserItem]:
         root = self._next_data()
         order = root['moderatorIds']
         object_map = root['moderators']
         return [load_moderator_user_item(object_map[full_id36]) for full_id36 in order]
 
 class ContributorsPaginator(ModerationPullUsersPaginator[ContributorUserItem]):
-    def next_result(self) -> Sequence[ContributorUserItem]:
+    def fetch_next(self) -> Sequence[ContributorUserItem]:
         root = self._next_data()
         order = root['approvedSubmitterIds']
         object_map = root['approvedSubmitters']
         return [load_contributor_user_item(object_map[full_id36]) for full_id36 in order]
 
 class BannedPaginator(ModerationPullUsersPaginator[BannedUserItem]):
-    def next_result(self) -> Sequence[BannedUserItem]:
+    def fetch_next(self) -> Sequence[BannedUserItem]:
         root = self._next_data()
         order = root['bannedUserIds']
         object_map = root['bannedUsers']
         return [load_banned_user_item(object_map[full_id36]) for full_id36 in order]
 
 class MutedPaginator(ModerationPullUsersPaginator[MutedUserItem]):
-    def next_result(self) -> Sequence[MutedUserItem]:
+    def fetch_next(self) -> Sequence[MutedUserItem]:
         root = self._next_data()
         order = root['mutedUserIds']
         object_map = root['mutedUsers']

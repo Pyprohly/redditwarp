@@ -30,7 +30,7 @@ class PaginatorChainingIterator(Iterator[E]):
                     if self.remaining < self._pgr.limit:
                         self._pgr.limit = self.remaining
 
-                it = self._pgr.next_result()
+                it = self._pgr.fetch_next()
                 self.current_iter = iter(it)
 
         raise StopIteration

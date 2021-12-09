@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 from enum import IntEnum
 
 class Side(IntEnum):
@@ -30,7 +32,7 @@ class Opcode(IntEnum):
     def is_control_frame_opcode(v: int) -> bool:
         return (v & 0x8) != 0
 
-AUTHORITATIVE_CLOSE_FRAME_CLOSE_CODES = {
+AUTHORITATIVE_CLOSE_FRAME_CLOSE_CODES: set[int] = {
     1000,
     1001,
     1002,
@@ -45,7 +47,7 @@ AUTHORITATIVE_CLOSE_FRAME_CLOSE_CODES = {
     1014,
 }
 
-FORBIDDEN_CLOSE_FRAME_CLOSE_CODES = {
+FORBIDDEN_CLOSE_FRAME_CLOSE_CODES: set[int] = {
     1005,
     1006,
     1015,

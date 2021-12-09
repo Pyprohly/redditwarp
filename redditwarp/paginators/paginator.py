@@ -15,5 +15,5 @@ class Paginator(Generic[T], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def next_result(self) -> Sequence[T]:
+    def fetch_next(self) -> Sequence[T]:
         raise NotImplementedError

@@ -18,6 +18,6 @@ class WikiPageRevisionsPaginator(ListingPaginator[WikiPageRevision]):
         cursor_extractor = lambda x: ('WikiRevision_' + x['id'])
         super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
 
-    def next_result(self) -> Sequence[WikiPageRevision]:
+    def fetch_next(self) -> Sequence[WikiPageRevision]:
         data = self._next_data()
         return [load_wiki_page_revision(d, self.client) for d in data['children']]

@@ -198,6 +198,10 @@ class BaseGalleryPost(BaseSubmission):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.gallery_link: str = d['url_overridden_by_dest']
+
+        gallery_data_items: Sequence[Any] = ()
+        if gallery_data := d.get('gallery_data'):
+            gallery_data_items = gallery_data['items']
         self.gallery: Sequence[BaseGalleryPost.GalleryItem] = [
             self.GalleryItem(
                 id=m['id'],
@@ -205,7 +209,7 @@ class BaseGalleryPost(BaseSubmission):
                 caption=m.get('caption', ''),
                 outbound_link=m.get('outbound_url', ''),
             )
-            for m in d['gallery_data']['items']
+            for m in gallery_data_items
         ]
 
 class BasePollPost(BaseSubmission):

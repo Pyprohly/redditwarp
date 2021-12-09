@@ -8,9 +8,9 @@ if TYPE_CHECKING:
 
 from collections import deque
 
-from ..http.requestor_decorator_SYNC import RequestorDecorator
+from ..http.requestor_augmenter_SYNC import RequestorAugmenter
 
-class Recorded(RequestorDecorator):
+class Recorded(RequestorAugmenter):
     def __init__(self, requestor: Requestor) -> None:
         super().__init__(requestor)
         self.last_request: Optional[Request] = None

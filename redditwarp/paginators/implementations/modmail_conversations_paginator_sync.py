@@ -54,7 +54,7 @@ class ModmailConversationsPaginator(CursorPaginator[Tuple[Conversation, Message]
         self.has_after: bool = bool(entries)
         return data
 
-    def next_result(self) -> Sequence[Tuple[Conversation, Message]]:
+    def fetch_next(self) -> Sequence[Tuple[Conversation, Message]]:
         data = self._next_data()
         conversations_mapping = data['conversations']
         messages_mapping = data['messages']

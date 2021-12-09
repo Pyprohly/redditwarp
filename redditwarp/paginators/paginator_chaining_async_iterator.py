@@ -30,7 +30,7 @@ class PaginatorChainingAsyncIterator(AsyncIterator[E]):
                     if self.remaining < self._pgr.limit:
                         self._pgr.limit = self.remaining
 
-                it = await self._pgr.next_result()
+                it = await self._pgr.fetch_next()
                 self.current_iter = iter(it)
 
         raise StopAsyncIteration

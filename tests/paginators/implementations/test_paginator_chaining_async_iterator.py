@@ -16,7 +16,7 @@ class MyAsyncPaginator(AsyncPaginator[int]):
     def next_available(self) -> bool:
         return self.proceed
 
-    async def next_result(self) -> Sequence[int]:
+    async def fetch_next(self) -> Sequence[int]:
         self.index += 1
         if self.index >= len(self.seq) - 1:
             self.proceed = False

@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from .auth.typedefs import ClientCredentials, AuthorizationGrant
     from .http.payload import RequestFiles
 
-from .http.util.json_load import json_loads_response
 from .http.transport.ASYNC import new_session
 from .auth import Token
 from .auth.util import auto_grant_factory
@@ -17,7 +16,8 @@ from .core.authorizer_ASYNC import Authorizer, Authorized
 from .core.rate_limited_ASYNC import RateLimited
 from .core.recorded_ASYNC import Recorded, Last
 from .util.praw_config import get_praw_config
-from .exceptions import raise_for_non_json_response, raise_for_reddit_error
+from .util.json_load import json_loads_reddit_response
+from .exceptions import raise_for_reddit_error
 
 class CoreClient:
     _TSelf = TypeVar('_TSelf', bound='CoreClient')
@@ -130,15 +130,7 @@ class CoreClient:
                     data=data, json=json, files=files, timeout=timeout)
 
             if resp.data:
-                try:
-                    json_data = json_loads_response(resp)
-                except ValueError as cause:
-                    try:
-                        raise_for_non_json_response(resp)
-                    except Exception as exc:
-                        raise exc from cause
-                    raise
-
+                json_data = json_loads_reddit_response(resp)
                 raise_for_reddit_error(json_data)
         finally:
             self.last_value = json_data

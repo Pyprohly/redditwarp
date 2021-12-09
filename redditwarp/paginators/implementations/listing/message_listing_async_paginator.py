@@ -12,21 +12,21 @@ from ....models.load.message_ASYNC import (
 )
 
 class MessageListingAsyncPaginator(ListingAsyncPaginator[Message]):
-    async def next_result(self) -> Sequence[Message]:
+    async def fetch_next(self) -> Sequence[Message]:
         data = await self._next_data()
         return [load_message(d['data'], self.client) for d in data['children']]
 
 class ComposedMessageListingAsyncPaginator(ListingAsyncPaginator[ComposedMessage]):
-    async def next_result(self) -> Sequence[ComposedMessage]:
+    async def fetch_next(self) -> Sequence[ComposedMessage]:
         data = await self._next_data()
         return [load_composed_message(d['data'], self.client) for d in data['children']]
 
 class CommentMessageListingAsyncPaginator(ListingAsyncPaginator[CommentMessage]):
-    async def next_result(self) -> Sequence[CommentMessage]:
+    async def fetch_next(self) -> Sequence[CommentMessage]:
         data = await self._next_data()
         return [load_comment_message(d['data'], self.client) for d in data['children']]
 
 class ThreadedMessagesListingAsyncPaginator(ListingAsyncPaginator[Sequence[ComposedMessage]]):
-    async def next_result(self) -> Sequence[Sequence[ComposedMessage]]:
+    async def fetch_next(self) -> Sequence[Sequence[ComposedMessage]]:
         data = await self._next_data()
         return [load_threaded_message(d['data'], self.client) for d in data['children']]

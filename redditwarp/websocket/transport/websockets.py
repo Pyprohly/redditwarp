@@ -11,10 +11,12 @@ import time
 import websockets  # type: ignore[import]
 import websockets.legacy.client  # type: ignore[import]
 import websockets.typing  # type: ignore[import]
+import websockets.exceptions
 
 from .ASYNC import register
 from ..websocket_connection_ASYNC import WebSocketConnection
 from .. import exceptions
+from .. import events
 from ..events import Event, Frame, Message, TextMessage, BytesMessage
 from ..const import Opcode, Side, ConnectionState
 
@@ -49,14 +51,19 @@ class WebSocketClient(WebSocketConnection):
             await self.send_bytes(data)
 
     async def pulse(self, *, timeout: float = -2) -> AsyncIterator[Event]:
-        raise RuntimeError('operation not supported')
-        yield
+        was_closed = self.state == ConnectionState.CLOSED
+        try:
+            yield await self.receive(timeout=timeout)
+        except exceptions.ConnectionClosedException:
+            if was_closed:
+                raise
+            yield events.ConnectionClosed()
 
     async def receive(self, *, timeout: float = -2) -> Message:
         if self.state == ConnectionState.CLOSED:
             raise exceptions.ConnectionClosedException
         if self.state != ConnectionState.OPEN:
-            raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
+            raise exceptions.InvalidStateException(f'cannot receive frames in {self.state.name} state')
 
         t: Optional[float] = timeout
         if timeout == -2:
@@ -70,8 +77,13 @@ class WebSocketClient(WebSocketConnection):
             while True:
                 try:
                     data = await self.ws.recv()
-                except Exception as e:
-                    raise exceptions.TransportError from e
+                except websockets.exceptions.ConnectionClosedOK as e:
+                    self.close_code = e.code
+                    self.close_reason = e.reason
+                    await self.shutdown()
+                    raise exceptions.ConnectionClosedException
+                except Exception as cause:
+                    raise exceptions.TransportError from cause
 
                 if isinstance(data, str):
                     return TextMessage(data)
@@ -82,13 +94,17 @@ class WebSocketClient(WebSocketConnection):
             tv = t
             tn = time.monotonic()
             while tv > 0:
-                coro = self.ws.recv()
                 try:
-                    data = await asyncio.wait_for(coro, t)
-                except asyncio.TimeoutError as e:
-                    raise exceptions.TimeoutException from e
-                except Exception as e:
-                    raise exceptions.TransportError from e
+                    data = await asyncio.wait_for(self.ws.recv(), t)
+                except asyncio.TimeoutError as cause:
+                    raise exceptions.TimeoutException from cause
+                except websockets.exceptions.ConnectionClosedOK as e:
+                    self.close_code: int = e.code
+                    self.close_reason: str = e.reason
+                    await self.shutdown()
+                    raise exceptions.ConnectionClosedException
+                except Exception as cause:
+                    raise exceptions.TransportError from cause
 
                 now = time.monotonic()
                 tv -= now - tn
@@ -119,10 +135,10 @@ class WebSocketClient(WebSocketConnection):
         self.ws.close_timeout = t
         try:
             await self.ws.close(code, reason)
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
-        self.set_state(ConnectionState.CLOSE_SENT)
+        self.state: ConnectionState = ConnectionState.CLOSE_SENT
 
         await self.shutdown()
 
@@ -136,12 +152,14 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
     elif timeout < 0:
         raise ValueError(f'invalid timeout value: {timeout}')
 
-    subp = cast(Optional[Sequence[websockets.typing.Subprotocol]], subprotocols)
+    subp = cast(Optional[Sequence[websockets.typing.Subprotocol]], subprotocols if subprotocols else None)
     coro = websockets.legacy.client.connect(url, subprotocols=subp)
     try:
         ws = await asyncio.wait_for(coro, t)
-    except asyncio.TimeoutError:
-        raise exceptions.TimeoutException
+    except asyncio.TimeoutError as cause:
+        raise exceptions.TimeoutException from cause
+    except Exception as cause:
+        raise exceptions.TransportError from cause
 
     return WebSocketClient(ws)
 

@@ -10,6 +10,7 @@ import websocket  # type: ignore[import]
 from .SYNC import register
 from ..websocket_connection_SYNC import PartiallyImplementedWebSocketConnection
 from .. import exceptions
+from .. import events
 from ..events import Event, Frame
 from ..const import Opcode, Side, ConnectionState
 from ..utils import parse_close
@@ -36,20 +37,25 @@ class WebSocketClient(PartiallyImplementedWebSocketConnection):
         frm = websocket.ABNF.create_frame(opcode=m.opcode, data=m.data, fin=int(m.fin))
         try:
             self.ws.send_frame(frm)
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
     def _load_next_frame(self, *, timeout: float = -2) -> Frame:
+        if self.state == ConnectionState.CLOSED:
+            raise exceptions.ConnectionClosedException
+        if self.state != ConnectionState.OPEN:
+            raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
+
         t = self._get_necessary_timeout(timeout)
         self.ws.timeout = t
         try:
             _, frm = self.ws.recv_data_frame(True)
-        except websocket.WebSocketTimeoutException as e:
-            raise exceptions.TimeoutException from e
-        except websocket.WebSocketConnectionClosedException as e:
-            raise exceptions.ConnectionClosedException from e
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except websocket.WebSocketTimeoutException as cause:
+            raise exceptions.TimeoutException from cause
+        except websocket.WebSocketConnectionClosedException as cause:
+            raise exceptions.ConnectionClosedException from cause
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
         return Frame(
             opcode=Opcode(frm.opcode),
@@ -57,24 +63,23 @@ class WebSocketClient(PartiallyImplementedWebSocketConnection):
             data=(frm.data if isinstance(frm.data, bytes) else frm.data.encode()),
         )
 
-    def _process_ping(self, m: Frame) -> Iterator[Event]:
+    def _process_ping_frame(self, m: Frame) -> Iterator[Event]:
         yield m
 
-    def _process_close(self, m: Frame) -> Iterator[Event]:
-        self.set_state(ConnectionState.CLOSE_RECEIVED)
+    def _process_close_frame(self, m: Frame) -> Iterator[Event]:
+        self.state: ConnectionState = ConnectionState.CLOSE_RECEIVED
         self.close_code: int
         self.close_reason: str
         self.close_code, self.close_reason = parse_close(m.data)
+        self.shutdown()
         yield m
+        yield events.ConnectionClosed()
 
-    def _process_frame(self, m: Frame) -> Iterator[Event]:
-        yield from super()._process_frame(m)
-
-    def _send_close(self, code: Optional[int] = 1000, reason: str = '') -> None:
+    def _send_close_frame(self, code: Optional[int] = 1000, reason: str = '') -> None:
         try:
             self.ws.send_close(code, reason.encode())
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
     def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         super().close(code, reason, waitfor=waitfor)
@@ -83,8 +88,8 @@ class WebSocketClient(PartiallyImplementedWebSocketConnection):
         super().shutdown()
         try:
             self.ws.shutdown()
-        except Exception as e:
-            raise exceptions.TransportError from e
+        except Exception as cause:
+            raise exceptions.TransportError from cause
 
 
 def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketClient:
@@ -97,9 +102,17 @@ def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) 
         raise ValueError(f'invalid timeout value: {timeout}')
 
     try:
-        ws = websocket.create_connection(url, fire_cont_frame=True, timeout=t)
-    except websocket.WebSocketTimeoutException:
-        raise exceptions.TimeoutException
+        ws = websocket.create_connection(
+            url,
+            fire_cont_frame=True,
+            timeout=t,
+            suppress_origin=True,
+            subprotocols=subprotocols,
+        )
+    except websocket.WebSocketTimeoutException as cause:
+        raise exceptions.TimeoutException from cause
+    except Exception as cause:
+        raise exceptions.TransportError from cause
     return WebSocketClient(ws)
 
 

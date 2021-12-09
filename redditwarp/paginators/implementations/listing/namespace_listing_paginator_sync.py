@@ -8,6 +8,6 @@ from .listing_paginator import ListingPaginator
 
 
 class NamespaceListingPaginator(ListingPaginator[SimpleNamespace]):
-    def next_result(self) -> Sequence[SimpleNamespace]:
+    def fetch_next(self) -> Sequence[SimpleNamespace]:
         data = self._next_data()
         return [SimpleNamespace(**d['data']) for d in data['children']]

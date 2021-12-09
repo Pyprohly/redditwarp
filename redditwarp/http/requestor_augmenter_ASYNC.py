@@ -5,11 +5,11 @@ if TYPE_CHECKING:
     from .request import Request
     from .response import Response
 
-from .requestor_SYNC import Requestor
+from .requestor_ASYNC import Requestor
 
-class RequestorDecorator(Requestor):
+class RequestorAugmenter(Requestor):
     def __init__(self, requestor: Requestor) -> None:
         self.requestor: Requestor = requestor
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return self.requestor.send(request, timeout=timeout)
+    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+        return await self.requestor.send(request, timeout=timeout)

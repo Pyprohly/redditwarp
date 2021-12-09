@@ -31,6 +31,6 @@ class ModerationActionLogPaginator(ListingPaginator[ModerationActionLogEntry]):
         if self.mod:
             yield ('mod', self.mod)
 
-    def next_result(self) -> Sequence[ModerationActionLogEntry]:
+    def fetch_next(self) -> Sequence[ModerationActionLogEntry]:
         data = self._next_data()
         return [load_mod_log_action_entry(d['data']) for d in data['children']]
