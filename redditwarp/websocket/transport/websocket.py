@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 # https://pypi.org/project/websocket-client/
 import websocket  # type: ignore[import]
 
-from .SYNC import register
+from ._SYNC_ import register
 from ..websocket_connection_SYNC import PartiallyImplementedWebSocketConnection
 from .. import exceptions
 from .. import events

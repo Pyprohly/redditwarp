@@ -51,10 +51,10 @@ def recursive_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tupl
             yield (level, value)
 
         for child in root.children:
-            dfs(child, level + 1)
+            yield from dfs(child, level + 1)
 
         if root.more:
-            dfs(root.more(), level)
+            yield from dfs(root.more(), level)
 
     return dfs(cast("CommentSubtreeTreeNode[object]", node))
 
@@ -108,7 +108,7 @@ traversal = {
     'bfs': breadth_first_search,
 }[algo]
 
-client = redditwarp.SYNC.Client.from_access_token(access_token)
+client = redditwarp._SYNC_.Client.from_access_token(access_token)
 client.http.user_agent += " redditwarp.cli.comment_tree"
 
 idn = 0
@@ -120,24 +120,23 @@ elif length < 12:
 else:
     idn = extract_submission_id_from_url(target)
 
-tree = client.p.comment_tree.get(idn)
-if tree is None:
+tree_node = client.p.comment_tree.get(idn)
+if tree_node is None:
     print('Submission not found', file=sys.stderr)
     sys.exit(1)
 
-root = tree.node
-submission = m = root.value
+m = submission = tree_node.value
 
 print(f'''\
 {m.permalink}
 {m.score} :: {m.title}
-#{m.id36} by u/{m.author_name} to r/{m.subreddit.name}
+comments/{m.id36} by u/{m.author_name} to r/{m.subreddit.name}
 Submitted at {m.created_at.astimezone().ctime()}{' *' if m.edited else ''}
 ''')
 
 columns, _lines = shutil.get_terminal_size()
 
-for depth, comment in traversal(root):
+for depth, comment in traversal(tree_node):
     c = comment
     body_text = repr(c.body)
     line = f"{depth*'.'} u/{c.author_name} | {body_text}"

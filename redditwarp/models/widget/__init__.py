@@ -1,2 +1,2 @@
 
-from .widget_image_upload_lease import WidgetImageUploadLease  # noqa: F401
+from .widget_image_upload_lease import WidgetImageUploadLease as WidgetImageUploadLease  # noqa: F401

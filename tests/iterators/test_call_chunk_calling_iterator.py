@@ -8,7 +8,7 @@ class TestCallChunkChainingIterator:
     def test_chunks_attribute(self) -> None:
         it = [CallChunk(lambda x: x, 1)]
         ccci = CallChunkCallingIterator(it)
-        assert ccci.chunks is it
+        assert list(ccci.get_chunk_iter()) == it
 
     def test_simple_iteration(self) -> None:
         it = [

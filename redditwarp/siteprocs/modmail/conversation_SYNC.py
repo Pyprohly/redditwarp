@@ -68,7 +68,7 @@ class Conversation:
         data = {'conversationIds': to_base36(idn)}
         self._client.request('POST', '/api/mod/conversations/read', data=data)
 
-    def bulk_mark_read(self, ids: Iterable[int]) -> CallChunkCallingIterator[Sequence[int], None]:
+    def bulk_mark_read(self, ids: Iterable[int]) -> CallChunkCallingIterator[None]:
         def mass_mark_read(ids: Sequence[int]) -> None:
             id36s = map(to_base36, ids)
             ids_str = ','.join(id36s)
@@ -80,7 +80,7 @@ class Conversation:
         data = {'conversationIds': to_base36(idn)}
         self._client.request('POST', '/api/mod/conversations/unread', data=data)
 
-    def bulk_mark_unread(self, ids: Iterable[int]) -> CallChunkCallingIterator[Sequence[int], None]:
+    def bulk_mark_unread(self, ids: Iterable[int]) -> CallChunkCallingIterator[None]:
         def mass_mark_unread(ids: Sequence[int]) -> None:
             id36s = map(to_base36, ids)
             ids_str = ','.join(id36s)
@@ -88,7 +88,7 @@ class Conversation:
 
         return CallChunkCallingIterator(CallChunk(mass_mark_unread, chunk) for chunk in chunked(ids, 100))
 
-    def bulk_mark_all_read(self, mailbox: str, subrs: Iterable[str]) -> CallChunkChainingIterator[str, int]:
+    def bulk_mark_all_read(self, mailbox: str, subrs: Iterable[str]) -> CallChunkChainingIterator[int]:
         def mass_mark_all_read(subrs: Sequence[str]) -> Sequence[int]:
             subrs_str = ','.join(subrs)
             data = {'state': mailbox, 'entity': subrs_str}

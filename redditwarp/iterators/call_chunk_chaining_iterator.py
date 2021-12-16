@@ -1,40 +1,22 @@
 
 from __future__ import annotations
-from typing import Optional, Iterable, Iterator, Generic, Sequence
+from typing import Iterable, Iterator, Sequence, TypeVar, Callable
 
 from .stubborn_caller_iterator import StubbornCallerIterator
 from .unfaltering_chaining_iterator import UnfalteringChainingIterator
-from .call_chunk_SYNC import CallChunk, TInput, TOutput
 
-class CallChunkChainingIterator(Iterator[TOutput], Generic[TInput, TOutput]):
+T = TypeVar('T')
+
+class CallChunkChainingIterator(UnfalteringChainingIterator[T]):
     """Evaluate call chunks and chain them together."""
 
-    @property
-    def current(self) -> Optional[CallChunk[Sequence[TInput], Sequence[TOutput]]]:
-        c = self._call_iter.current
-        if c is not None and not isinstance(c, CallChunk):
-            raise RuntimeError('not a CallChunk')
-        return c
+    def __init__(self, chunks: Iterable[Callable[[], Sequence[T]]]) -> None:
+        self.__chunk_iter: Iterator[Callable[[], Sequence[T]]] = iter(chunks)
+        self.__caller_iter: Iterator[Sequence[T]] = StubbornCallerIterator(self.__chunk_iter)
+        super().__init__(self.__caller_iter)
 
-    @current.setter
-    def current(self, value: Optional[CallChunk[Sequence[TInput], Sequence[TOutput]]]) -> None:
-        self._call_iter.current = value
+    def get_chunk_iter(self) -> Iterator[Callable[[], Sequence[T]]]:
+        return self.__chunk_iter
 
-    @property
-    def current_iter(self) -> Iterator[TOutput]:
-        return self._chain_itr.current_iter
-
-    @current_iter.setter
-    def current_iter(self, value: Iterator[TOutput]) -> None:
-        self._chain_itr.current_iter = value
-
-    def __init__(self, chunks: Iterable[CallChunk[Sequence[TInput], Sequence[TOutput]]]) -> None:
-        self.chunks: Iterable[CallChunk[Sequence[TInput], Sequence[TOutput]]] = chunks
-        self._call_iter = StubbornCallerIterator(chunks)
-        self._chain_itr = UnfalteringChainingIterator(self._call_iter)
-
-    def __iter__(self) -> Iterator[TOutput]:
-        return self
-
-    def __next__(self) -> TOutput:
-        return next(self._chain_itr)
+    def get_caller_iter(self) -> Iterator[Sequence[T]]:
+        return self.__caller_iter

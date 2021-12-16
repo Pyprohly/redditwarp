@@ -5,19 +5,19 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_SYNC import Subreddit
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.p_user_pull_subreddits_sync import UserSubredditListingPaginator
+from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...paginators.implementations.user._sync_ import UserSubredditListingPaginator
 
 class PullUserSubreddits:
     def __init__(self, client: Client):
         self._client = client
 
     def popular(self, amount: Optional[int] = None
-            ) -> PaginatorChainingWrapper[UserSubredditListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[UserSubredditListingPaginator, Subreddit]:
         p = UserSubredditListingPaginator(self._client, '/users/popular')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def new(self, amount: Optional[int] = None
-            ) -> PaginatorChainingWrapper[UserSubredditListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[UserSubredditListingPaginator, Subreddit]:
         p = UserSubredditListingPaginator(self._client, '/users/new')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)

@@ -5,33 +5,33 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_SYNC import Subreddit
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.p_account_pull_subreddits_sync import SubredditListingPaginator
+from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...paginators.listing.subreddit_listing_paginator_sync import SubredditListingPaginator
 
 class Pulls:
     def __init__(self, client: Client) -> None:
         self._client = client
 
     def __call__(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[SubredditListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         return self.popular(amount)
 
     def popular(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[SubredditListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         p = SubredditListingPaginator(self._client, '/subreddits/popular')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def new(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[SubredditListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         p = SubredditListingPaginator(self._client, '/subreddits/new')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def default(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[SubredditListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         p = SubredditListingPaginator(self._client, '/subreddits/default')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def premium(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[SubredditListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[SubredditListingPaginator, Subreddit]:
         p = SubredditListingPaginator(self._client, '/subreddits/premium')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)

@@ -16,10 +16,10 @@ class BulkFetchPartialUser:
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[int, PartialUser]:
+    def __call__(self, ids: Iterable[int]) -> CallChunkChainingIterator[PartialUser]:
         return self.by_id(ids)
 
-    def by_id(self, ids: Iterable[int]) -> CallChunkChainingIterator[int, PartialUser]:
+    def by_id(self, ids: Iterable[int]) -> CallChunkChainingIterator[PartialUser]:
         def mass_fetch_by_id(ids: Sequence[int]) -> Sequence[PartialUser]:
             id36s = map(to_base36, ids)
             full_id36s = map('t2_'.__add__, id36s)
@@ -33,10 +33,9 @@ class BulkFetchPartialUser:
                 raise
             return [load_partial_user(v, k) for k, v in root.items()]
 
-        return CallChunkChainingIterator(
-                CallChunk(mass_fetch_by_id, idfs) for idfs in chunked(ids, 100))
+        return CallChunkChainingIterator(CallChunk(mass_fetch_by_id, idfs) for idfs in chunked(ids, 100))
 
-    def by_id36(self, id36s: Iterable[str]) -> CallChunkChainingIterator[str, PartialUser]:
+    def by_id36(self, id36s: Iterable[str]) -> CallChunkChainingIterator[PartialUser]:
         def mass_fetch_by_id36(id36s: Sequence[str]) -> Sequence[PartialUser]:
             full_id36s = map('t2_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
@@ -49,5 +48,4 @@ class BulkFetchPartialUser:
                 raise
             return [load_partial_user(v, k) for k, v in root.items()]
 
-        return CallChunkChainingIterator(
-                CallChunk(mass_fetch_by_id36, idfs) for idfs in chunked(id36s, 100))
+        return CallChunkChainingIterator(CallChunk(mass_fetch_by_id36, idfs) for idfs in chunked(id36s, 100))

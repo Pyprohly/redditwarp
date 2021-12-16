@@ -19,6 +19,7 @@ def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
     spec.loader.exec_module(module)
     return module
 
+
 class _LazyImport:
     def __call__(self, name: str, package: Optional[str] = None) -> ModuleType:
         try:

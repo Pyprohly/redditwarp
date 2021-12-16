@@ -5,8 +5,7 @@ if TYPE_CHECKING:
     from ..client_SYNC import Client
 
 from ..exceptions import ResultRejectedException
-from .comment_tree_SYNC import MoreCommentsTreeNode
-from .submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
+from .comment_tree_SYNC import MoreCommentsTreeNode, SubmissionTreeNode
 from .more_comments_base import BaseMoreComments
 
 class MoreComments(BaseMoreComments):
@@ -30,21 +29,16 @@ class ContinueThisThread(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
     ) -> MoreCommentsTreeNode:
-        tree = self.fetch_continued()
-        o = tree.node
-        return MoreCommentsTreeNode(None, o.children[0].children, o.more)
+        node = self.fetch_submission_tree_node()
 
-    def get(self) -> Optional[SubmissionCommentTreeWrapper]:
-        return self.client.p.comment_tree.get.by_id36(self.submission_id36, self.comment_id36)
-
-    def fetch(self) -> SubmissionCommentTreeWrapper:
-        return self.client.p.comment_tree.fetch.by_id36(self.submission_id36, self.comment_id36)
-
-    def fetch_continued(self) -> SubmissionCommentTreeWrapper:
-        tree = self.fetch()
-        if not tree.is_continued():
+        is_continued = not node.children[0].value.is_top_level
+        if not is_continued:
             raise ResultRejectedException(self)
-        return tree
+
+        return MoreCommentsTreeNode(None, node.children[0].children, node.more)
+
+    def fetch_submission_tree_node(self) -> SubmissionTreeNode:
+        return self.client.p.comment_tree.fetch.by_id36(self.submission_id36, self.comment_id36)
 
 class LoadMoreComments(MoreComments):
     def __init__(self,

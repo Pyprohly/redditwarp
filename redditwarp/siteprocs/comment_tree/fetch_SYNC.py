@@ -2,11 +2,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable
 if TYPE_CHECKING:
-    from ...models.submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
-    from .SYNC import CommentTree as Outer
+    from ...models.comment_tree_SYNC import SubmissionTreeNode
+    from ._SYNC_ import CommentTree as Outer
 
 from ...util.base_conversion import to_base36
-from ...models.load.comment_tree_SYNC import load_submission_comment_tree_wrapper
+from ...models.load.comment_tree_SYNC import load_submission_tree_node
 
 class Fetch:
     def __init__(self, outer: Outer):
@@ -21,7 +21,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> SubmissionCommentTreeWrapper:
+    ) -> SubmissionTreeNode:
         return self.by_id(submission_id, comment_id, sort=sort, limit=limit, depth=depth, context=context)
 
     def by_id(self,
@@ -32,7 +32,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> SubmissionCommentTreeWrapper:
+    ) -> SubmissionTreeNode:
         submission_id36 = to_base36(submission_id)
         comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
         return self.by_id36(submission_id36, comment_id36, sort=sort, limit=limit, depth=depth, context=context)
@@ -45,7 +45,7 @@ class Fetch:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> SubmissionCommentTreeWrapper:
+    ) -> SubmissionTreeNode:
         def g() -> Iterable[tuple[str, str]]:
             if comment_id36 is not None:
                 yield ('comment', comment_id36)
@@ -59,4 +59,4 @@ class Fetch:
                 yield ('context', str(context))
 
         dat = self._client.request('GET', '/comments/' + submission_id36, params=dict(g()))
-        return load_submission_comment_tree_wrapper(dat, self._client, sort)
+        return load_submission_tree_node(dat, self._client, sort)

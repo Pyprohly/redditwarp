@@ -80,67 +80,68 @@ class DictRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
         return attr
 
 
+
+class ListProxy(Sequence[Any]):
+    def __init__(self, data: Sequence[Any]):
+        self._elements: Sequence[Any] = data
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}({self._elements})'
+
+    def __abs__(self) -> Sequence[Any]:
+        return self._elements
+
+    def __len__(self) -> int:
+        return len(self._elements)
+
+    def __contains__(self, item: object) -> bool:
+        return item in self._elements
+
+    def __iter__(self) -> Iterator[Any]:
+        return iter(self._elements)
+
+    @overload
+    def __getitem__(self, index: int) -> Any: ...
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[Any]: ...
+    def __getitem__(self, index: Union[int, slice]) -> Union[Any, Sequence[Any]]:
+        item = self._elements[index]
+        if isinstance(item, dict):
+            return DictAndListRecursiveAttributeMappingProxy(item)
+        if isinstance(item, list):
+            return self.__class__(item)
+        return item
+
+    @staticmethod
+    def _pprint(
+        printer: PrettyPrinter,
+        obj: ListProxy,
+        stream: IO[str],
+        indent: int,
+        allowance: int,
+        context: Mapping[int, Any],
+        level: int,
+    ) -> None:
+        cls_name = obj.__class__.__name__
+        stream.write(cls_name + '(')
+        printer._format(  # type: ignore[attr-defined]
+            list(obj),
+            stream,
+            indent + len(cls_name) + 1,
+            allowance + 1,
+            context,
+            level,
+        )
+        stream.write(')')
+
+    if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
+        PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
+
 class DictAndListRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
-    class ListProxy(Sequence[Any]):
-        def __init__(self, data: Sequence[Any]):
-            self._elements: Sequence[Any] = data
-
-        def __repr__(self) -> str:
-            return f'{self.__class__.__name__}({self._elements})'
-
-        def __abs__(self) -> Sequence[Any]:
-            return self._elements
-
-        def __len__(self) -> int:
-            return len(self._elements)
-
-        def __contains__(self, item: object) -> bool:
-            return item in self._elements
-
-        def __iter__(self) -> Iterator[Any]:
-            return iter(self._elements)
-
-        @overload
-        def __getitem__(self, index: int) -> Any: ...
-        @overload
-        def __getitem__(self, index: slice) -> Sequence[Any]: ...
-        def __getitem__(self, index: Union[int, slice]) -> Union[Any, Sequence[Any]]:
-            item = self._elements[index]
-            if isinstance(item, dict):
-                return DictAndListRecursiveAttributeMappingProxy(item)
-            if isinstance(item, list):
-                return self.__class__(item)
-            return item
-
-        @staticmethod
-        def _pprint(
-            printer: PrettyPrinter,
-            obj: DictAndListRecursiveAttributeMappingProxy.ListProxy,
-            stream: IO[str],
-            indent: int,
-            allowance: int,
-            context: Mapping[int, Any],
-            level: int,
-        ) -> None:
-            cls_name = obj.__class__.__name__
-            stream.write(cls_name + '(')
-            printer._format(  # type: ignore[attr-defined]
-                list(obj),
-                stream,
-                indent + len(cls_name) + 1,
-                allowance + 1,
-                context,
-                level,
-            )
-            stream.write(')')
-
-        if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
-            PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
-
     def __getattr__(self, name: str) -> Any:
         attr = super().__getattr__(name)
         if isinstance(attr, dict):
             return DictAndListRecursiveAttributeMappingProxy(attr)
         elif isinstance(attr, list):
-            return self.ListProxy(attr)
+            return ListProxy(attr)
         return attr

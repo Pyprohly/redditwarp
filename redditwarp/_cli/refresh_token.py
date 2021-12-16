@@ -48,8 +48,8 @@ from functools import partial
 from pprint import pp
 
 import redditwarp
-from redditwarp.http.transport.SYNC import load_transport, new_session
-from redditwarp.core.SYNC import RedditTokenObtainmentClient
+from redditwarp.http.transport._SYNC_ import load_transport, new_session
+from redditwarp.core._SYNC_ import RedditTokenObtainmentClient
 from redditwarp.core.reddit_http_client_SYNC import get_user_agent
 
 def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:

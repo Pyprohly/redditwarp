@@ -13,7 +13,7 @@ import websockets.legacy.client  # type: ignore[import]
 import websockets.typing  # type: ignore[import]
 import websockets.exceptions
 
-from .ASYNC import register
+from ._ASYNC_ import register
 from ..websocket_connection_ASYNC import WebSocketConnection
 from .. import exceptions
 from .. import events

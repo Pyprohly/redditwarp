@@ -8,7 +8,7 @@ from redditwarp.core.recorded_ASYNC import Recorded, Last
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.paginators.implementations.listing.listing_async_paginator import ListingAsyncPaginator
+from redditwarp.paginators.listing.listing_async_paginator import ListingAsyncPaginator
 
 class MySession(SessionBase):
     def __init__(self,
@@ -33,7 +33,7 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
     async def fetch_next(self) -> Sequence[str]:
-        data = await self._next_data()
+        data = await self._fetch_next_data()
         return [d['name'] for d in data['children']]
 
 session = MySession(200, {'Content-Type': 'application/json'}, b'')

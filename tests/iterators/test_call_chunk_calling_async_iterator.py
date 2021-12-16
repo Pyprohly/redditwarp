@@ -14,7 +14,7 @@ class TestCallChunkChainingIterator:
     async def test_chunks_attribute(self) -> None:
         it = [CallChunk(_f, 1)]
         ccci = CallChunkCallingAsyncIterator(it)
-        assert ccci.chunks is it
+        assert list(ccci.get_chunk_iter()) == it
 
     @pytest.mark.asyncio
     async def test_simple_iteration(self) -> None:

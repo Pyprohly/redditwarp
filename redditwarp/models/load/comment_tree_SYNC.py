@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from ..more_comments_SYNC import MoreComments
 
 from ..comment_tree_SYNC import MoreCommentsTreeNode, CommentTreeNode, SubmissionTreeNode
-from ..submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
 from ..more_comments_SYNC import ContinueThisThread, LoadMoreComments
 from .comment_SYNC import load_comment
 from .submission_SYNC import load_submission
@@ -38,7 +37,7 @@ def load_more_comments(
     )
 
 
-def load_submission_comment_tree_wrapper(d: Any, client: Client, sort: str) -> SubmissionCommentTreeWrapper:
+def load_submission_tree_node(d: Any, client: Client, sort: str) -> SubmissionTreeNode:
     def f(d: Any, client: Client, submission_id36: str, sort: str) -> CommentTreeNode:
         value = load_comment(d, client)
         nodes = []
@@ -89,8 +88,7 @@ def load_submission_comment_tree_wrapper(d: Any, client: Client, sort: str) -> S
         node = f(comment_data, client, submission_id36, sort)
         nodes.append(node)
 
-    root = SubmissionTreeNode(value, nodes, more)
-    return SubmissionCommentTreeWrapper(root, sort)
+    return SubmissionTreeNode(value, nodes, more)
 
 def load_more_children(d: Any, client: Client, submission_id36: str, sort: str) -> MoreCommentsTreeNode:
     node_lookup: Dict[str, CommentTreeNode] = {}

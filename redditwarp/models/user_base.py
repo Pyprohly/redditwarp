@@ -24,23 +24,16 @@ class BaseUser(Artifact):
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['name']
 
-        #: Karma accumulated from posting.
         self.submission_karma: int = d['link_karma']
-        #: Karma accumulated from commenting.
         self.comment_karma: int = d['comment_karma']
-        #: Karma accumulated for being awarded.
-        self.awardee_karma: int = d['awardee_karma']
-        #: Karma accumulated for giving awards.
-        self.awarder_karma: int = d['awarder_karma']
-        #: Same as `link_karma`, `comment_karma`, `awardee_karma`, and `awarder_karma` added.
-        self.total_karma: int = d['total_karma']
+        self.awardee_karma: int = d.get('awardee_karma', -1)
+        self.awarder_karma: int = d.get('awarder_karma', -1)
+        self.total_karma: int = d.get('total_karma', -1)
 
         self.has_premium: bool = d['is_gold']
         self.has_verified_email: bool = d['has_verified_email']
 
-        #: Whether the user is a friend of the current user.
         self.is_friend: bool = d['is_friend']
-        #: Is a moderator of any subreddit.
         self.is_a_subreddit_moderator: bool = d['is_mod']
 
         self.icon_img: str = d['icon_img']

@@ -1,27 +1,27 @@
 
-from typing import Sequence, List
+from __future__ import annotations
 
-def base_digits(base: int, n: int) -> Sequence[int]:
+def base_digits(base: int, n: int) -> list[int]:
     if base < 2:
         raise ValueError('`base` must be at least 2')
     if n < 0:
         raise ValueError('`n` must be positive')
 
-    digits: List[int] = []
-    digits_append = digits.append
+    digits = []
     while n:
-        digits_append(n % base)
-        n //= base
+        n, r = divmod(n, base)
+        digits.append(r)
     return digits
 
 def to_base(base: int, n: int, alphabet: str) -> str:
     if base > len(alphabet):
         raise ValueError('alphabet not large enough')
+    if n == 0:
+        return alphabet[0]
 
     sign = '-' if n < 0 else ''
-    n = abs(n)
-    digits = base_digits(base, n)
-    return sign + ''.join(reversed([alphabet[i] for i in digits]))
+    digits = base_digits(base, abs(n))
+    return sign + ''.join(reversed([alphabet[x] for x in digits]))
 
 def to_base36(n: int) -> str:
     return to_base(36, n, '0123456789abcdefghijklmnopqrstuvwxyz')

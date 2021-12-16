@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.message_SYNC import Message, ComposedMessage, CommentMessage
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.message_listing_paginator import (
+from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...paginators.implementations.message_sync import (
     MessageListingPaginator,
     ComposedMessageListingPaginator,
     CommentMessageListingPaginator,
@@ -17,33 +17,33 @@ class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[MessageListingPaginator, Message]:
+    def __call__(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, Message]:
         return self.inbox(amount)
 
-    def inbox(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[MessageListingPaginator, Message]:
+    def inbox(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, Message]:
         p = MessageListingPaginator(self._client, '/message/inbox')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def unread(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[MessageListingPaginator, Message]:
+    def unread(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, Message]:
         p = MessageListingPaginator(self._client, '/message/unread')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def messages(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[ThreadedMessagesListingPaginator, Sequence[ComposedMessage]]:
+    def messages(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ThreadedMessagesListingPaginator, Sequence[ComposedMessage]]:
         p = ThreadedMessagesListingPaginator(self._client, '/message/messages')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def sent(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[ComposedMessageListingPaginator, ComposedMessage]:
+    def sent(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ComposedMessageListingPaginator, ComposedMessage]:
         p = ComposedMessageListingPaginator(self._client, '/message/sent')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def comment_replies(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[CommentMessageListingPaginator, CommentMessage]:
+    def comment_replies(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[CommentMessageListingPaginator, CommentMessage]:
         p = CommentMessageListingPaginator(self._client, '/message/comments')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def post_replies(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[CommentMessageListingPaginator, CommentMessage]:
+    def post_replies(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[CommentMessageListingPaginator, CommentMessage]:
         p = CommentMessageListingPaginator(self._client, '/message/selfreply')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def mentions(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[CommentMessageListingPaginator, CommentMessage]:
+    def mentions(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[CommentMessageListingPaginator, CommentMessage]:
         p = CommentMessageListingPaginator(self._client, '/message/mentions')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)

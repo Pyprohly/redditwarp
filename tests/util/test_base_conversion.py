@@ -25,6 +25,9 @@ def test_to_base() -> None:
     with pytest.raises(ValueError):
         assert to_base(50, -1, '1'*20)
 
+    assert to_base(5, 0, '01234') == '0'
+    assert to_base(5, 0, '43210') == '4'
+
 def test_to_base36() -> None:
     assert to_base36(int('f6jnzr', 36)) == 'f6jnzr'
     assert to_base36(-int('a05z1', 36)) == '-a05z1'

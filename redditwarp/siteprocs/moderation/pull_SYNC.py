@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.p_moderation_pull_sync import (
+from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...paginators.implementations.moderation._sync_ import (
     ModQueueListingPaginator,
     ModQueueSubmissionListingPaginator,
     ModQueueCommentListingPaginator,
@@ -35,19 +35,19 @@ class Pull:
             self._client = outer._client
 
         def __call__(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[ModQueueListingPaginator, object]:
+                ) -> ImpartedPaginatorChainingIterator[ModQueueListingPaginator, object]:
             p = ModQueueListingPaginator(self._client, f'/r/{sr}/about/modqueue')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def submissions(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[ModQueueSubmissionListingPaginator, Submission]:
+                ) -> ImpartedPaginatorChainingIterator[ModQueueSubmissionListingPaginator, Submission]:
             p = ModQueueSubmissionListingPaginator(self._client, f'/r/{sr}/about/modqueue')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def comments(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[ModQueueCommentListingPaginator, Comment]:
+                ) -> ImpartedPaginatorChainingIterator[ModQueueCommentListingPaginator, Comment]:
             p = ModQueueCommentListingPaginator(self._client, f'/r/{sr}/about/modqueue')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
     modqueue: cached_property[_modqueue] = cached_property(_modqueue)
 
@@ -57,19 +57,19 @@ class Pull:
             self._client = outer._client
 
         def __call__(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[ReportsListingPaginator, object]:
+                ) -> ImpartedPaginatorChainingIterator[ReportsListingPaginator, object]:
             p = ReportsListingPaginator(self._client, f'/r/{sr}/about/reports')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def submissions(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[ReportsSubmissionListingPaginator, Submission]:
+                ) -> ImpartedPaginatorChainingIterator[ReportsSubmissionListingPaginator, Submission]:
             p = ReportsSubmissionListingPaginator(self._client, f'/r/{sr}/about/reports')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def comments(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[ReportsCommentListingPaginator, Comment]:
+                ) -> ImpartedPaginatorChainingIterator[ReportsCommentListingPaginator, Comment]:
             p = ReportsCommentListingPaginator(self._client, f'/r/{sr}/about/reports')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
     reports: cached_property[_reports] = cached_property(_reports)
 
@@ -79,19 +79,19 @@ class Pull:
             self._client = outer._client
 
         def __call__(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[SpamListingPaginator, object]:
+                ) -> ImpartedPaginatorChainingIterator[SpamListingPaginator, object]:
             p = SpamListingPaginator(self._client, f'/r/{sr}/about/spam')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def submissions(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[SpamSubmissionListingPaginator, Submission]:
+                ) -> ImpartedPaginatorChainingIterator[SpamSubmissionListingPaginator, Submission]:
             p = SpamSubmissionListingPaginator(self._client, f'/r/{sr}/about/spam')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def comments(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[SpamCommentListingPaginator, Comment]:
+                ) -> ImpartedPaginatorChainingIterator[SpamCommentListingPaginator, Comment]:
             p = SpamCommentListingPaginator(self._client, f'/r/{sr}/about/spam')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
     spam: cached_property[_spam] = cached_property(_spam)
 
@@ -101,23 +101,23 @@ class Pull:
             self._client = outer._client
 
         def __call__(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[EditedListingPaginator, object]:
+                ) -> ImpartedPaginatorChainingIterator[EditedListingPaginator, object]:
             p = EditedListingPaginator(self._client, f'/r/{sr}/about/edited')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def submissions(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[EditedSubmissionListingPaginator, Submission]:
+                ) -> ImpartedPaginatorChainingIterator[EditedSubmissionListingPaginator, Submission]:
             p = EditedSubmissionListingPaginator(self._client, f'/r/{sr}/about/edited')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
         def comments(self, sr: str, amount: Optional[int] = None,
-                ) -> PaginatorChainingWrapper[EditedCommentListingPaginator, Comment]:
+                ) -> ImpartedPaginatorChainingIterator[EditedCommentListingPaginator, Comment]:
             p = EditedCommentListingPaginator(self._client, f'/r/{sr}/about/edited')
-            return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+            return ImpartedPaginatorChainingIterator(p, amount)
 
     edited: cached_property[_edited] = cached_property(_edited)
 
     def unmoderated(self, sr: str, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[UnmoderatedSubmissionListingPaginator, Submission]:
+            ) -> ImpartedPaginatorChainingIterator[UnmoderatedSubmissionListingPaginator, Submission]:
         p = UnmoderatedSubmissionListingPaginator(self._client, f'/r/{sr}/about/unmoderated')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)

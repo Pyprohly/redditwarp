@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Mapping, Any, Optional
 
-from ..widget.SYNC import (
+from ..widget._SYNC_ import (
     Widget,
     TextAreaWidget,
     ButtonWidget,

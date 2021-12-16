@@ -5,6 +5,7 @@ import pytest
 
 from redditwarp.iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from redditwarp.iterators.call_chunk_ASYNC import CallChunk, TInput, TOutput
+from redditwarp.iterators.stubborn_caller_async_iterator import StubbornCallerAsyncIterator
 
 def new_call_chunk_of_sequences(
     operation: Callable[[Sequence[TInput]], Awaitable[Sequence[TOutput]]],
@@ -20,7 +21,7 @@ class TestCallChunkChainingAsyncIterator:
     async def test_chunks_attribute(self) -> None:
         it = [new_call_chunk_of_sequences(_f, [1])]
         ccci = CallChunkChainingAsyncIterator(it)
-        assert ccci.chunks is it
+        assert list(ccci.get_chunk_iter()) == it
 
     @pytest.mark.asyncio
     async def test_simple_iteration(self) -> None:
@@ -64,23 +65,27 @@ class TestCallChunkChainingAsyncIterator:
             new_call_chunk_of_sequences(_f, [3]),
         ]
         ccci = CallChunkChainingAsyncIterator(it)
-        assert ccci.current is None
+        sci = ccci.get_caller_iter()
+        assert isinstance(sci, StubbornCallerAsyncIterator)
+        assert sci.current is None
         assert await ccci.__anext__() == 1
-        assert ccci.current is None
+        assert sci.current is None
         try:
             await ccci.__anext__()
         except RuntimeError:
             pass
-        assert ccci.current is j
+        assert sci.current is j
         assert await ccci.__anext__() == 2
-        assert ccci.current is None
+        assert sci.current is None
         assert await ccci.__anext__() == 3
-        assert ccci.current is None
+        assert sci.current is None
 
     @pytest.mark.asyncio
     async def test_current_is_setable(self) -> None:
         it: Iterable[CallChunk[Sequence[int], Sequence[int]]] = []
         ccci = CallChunkChainingAsyncIterator(it)
+        sci = ccci.get_caller_iter()
+        assert isinstance(sci, StubbornCallerAsyncIterator)
         assert [i async for i in ccci] == []
-        ccci.current = new_call_chunk_of_sequences(_f, [1, 2, 3])
+        sci.current = new_call_chunk_of_sequences(_f, [1, 2, 3])
         assert [i async for i in ccci] == [1, 2, 3]

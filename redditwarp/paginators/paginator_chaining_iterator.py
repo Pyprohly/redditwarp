@@ -35,18 +35,15 @@ class PaginatorChainingIterator(Iterator[E]):
 
         raise StopIteration
 
+
+
 __bound = 'Paginator[E]'
 TPaginator = TypeVar('TPaginator', bound=Paginator)  # type: ignore[type-arg]
 
-class PaginatorChainingWrapper(Iterator[E], Generic[TPaginator, E]):
-    """Do not attempt to set the .paginator attribute. Doing so will not change the underlying pagination source."""
+class ImpartedPaginatorChainingIterator(PaginatorChainingIterator[E], Generic[TPaginator, E]):
+    def __init__(self, paginator: TPaginator, amount: Optional[int] = None) -> None:
+        super().__init__(paginator, amount)
+        self.__paginator: TPaginator = paginator
 
-    def __init__(self, chainer: PaginatorChainingIterator[E], paginator: TPaginator) -> None:
-        self.chainer: PaginatorChainingIterator[E] = chainer
-        self.paginator: TPaginator = paginator
-
-    def __iter__(self) -> Iterator[E]:
-        return iter(self.chainer)
-
-    def __next__(self) -> E:
-        return next(self.chainer)
+    def get_paginator(self) -> TPaginator:
+        return self.__paginator

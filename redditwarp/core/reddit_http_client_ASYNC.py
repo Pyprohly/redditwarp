@@ -14,7 +14,7 @@ import sys
 from .. import __about__
 from ..auth.const import RESOURCE_BASE_URL
 from ..http.http_client_ASYNC import HTTPClient
-from ..http.transport.ASYNC import transport_info_registry
+from ..http.transport._ASYNC_ import transport_info_registry
 
 class RedditHTTPClient(HTTPClient):
     DEFAULT_PARAMS: Mapping[str, str] = {

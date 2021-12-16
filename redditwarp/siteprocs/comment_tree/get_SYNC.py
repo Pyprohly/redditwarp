@@ -2,8 +2,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-    from ...models.submission_comment_tree_wrapper_SYNC import SubmissionCommentTreeWrapper
-    from .SYNC import CommentTree as Outer
+    from ...models.comment_tree_SYNC import SubmissionTreeNode
+    from ._SYNC_ import CommentTree as Outer
 
 from ...util.base_conversion import to_base36
 from ... import http
@@ -21,7 +21,7 @@ class Get:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> Optional[SubmissionCommentTreeWrapper]:
+    ) -> Optional[SubmissionTreeNode]:
         return self.by_id(submission_id, comment_id, sort=sort, limit=limit, depth=depth, context=context)
 
     def by_id(self,
@@ -32,7 +32,7 @@ class Get:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> Optional[SubmissionCommentTreeWrapper]:
+    ) -> Optional[SubmissionTreeNode]:
         submission_id36 = to_base36(submission_id)
         comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
         return self.by_id36(submission_id36, comment_id36, sort=sort, limit=limit, depth=depth, context=context)
@@ -45,7 +45,7 @@ class Get:
         limit: Optional[int] = None,
         depth: Optional[int] = None,
         context: Optional[int] = None,
-    ) -> Optional[SubmissionCommentTreeWrapper]:
+    ) -> Optional[SubmissionTreeNode]:
         try:
             v = self._outer.fetch.by_id36(
                 submission_id36,

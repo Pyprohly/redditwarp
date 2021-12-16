@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_SYNC import Subreddit
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.p_account_pull_subreddits_sync import (
+from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...paginators.implementations.account_sync import (
     SubscribedListingPaginator,
     ContributingListingPaginator,
     ModeratingListingPaginator,
@@ -17,16 +17,16 @@ class PullSubreddits:
         self._client = client
 
     def subscribed(self, amount: Optional[int] = None
-            ) -> PaginatorChainingWrapper[SubscribedListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[SubscribedListingPaginator, Subreddit]:
         p = SubscribedListingPaginator(self._client, '/subreddits/mine/subscriber')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def contributing(self, amount: Optional[int] = None
-            ) -> PaginatorChainingWrapper[ContributingListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[ContributingListingPaginator, Subreddit]:
         p = ContributingListingPaginator(self._client, '/subreddits/mine/contributor')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def moderating(self, amount: Optional[int] = None
-            ) -> PaginatorChainingWrapper[ModeratingListingPaginator, Subreddit]:
+            ) -> ImpartedPaginatorChainingIterator[ModeratingListingPaginator, Subreddit]:
         p = ModeratingListingPaginator(self._client, '/subreddits/mine/moderator')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)

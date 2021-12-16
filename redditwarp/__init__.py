@@ -1,7 +1,7 @@
 
 __all__ = '*'
 
-from . import (SYNC, ASYNC)  # noqa: F401
+from . import (_SYNC_, _ASYNC_)  # noqa: F401
 from . import (client_SYNC, client_ASYNC)  # noqa: F401
 from .__about__ import (  # noqa: F401
     __title__ as __title__,

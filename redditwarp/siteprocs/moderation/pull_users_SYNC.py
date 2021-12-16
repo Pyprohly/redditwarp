@@ -10,8 +10,8 @@ if TYPE_CHECKING:
         MutedUserItem,
     )
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.subreddit_pull_users_sync import (
+from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...paginators.implementations.moderation._sync_ import (
     ModeratorsPaginator,
     ContributorsPaginator,
     BannedPaginator,
@@ -22,26 +22,26 @@ class PullUsers:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def moderators(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingWrapper[ModeratorsPaginator, ModeratorUserItem]:
+    def moderators(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ModeratorsPaginator, ModeratorUserItem]:
         p = ModeratorsPaginator(self._client, f'/api/v1/{sr}/moderators')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def moderator_invitations(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingWrapper[ModeratorsPaginator, ModeratorUserItem]:
+    def moderator_invitations(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ModeratorsPaginator, ModeratorUserItem]:
         p = ModeratorsPaginator(self._client, f'/api/v1/{sr}/moderators_invited')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def editable_moderators(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingWrapper[ModeratorsPaginator, ModeratorUserItem]:
+    def editable_moderators(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ModeratorsPaginator, ModeratorUserItem]:
         p = ModeratorsPaginator(self._client, f'/api/v1/{sr}/moderators_editable')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def contributors(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingWrapper[ContributorsPaginator, ContributorUserItem]:
+    def contributors(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ContributorsPaginator, ContributorUserItem]:
         p = ContributorsPaginator(self._client, f'/api/v1/{sr}/contributors')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def banned(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingWrapper[BannedPaginator, BannedUserItem]:
+    def banned(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[BannedPaginator, BannedUserItem]:
         p = BannedPaginator(self._client, f'/api/v1/{sr}/banned')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def muted(self, sr: str, amount: Optional[int] = None) -> PaginatorChainingWrapper[MutedPaginator, MutedUserItem]:
+    def muted(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MutedPaginator, MutedUserItem]:
         p = MutedPaginator(self._client, f'/api/v1/{sr}/muted')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)

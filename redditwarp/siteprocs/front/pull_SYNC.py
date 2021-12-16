@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_SYNC import Submission
 
-from ...paginators.paginator_chaining_iterator import PaginatorChainingIterator, PaginatorChainingWrapper
-from ...paginators.implementations.listing.p_frontpage_pull_sync import (
+from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...paginators.implementations.front_sync import (
     BestListingPaginator,
     HotListingPaginator,
     NewListingPaginator,
@@ -21,43 +21,43 @@ class Pull:
         self._client = client
 
     def __call__(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[BestListingPaginator, Submission]:
+            ) -> ImpartedPaginatorChainingIterator[BestListingPaginator, Submission]:
         return self.best(amount)
 
     def best(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[BestListingPaginator, Submission]:
+            ) -> ImpartedPaginatorChainingIterator[BestListingPaginator, Submission]:
         p = BestListingPaginator(self._client, '/best')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def hot(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[HotListingPaginator, Submission]:
+            ) -> ImpartedPaginatorChainingIterator[HotListingPaginator, Submission]:
         p = HotListingPaginator(self._client, '/hot')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def new(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[NewListingPaginator, Submission]:
+            ) -> ImpartedPaginatorChainingIterator[NewListingPaginator, Submission]:
         p = NewListingPaginator(self._client, '/new')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def top(self, amount: Optional[int] = None, *,
             time_filter: str = 'day',
-            ) -> PaginatorChainingWrapper[TopListingPaginator, Submission]:
+            ) -> ImpartedPaginatorChainingIterator[TopListingPaginator, Submission]:
         p = TopListingPaginator(self._client, '/top')
         p.time_filter = time_filter
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def rising(self, amount: Optional[int] = None,
-            ) -> PaginatorChainingWrapper[RisingListingPaginator, Submission]:
+            ) -> ImpartedPaginatorChainingIterator[RisingListingPaginator, Submission]:
         p = RisingListingPaginator(self._client, '/rising')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
     def controversial(self, amount: Optional[int] = None, *,
             time_filter: str = 'day',
-        ) -> PaginatorChainingWrapper[ControversialListingPaginator, Submission]:
+        ) -> ImpartedPaginatorChainingIterator[ControversialListingPaginator, Submission]:
         p = ControversialListingPaginator(self._client, '/controversial')
         p.time_filter = time_filter
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)
 
-    def gilded(self, amount: Optional[int] = None) -> PaginatorChainingWrapper[GildedListingPaginator, object]:
+    def gilded(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[GildedListingPaginator, object]:
         p = GildedListingPaginator(self._client, '/gilded')
-        return PaginatorChainingWrapper(PaginatorChainingIterator(p, amount), p)
+        return ImpartedPaginatorChainingIterator(p, amount)

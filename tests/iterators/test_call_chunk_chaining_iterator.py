@@ -3,6 +3,7 @@ from typing import Iterable, Sequence, Callable
 
 from redditwarp.iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from redditwarp.iterators.call_chunk_SYNC import CallChunk, TInput, TOutput
+from redditwarp.iterators.stubborn_caller_iterator import StubbornCallerIterator
 
 def new_call_chunk_of_sequences(
     operation: Callable[[Sequence[TInput]], Sequence[TOutput]],
@@ -14,7 +15,7 @@ class TestCallChunkChainingIterator:
     def test_chunks_attribute(self) -> None:
         it = [new_call_chunk_of_sequences(lambda x: x, [1])]
         ccci = CallChunkChainingIterator(it)
-        assert ccci.chunks is it
+        assert list(ccci.get_chunk_iter()) == it
 
     def test_simple_iteration(self) -> None:
         it = [
@@ -58,22 +59,26 @@ class TestCallChunkChainingIterator:
             new_call_chunk_of_sequences(lambda x: x, [3]),
         ]
         ccci = CallChunkChainingIterator(it)
-        assert ccci.current is None
+        sci = ccci.get_caller_iter()
+        assert isinstance(sci, StubbornCallerIterator)
+        assert sci.current is None
         assert next(ccci) == 1
-        assert ccci.current is None
+        assert sci.current is None
         try:
             next(ccci)
         except RuntimeError:
             pass
-        assert ccci.current is j
+        assert sci.current is j
         assert next(ccci) == 2
-        assert ccci.current is None
+        assert sci.current is None
         assert next(ccci) == 3
-        assert ccci.current is None
+        assert sci.current is None
 
     def test_current_is_setable(self) -> None:
         it: Iterable[CallChunk[Sequence[int], Sequence[int]]] = ()
         ccci = CallChunkChainingIterator(it)
+        sci = ccci.get_caller_iter()
+        assert isinstance(sci, StubbornCallerIterator)
         assert list(ccci) == []
-        ccci.current = new_call_chunk_of_sequences(lambda x: x, [1, 2, 3])
+        sci.current = new_call_chunk_of_sequences(lambda x: x, [1, 2, 3])
         assert list(ccci) == [1, 2, 3]
