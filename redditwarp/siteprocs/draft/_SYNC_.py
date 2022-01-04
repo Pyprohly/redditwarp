@@ -3,14 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.submission_draft import Draft as DraftModel
+    from ...models.submission_draft import Draft
     from ...models.submission_draft_SYNC import DraftList
 
 from ...models.load.submission_draft import load_public_draft
 from ...models.load.submission_draft_SYNC import load_draft_list
 from ...util.base_conversion import to_base36
 
-class Draft:
+class DraftProcedures:
     def __init__(self, client: Client):
         self._client = client
 
@@ -45,7 +45,7 @@ class Draft:
         root = self._client.request('GET', '/api/v1/drafts')
         return load_draft_list(root, self._client)
 
-    def read_public_draft(self, user: str, draft_uuid: str) -> DraftModel:
+    def read_public_draft(self, user: str, draft_uuid: str) -> Draft:
         uri = f"https://gateway.reddit.com/desktopapi/v1/draftpreviewpage/{user}/{draft_uuid}"
         root = self._client.request('GET', uri)
         draft_data = root['drafts'][draft_uuid]

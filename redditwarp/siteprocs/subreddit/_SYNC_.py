@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Any, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.subreddit_SYNC import Subreddit as SubredditModel
+    from ...models.subreddit_SYNC import Subreddit
     from ...models.comment_SYNC import ExtraSubmissionFieldsComment
     from ...models.subreddit_rules import SubredditRules
     from ...models.moderator_list import ModeratorListItem
@@ -26,7 +26,7 @@ from .get_SYNC import Get
 from .pull_SYNC import Pull
 from .pulls_SYNC import Pulls
 
-class Subreddit:
+class SubredditProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.get: Get = Get(client)
@@ -34,7 +34,7 @@ class Subreddit:
         self.pull: Pull = Pull(client)
         self.pulls: Pulls = Pulls(client)
 
-    def get_by_name(self, name: str) -> Optional[SubredditModel]:
+    def get_by_name(self, name: str) -> Optional[Subreddit]:
         if not name:
             raise ValueError('`name` must not be empty')
         try:
@@ -49,14 +49,14 @@ class Subreddit:
 
         return load_subreddit(root['data'], self._client)
 
-    def fetch_by_name(self, name: str) -> SubredditModel:
+    def fetch_by_name(self, name: str) -> Subreddit:
         root = self._client.request('GET', f'/r/{name}/about')
         if root['kind'] == 'Listing':
             raise exceptions.NoResultException('target not found')
         return load_subreddit(root['data'], self._client)
 
-    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[SubredditModel]:
-        def mass_fetch(ids: Sequence[int]) -> Sequence[SubredditModel]:
+    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[Subreddit]:
+        def mass_fetch(ids: Sequence[int]) -> Sequence[Subreddit]:
             id36s = map(to_base36, ids)
             full_id36s = map('t5_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
@@ -110,7 +110,7 @@ class Subreddit:
         return self._client.request('GET', f'/api/v1/{sr}/post_requirements')
 
     def explore(self, query: str, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingIterator[ExploreSubredditsPaginator, SubredditModel]:
+            ) -> ImpartedPaginatorChainingIterator[ExploreSubredditsPaginator, Subreddit]:
         if not query:
             raise ValueError('query cannot be empty')
         p = ExploreSubredditsPaginator(self._client, '/subreddits/search', query)

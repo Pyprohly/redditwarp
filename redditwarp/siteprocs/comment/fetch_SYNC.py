@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ._SYNC_ import Comment as Outer
+    from ._SYNC_ import CommentProcedures
 
 from ...models.comment_SYNC import Comment
 from ...util.base_conversion import to_base36
@@ -11,7 +11,7 @@ from ...util.extract_id_from_url import extract_comment_id_from_url
 from ...exceptions import NoResultException
 
 class Fetch:
-    def __init__(self, outer: Outer, client: Client):
+    def __init__(self, outer: CommentProcedures, client: Client):
         self._outer = outer
         self._client = client
 

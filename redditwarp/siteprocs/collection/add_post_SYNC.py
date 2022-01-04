@@ -15,5 +15,5 @@ class AddPost:
         return self.by_id36(uuid, id36)
 
     def by_id36(self, uuid: str, submission_id36: str) -> None:
-        params = {'collection_id': uuid, 'link_fullname': 't5_' + submission_id36}
+        params = {'collection_id': uuid, 'link_fullname': 't3_' + submission_id36}
         self._client.request('POST', '/api/v1/collections/add_post_to_collection', params=params)

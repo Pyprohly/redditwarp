@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...models.comment_tree_SYNC import SubmissionTreeNode
-    from ._SYNC_ import CommentTree as Outer
+    from ._SYNC_ import CommentTreeProcedures
 
 from ...util.base_conversion import to_base36
 from ... import http
 
 class Get:
-    def __init__(self, outer: Outer):
+    def __init__(self, outer: CommentTreeProcedures):
         self._outer = outer
         self._client = outer._client
 

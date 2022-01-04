@@ -26,7 +26,7 @@ from ...util.base_conversion import to_base36
 from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...paginators.implementations.moderation._sync_ import ModerationActionLogPaginator
 
-class Moderation:
+class ModerationProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.legacy: Legacy = Legacy(client)
@@ -227,7 +227,7 @@ class Moderation:
         self._client.request('POST', '/api/unfriend', data=data)
 
     class _removal_reason:
-        def __init__(self, outer: Moderation) -> None:
+        def __init__(self, outer: ModerationProcedures) -> None:
             self._outer = outer
             self._client = outer._client
 

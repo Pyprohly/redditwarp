@@ -18,7 +18,7 @@ from ...models.load.trophy import load_trophy
 from ... import exceptions
 from ...util.base_conversion import to_base36
 
-class Account:
+class AccountProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.pull_subreddits: PullSubreddits = PullSubreddits(client)
@@ -79,7 +79,7 @@ class Account:
         return [load_user_relationship_item(d) for d in entries]
 
     class _block_user:
-        def __init__(self, outer: Account) -> None:
+        def __init__(self, outer: AccountProcedures) -> None:
             self._client = outer._client
 
         def __call__(self, name: str) -> None:
@@ -97,7 +97,7 @@ class Account:
     block_user: cached_property[_block_user] = cached_property(_block_user)
 
     class _unblock_user:
-        def __init__(self, outer: Account) -> None:
+        def __init__(self, outer: AccountProcedures) -> None:
             self._client = outer._client
 
         def __call__(self, agent_id: int, target_name: str) -> None:

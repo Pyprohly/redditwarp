@@ -9,7 +9,7 @@ from ...models.load.comment_tree_SYNC import load_more_children
 from .get_SYNC import Get
 from .fetch_SYNC import Fetch
 
-class CommentTree:
+class CommentTreeProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.get: Get = Get(self)

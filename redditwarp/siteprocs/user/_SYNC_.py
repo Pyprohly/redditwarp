@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.user_SYNC import User as UserModel
+    from ...models.user_SYNC import User
     from ...models.moderated_subreddit import ModeratedSubreddit
 
 from types import SimpleNamespace
@@ -18,7 +18,7 @@ from ... import http
 from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...paginators.implementations.user._sync_ import SearchUsersListingPaginator
 
-class User:
+class UserProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.get_partial_user: GetPartialUser = GetPartialUser(client)
@@ -26,7 +26,7 @@ class User:
         self.pull: Pull = Pull(client)
         self.pull_user_subreddits: PullUserSubreddits = PullUserSubreddits(client)
 
-    def get_by_name(self, name: str) -> Optional[UserModel]:
+    def get_by_name(self, name: str) -> Optional[User]:
         if not name:
             raise ValueError('`name` must not be empty')
         try:

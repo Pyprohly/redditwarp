@@ -9,12 +9,10 @@ class Side(IntEnum):
     SERVER = 2
 
 class ConnectionState(IntEnum):
-    NONE = 0
-    CONNECTING = 1
-    OPEN = 2
-    CLOSE_SENT = 3
-    CLOSE_RECEIVED = 4
-    CLOSED = 5
+    CONNECTING = 0
+    OPEN = 1
+    CLOSING = 2
+    CLOSED = 3
 
 class Opcode(IntEnum):
     CONTINUATION = 0x0
@@ -24,13 +22,13 @@ class Opcode(IntEnum):
     PING = 0x9
     PONG = 0xA
 
-    @staticmethod
-    def is_data_frame_opcode(v: int) -> bool:
-        return (v & 0x8) == 0
+'''
+def is_data_frame_opcode(v: int) -> bool:
+    return (v & 0x8) == 0
 
-    @staticmethod
-    def is_control_frame_opcode(v: int) -> bool:
-        return (v & 0x8) != 0
+def is_control_frame_opcode(v: int) -> bool:
+    return (v & 0x8) != 0
+'''
 
 AUTHORITATIVE_CLOSE_FRAME_CLOSE_CODES: set[int] = {
     1000,

@@ -13,12 +13,12 @@ from ...paginators.listing.submission_listing_paginator_sync import SubmissionLi
 from ...models.wiki_SYNC import WikiPage, WikiPageRevision, WikiPageSettings
 from ...models.load.wiki_SYNC import load_wiki_page, load_wiki_page_settings
 
-class Wiki:
+class WikiProcedures:
     def __init__(self, client: Client):
         self._client = client
 
     class _page:
-        def __init__(self, outer: Wiki):
+        def __init__(self, outer: WikiProcedures):
             self._outer = outer
             self._client = outer._client
 

@@ -17,7 +17,6 @@ else:
 import time
 
 from ..http.requestor_augmenter_ASYNC import RequestorAugmenter
-from ..auth.grants import RefreshTokenGrant
 from ..auth.exceptions import (
     UnknownTokenType,
     extract_www_authenticate_auth_params,
@@ -35,6 +34,7 @@ class Authorizer:
         self.renewal_skew: int = 30
         self.expires_in_fallback: Optional[int] = None
         self.time_func: Callable[[], float] = time.monotonic
+        self.authorization_header_name: str = 'Authorization'
 
     def time(self) -> float:
         return self.time_func()
@@ -48,17 +48,19 @@ class Authorizer:
         if tk.token_type.lower() != 'bearer':
             raise UnknownTokenType(token=tk)
 
-        if tk.refresh_token:
-            self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
-
         expires_in: Optional[int] = tk.expires_in
         if expires_in is None:
             expires_in = self.expires_in_fallback
-
         if expires_in is None:
             self.renewal_time = None
         else:
             self.renewal_time = int(self.time()) + expires_in - self.renewal_skew
+
+        if tk.refresh_token:
+            grant1 = self.token_client.grant
+            if grant1.get('grant_type', '') == 'refresh_token':
+                grant2 = {**grant1, 'refresh_token': tk.refresh_token}
+                self.token_client.grant = grant2
 
     def should_renew_token(self) -> bool:
         if self.token is None:
@@ -74,63 +76,48 @@ class Authorizer:
         tk = self.token
         if tk is None:
             raise RuntimeError('no token is set')
-        request.headers['Authorization'] = f'{tk.token_type} {tk.access_token}'
+        request.headers[self.authorization_header_name] = f'{tk.token_type} {tk.access_token}'
 
 
 class Authorized(RequestorAugmenter):
     def __init__(self, requestor: Requestor, authorizer: Authorizer) -> None:
         super().__init__(requestor)
         self.authorizer: Authorizer = authorizer
-        self._lock = asyncio.Lock()
-        self._valve = asyncio.Event()
-        self._valve.set()
-        self._futures: set[asyncio.Future[Response]] = set()
+        self.__lock = asyncio.Lock()
+        self.__request_access_token_mapping: dict[int, str] = {}
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
-        await self._valve.wait()
-
         authorizer = self.authorizer
-        async with self._lock:
+        async with self.__lock:
             if authorizer.should_renew_token():
                 await authorizer.renew_token()
         authorizer.prepare_request(request)
 
-        coro = self.requestor.send(request, timeout=timeout)
-        task = asyncio.create_task(coro)
-        self._futures.add(task)
+        assert authorizer.token is not None
+        request_obj_id = id(request)
+        self.__request_access_token_mapping[request_obj_id] = authorizer.token.access_token
         try:
-            resp = await task
-        finally:
-            self._futures.remove(task)
-
-        auth_params = extract_www_authenticate_auth_params(resp)
-        invalid_token = auth_params.get('error', '') == 'invalid_token'
-
-        if invalid_token and authorizer.can_renew_token():
-            # Need to call `renew_token()` ensuring only one task does it.
-            if self._valve.is_set():
-                # Suspend making new requests, as they would fail on the old token.
-                self._valve.clear()
-
-                await authorizer.renew_token()
-
-                # Wait for the remaining requests to finish to ensure that
-                # a request that fails on the same old token doesn't cause
-                # another token renewal.
-                if x := self._futures:
-                    await asyncio.wait(x)
-
-                # Resume making requests.
-                self._valve.set()
-            else:
-                await self._valve.wait()
-
-            authorizer.prepare_request(request)
-
             resp = await self.requestor.send(request, timeout=timeout)
 
             auth_params = extract_www_authenticate_auth_params(resp)
+            invalid_token = auth_params.get('error', '') == 'invalid_token'
+            if invalid_token and authorizer.can_renew_token():
+                async with self.__lock:
+                    access_token_used = self.__request_access_token_mapping[request_obj_id]
+                    if authorizer.token is None:
+                        raise RuntimeError('token is missing')
+                    if access_token_used == authorizer.token.access_token:
+                        await authorizer.renew_token()
 
-        raise_for_resource_server_response_error(auth_params)
+                authorizer.prepare_request(request)
+
+                resp = await self.requestor.send(request, timeout=timeout)
+
+                auth_params = extract_www_authenticate_auth_params(resp)
+
+            raise_for_resource_server_response_error(auth_params)
+
+        finally:
+            del self.__request_access_token_mapping[request_obj_id]
 
         return resp

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Mapping, TypeVar, Generic
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ._SYNC_ import Submission as Outer
+    from ._SYNC_ import SubmissionProcedures
 
 from ...models.load.submission_SYNC import load_submission
 from ...models.submission_SYNC import Submission, LinkPost, TextPost
@@ -52,7 +52,7 @@ class Fetch(_Common[Submission]):
                 return post
             raise ResultRejectedException('the submission is not a link post')
 
-    def __init__(self, outer: Outer, client: Client):
+    def __init__(self, outer: SubmissionProcedures, client: Client):
         super().__init__(client)
         self.as_textpost: Fetch._AsTextPost = self._AsTextPost(client)
         self.as_linkpost: Fetch._AsLinkPost = self._AsLinkPost(client)

@@ -10,7 +10,7 @@ from ...models.flair_emoji import FlairEmojiUploadLease, SubredditFlairEmojis
 from ...models.load.flair_emoji import load_flair_emoji_upload_lease, load_flair_emoji
 from ...http.payload import guess_mimetype_from_filename
 
-class FlairEmoji:
+class FlairEmojiProcedures:
     def __init__(self, client: Client):
         self._client = client
 
@@ -28,7 +28,7 @@ class FlairEmoji:
         )
 
     class _create:
-        def __init__(self, outer: FlairEmoji) -> None:
+        def __init__(self, outer: FlairEmojiProcedures) -> None:
             self._client = outer._client
 
         def __call__(self,

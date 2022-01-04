@@ -7,12 +7,12 @@ class TokenBucket:
             time_func: Callable[[], float] = time.monotonic) -> None:
         self.capacity: float = capacity
         self.rate: float = rate
-        self._time_func: Callable[[], float] = time_func
+        self.time_func: Callable[[], float] = time_func
         self._value = capacity
         self._last_checkpoint_time = time_func()
 
     def _checkpoint(self) -> float:
-        now = self._time_func()
+        now = self.time_func()
         delta = now - self._last_checkpoint_time
         self._last_checkpoint_time = now
         return delta

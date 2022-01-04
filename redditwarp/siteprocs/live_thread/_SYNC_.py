@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.live_thread_SYNC import LiveThread as LiveThreadModel, LiveUpdate
+    from ...models.live_thread_SYNC import LiveThread, LiveUpdate
 
 from ...models.live_thread import ContributorList, Contributor
 from ...models.load.live_thread_SYNC import load_live_thread, load_live_update
@@ -15,11 +15,11 @@ from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingI
 from ...paginators.implementations.live_thread_sync import LiveUpdateListingPaginator
 from ... import http
 
-class LiveThread:
+class LiveThreadProcedures:
     def __init__(self, client: Client):
         self._client = client
 
-    def get(self, idt: str) -> Optional[LiveThreadModel]:
+    def get(self, idt: str) -> Optional[LiveThread]:
         try:
             root = self._client.request('GET', f'/live/{idt}/about')
         except http.exceptions.StatusCodeException as e:
@@ -28,8 +28,8 @@ class LiveThread:
             raise
         return load_live_thread(root['data'], self._client)
 
-    def bulk_fetch(self, idts: Iterable[str]) -> CallChunkChainingIterator[LiveThreadModel]:
-        def mass_fetch(idts: Sequence[str]) -> Sequence[LiveThreadModel]:
+    def bulk_fetch(self, idts: Iterable[str]) -> CallChunkChainingIterator[LiveThread]:
+        def mass_fetch(idts: Sequence[str]) -> Sequence[LiveThread]:
             idts_str = ','.join(idts)
             root = self._client.request('GET', '/api/live/by_id/' + idts_str)
             return [load_live_thread(o['data'], self._client) for o in root['data']['children']]

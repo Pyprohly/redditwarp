@@ -276,12 +276,12 @@ def _build_menu_bar_json(
     }
 
 
-class Widget:
+class WidgetProcedures:
     def __init__(self, client: Client):
         self._client = client
 
     class _upload_image:
-        def __init__(self, outer: Widget) -> None:
+        def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
         def __call__(self, file: IO[bytes], *, sr: str) -> WidgetImageUploadLease:
@@ -307,7 +307,7 @@ class Widget:
     upload_image: cached_property[_upload_image] = cached_property(_upload_image)
 
     class _create:
-        def __init__(self, outer: Widget) -> None:
+        def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
         def _invoke(self, sr: str, json: Any) -> Any:
@@ -459,7 +459,7 @@ class Widget:
     create: cached_property[_create] = cached_property(_create)
 
     class _update:
-        def __init__(self, outer: Widget) -> None:
+        def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
         def _invoke(self, sr: str, idt: str, json: Any) -> Any:

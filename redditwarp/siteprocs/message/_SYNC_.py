@@ -11,7 +11,7 @@ from ...util.base_conversion import to_base36
 from ...models.load.message_SYNC import load_composed_message
 from .pull_SYNC import Pull
 
-class Message:
+class MessageProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.pull: Pull = Pull(client)
@@ -68,7 +68,7 @@ class Message:
         self._client.request('POST', '/api/uncollapse_message', data={'id': 't4_' + to_base36(idn)})
 
     class _block_author:
-        def __init__(self, outer: Message) -> None:
+        def __init__(self, outer: MessageProcedures) -> None:
             self._client = outer._client
 
         def __call__(self, idn: int) -> None:

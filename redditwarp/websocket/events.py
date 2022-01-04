@@ -2,11 +2,8 @@
 from typing import Type, TypeVar
 from dataclasses import dataclass
 
-class Event:
-    pass
-
 @dataclass
-class Frame(Event):
+class Frame:
     opcode: int
     fin: bool
     data: bytes
@@ -19,7 +16,7 @@ class Frame(Event):
 
 
 @dataclass
-class Message(Event):
+class Message:
     pass
 
 @dataclass
@@ -32,9 +29,9 @@ class BytesMessage(Message):
 
 
 @dataclass
-class Signal(Event):
+class Signal:
     pass
 
 @dataclass
-class ConnectionClosed(Event):
+class ConnectionClosed:
     pass

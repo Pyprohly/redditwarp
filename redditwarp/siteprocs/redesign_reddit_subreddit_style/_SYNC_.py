@@ -10,12 +10,12 @@ from functools import cached_property
 from ...models.load.subreddit_style_asset_upload_lease import load_subreddit_style_asset_upload_lease
 from ...http.payload import guess_mimetype_from_filename
 
-class RedesignRedditSubredditStyle:
+class RedesignRedditSubredditStyleProcedures:
     def __init__(self, client: Client):
         self._client = client
 
     class _upload_banner:
-        def __init__(self, outer: RedesignRedditSubredditStyle) -> None:
+        def __init__(self, outer: RedesignRedditSubredditStyleProcedures) -> None:
             self._client = outer._client
 
         def _obtain_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None, imagetype: str) -> SubredditStyleAssetUploadLease:

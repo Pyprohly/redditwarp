@@ -21,7 +21,7 @@ from ...models.load.flair import (
     load_user_flair_association,
 )
 
-class Flair:
+class FlairProcedures:
     def __init__(self, client: Client):
         self._client = client
 

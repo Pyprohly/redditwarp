@@ -15,6 +15,7 @@ RequestFiles = Union[
     Sequence[Tuple[str, FileObjectType, str, str]],
 ]
 
+
 class Payload:
     pass
 
@@ -110,10 +111,10 @@ def make_payload(
                         file, = cast(Tuple[FileObjectType], value)
                         filename = key
                         content_type = guess_mimetype_from_filename(filename)
-                    if length == 2:
+                    elif length == 2:
                         file, filename = cast(Tuple[FileObjectType, str], value)
                         content_type = guess_mimetype_from_filename(filename)
-                    elif length == 3:
+                    else:
                         file, filename, content_type = cast(Tuple[FileObjectType, str, str], value)
 
                 else:
@@ -132,8 +133,8 @@ def make_payload(
         text_parts: list[MultipartTextField] = []
         if data is not None:
             if not isinstance(data, Mapping):
-                raise ValueError('a mapping is expected for `data` when `files` is used')
-            text_parts.extend(MultipartTextField(k, (v or '')) for k, v in data.items())
+                raise ValueError('`data` must be a mapping when `files` is used')
+            text_parts.extend(MultipartTextField(k, v) for k, v in data.items())
 
         parts = cast(list[MultipartFormDataField], text_parts) + cast(list[MultipartFormDataField], file_parts)
         return MultipartFormData(parts)

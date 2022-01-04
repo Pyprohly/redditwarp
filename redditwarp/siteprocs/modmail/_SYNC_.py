@@ -6,12 +6,12 @@ if TYPE_CHECKING:
     from ...models.modmail import ModmailModeratedSubreddit
 
 from ...models.load.modmail import load_modmail_moderated_subreddit
-from .conversation_SYNC import Conversation
+from .conversation_SYNC import ConversationProcedures
 
-class Modmail:
+class ModmailProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.conversation: Conversation = Conversation(client)
+        self.conversation: ConversationProcedures = ConversationProcedures(client)
 
     def get_unread_counts(self) -> Mapping[str, int]:
         return self._client.request('GET', '/api/mod/conversations/unread/count')

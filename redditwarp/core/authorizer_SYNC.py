@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 import time
 
 from ..http.requestor_augmenter_SYNC import RequestorAugmenter
-from ..auth.grants import RefreshTokenGrant
 from ..auth.exceptions import (
     UnknownTokenType,
     extract_www_authenticate_auth_params,
@@ -29,6 +28,7 @@ class Authorizer:
         self.renewal_skew: int = 30
         self.expires_in_fallback: Optional[int] = None
         self.time_func: Callable[[], float] = time.monotonic
+        self.authorization_header_name: str = 'Authorization'
 
     def time(self) -> float:
         return self.time_func()
@@ -42,17 +42,19 @@ class Authorizer:
         if tk.token_type.lower() != 'bearer':
             raise UnknownTokenType(token=tk)
 
-        if tk.refresh_token:
-            self.token_client.grant = RefreshTokenGrant(tk.refresh_token)
-
         expires_in: Optional[int] = tk.expires_in
         if expires_in is None:
             expires_in = self.expires_in_fallback
-
         if expires_in is None:
             self.renewal_time = None
         else:
             self.renewal_time = int(self.time()) + expires_in - self.renewal_skew
+
+        if tk.refresh_token:
+            grant1 = self.token_client.grant
+            if grant1.get('grant_type', '') == 'refresh_token':
+                grant2 = {**grant1, 'refresh_token': tk.refresh_token}
+                self.token_client.grant = grant2
 
     def should_renew_token(self) -> bool:
         if self.token is None:
@@ -68,7 +70,7 @@ class Authorizer:
         tk = self.token
         if tk is None:
             raise RuntimeError('no token is set')
-        request.headers['Authorization'] = f'{tk.token_type} {tk.access_token}'
+        request.headers[self.authorization_header_name] = f'{tk.token_type} {tk.access_token}'
 
 
 class Authorized(RequestorAugmenter):
@@ -88,7 +90,6 @@ class Authorized(RequestorAugmenter):
 
         auth_params = extract_www_authenticate_auth_params(resp)
         invalid_token = auth_params.get('error', '') == 'invalid_token'
-
         if invalid_token and authorizer.can_renew_token():
             authorizer.renew_token()
             authorizer.prepare_request(request)

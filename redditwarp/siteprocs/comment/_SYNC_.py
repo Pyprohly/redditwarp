@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import (
         Comment as CommentModel,
-        EditPostTextEndpointComment as EditPostTextEndpointCommentModel,
+        EditPostTextEndpointComment,
     )
 
 from ...models.load.comment_SYNC import load_comment, load_edit_post_text_endpoint_comment
@@ -16,7 +16,7 @@ from ...iterators.call_chunk_SYNC import CallChunk
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 
-class Comment:
+class CommentProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.fetch: Fetch = Fetch(self, client)
@@ -41,7 +41,7 @@ class Comment:
         result = self._client.request('POST', '/api/comment', data=data)
         return load_comment(result, self._client)
 
-    def edit_body(self, comment_id: int, text: str) -> EditPostTextEndpointCommentModel:
+    def edit_body(self, comment_id: int, text: str) -> EditPostTextEndpointComment:
         data = {
             'thing_id': 't1_' + to_base36(comment_id),
             'text': text,

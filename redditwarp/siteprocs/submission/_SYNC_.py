@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.submission_SYNC import Submission as SubmissionModel
+    from ...models.submission_SYNC import Submission
     from ...models.comment_SYNC import Comment
     from ...dtos.submission import GalleryItem
 
@@ -24,14 +24,14 @@ from ...models.load.comment_SYNC import load_comment
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 
-class Submission:
+class SubmissionProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
         self.fetch: Fetch = Fetch(self, client)
         self.get: Get = Get(client)
 
-    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[SubmissionModel]:
-        def mass_fetch(ids: Sequence[int]) -> Sequence[SubmissionModel]:
+    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[Submission]:
+        def mass_fetch(ids: Sequence[int]) -> Sequence[Submission]:
             id36s = map(to_base36, ids)
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
@@ -41,7 +41,7 @@ class Submission:
         return CallChunkChainingIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
     class _upload_media:
-        def __init__(self, outer: Submission):
+        def __init__(self, outer: SubmissionProcedures):
             self._client = outer._client
 
         def __call__(self, file: IO[bytes]) -> MediaUploadLease:
@@ -323,7 +323,7 @@ class Submission:
         root = self._client.request('POST', '/api/submit', data=dict(g()))
         return int(root['json']['data']['id'], 36)
 
-    def edit_post_text(self, submission_id: int, text: str) -> SubmissionModel:
+    def edit_post_text(self, submission_id: int, text: str) -> Submission:
         data = {
             'thing_id': 't3_' + to_base36(submission_id),
             'text': text,
@@ -405,7 +405,7 @@ class Submission:
         data = {'id': 't3_' + to_base36(submission_id)}
         self._client.request('POST', '/api/unspoiler', data=data)
 
-    def distinguish(self, submission_id: int) -> SubmissionModel:
+    def distinguish(self, submission_id: int) -> Submission:
         data = {
             'id': 't3_' + to_base36(submission_id),
             'how': 'yes',
@@ -413,7 +413,7 @@ class Submission:
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_submission(root['json']['data']['things'][0]['data'], self._client)
 
-    def undistinguish(self, submission_id: int) -> SubmissionModel:
+    def undistinguish(self, submission_id: int) -> Submission:
         data = {
             'id': 't3_' + to_base36(submission_id),
             'how': 'no',
@@ -572,7 +572,7 @@ class Submission:
 
     def search_submissions(self, sr: str, query: str, amount: Optional[int] = None, *,
         time_filter: str = 'all', sort: str = 'relevance',
-    ) -> ImpartedPaginatorChainingIterator[SearchSubmissionsListingPaginator, SubmissionModel]:
+    ) -> ImpartedPaginatorChainingIterator[SearchSubmissionsListingPaginator, Submission]:
         if not sr:
             raise ValueError('sr must not be empty')
         p = SearchSubmissionsListingPaginator(self._client, f'/r/{sr}/search',

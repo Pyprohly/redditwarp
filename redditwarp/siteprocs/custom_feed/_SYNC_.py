@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Any, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.custom_feed import CustomFeed as CustomFeedModel
+    from ...models.custom_feed import CustomFeed
 
 import json
 
@@ -14,13 +14,13 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 
-class CustomFeed:
+class CustomFeedProcedures:
     def __init__(self, client: Client):
         self._client = client
         self._json_encoder = encoder = json.JSONEncoder()
         self._json_encode = encoder.encode
 
-    def get(self, user: str, feed: str) -> Optional[CustomFeedModel]:
+    def get(self, user: str, feed: str) -> Optional[CustomFeed]:
         try:
             root = self._client.request('GET', f'/api/multi/user/{user}/m/{feed}')
         except exceptions.RedditError as e:
@@ -29,7 +29,7 @@ class CustomFeed:
             raise
         return load_custom_feed(root['data'])
 
-    def retrieve(self, user: str = '') -> Sequence[CustomFeedModel]:
+    def retrieve(self, user: str = '') -> Sequence[CustomFeed]:
         uri = '/api/multi/mine'
         if user:
             uri = f'/api/multi/user/{user}'
@@ -42,7 +42,7 @@ class CustomFeed:
         *,
         title: Optional[str] = None, description: Optional[str] = None,
         subreddit_names: Sequence[str] = (), private: bool = False,
-    ) -> CustomFeedModel:
+    ) -> CustomFeed:
         json_data: dict[str, Any] = {}
         if title is not None:
             json_data['display_name'] = title
@@ -62,7 +62,7 @@ class CustomFeed:
         *,
         title: Optional[str] = None, description: Optional[str] = None,
         subreddit_names: Sequence[str] = (), private: bool = False,
-    ) -> CustomFeedModel:
+    ) -> CustomFeed:
         json_data: dict[str, Any] = {}
         if title is not None:
             json_data['display_name'] = title
@@ -81,7 +81,7 @@ class CustomFeed:
         self._client.request('DELETE', f'/api/multi/user/{user}/m/{feed}')
 
     def duplicate(self, from_user: str, from_feed: str, to_user: str, to_feed: str, *,
-            title: Optional[str] = None, description: Optional[str] = None) -> CustomFeedModel:
+            title: Optional[str] = None, description: Optional[str] = None) -> CustomFeed:
         data = {
             'from': f'/user/{from_user}/m/{from_feed}',
             'to': f'/user/{to_user}/m/{to_feed}',

@@ -14,7 +14,7 @@ from .add_post_SYNC import AddPost
 from .remove_post_SYNC import RemovePost
 from .reorder_SYNC import Reorder
 
-class Collection:
+class CollectionProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
         self.create: Create = Create(client)
@@ -37,7 +37,7 @@ class Collection:
         return load_submission_collection_details(root, self._client)
 
     class _get_subreddit_collections_details:
-        def __init__(self, outer: Collection):
+        def __init__(self, outer: CollectionProcedures):
             self._client = outer._client
 
         def __call__(self, id: int) -> Sequence[SubmissionCollectionDetails]:

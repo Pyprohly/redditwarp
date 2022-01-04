@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union
+from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.typedefs import ClientCredentials, AuthorizationGrant
@@ -16,8 +16,8 @@ from .core.authorizer_SYNC import Authorizer, Authorized
 from .core.rate_limited_SYNC import RateLimited
 from .core.recorded_SYNC import Recorded, Last
 from .util.praw_config import get_praw_config
-from .util.json_load import json_loads_reddit_response
-from .exceptions import raise_for_reddit_error
+from .exceptions import raise_for_reddit_error, raise_for_non_json_response
+from .http.util.json_load import json_loads_response
 
 class CoreClient:
     """The gateway to interacting with the Reddit API."""
@@ -174,6 +174,7 @@ class CoreClient:
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
+        snub: Optional[Callable[[Any], None]] = raise_for_reddit_error,
     ) -> Any:
         json_data = None
         try:
@@ -181,8 +182,17 @@ class CoreClient:
                     data=data, json=json, files=files, timeout=timeout)
 
             if resp.data:
-                json_data = json_loads_reddit_response(resp)
-                raise_for_reddit_error(json_data)
+                try:
+                    json_data = json_loads_response(resp)
+                except ValueError as cause:
+                    try:
+                        raise_for_non_json_response(resp)
+                    except Exception as exc:
+                        raise exc from cause
+                    raise
+
+                if snub is not None:
+                    snub(json_data)
         finally:
             self.last_value = json_data
 

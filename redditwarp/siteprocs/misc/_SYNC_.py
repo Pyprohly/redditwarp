@@ -10,7 +10,7 @@ import json
 from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...paginators.implementations.submission_sync import SearchSubmissionsListingPaginator
 
-class Misc:
+class MiscProcedures:
     def __init__(self, client: Client):
         self._client = client
 

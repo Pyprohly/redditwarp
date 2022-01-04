@@ -61,7 +61,7 @@ def register(
     transport_info_registry[adaptor_module_name] = info
 
 transport_module_spec_list = [
-    load_spec('.websockets', __package__),
-    load_spec('.aiohttp', __package__),
+    load_spec('.implementations.websockets', __package__),
+    load_spec('.implementations.aiohttp', __package__),
 ]
 transport_info_registry: MutableMapping[str, TransportInfo] = {}

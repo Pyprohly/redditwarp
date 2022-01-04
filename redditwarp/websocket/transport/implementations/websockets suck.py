@@ -10,40 +10,39 @@ import websockets.legacy.client  # type: ignore[import]
 import websockets.typing  # type: ignore[import]
 import websockets.connection
 
-from ._ASYNC_ import register
-from ..websocket_connection_ASYNC import PartiallyImplementedWebSocketConnection
-from .. import exceptions
-from ..events import Frame
-from ..const import Side, ConnectionState
+from .._ASYNC_ import register
+from ...websocket_connection_ASYNC import PulsePartiallyImplementedWebSocketConnection
+from ... import exceptions
+from ...events import Frame
+from ...const import Side
 
-class WebSocketClient(PartiallyImplementedWebSocketConnection):
+
+def _get_necessary_timeout(timeout: float = -2) -> Optional[float]:
+    t: Optional[float] = timeout
+    if timeout == -2:
+        t = PulsePartiallyImplementedWebSocketConnection.DEFAULT_WAITTIME
+    elif timeout == -1:
+        t = None
+    elif timeout < 0:
+        raise ValueError(f'invalid timeout value: {timeout}')
+    return t
+
+
+class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
     side: int = Side.CLIENT
 
     def __init__(self, ws: websockets.legacy.client.WebSocketClientProtocol):
         super().__init__()
         self.ws: websockets.legacy.client.WebSocketClientProtocol = ws
 
-    async def send_frame(self, m: Frame) -> None:
-        await super().send_frame(m)
+    async def _send_frame_impl(self, m: Frame) -> None:
         try:
             await self.ws.write_frame(opcode=m.opcode, data=m.data, fin=m.fin)
         except Exception as cause:
             raise exceptions.TransportError from cause
 
     async def _load_next_frame(self, *, timeout: float = -2) -> Frame:
-        if self.state == ConnectionState.CLOSED:
-            raise exceptions.ConnectionClosedException
-        if self.state != ConnectionState.OPEN:
-            raise exceptions.InvalidStateException(f'cannot send frame in {self.state.name} state')
-
-        t: Optional[float] = timeout
-        if timeout == -2:
-            t = self.default_timeout
-        elif timeout == -1:
-            t = None
-        elif timeout < 0:
-            raise ValueError(f'invalid timeout value: {timeout}')
-
+        t = _get_necessary_timeout(timeout)
         try:
             frm = await asyncio.wait_for(self.ws.read_frame(self.ws.max_size), t)
         except asyncio.TimeoutError as cause:
@@ -70,13 +69,7 @@ class WebSocketClient(PartiallyImplementedWebSocketConnection):
 
 
 async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketClient:
-    t: Optional[float] = timeout
-    if timeout == -2:
-        t = PartiallyImplementedWebSocketConnection.DEFAULT_TIMEOUT
-    elif timeout == -1:
-        t = None
-    elif timeout < 0:
-        raise ValueError(f'invalid timeout value: {timeout}')
+    t = _get_necessary_timeout(timeout)
 
     class MyWebSocketClientProtocol(websockets.legacy.client.WebSocketClientProtocol):
         def connection_open(self) -> None:

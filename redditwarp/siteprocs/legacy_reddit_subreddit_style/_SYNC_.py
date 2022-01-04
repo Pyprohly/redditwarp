@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from ...models.load.stylesheet import load_stylesheet_info
 
-class LegacyRedditSubredditStyle:
+class LegacyRedditSubredditStyleProcedures:
     def __init__(self, client: Client):
         self._client = client
 

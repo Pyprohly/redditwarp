@@ -10,7 +10,7 @@ from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
 from ...models.modmail_SYNC import (
-    Conversation as ConversationModel,
+    Conversation,
     Message,
     ConversationAggregate,
     UserDossierConversationAggregate,
@@ -25,7 +25,7 @@ from ...models.load.modmail_SYNC import (
 )
 from .conversation_pulls_SYNC import Pulls
 
-class Conversation:
+class ConversationProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
         self.pulls: Pulls = Pulls(client)
@@ -41,7 +41,7 @@ class Conversation:
             client=self._client,
         )
 
-    def create(self, sr: str, to: str, subject: str, body: str, *, hidden: bool = False) -> tuple[ConversationModel, Message]:
+    def create(self, sr: str, to: str, subject: str, body: str, *, hidden: bool = False) -> tuple[Conversation, Message]:
         data = {'srName': sr, 'to': to, 'subject': subject, 'body': body, 'isAuthorHidden': '01'[hidden]}
         root = self._client.request('POST', '/api/mod/conversations', data=data)
         conversation_data = root['conversation']
