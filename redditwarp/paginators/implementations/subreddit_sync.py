@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
 
 from ..listing.mixins.sort_SYNC import Sort
-from ..listing.subreddit_listing_paginator_sync import SubredditListingPaginator
+from ..listing.subreddit_listing_paginator import SubredditListingPaginator
 from ...models.subreddit_SYNC import Subreddit
 
 class ExploreSubredditsPaginator(

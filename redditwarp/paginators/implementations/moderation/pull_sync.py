@@ -6,9 +6,9 @@ if TYPE_CHECKING:
 
 from ...listing.listing_paginator import ListingPaginator
 from ...listing.mixins.subreddit_detail_SYNC import SubredditDetail
-from ...listing.submission_and_comment_listing_paginator_sync import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
-from ...listing.submission_listing_paginator_sync import SubmissionListingPaginator
-from ...listing.comment_listing_paginator_sync import ExtraSubmissionFieldsCommentListingPaginator
+from ...listing.submission_and_comment_listing_paginator import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
+from ...listing.submission_listing_paginator import SubmissionListingPaginator
+from ...listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
 from ....models.submission_SYNC import Submission
 from ....models.comment_SYNC import Comment
 

@@ -18,9 +18,9 @@ class RateLimited(RequestorAugmenter):
         self.reset: int = 0
         self.remaining: int = 0
         self.used: int = 0
+        self._delta = 0.
+        self._timestamp = time.monotonic()
         self._burst_control = TokenBucket(5, .5)
-        self._prev_request_time = 0.
-        self._last_request_time = time.monotonic()
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         s: float = self.reset
@@ -30,15 +30,17 @@ class RateLimited(RequestorAugmenter):
         h = self._burst_control.hard_consume(1)
         if h and s < 2 and self.remaining > 20:
             # Burst this request, but only if the API didn't
-            # want us to wait for more than two seconds.
+            # want us to wait for more than two seconds, and
+            # we have more than 20 requests remaining.
             s = 0
 
-        self.sleep(s)
+        time.sleep(s)
 
         response = self.requestor.send(request, timeout=timeout)
 
-        self._prev_request_time = self._last_request_time
-        self._last_request_time = time.monotonic()
+        now = time.monotonic()
+        self._delta = now - self._timestamp
+        self._timestamp = now
 
         self.scan_ratelimit_headers(response.headers)
         return response
@@ -49,13 +51,10 @@ class RateLimited(RequestorAugmenter):
             self.remaining = int(float(headers['x-ratelimit-remaining']))
             self.used = int(headers['x-ratelimit-used'])
         elif self.reset > 0:
-            self.reset = max(0, self.reset - int(self._last_request_time - self._prev_request_time))
+            self.reset = max(0, self.reset - int(self._delta))
             self.remaining -= 1
             self.used += 1
         else:
             self.reset = 600
             self.remaining = 300
             self.used = 0
-
-    def sleep(self, s: float) -> None:
-        time.sleep(s)

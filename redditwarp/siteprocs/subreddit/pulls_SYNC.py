@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...models.subreddit_SYNC import Subreddit
 
 from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.listing.subreddit_listing_paginator_sync import SubredditListingPaginator
+from ...paginators.listing.subreddit_listing_paginator import SubredditListingPaginator
 
 class Pulls:
     def __init__(self, client: Client) -> None:

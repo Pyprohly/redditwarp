@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 from ..listing.mixins.subreddit_detail_SYNC import SubredditDetail
-from ..listing.submission_listing_paginator_sync import SubmissionListingPaginator
+from ..listing.submission_listing_paginator import SubmissionListingPaginator
 from ...models.submission_SYNC import Submission
 from ..listing.mixins.time_filter_SYNC import TimeFilter
-from ..listing.submission_and_comment_listing_paginator_sync import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
+from ..listing.submission_and_comment_listing_paginator import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
 
 class BestListingPaginator(
     SubredditDetail[Submission],

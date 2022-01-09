@@ -66,10 +66,13 @@ class Authorizer:
     def can_renew_token(self) -> bool:
         return self.token_client is not None
 
-    def prepare_request(self, request: Request) -> None:
-        tk = self.token
-        if tk is None:
-            raise RuntimeError('no token is set')
+    def get_token(self) -> Token:
+        if (tk := self.token) is not None:
+            return tk
+        raise RuntimeError('token not set')
+
+    def prepare_request(self, request: Request, token: Optional[Token] = None) -> None:
+        tk = self.get_token() if token is None else token
         request.headers[self.authorization_header_name] = f'{tk.token_type} {tk.access_token}'
 
 
@@ -84,14 +87,17 @@ class Authorized(RequestorAugmenter):
         authorizer = self.authorizer
         if authorizer.should_renew_token():
             authorizer.renew_token()
+
         authorizer.prepare_request(request)
 
         resp = self.requestor.send(request, timeout=timeout)
 
         auth_params = extract_www_authenticate_auth_params(resp)
+
         invalid_token = auth_params.get('error', '') == 'invalid_token'
         if invalid_token and authorizer.can_renew_token():
             authorizer.renew_token()
+
             authorizer.prepare_request(request)
 
             resp = self.requestor.send(request, timeout=timeout)

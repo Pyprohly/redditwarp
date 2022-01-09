@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from ...models.submission_SYNC import Submission
 from ..listing.mixins.time_filter_SYNC import TimeFilter
 from ..listing.mixins.sort_SYNC import Sort
-from ..listing.submission_listing_paginator_sync import SubmissionListingPaginator
+from ..listing.submission_listing_paginator import SubmissionListingPaginator
 
 class SearchSubmissionsListingPaginator(
     TimeFilter[Submission],

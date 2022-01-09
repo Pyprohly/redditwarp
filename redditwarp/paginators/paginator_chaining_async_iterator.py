@@ -40,7 +40,7 @@ class PaginatorChainingAsyncIterator(AsyncIterator[E]):
 __bound = 'AsyncPaginator[E]'
 TAsyncPaginator = TypeVar('TAsyncPaginator', bound=AsyncPaginator)  # type: ignore[type-arg]
 
-class PaginatorChainingAsyncIteratorAggregate(PaginatorChainingAsyncIterator[E], Generic[TAsyncPaginator, E]):
+class ImpartedPaginatorChainingAsyncIterator(PaginatorChainingAsyncIterator[E], Generic[TAsyncPaginator, E]):
     def __init__(self, paginator: TAsyncPaginator, amount: Optional[int] = None) -> None:
         super().__init__(paginator, amount)
         self.__paginator: TAsyncPaginator = paginator

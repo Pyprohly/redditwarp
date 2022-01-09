@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from .pull_SYNC import Pull
 
 from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.listing.comment_listing_paginator_sync import ExtraSubmissionFieldsCommentListingPaginator
+from ...paginators.listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
 
 class FrontProcedures:
     def __init__(self, client: Client):

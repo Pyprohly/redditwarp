@@ -9,18 +9,18 @@ class TokenBucket:
         self.rate: float = rate
         self.time_func: Callable[[], float] = time_func
         self._value = capacity
-        self._last_checkpoint_time = time_func()
+        self._timestamp = time_func()
 
     def _checkpoint(self) -> float:
         now = self.time_func()
-        delta = now - self._last_checkpoint_time
-        self._last_checkpoint_time = now
+        delta = now - self._timestamp
+        self._timestamp = now
         return delta
 
     def _replenish(self) -> None:
         if self._value < self.capacity:
-            accretion = self.rate * self._checkpoint()
-            self._value = min(self._value + accretion, self.capacity)
+            accession = self.rate * self._checkpoint()
+            self._value = min(self._value + accession, self.capacity)
 
     def get_value(self) -> float:
         """Return the number of tokens in the bucket."""
@@ -58,14 +58,5 @@ class TokenBucket:
     def get_cooldown(self, n: float) -> float:
         """Return the duration the client should wait before the consume
         methods will return `True` again.
-
-        There is no `wait_consume()` method on this class because it aims to not be IO-bound.
-        Here is the logic for implementing such a method::
-
-            async with lock:
-                t = 1
-                if not tb.try_consume(t):
-                    await asyncio.sleep(tb.get_cooldown(t))
-                    tb.do_consume(t)
         """
         return max((n - self.get_value()) / self.rate, 0)

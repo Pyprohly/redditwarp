@@ -160,5 +160,5 @@ class CoreClient:
 class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
-        #from .siteprocs._ASYNC_ import SiteProcedures
-        #self.p: SiteProcedures = ...#siteprocs.SiteProcedures(self)
+        from .siteprocs._ASYNC_ import SiteProcedures
+        self.p: SiteProcedures = SiteProcedures(self)

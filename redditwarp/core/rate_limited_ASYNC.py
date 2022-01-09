@@ -24,10 +24,10 @@ class RateLimited(RequestorAugmenter):
         self.reset: int = 0
         self.remaining: int = 0
         self.used: int = 0
+        self._delta = 0.
+        self._timestamp = time.monotonic()
         self._rate_limiter = TokenBucket(10, 1)
-        self._prev_request_time = 0.
-        self._last_request_time = time.monotonic()
-        self.__lock = asyncio.Lock()
+        self._lock = asyncio.Lock()
 
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         s: float = self.reset
@@ -35,21 +35,21 @@ class RateLimited(RequestorAugmenter):
             s = self.reset / self.remaining
 
         tb = self._rate_limiter
-        async with self.__lock:
-            # If the API wants us to wait for longer than two seconds, oblige.
+        async with self._lock:
+            # If the API wants us to wait for longer than two seconds then oblige.
             if s >= 2:
-                await self.sleep(s)
+                await asyncio.sleep(s)
                 # Don't add tokens for the time spent sleeping here.
                 tb.do_consume(s)
 
-            if not tb.try_consume(1):
-                await self.sleep(tb.get_cooldown(1))
-                tb.do_consume(1)
+            await asyncio.sleep(tb.get_cooldown(1))
+            tb.do_consume(1)
 
         response = await self.requestor.send(request, timeout=timeout)
 
-        self._prev_request_time = self._last_request_time
-        self._last_request_time = time.monotonic()
+        now = time.monotonic()
+        self._delta = now - self._timestamp
+        self._timestamp = now
 
         self.scan_ratelimit_headers(response.headers)
         return response
@@ -60,13 +60,10 @@ class RateLimited(RequestorAugmenter):
             self.remaining = int(float(headers['x-ratelimit-remaining']))
             self.used = int(headers['x-ratelimit-used'])
         elif self.reset > 0:
-            self.reset = max(0, self.reset - int(self._last_request_time - self._prev_request_time))
+            self.reset = max(0, self.reset - int(self._delta))
             self.remaining -= 1
             self.used += 1
         else:
             self.reset = 600
             self.remaining = 300
             self.used = 0
-
-    async def sleep(self, s: float) -> None:
-        await asyncio.sleep(s)

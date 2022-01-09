@@ -65,7 +65,14 @@ def raise_for_reddit_auth_response_exception(e: Exception, req: Request, resp: R
 
     elif isinstance(e, http.exceptions.StatusCodeException):
         status = e.status_code
-        if status == 401:
+        if status == 400:
+            if isinstance(pld := req.payload, http.payload.URLEncodedFormData):
+                grant = pld.data
+                if grant.get('grant_type') == 'refresh_token':
+                    e.arg = "Your refresh token might be invalid."
+                    raise e
+
+        elif status == 401:
             if not (url := req.uri).startswith("https://www.reddit.com"):
                 raise AuthError(f'bad access token URL: got {url!r}, need {TOKEN_OBTAINMENT_URL!r}')
             if 'Authorization' not in req_headers:
@@ -74,7 +81,7 @@ def raise_for_reddit_auth_response_exception(e: Exception, req: Request, resp: R
                 raise AuthError('Authorization header value must start with "Basic"')
             raise ClientCredentialsError('Check your client credentials')
 
-        if status == 403:
+        elif status == 403:
             ua = req_headers['User-Agent']
             if ua.startswith('Bot'):
                 raise BlacklistedUserAgent("User-Agent strings must not start with 'Bot'.")

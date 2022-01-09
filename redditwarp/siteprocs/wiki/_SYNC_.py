@@ -9,7 +9,7 @@ from functools import cached_property
 
 from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...paginators.implementations.wiki_sync import WikiPageRevisionsPaginator
-from ...paginators.listing.submission_listing_paginator_sync import SubmissionListingPaginator
+from ...paginators.listing.submission_listing_paginator import SubmissionListingPaginator
 from ...models.wiki_SYNC import WikiPage, WikiPageRevision, WikiPageSettings
 from ...models.load.wiki_SYNC import load_wiki_page, load_wiki_page_settings
 

@@ -2,11 +2,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterator, overload, Union
 if TYPE_CHECKING:
-    from .widget_ASYNC import Widget
     from .menu_bar_ASYNC import MenuBar
     from .community_details_ASYNC import CommunityDetailsWidget
     from .moderator_list_ASYNC import ModeratorListWidget
     from .rules_ASYNC import RulesWidget
+
+from .widget_ASYNC import Widget
 
 class WidgetList(Sequence[Widget]):
     def __init__(self,

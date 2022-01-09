@@ -4,9 +4,9 @@ from typing import Iterable
 
 from ...listing.mixins.sort_SYNC import Sort
 from ...listing.mixins.subreddit_detail_SYNC import SubredditDetail
-from ...listing.submission_listing_paginator_sync import SubmissionListingPaginator
-from ...listing.comment_listing_paginator_sync import ExtraSubmissionFieldsCommentListingPaginator
-from ...listing.submission_and_comment_listing_paginator_sync import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
+from ...listing.submission_listing_paginator import SubmissionListingPaginator
+from ...listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
+from ...listing.submission_and_comment_listing_paginator import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
 from ....models.comment_SYNC import ExtraSubmissionFieldsComment
 from ....models.submission_SYNC import Submission
 

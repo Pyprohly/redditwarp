@@ -83,3 +83,11 @@ def test_500_http_error_on_auth_code_reuse() -> None:
     with pytest.raises(http.exceptions.StatusCodeException) as exc_info:
         raise_for_reddit_auth_response_exception(exc, req, resp)
     assert 'code' in str(exc_info.value)
+
+def test_refresh_token_invalid() -> None:
+    exc = http.exceptions.StatusCodeException(status_code=400)
+    req = Request('', '', payload=http.payload.URLEncodedFormData({'grant_type': 'refresh_token'}))
+    resp = Response(200, {}, b'')
+    with pytest.raises(http.exceptions.StatusCodeException) as exc_info:
+        raise_for_reddit_auth_response_exception(exc, req, resp)
+    assert 'refresh' in str(exc_info.value)
