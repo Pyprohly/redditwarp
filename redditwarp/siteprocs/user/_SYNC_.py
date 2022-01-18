@@ -15,8 +15,8 @@ from .pull_user_subreddits_SYNC import PullUserSubreddits
 from ...models.load.user_SYNC import load_user
 from ...models.load.moderated_subreddit import load_moderated_subreddit
 from ... import http
-from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.implementations.user._sync_ import SearchUsersListingPaginator
+from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...pagination.implementations.user._sync_ import SearchUsersListingPaginator
 
 class UserProcedures:
     def __init__(self, client: Client):

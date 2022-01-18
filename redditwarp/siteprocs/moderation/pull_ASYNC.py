@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.moderation._async_ import (
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.moderation._async_ import (
     ModQueueListingAsyncPaginator,
     ModQueueSubmissionListingAsyncPaginator,
     ModQueueCommentListingAsyncPaginator,

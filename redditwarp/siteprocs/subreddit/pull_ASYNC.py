@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.submission_ASYNC import Submission
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.front_async import (
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.front_async import (
     HotListingAsyncPaginator,
     NewListingAsyncPaginator,
     TopListingAsyncPaginator,

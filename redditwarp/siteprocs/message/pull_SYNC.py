@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.message_SYNC import Message, ComposedMessage, CommentMessage
 
-from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.implementations.message_sync import (
+from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...pagination.implementations.message_sync import (
     MessageListingPaginator,
     ComposedMessageListingPaginator,
     CommentMessageListingPaginator,

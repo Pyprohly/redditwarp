@@ -11,8 +11,8 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.call_chunk_ASYNC import CallChunk
 from ...util.base_conversion import to_base36
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.live_thread_async import LiveUpdateListingAsyncPaginator
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.live_thread_async import LiveUpdateListingAsyncPaginator
 from ... import http
 
 class LiveThreadProcedures:

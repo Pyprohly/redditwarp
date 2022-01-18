@@ -12,8 +12,8 @@ from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
-from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.implementations.flair_sync import UserFlairAssociationPaginator
+from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...pagination.implementations.flair_sync import UserFlairAssociationPaginator
 from ...models.load.flair import (
     load_variant2_flair_template,
     load_variant1_flair_template,

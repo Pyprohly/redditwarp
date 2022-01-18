@@ -15,9 +15,9 @@ from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.call_chunk_ASYNC import CallChunk
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.listing.comment_listing_async_paginator import ExtraSubmissionFieldsCommentListingAsyncPaginator
-from ...paginators.implementations.subreddit_async import ExploreSubredditsAsyncPaginator
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.listing.comment_listing_async_paginator import ExtraSubmissionFieldsCommentListingAsyncPaginator
+from ...pagination.implementations.subreddit_async import ExploreSubredditsAsyncPaginator
 from ... import exceptions
 from ... import http
 from ...http.util.json_load import json_loads_response

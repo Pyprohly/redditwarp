@@ -151,12 +151,11 @@ class BaseExtraSubmissionFieldsComment(BaseComment):
     class Submission(BaseComment.Submission):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
-            self.comment_count: int = d['num_comments']
-            self.nsfw: bool = d['over_18']
             self.title: str = d['link_title']
             self.author_name: str = d['link_author']
             self.rel_permalink: str = d['link_permalink']
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
+            self.nsfw: bool = d['over_18']
 
     class Subreddit(BaseComment.Subreddit):
         def __init__(self, d: Mapping[str, Any]):

@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 
 from .pull_ASYNC import Pull
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.listing.comment_listing_async_paginator import ExtraSubmissionFieldsCommentListingAsyncPaginator
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.listing.comment_listing_async_paginator import ExtraSubmissionFieldsCommentListingAsyncPaginator
 
 class FrontProcedures:
     def __init__(self, client: Client):

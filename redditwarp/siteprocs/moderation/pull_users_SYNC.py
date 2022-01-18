@@ -10,8 +10,8 @@ if TYPE_CHECKING:
         MutedUserItem,
     )
 
-from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.implementations.moderation._sync_ import (
+from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...pagination.implementations.moderation._sync_ import (
     ModeratorsPaginator,
     ContributorsPaginator,
     BannedPaginator,

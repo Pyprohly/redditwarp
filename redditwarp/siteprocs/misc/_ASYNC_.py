@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 
 import json
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.submission_async import SearchSubmissionsListingAsyncPaginator
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.submission_async import SearchSubmissionsListingAsyncPaginator
 
 class MiscProcedures:
     def __init__(self, client: Client):

@@ -6,7 +6,7 @@ from redditwarp.core.recorded_SYNC import Recorded, Last
 from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.paginators.listing.listing_paginator import ListingPaginator
+from redditwarp.pagination.listing.listing_paginator import ListingPaginator
 
 class MySession(SessionBase):
     def __init__(self,
@@ -30,8 +30,8 @@ class MyListingPaginator(ListingPaginator[str]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
-    def fetch_next(self) -> Sequence[str]:
-        data = self._fetch_next_data()
+    def fetch(self) -> Sequence[str]:
+        data = self._fetch_data()
         return [d['name'] for d in data['children']]
 
 session = MySession(200, {'Content-Type': 'application/json'}, b'')
@@ -54,7 +54,7 @@ def test_none_limit() -> None:
 }
 '''
     p.limit = None
-    p.fetch_next()
+    p.fetch()
 
     req = http.last.request
     assert req is not None
@@ -62,7 +62,7 @@ def test_none_limit() -> None:
     assert 'limit' not in req.params
 
     p.limit = 14
-    p.fetch_next()
+    p.fetch()
 
     req = http.last.request
     assert req is not None
@@ -83,7 +83,7 @@ def test_dont_send_empty_cursor() -> None:
 }
 '''
     p.limit = None
-    p.fetch_next()
+    p.fetch()
 
     req = http.last.request
     assert req is not None
@@ -108,7 +108,7 @@ def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = p.fetch_next()
+    result = p.fetch()
     assert len(result) == 2
     assert p.after_count == 2
 
@@ -128,7 +128,7 @@ def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = p.fetch_next()
+    result = p.fetch()
     assert len(result) == 3
     assert p.after_count == 5
 
@@ -152,7 +152,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.fetch_next()
+        p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -170,7 +170,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.fetch_next()
+        p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -188,7 +188,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.fetch_next()
+        p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -206,7 +206,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.fetch_next()
+        p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -224,7 +224,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.fetch_next()
+        p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -241,7 +241,7 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.fetch_next()
+        p.fetch()
         assert p.after == 'a'
         assert p.before == 'a'
 
@@ -258,11 +258,11 @@ def test_cursor_extractor() -> None:
     }
 }
 '''
-        p.fetch_next()
+        p.fetch()
         assert p.after == 'no_change1'
         assert p.before == 'no_change2'
 
-def test_next_available() -> None:
+def test_more_available() -> None:
     p = MyListingPaginator(client, '')
 
     for direction in (True, False):
@@ -282,8 +282,8 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.fetch_next()
-        assert p.next_available()
+        p.fetch()
+        assert p.more_available()
 
         session.response_data = b'''\
 {
@@ -299,8 +299,8 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.fetch_next()
-        assert p.next_available() is direction
+        p.fetch()
+        assert p.more_available() is direction
 
         session.response_data = b'''\
 {
@@ -316,8 +316,8 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.fetch_next()
-        assert p.next_available() is not direction
+        p.fetch()
+        assert p.more_available() is not direction
 
         session.response_data = b'''\
 {
@@ -330,8 +330,8 @@ def test_next_available() -> None:
     }
 }
 '''
-        p.fetch_next()
-        assert not p.next_available()
+        p.fetch()
+        assert not p.more_available()
 
 def test_dist_none_value() -> None:
     # Example endpoints where `dist`is null:
@@ -355,6 +355,6 @@ def test_dist_none_value() -> None:
     }
 }
 '''
-    result = p.fetch_next()
+    result = p.fetch()
     assert len(result) == 2
     assert p.after_count == 2

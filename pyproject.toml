@@ -22,7 +22,8 @@ classifiers = [
 keywords = ['reddit', 'api', 'wrapper']
 
 [tool.poetry.dependencies]
-python = "^3.8"
+# !3.9.7: https://bugs.python.org/issue45081
+python = "^3.8, !3.9.7"
 requests = {version = "^2.26.0", optional = true}
 urllib3 = {version = "^1.26.7", optional = true}
 httpx = {version = "^0.20.0", optional = true}

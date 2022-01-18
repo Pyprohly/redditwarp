@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.subreddit_ASYNC import Subreddit
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.listing.subreddit_listing_async_paginator import SubredditListingAsyncPaginator
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.listing.subreddit_listing_async_paginator import SubredditListingAsyncPaginator
 
 class Pulls:
     def __init__(self, client: Client) -> None:

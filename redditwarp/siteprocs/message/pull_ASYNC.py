@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.message_ASYNC import Message, ComposedMessage, CommentMessage
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.message_async import (
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.message_async import (
     MessageListingAsyncPaginator,
     ComposedMessageListingAsyncPaginator,
     CommentMessageListingAsyncPaginator,

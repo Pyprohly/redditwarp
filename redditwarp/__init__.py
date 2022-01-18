@@ -17,7 +17,7 @@ from . import core  # noqa: F401
 from . import http  # noqa: F401
 from . import websocket  # noqa: F401
 from . import iterators  # noqa: F401
-from . import paginators  # noqa: F401
+from . import pagination  # noqa: F401
 from . import models  # noqa: F401
 from . import util  # noqa: F401
 from . import exceptions  # noqa: F401

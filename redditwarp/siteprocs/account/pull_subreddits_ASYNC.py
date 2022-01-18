@@ -5,8 +5,8 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.subreddit_ASYNC import Subreddit
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.account_async import (
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.account_async import (
     SubscribedListingAsyncPaginator,
     ContributingListingAsyncPaginator,
     ModeratingListingAsyncPaginator,

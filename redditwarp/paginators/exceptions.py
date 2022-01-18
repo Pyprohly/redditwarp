@@ -1,3 +1,0 @@
-
-class MissingCursorException(Exception):
-    pass

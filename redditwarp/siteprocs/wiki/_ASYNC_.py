@@ -7,9 +7,9 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.wiki_async import WikiPageRevisionsAsyncPaginator
-from ...paginators.listing.submission_listing_async_paginator import SubmissionListingAsyncPaginator
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.wiki_async import WikiPageRevisionsAsyncPaginator
+from ...pagination.listing.submission_listing_async_paginator import SubmissionListingAsyncPaginator
 from ...models.wiki_ASYNC import WikiPage, WikiPageRevision, WikiPageSettings
 from ...models.load.wiki_ASYNC import load_wiki_page, load_wiki_page_settings
 

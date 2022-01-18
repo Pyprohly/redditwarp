@@ -8,7 +8,7 @@ from redditwarp.core.recorded_ASYNC import Recorded, Last
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.paginators.listing.listing_async_paginator import ListingAsyncPaginator
+from redditwarp.pagination.listing.listing_async_paginator import ListingAsyncPaginator
 
 class MySession(SessionBase):
     def __init__(self,
@@ -32,8 +32,8 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
         super().__init__(client, uri, cursor_extractor=cursor_extractor)
 
-    async def fetch_next(self) -> Sequence[str]:
-        data = await self._fetch_next_data()
+    async def fetch(self) -> Sequence[str]:
+        data = await self._fetch_data()
         return [d['name'] for d in data['children']]
 
 session = MySession(200, {'Content-Type': 'application/json'}, b'')
@@ -57,7 +57,7 @@ async def test_none_limit() -> None:
 }
 '''
     p.limit = None
-    await p.fetch_next()
+    await p.fetch()
 
     req = http.last.request
     assert req is not None
@@ -65,7 +65,7 @@ async def test_none_limit() -> None:
     assert 'limit' not in req.params
 
     p.limit = 14
-    await p.fetch_next()
+    await p.fetch()
 
     req = http.last.request
     assert req is not None
@@ -87,7 +87,7 @@ async def test_dont_send_empty_cursor() -> None:
 }
 '''
     p.limit = None
-    await p.fetch_next()
+    await p.fetch()
 
     req = http.last.request
     assert req is not None
@@ -113,7 +113,7 @@ async def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = await p.fetch_next()
+    result = await p.fetch()
     assert len(result) == 2
     assert p.after_count == 2
 
@@ -133,7 +133,7 @@ async def test_return_value_and_count() -> None:
     }
 }
 '''
-    result = await p.fetch_next()
+    result = await p.fetch()
     assert len(result) == 3
     assert p.after_count == 5
 
@@ -158,7 +158,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.fetch_next()
+        await p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -176,7 +176,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.fetch_next()
+        await p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -194,7 +194,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.fetch_next()
+        await p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -212,7 +212,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.fetch_next()
+        await p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -230,7 +230,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.fetch_next()
+        await p.fetch()
         assert p.after == 'b'
         assert p.before == 'a'
 
@@ -247,7 +247,7 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.fetch_next()
+        await p.fetch()
         assert p.after == 'a'
         assert p.before == 'a'
 
@@ -264,12 +264,12 @@ async def test_cursor_extractor() -> None:
     }
 }
 '''
-        await p.fetch_next()
+        await p.fetch()
         assert p.after == 'no_change1'
         assert p.before == 'no_change2'
 
 @pytest.mark.asyncio
-async def test_next_available() -> None:
+async def test_more_available() -> None:
     p = MyListingAsyncPaginator(client, '')
 
     for direction in (True, False):
@@ -289,8 +289,8 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.fetch_next()
-        assert p.next_available()
+        await p.fetch()
+        assert p.more_available()
 
         session.response_data = b'''\
 {
@@ -306,8 +306,8 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.fetch_next()
-        assert p.next_available() is direction
+        await p.fetch()
+        assert p.more_available() is direction
 
         session.response_data = b'''\
 {
@@ -323,8 +323,8 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.fetch_next()
-        assert p.next_available() is not direction
+        await p.fetch()
+        assert p.more_available() is not direction
 
         session.response_data = b'''\
 {
@@ -337,8 +337,8 @@ async def test_next_available() -> None:
     }
 }
 '''
-        await p.fetch_next()
-        assert not p.next_available()
+        await p.fetch()
+        assert not p.more_available()
 
 @pytest.mark.asyncio
 async def test_dist_none_value() -> None:
@@ -359,6 +359,6 @@ async def test_dist_none_value() -> None:
     }
 }
 '''
-    result = await p.fetch_next()
+    result = await p.fetch()
     assert len(result) == 2
     assert p.after_count == 2

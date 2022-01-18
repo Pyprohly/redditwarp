@@ -18,8 +18,8 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk_SYNC import CallChunk
-from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.implementations.submission_sync import SearchSubmissionsListingPaginator
+from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...pagination.implementations.submission_sync import SearchSubmissionsListingPaginator
 from ...models.load.comment_SYNC import load_comment
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get

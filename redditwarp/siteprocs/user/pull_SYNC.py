@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...paginators.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...paginators.implementations.user._sync_ import (
+from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
+from ...pagination.implementations.user._sync_ import (
     OverviewListingPaginator,
     CommentsListingPaginator,
     SubmittedListingPaginator,

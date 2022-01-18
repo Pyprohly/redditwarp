@@ -23,8 +23,8 @@ from .pull_users_ASYNC import PullUsers
 from .legacy_ASYNC import Legacy
 from .pull_ASYNC import Pull
 from ...util.base_conversion import to_base36
-from ...paginators.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...paginators.implementations.moderation._async_ import ModerationActionLogAsyncPaginator
+from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
+from ...pagination.implementations.moderation._async_ import ModerationActionLogAsyncPaginator
 
 class ModerationProcedures:
     def __init__(self, client: Client):

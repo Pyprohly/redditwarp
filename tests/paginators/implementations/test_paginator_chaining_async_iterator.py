@@ -3,24 +3,16 @@ from typing import Sequence
 
 import pytest
 
-from redditwarp.paginators.paginator_chaining_async_iterator import PaginatorChainingAsyncIterator
-from redditwarp.paginators.async_paginator import AsyncPaginator
+from redditwarp.pagination.paginator_chaining_async_iterator import PaginatorChainingAsyncIterator
+from redditwarp.pagination.async_paginator import AsyncPaginator
 
 class MyAsyncPaginator(AsyncPaginator[int]):
     def __init__(self, seq: Sequence[Sequence[int]]) -> None:
         super().__init__()
-        self.seq = seq
-        self.index = -1
-        self.proceed = True
+        self._itr = iter(seq)
 
-    def next_available(self) -> bool:
-        return self.proceed
-
-    async def fetch_next(self) -> Sequence[int]:
-        self.index += 1
-        if self.index >= len(self.seq) - 1:
-            self.proceed = False
-        return self.seq[self.index]
+    async def fetch(self) -> Sequence[int]:
+        return next(self._itr, [])
 
 
 @pytest.mark.asyncio

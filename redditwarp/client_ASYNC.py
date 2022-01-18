@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable
 if TYPE_CHECKING:
     from types import TracebackType
-    from .auth.typedefs import ClientCredentials, AuthorizationGrant
+    from .auth.typedefs import AuthorizationGrant
     from .http.payload import RequestFiles
 
 from .http.transport._ASYNC_ import new_session
@@ -21,10 +21,6 @@ from .http.util.json_load import json_loads_response
 
 class CoreClient:
     _TSelf = TypeVar('_TSelf', bound='CoreClient')
-
-    @classmethod
-    def from_creds(cls: type[_TSelf], client_creds: ClientCredentials, grant: AuthorizationGrant) -> _TSelf:
-        return cls(*client_creds, grant=grant)
 
     @classmethod
     def from_http(cls: type[_TSelf], http: RedditHTTPClient) -> _TSelf:
@@ -69,10 +65,12 @@ class CoreClient:
         return self
 
     def __init__(self,
-            client_id: str, client_secret: str,
+            client_id: str,
+            client_secret: str,
             refresh_token: Optional[str] = None,
             *,
-            username: Optional[str] = None, password: Optional[str] = None,
+            username: Optional[str] = None,
+            password: Optional[str] = None,
             grant: Optional[AuthorizationGrant] = None):
         grant_creds = (refresh_token, username, password)
         if grant is None:
