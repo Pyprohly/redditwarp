@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 import pytest
 
 from redditwarp.auth.token_obtainment_client_ASYNC import TokenObtainmentClient
-from redditwarp.auth.util import basic_auth
+from redditwarp.auth.utils import basic_auth
 from redditwarp.auth.exceptions import (
     TokenServerResponseErrorTypes,
     UnrecognizedTokenServerResponseError,

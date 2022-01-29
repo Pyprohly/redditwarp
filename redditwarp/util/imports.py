@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 import sys
 import importlib.util
 from importlib.abc import Loader
+import inspect
 
 def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
     if spec.loader is None:
@@ -50,7 +51,8 @@ class _LazyImport:
             raise ValueError('dotted module name not supported')
 
         module = self(other)
-        caller_frame = sys._getframe(1)
-        caller_frame.f_globals[other] = module
+        caller_frame = inspect.currentframe()
+        if caller_frame is not None:
+            caller_frame.f_globals[other] = module
 
 lazy_import: _LazyImport = _LazyImport()

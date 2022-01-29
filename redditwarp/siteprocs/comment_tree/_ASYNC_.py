@@ -12,8 +12,8 @@ from .fetch_ASYNC import Fetch
 class CommentTreeProcedures:
     def __init__(self, client: Client):
         self._client = client
-        self.get: Get = Get(self)
-        self.fetch: Fetch = Fetch(self)
+        self.get: Get = Get(self, client)
+        self.fetch: Fetch = Fetch(self, client)
 
     async def more_children(self,
         submission_id36: str,

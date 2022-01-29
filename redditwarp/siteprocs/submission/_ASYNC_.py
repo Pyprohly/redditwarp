@@ -40,6 +40,15 @@ class SubmissionProcedures:
 
         return CallChunkChainingAsyncIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
+    async def reply(self, submission_id: int, text: str) -> Comment:
+        data = {
+            'thing_id': 't3_' + to_base36(submission_id),
+            'text': text,
+            'return_rtjson': '1',
+        }
+        result = await self._client.request('POST', '/api/comment', data=data)
+        return load_comment(result, self._client)
+
     class _upload_media:
         def __init__(self, outer: SubmissionProcedures):
             self._client = outer._client

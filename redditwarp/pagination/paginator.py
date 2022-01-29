@@ -28,10 +28,6 @@ class CursorPaginator(Paginator[T]):
         raise NotImplementedError
 
 
-
-class Bidirectional:
-    direction: bool
-
 class MoreAvailablePaginator(Paginator[T]):
     def __iter__(self) -> Iterator[Sequence[T]]:
         if x := self.fetch():
@@ -44,6 +40,10 @@ class MoreAvailablePaginator(Paginator[T]):
 
     def set_more_available_flag(self, value: bool) -> None:
         raise NotImplementedError
+
+
+class Bidirectional:
+    direction: bool
 
 class Resettable:
     def reset(self) -> None:

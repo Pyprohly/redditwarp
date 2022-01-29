@@ -51,7 +51,7 @@ class Pull:
 
     modqueue: cached_property[_modqueue] = cached_property(_modqueue)
 
-    class _reports:
+    class _reported:
         def __init__(self, outer: Pull) -> None:
             self._outer = outer
             self._client = outer._client
@@ -71,7 +71,7 @@ class Pull:
             p = ReportsCommentListingAsyncPaginator(self._client, f'/r/{sr}/about/reports')
             return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    reports: cached_property[_reports] = cached_property(_reports)
+    reported: cached_property[_reported] = cached_property(_reported)
 
     class _spam:
         def __init__(self, outer: Pull) -> None:

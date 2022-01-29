@@ -9,7 +9,7 @@ from ..http.request import Request
 from ..http.payload import URLEncodedFormData
 from ..http.util.json_load import json_loads_response
 from ..auth.token_obtainment_client_SYNC import TokenObtainmentClient
-from ..auth.util import apply_basic_auth
+from ..auth.utils import apply_basic_auth
 from .exceptions import raise_for_reddit_token_server_response_error, raise_for_reddit_auth_response_exception
 
 class RedditTokenObtainmentClient(TokenObtainmentClient):

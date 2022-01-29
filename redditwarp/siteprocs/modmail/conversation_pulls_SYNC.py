@@ -24,40 +24,40 @@ class Pulls:
 
     def all(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('all', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('all', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def inbox(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('inbox', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('inbox', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def new(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('new', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('new', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def in_progress(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('inprogress', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('inprogress', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def archived(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('archived', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('archived', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def appeals(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('appeals', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('appeals', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def join_requests(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('join_requests', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('join_requests', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def highlighted(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('highlighted', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('highlighted', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def mod(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('mod', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('mod', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
     def notifications(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingIterator[ModmailConversationsPaginator, tuple[Conversation, Message]]:
-        return self.__call__('notifications', amount=amount, subreddit_names=subreddit_names, sort=sort)
+        return self('notifications', amount=amount, subreddit_names=subreddit_names, sort=sort)

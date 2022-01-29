@@ -4,7 +4,12 @@ from typing import TYPE_CHECKING, Any, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
 
-from ..subreddit_SYNC import Subreddit
+from ..subreddit_SYNC import Subreddit, InaccessibleSubreddit
 
 def load_subreddit(d: Mapping[str, Any], client: Client) -> Subreddit:
+    return Subreddit(d, client)
+
+def load_potentially_inaccessible_subreddit(d: Mapping[str, Any], client: Client) -> object:
+    if d['public_traffic'] is None:
+        return InaccessibleSubreddit(d, client)
     return Subreddit(d, client)

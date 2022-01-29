@@ -51,7 +51,7 @@ class DataMembersNamespace(Collection[str], Generic[T]):
         return pretty_format(self)
 
     def __iter__(self) -> Iterator[str]:
-        return (k for k, v in self._data_members())
+        return (k for k, _v in self._data_members())
 
     def __len__(self) -> int:
         return sum(1 for _ in self._data_members())

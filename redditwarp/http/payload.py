@@ -74,7 +74,7 @@ class MultipartTextField(MultipartFormDataField):
 
 class MultipartFileField(MultipartFormDataField):
     def __init__(self,
-            name: str, 
+            name: str,
             file: FileObjectType,
             filename: str,
             content_type: str):

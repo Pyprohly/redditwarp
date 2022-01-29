@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from ...models.subreddit_rules import SubredditRules
     from ...models.moderator_list import ModeratorListItem
 
-from ...models.load.subreddit_ASYNC import load_subreddit
+from ...models.load.subreddit_ASYNC import load_subreddit, load_potentially_inaccessible_subreddit
 from ...models.load.subreddit_rules import load_subreddit_rules
 from ...models.load.moderator_list import load_moderator_list_item
 from ...util.base_conversion import to_base36
@@ -55,15 +55,22 @@ class SubredditProcedures:
             raise exceptions.NoResultException('target not found')
         return load_subreddit(root['data'], self._client)
 
-    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[Subreddit]:
-        async def mass_fetch(ids: Sequence[int]) -> Sequence[Subreddit]:
+    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[object]:
+        async def mass_fetch(ids: Sequence[int]) -> Sequence[object]:
             id36s = map(to_base36, ids)
             full_id36s = map('t5_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             root = await self._client.request('GET', '/api/info', params={'id': ids_str})
-            return [load_subreddit(i['data'], self._client) for i in root['data']['children']]
+            return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]
 
         return CallChunkChainingAsyncIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
+
+    def bulk_fetch_by_name(self, names: Iterable[str]) -> CallChunkChainingAsyncIterator[object]:
+        async def mass_fetch(names: Sequence[str]) -> Sequence[object]:
+            root = await self._client.request('GET', '/api/info', params={'sr_name': ','.join(names)})
+            return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]
+
+        return CallChunkChainingAsyncIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(names, 100))
 
     def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ExtraSubmissionFieldsCommentListingAsyncPaginator, ExtraSubmissionFieldsComment]:
         p = ExtraSubmissionFieldsCommentListingAsyncPaginator(self._client, f'/r/{sr}/comments')

@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from ..http.request import Request
 from ..http.payload import URLEncodedFormData
-from .util import apply_basic_auth
+from .utils import apply_basic_auth
 
 class TokenRevocationClient:
     def __init__(self, requestor: Requestor, uri: str,

@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable
 if TYPE_CHECKING:
+    from ...client_SYNC import Client
     from ...models.comment_tree_SYNC import SubmissionTreeNode
     from ._SYNC_ import CommentTreeProcedures
 
@@ -9,9 +10,9 @@ from ...util.base_conversion import to_base36
 from ...models.load.comment_tree_SYNC import load_submission_tree_node
 
 class Fetch:
-    def __init__(self, outer: CommentTreeProcedures):
+    def __init__(self, outer: CommentTreeProcedures, client: Client):
         self._outer = outer
-        self._client = outer._client
+        self._client = client
 
     def __call__(self,
         submission_id: int,

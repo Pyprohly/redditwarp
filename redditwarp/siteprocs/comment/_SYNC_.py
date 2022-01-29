@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Sequence, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import (
-        Comment as CommentModel,
+        Comment,
         EditPostTextEndpointComment,
     )
 
@@ -22,8 +22,8 @@ class CommentProcedures:
         self.fetch: Fetch = Fetch(self, client)
         self.get: Get = Get(client)
 
-    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[CommentModel]:
-        def mass_fetch(ids: Sequence[int]) -> Sequence[CommentModel]:
+    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[Comment]:
+        def mass_fetch(ids: Sequence[int]) -> Sequence[Comment]:
             id36s = map(to_base36, ids)
             full_id36s = map('t1_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
@@ -32,7 +32,7 @@ class CommentProcedures:
 
         return CallChunkChainingIterator(CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
-    def reply(self, comment_id: int, text: str) -> CommentModel:
+    def reply(self, comment_id: int, text: str) -> Comment:
         data = {
             'thing_id': 't1_' + to_base36(comment_id),
             'text': text,
@@ -81,7 +81,7 @@ class CommentProcedures:
         data = {'id': 't1_' + to_base36(comment_id)}
         self._client.request('POST', '/api/unsave', data=data)
 
-    def distinguish(self, comment_id: int) -> CommentModel:
+    def distinguish(self, comment_id: int) -> Comment:
         data = {
             'id': 't1_' + to_base36(comment_id),
             'how': 'yes',
@@ -89,7 +89,7 @@ class CommentProcedures:
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    def distinguish_and_sticky(self, comment_id: int) -> CommentModel:
+    def distinguish_and_sticky(self, comment_id: int) -> Comment:
         data = {
             'id': 't1_' + to_base36(comment_id),
             'how': 'yes',
@@ -98,7 +98,7 @@ class CommentProcedures:
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    def undistinguish(self, comment_id: int) -> CommentModel:
+    def undistinguish(self, comment_id: int) -> Comment:
         data = {
             'id': 't1_' + to_base36(comment_id),
             'how': 'no',
@@ -163,7 +163,7 @@ class CommentProcedures:
     def send_removal_comment(self,
             comment_id: int,
             title: str,
-            message: str) -> CommentModel:
+            message: str) -> Comment:
         target = 't1_' + to_base36(comment_id)
         json_data = {
             'type': 'public',

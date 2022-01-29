@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable
+from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, Sequence
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.typedefs import AuthorizationGrant
@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 from .http.transport._ASYNC_ import new_session
 from .auth import Token
-from .auth.util import auto_grant_factory
+from .auth import grants
 from .core.reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL
 from .core.reddit_http_client_ASYNC import RedditHTTPClient
@@ -53,12 +53,16 @@ class CoreClient:
             raise KeyError(StrReprStr(msg)) from None
 
         get = section.get
+        grant_creds: Sequence[str] = ()
+        if (refresh_token := get('refresh_token')) is not None:
+            grant_creds = (refresh_token,)
+        elif (username := get('username')) is not None and (password := get('password')) is not None:
+            grant_creds = (username, password)
+
         self = cls(
-            client_id=get('client_id'),
-            client_secret=get('client_secret'),
-            refresh_token=get('refresh_token'),
-            username=get('username'),
-            password=get('password'),
+            get('client_id'),
+            get('client_secret'),
+            *grant_creds,
         )
         if x := get('user_agent'):
             self.set_user_agent(x)
@@ -67,15 +71,20 @@ class CoreClient:
     def __init__(self,
             client_id: str,
             client_secret: str,
-            refresh_token: Optional[str] = None,
-            *,
-            username: Optional[str] = None,
-            password: Optional[str] = None,
+            *grant_creds: str,
             grant: Optional[AuthorizationGrant] = None):
-        grant_creds = (refresh_token, username, password)
         if grant is None:
-            grant = auto_grant_factory(*grant_creds)
-        elif any(grant_creds):
+            n = len(grant_creds)
+            if n == 0:
+                grant = grants.ClientCredentialsGrant()
+            elif n == 1:
+                grant = grants.RefreshTokenGrant(*grant_creds)
+            elif n == 2:
+                grant = grants.ResourceOwnerPasswordCredentialsGrant(*grant_creds)
+            else:
+                raise ValueError("cannot create an authorization grant from the provided credentials")
+
+        elif grant_creds:
             raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
 
         session = new_session()

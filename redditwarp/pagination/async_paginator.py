@@ -28,10 +28,6 @@ class CursorAsyncPaginator(AsyncPaginator[T]):
         raise NotImplementedError
 
 
-
-class Bidirectional:
-    direction: bool
-
 class MoreAvailableAsyncPaginator(AsyncPaginator[T]):
     async def __aiter__(self) -> AsyncIterator[Sequence[T]]:
         if x := await self.fetch():
@@ -44,6 +40,10 @@ class MoreAvailableAsyncPaginator(AsyncPaginator[T]):
 
     def set_more_available_flag(self, value: bool) -> None:
         raise NotImplementedError
+
+
+class Bidirectional:
+    direction: bool
 
 class Resettable:
     def reset(self) -> None:

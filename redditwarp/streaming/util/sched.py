@@ -101,7 +101,7 @@ class Scheduler(Sized):
 
     def run(self) -> None:
         while True:
-            slack_time = self.jog()
-            if slack_time < 0:
+            t = self.jog()
+            if t < 0:
                 break
-            self.delay_func(slack_time)
+            self.delay_func(t)

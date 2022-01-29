@@ -12,7 +12,7 @@ from ...websocket_connection_SYNC import PulsePartiallyImplementedWebSocketConne
 from ... import exceptions
 from ... import events
 from ...events import Frame
-from ...const import Opcode, Side
+from ...const import Opcode, Side, ConnectionState
 from ...utils import parse_close
 
 
@@ -38,6 +38,10 @@ class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
         frm = websocket.ABNF.create_frame(opcode=m.opcode, data=m.data, fin=int(m.fin))
         try:
             self.ws.send_frame(frm)
+        except websocket.WebSocketConnectionClosedException as cause:
+            if self.state != ConnectionState.CLOSED:
+                self.shutdown()
+            raise exceptions.ConnectionClosedException from cause
         except Exception as cause:
             raise exceptions.TransportError from cause
 
@@ -48,6 +52,8 @@ class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
         except websocket.WebSocketTimeoutException as cause:
             raise exceptions.TimeoutException from cause
         except websocket.WebSocketConnectionClosedException as cause:
+            if self.state != ConnectionState.CLOSED:
+                self.shutdown()
             raise exceptions.ConnectionClosedException from cause
         except Exception as cause:
             raise exceptions.TransportError from cause

@@ -73,6 +73,7 @@ class BaseSubreddit(Artifact):
         self.suggested_comment_sort: Optional[str] = d['suggested_comment_sort']
 
         self.nsfw: bool = d['over18']
+        self.public_traffic: bool = d['public_traffic']
         self.quarantined: bool = d['quarantine']
 
         self.me: Optional[BaseSubreddit.Me] = None
@@ -80,3 +81,17 @@ class BaseSubreddit(Artifact):
             self.me = self.Me(d)
 
         self.flair: BaseSubreddit.SubredditFlair = self.SubredditFlair(d)
+
+
+class BaseInaccessibleSubreddit(Artifact):
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        self.id36: str = d['id']
+        self.id: int = int(self.id36, 36)
+        self.created_ut: int = int(d['created_utc'])
+        self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
+
+        self.name: str = d['display_name']
+        self.type: str = d['subreddit_type']
+
+        self.title: str = d['title']

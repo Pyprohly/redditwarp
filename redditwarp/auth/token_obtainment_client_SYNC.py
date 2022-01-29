@@ -9,7 +9,7 @@ from ..http.request import Request
 from ..http.payload import URLEncodedFormData
 from ..http.util.json_load import json_loads_response
 from .token import Token
-from .util import apply_basic_auth
+from .utils import apply_basic_auth
 from .exceptions import raise_for_token_server_response_error
 
 class TokenObtainmentClient:

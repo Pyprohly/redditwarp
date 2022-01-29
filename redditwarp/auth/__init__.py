@@ -8,4 +8,4 @@ from .token import Token as Token  # noqa: F401
 from . import exceptions  # noqa: F401
 from . import grants  # noqa: F401
 from . import typedefs  # noqa: F401
-from . import util  # noqa: F401
+from . import utils  # noqa: F401

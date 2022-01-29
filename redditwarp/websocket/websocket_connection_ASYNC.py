@@ -169,12 +169,11 @@ class PulsePartiallyImplementedWebSocketConnection(WebSocketConnection):
         self.close_reason: str
         self.close_code, self.close_reason = parse_close(m.data)
 
-        if self.state == ConnectionState.OPEN:
-            close = Frame.make(Opcode.CLOSE, m.data)
-            try:
-                await self.send_frame(close)
-            except exceptions.ConnectionClosedException:
-                pass
+        close = Frame.make(Opcode.CLOSE, m.data)
+        try:
+            await self.send_frame(close)
+        except exceptions.ConnectionClosedException:
+            pass
 
         await self.shutdown()
 
