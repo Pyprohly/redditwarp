@@ -5,7 +5,7 @@ from typing import TypeVar, Callable, Generic, Awaitable
 TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
 
-class CallChunk(Generic[TInput, TOutput]):
+class AsyncCallChunk(Generic[TInput, TOutput]):
     def __init__(self,
         operation: Callable[[TInput], Awaitable[TOutput]],
         operand: TInput,

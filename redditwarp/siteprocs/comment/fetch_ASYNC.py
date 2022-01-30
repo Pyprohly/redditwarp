@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
-    from ._ASYNC_ import CommentProcedures
+    from .ASYNC import CommentProcedures
 
 from ...models.comment_ASYNC import Comment
 from ...util.base_conversion import to_base36

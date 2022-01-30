@@ -11,7 +11,7 @@ from io import StringIO
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from ...iterators.call_chunk_SYNC import CallChunk
+from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...pagination.implementations.flair_sync import UserFlairAssociationPaginator
 from ...models.load.flair import (

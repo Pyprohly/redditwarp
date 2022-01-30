@@ -9,7 +9,7 @@ import asyncio
 
 import aiohttp  # type: ignore[import]
 
-from .._ASYNC_ import register
+from ..ASYNC import register
 from ...session_base_ASYNC import SessionBase
 from ... import exceptions
 from ... import payload

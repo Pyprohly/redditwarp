@@ -12,7 +12,7 @@ from ...models.load.comment_SYNC import load_comment, load_edit_post_text_endpoi
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from ...iterators.call_chunk_SYNC import CallChunk
+from ...iterators.call_chunk import CallChunk
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 

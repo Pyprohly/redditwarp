@@ -2,7 +2,7 @@
 from typing import Iterable, Sequence, Callable
 
 from redditwarp.iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from redditwarp.iterators.call_chunk_SYNC import CallChunk, TInput, TOutput
+from redditwarp.iterators.call_chunk import CallChunk, TInput, TOutput
 from redditwarp.iterators.stubborn_caller_iterator import StubbornCallerIterator
 
 def new_call_chunk_of_sequences(

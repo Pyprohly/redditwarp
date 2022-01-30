@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     )
 
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.moderation._sync_ import (
+from ...pagination.implementations.moderation.sync import (
     ModeratorsPaginator,
     ContributorsPaginator,
     BannedPaginator,

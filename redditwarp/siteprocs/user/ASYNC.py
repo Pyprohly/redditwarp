@@ -16,7 +16,7 @@ from ...models.load.user_ASYNC import load_user
 from ...models.load.moderated_subreddit import load_moderated_subreddit
 from ... import http
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.implementations.user._async_ import SearchUsersListingAsyncPaginator
+from ...pagination.implementations.user.async_ import SearchUsersListingAsyncPaginator
 
 class UserProcedures:
     def __init__(self, client: Client):

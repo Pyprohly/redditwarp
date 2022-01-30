@@ -8,8 +8,6 @@ if TYPE_CHECKING:
     from ...models.trophy import Trophy
     from ...models.karma_breakdown_entry import KarmaBreakdownEntry
 
-from functools import cached_property
-
 from .pull_subreddits_ASYNC import PullSubreddits
 from ...models.load.my_account_ASYNC import load_account
 from ...models.load.user_relationship_item import load_user_relationship_item, load_friend_relationship_item
@@ -78,48 +76,27 @@ class AccountProcedures:
         entries = root['data']['children']
         return [load_user_relationship_item(d) for d in entries]
 
-    class _block_user:
-        def __init__(self, outer: AccountProcedures) -> None:
-            self._client = outer._client
+    async def block_user_by_name(self, name: str) -> None:
+        await self._client.request('POST', '/api/block_user', data={'name': name})
 
-        async def __call__(self, name: str) -> None:
-            await self.by_name(name)
+    async def block_user_by_id(self, idn: int) -> None:
+        await self._client.request('POST', '/api/block_user', data={'account_id': to_base36(idn)})
 
-        async def by_name(self, name: str) -> None:
-            await self._client.request('POST', '/api/block_user', data={'name': name})
+    async def unblock_user_by_target_name(self, agent_idn: int, target_name: str) -> None:
+        data = {
+            'type': 'enemy',
+            'container': 't2_' + to_base36(agent_idn),
+            'name': target_name,
+        }
+        await self._client.request('POST', '/api/unfriend', data=data)
 
-        async def by_id(self, id: int) -> None:
-            await self.by_id36(to_base36(id))
-
-        async def by_id36(self, id36: str) -> None:
-            await self._client.request('POST', '/api/block_user', data={'account_id': id36})
-
-    block_user: cached_property[_block_user] = cached_property(_block_user)
-
-    class _unblock_user:
-        def __init__(self, outer: AccountProcedures) -> None:
-            self._client = outer._client
-
-        async def __call__(self, agent_id: int, target_name: str) -> None:
-            await self.by_target_name(agent_id, target_name)
-
-        async def by_target_name(self, agent_id: int, target_name: str) -> None:
-            data = {
-                'type': 'enemy',
-                'container': 't2_' + to_base36(agent_id),
-                'name': target_name,
-            }
-            await self._client.request('POST', '/api/unfriend', data=data)
-
-        async def by_target_id(self, agent_id: int, target_id: int) -> None:
-            data = {
-                'type': 'enemy',
-                'container': 't2_' + to_base36(agent_id),
-                'id': 't2_' + to_base36(target_id),
-            }
-            await self._client.request('POST', '/api/unfriend', data=data)
-
-    unblock_user: cached_property[_unblock_user] = cached_property(_unblock_user)
+    async def unblock_user_by_target_id(self, agent_idn: int, target_id: int) -> None:
+        data = {
+            'type': 'enemy',
+            'container': 't2_' + to_base36(agent_idn),
+            'id': 't2_' + to_base36(target_id),
+        }
+        await self._client.request('POST', '/api/unfriend', data=data)
 
     async def trusted(self) -> Sequence[UserRelationshipItem]:
         root = await self._client.request('GET', '/prefs/trusted')

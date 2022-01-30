@@ -12,7 +12,7 @@ from ...models.load.comment_ASYNC import load_comment, load_edit_post_text_endpo
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
-from ...iterators.call_chunk_ASYNC import CallChunk
+from ...iterators.async_call_chunk import AsyncCallChunk
 from .fetch_ASYNC import Fetch
 from .get_ASYNC import Get
 
@@ -30,7 +30,7 @@ class CommentProcedures:
             root = await self._client.request('GET', '/api/info', params={'id': ids_str})
             return [load_comment(i['data'], self._client) for i in root['data']['children']]
 
-        return CallChunkChainingAsyncIterator(CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
     async def reply(self, comment_id: int, text: str) -> Comment:
         data = {

@@ -4,27 +4,27 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from .submission._ASYNC_ import SubmissionProcedures
-from .comment._ASYNC_ import CommentProcedures
-from .subreddit._ASYNC_ import SubredditProcedures
-from .comment_tree._ASYNC_ import CommentTreeProcedures
-from .front._ASYNC_ import FrontProcedures
-from .user._ASYNC_ import UserProcedures
-from .account._ASYNC_ import AccountProcedures
-from .collection._ASYNC_ import CollectionProcedures
-from .flair._ASYNC_ import FlairProcedures
-from .flair_emoji._ASYNC_ import FlairEmojiProcedures
-from .custom_feed._ASYNC_ import CustomFeedProcedures
-from .live_thread._ASYNC_ import LiveThreadProcedures
-from .message._ASYNC_ import MessageProcedures
-from .moderation._ASYNC_ import ModerationProcedures
-from .draft._ASYNC_ import DraftProcedures
-from .misc._ASYNC_ import MiscProcedures
-from .modmail._ASYNC_ import ModmailProcedures
-from .widget._ASYNC_ import WidgetProcedures
-from .wiki._ASYNC_ import WikiProcedures
-from .legacy_reddit_subreddit_style._ASYNC_ import LegacyRedditSubredditStyleProcedures
-from .redesign_reddit_subreddit_style._ASYNC_ import RedesignRedditSubredditStyleProcedures
+from .submission.ASYNC import SubmissionProcedures
+from .comment.ASYNC import CommentProcedures
+from .subreddit.ASYNC import SubredditProcedures
+from .comment_tree.ASYNC import CommentTreeProcedures
+from .front.ASYNC import FrontProcedures
+from .user.ASYNC import UserProcedures
+from .account.ASYNC import AccountProcedures
+from .collection.ASYNC import CollectionProcedures
+from .flair.ASYNC import FlairProcedures
+from .flair_emoji.ASYNC import FlairEmojiProcedures
+from .custom_feed.ASYNC import CustomFeedProcedures
+from .live_thread.ASYNC import LiveThreadProcedures
+from .message.ASYNC import MessageProcedures
+from .moderation.ASYNC import ModerationProcedures
+from .draft.ASYNC import DraftProcedures
+from .misc.ASYNC import MiscProcedures
+from .modmail.ASYNC import ModmailProcedures
+from .widget.ASYNC import WidgetProcedures
+from .wiki.ASYNC import WikiProcedures
+from .legacy_reddit_subreddit_style.ASYNC import LegacyRedditSubredditStyleProcedures
+from .redesign_reddit_subreddit_style.ASYNC import RedesignRedditSubredditStyleProcedures
 
 class SiteProcedures:
     def __init__(self, client: Client):

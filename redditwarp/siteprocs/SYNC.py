@@ -4,27 +4,27 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from .submission._SYNC_ import SubmissionProcedures
-from .comment._SYNC_ import CommentProcedures
-from .subreddit._SYNC_ import SubredditProcedures
-from .comment_tree._SYNC_ import CommentTreeProcedures
-from .front._SYNC_ import FrontProcedures
-from .user._SYNC_ import UserProcedures
-from .account._SYNC_ import AccountProcedures
-from .collection._SYNC_ import CollectionProcedures
-from .flair._SYNC_ import FlairProcedures
-from .flair_emoji._SYNC_ import FlairEmojiProcedures
-from .custom_feed._SYNC_ import CustomFeedProcedures
-from .live_thread._SYNC_ import LiveThreadProcedures
-from .message._SYNC_ import MessageProcedures
-from .moderation._SYNC_ import ModerationProcedures
-from .draft._SYNC_ import DraftProcedures
-from .misc._SYNC_ import MiscProcedures
-from .modmail._SYNC_ import ModmailProcedures
-from .widget._SYNC_ import WidgetProcedures
-from .wiki._SYNC_ import WikiProcedures
-from .legacy_reddit_subreddit_style._SYNC_ import LegacyRedditSubredditStyleProcedures
-from .redesign_reddit_subreddit_style._SYNC_ import RedesignRedditSubredditStyleProcedures
+from .submission.SYNC import SubmissionProcedures
+from .comment.SYNC import CommentProcedures
+from .subreddit.SYNC import SubredditProcedures
+from .comment_tree.SYNC import CommentTreeProcedures
+from .front.SYNC import FrontProcedures
+from .user.SYNC import UserProcedures
+from .account.SYNC import AccountProcedures
+from .collection.SYNC import CollectionProcedures
+from .flair.SYNC import FlairProcedures
+from .flair_emoji.SYNC import FlairEmojiProcedures
+from .custom_feed.SYNC import CustomFeedProcedures
+from .live_thread.SYNC import LiveThreadProcedures
+from .message.SYNC import MessageProcedures
+from .moderation.SYNC import ModerationProcedures
+from .draft.SYNC import DraftProcedures
+from .misc.SYNC import MiscProcedures
+from .modmail.SYNC import ModmailProcedures
+from .widget.SYNC import WidgetProcedures
+from .wiki.SYNC import WikiProcedures
+from .legacy_reddit_subreddit_style.SYNC import LegacyRedditSubredditStyleProcedures
+from .redesign_reddit_subreddit_style.SYNC import RedesignRedditSubredditStyleProcedures
 
 class SiteProcedures:
     def __init__(self, client: Client):

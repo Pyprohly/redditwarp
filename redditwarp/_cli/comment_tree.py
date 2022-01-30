@@ -108,7 +108,7 @@ traversal = {
     'bfs': breadth_first_search,
 }[algo]
 
-client = redditwarp._SYNC_.Client.from_access_token(access_token)
+client = redditwarp.SYNC.Client.from_access_token(access_token)
 client.http.user_agent += " redditwarp.cli.comment_tree"
 
 idn = 0

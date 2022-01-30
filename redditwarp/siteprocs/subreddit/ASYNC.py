@@ -14,7 +14,7 @@ from ...models.load.moderator_list import load_moderator_list_item
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
-from ...iterators.call_chunk_ASYNC import CallChunk
+from ...iterators.async_call_chunk import AsyncCallChunk
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
 from ...pagination.listing.comment_listing_async_paginator import ExtraSubmissionFieldsCommentListingAsyncPaginator
 from ...pagination.implementations.subreddit_async import ExploreSubredditsAsyncPaginator
@@ -63,14 +63,14 @@ class SubredditProcedures:
             root = await self._client.request('GET', '/api/info', params={'id': ids_str})
             return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]
 
-        return CallChunkChainingAsyncIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
     def bulk_fetch_by_name(self, names: Iterable[str]) -> CallChunkChainingAsyncIterator[object]:
         async def mass_fetch(names: Sequence[str]) -> Sequence[object]:
             root = await self._client.request('GET', '/api/info', params={'sr_name': ','.join(names)})
             return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]
 
-        return CallChunkChainingAsyncIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(names, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(names, 100))
 
     def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ExtraSubmissionFieldsCommentListingAsyncPaginator, ExtraSubmissionFieldsComment]:
         p = ExtraSubmissionFieldsCommentListingAsyncPaginator(self._client, f'/r/{sr}/comments')

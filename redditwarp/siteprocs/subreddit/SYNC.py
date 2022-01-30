@@ -14,7 +14,7 @@ from ...models.load.moderator_list import load_moderator_list_item
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from ...iterators.call_chunk_SYNC import CallChunk
+from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...pagination.listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
 from ...pagination.implementations.subreddit_sync import ExploreSubredditsPaginator

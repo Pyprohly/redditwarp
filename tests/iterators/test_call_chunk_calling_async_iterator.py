@@ -4,7 +4,7 @@ from typing import Iterable
 import pytest
 
 from redditwarp.iterators.call_chunk_calling_async_iterator import CallChunkCallingAsyncIterator
-from redditwarp.iterators.call_chunk_ASYNC import CallChunk
+from redditwarp.iterators.async_call_chunk import AsyncCallChunk
 
 async def _f(x: int) -> int:
     return x
@@ -12,16 +12,16 @@ async def _f(x: int) -> int:
 class TestCallChunkChainingIterator:
     @pytest.mark.asyncio
     async def test_chunks_attribute(self) -> None:
-        it = [CallChunk(_f, 1)]
+        it = [AsyncCallChunk(_f, 1)]
         ccci = CallChunkCallingAsyncIterator(it)
         assert list(ccci.get_chunk_iter()) == it
 
     @pytest.mark.asyncio
     async def test_simple_iteration(self) -> None:
         it = [
-            CallChunk(_f, 1),
-            CallChunk(_f, 2),
-            CallChunk(_f, 3),
+            AsyncCallChunk(_f, 1),
+            AsyncCallChunk(_f, 2),
+            AsyncCallChunk(_f, 3),
         ]
         ccci = CallChunkCallingAsyncIterator(it)
         assert [i async for i in ccci] == [1,2,3]
@@ -37,11 +37,11 @@ class TestCallChunkChainingIterator:
                     raise RuntimeError
                 return obj
 
-        j = CallChunk(ThrowOnFirstCallThenReturn(), 2)
+        j = AsyncCallChunk(ThrowOnFirstCallThenReturn(), 2)
         it = [
-            CallChunk(_f, 1),
+            AsyncCallChunk(_f, 1),
             j,
-            CallChunk(_f, 3),
+            AsyncCallChunk(_f, 3),
         ]
         ccci = CallChunkCallingAsyncIterator(it)
         assert ccci.current is None
@@ -59,8 +59,8 @@ class TestCallChunkChainingIterator:
 
     @pytest.mark.asyncio
     async def test_current_is_setable(self) -> None:
-        it: Iterable[CallChunk[int, int]] = ()
+        it: Iterable[AsyncCallChunk[int, int]] = ()
         ccci = CallChunkCallingAsyncIterator(it)
         assert [i async for i in ccci] == []
-        ccci.current = CallChunk(_f, 8)
+        ccci.current = AsyncCallChunk(_f, 8)
         assert [i async for i in ccci] == [8]

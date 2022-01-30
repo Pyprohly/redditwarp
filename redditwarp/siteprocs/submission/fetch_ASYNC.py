@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Mapping, TypeVar, Generic
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
-    from ._ASYNC_ import SubmissionProcedures
+    from .ASYNC import SubmissionProcedures
 
 from ...models.load.submission_ASYNC import load_submission
 from ...models.submission_ASYNC import Submission, LinkPost, TextPost

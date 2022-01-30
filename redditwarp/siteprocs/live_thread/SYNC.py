@@ -9,7 +9,7 @@ from ...models.live_thread import ContributorList, Contributor
 from ...models.load.live_thread_SYNC import load_live_thread, load_live_update
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from ...iterators.call_chunk_SYNC import CallChunk
+from ...iterators.call_chunk import CallChunk
 from ...util.base_conversion import to_base36
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...pagination.implementations.live_thread_sync import LiveUpdateListingPaginator
@@ -45,7 +45,7 @@ class LiveThreadProcedures:
         if nsfw:
             form_data['nsfw'] = '1'
 
-        root = self._client.request('GET', '/api/live/create', data=form_data)
+        root = self._client.request('POST', '/api/live/create', data=form_data)
         return root['json']['data']['id']
 
     def configure(self, idt: str, title: str, description: str, resources: str, nsfw: bool) -> None:
@@ -55,10 +55,10 @@ class LiveThreadProcedures:
             'resources': resources,
             'nsfw': '01'[nsfw],
         }
-        self._client.request('GET', f'/api/live/{idt}/edit', data=form_data)
+        self._client.request('POST', f'/api/live/{idt}/edit', data=form_data)
 
     def close(self, idt: str) -> None:
-        self._client.request('GET', f'/api/live/{idt}/close_thread')
+        self._client.request('POST', f'/api/live/{idt}/close_thread')
 
     def get_thread_update(self, idt: str, update_uuid: str) -> LiveUpdate:
         root = self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')

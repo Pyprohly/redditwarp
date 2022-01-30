@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from .auth.typedefs import AuthorizationGrant
     from .http.payload import RequestFiles
 
-from .http.transport._ASYNC_ import new_session
+from .http.transport.ASYNC import new_session
 from .auth import Token
 from .auth import grants
 from .core.reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
@@ -167,5 +167,5 @@ class CoreClient:
 class Client(CoreClient):
     def _init(self, http: RedditHTTPClient) -> None:
         super()._init(http)
-        from .siteprocs._ASYNC_ import SiteProcedures
+        from .siteprocs.ASYNC import SiteProcedures
         self.p: SiteProcedures = SiteProcedures(self)

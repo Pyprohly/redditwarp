@@ -2,7 +2,7 @@
 from typing import Iterable
 
 from redditwarp.iterators.call_chunk_calling_iterator import CallChunkCallingIterator
-from redditwarp.iterators.call_chunk_SYNC import CallChunk
+from redditwarp.iterators.call_chunk import CallChunk
 
 class TestCallChunkChainingIterator:
     def test_chunks_attribute(self) -> None:

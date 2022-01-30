@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 import httpx  # type: ignore[import]
 
-from .._SYNC_ import register
+from ..SYNC import register
 from ...session_base_SYNC import SessionBase
 from ... import exceptions
 from ... import payload

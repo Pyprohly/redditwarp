@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Iterable
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.comment_tree_ASYNC import SubmissionTreeNode
-    from ._ASYNC_ import CommentTreeProcedures
+    from .ASYNC import CommentTreeProcedures
 
 from ...util.base_conversion import to_base36
 from ...models.load.comment_tree_ASYNC import load_submission_tree_node

@@ -11,7 +11,7 @@ from io import StringIO
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
-from ...iterators.call_chunk_ASYNC import CallChunk
+from ...iterators.async_call_chunk import AsyncCallChunk
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
 from ...pagination.implementations.flair_async import UserFlairAssociationAsyncPaginator
 from ...models.load.flair import (
@@ -61,7 +61,7 @@ class FlairProcedures:
             return [i['ok'] for i in root]
 
         itr = map(
-            lambda xs: CallChunk(mass_update_user_flairs, xs),
+            lambda xs: AsyncCallChunk(mass_update_user_flairs, xs),
             chunked(data, 100),
         )
         return CallChunkChainingAsyncIterator(itr)

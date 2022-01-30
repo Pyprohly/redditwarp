@@ -8,7 +8,7 @@ from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
-from ...iterators.call_chunk_SYNC import CallChunk
+from ...iterators.call_chunk import CallChunk
 from ...models.modmail_SYNC import (
     Conversation,
     Message,

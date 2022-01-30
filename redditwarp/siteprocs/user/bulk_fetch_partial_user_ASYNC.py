@@ -9,7 +9,7 @@ from ...models.load.partial_user import load_partial_user
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
-from ...iterators.call_chunk_ASYNC import CallChunk
+from ...iterators.async_call_chunk import AsyncCallChunk
 from ... import http
 
 class BulkFetchPartialUser:
@@ -33,7 +33,7 @@ class BulkFetchPartialUser:
                 raise
             return [load_partial_user(v, k) for k, v in root.items()]
 
-        return CallChunkChainingAsyncIterator(CallChunk(mass_fetch_by_id, idfs) for idfs in chunked(ids, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch_by_id, idfs) for idfs in chunked(ids, 100))
 
     def by_id36(self, id36s: Iterable[str]) -> CallChunkChainingAsyncIterator[PartialUser]:
         async def mass_fetch_by_id36(id36s: Sequence[str]) -> Sequence[PartialUser]:
@@ -48,4 +48,4 @@ class BulkFetchPartialUser:
                 raise
             return [load_partial_user(v, k) for k, v in root.items()]
 
-        return CallChunkChainingAsyncIterator(CallChunk(mass_fetch_by_id36, idfs) for idfs in chunked(id36s, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch_by_id36, idfs) for idfs in chunked(id36s, 100))

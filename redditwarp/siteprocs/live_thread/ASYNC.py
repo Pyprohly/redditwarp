@@ -9,7 +9,7 @@ from ...models.live_thread import ContributorList, Contributor
 from ...models.load.live_thread_ASYNC import load_live_thread, load_live_update
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
-from ...iterators.call_chunk_ASYNC import CallChunk
+from ...iterators.async_call_chunk import AsyncCallChunk
 from ...util.base_conversion import to_base36
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
 from ...pagination.implementations.live_thread_async import LiveUpdateListingAsyncPaginator
@@ -34,7 +34,7 @@ class LiveThreadProcedures:
             root = await self._client.request('GET', '/api/live/by_id/' + idts_str)
             return [load_live_thread(o['data'], self._client) for o in root['data']['children']]
 
-        return CallChunkChainingAsyncIterator(CallChunk(mass_fetch, idfs) for idfs in chunked(idts, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, idfs) for idfs in chunked(idts, 100))
 
     async def create(self, title: str, description: str = '', resources: str = '', *, nsfw: bool = False) -> str:
         form_data = {
@@ -45,7 +45,7 @@ class LiveThreadProcedures:
         if nsfw:
             form_data['nsfw'] = '1'
 
-        root = await self._client.request('GET', '/api/live/create', data=form_data)
+        root = await self._client.request('POST', '/api/live/create', data=form_data)
         return root['json']['data']['id']
 
     async def configure(self, idt: str, title: str, description: str, resources: str, nsfw: bool) -> None:
@@ -55,10 +55,10 @@ class LiveThreadProcedures:
             'resources': resources,
             'nsfw': '01'[nsfw],
         }
-        await self._client.request('GET', f'/api/live/{idt}/edit', data=form_data)
+        await self._client.request('POST', f'/api/live/{idt}/edit', data=form_data)
 
     async def close(self, idt: str) -> None:
-        await self._client.request('GET', f'/api/live/{idt}/close_thread')
+        await self._client.request('POST', f'/api/live/{idt}/close_thread')
 
     async def get_thread_update(self, idt: str, update_uuid: str) -> LiveUpdate:
         root = await self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')

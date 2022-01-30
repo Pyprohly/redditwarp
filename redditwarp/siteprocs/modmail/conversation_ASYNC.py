@@ -8,7 +8,7 @@ from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_async_iterator import CallChunkCallingAsyncIterator
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
-from ...iterators.call_chunk_ASYNC import CallChunk
+from ...iterators.async_call_chunk import AsyncCallChunk
 from ...models.modmail_ASYNC import (
     Conversation,
     Message,
@@ -74,7 +74,7 @@ class ConversationProcedures:
             ids_str = ','.join(id36s)
             await self._client.request('POST', '/api/mod/conversations/read', data={'conversationIds': ids_str})
 
-        return CallChunkCallingAsyncIterator(CallChunk(mass_mark_read, chunk) for chunk in chunked(ids, 100))
+        return CallChunkCallingAsyncIterator(AsyncCallChunk(mass_mark_read, chunk) for chunk in chunked(ids, 100))
 
     async def mark_unread(self, idn: int) -> None:
         data = {'conversationIds': to_base36(idn)}
@@ -86,7 +86,7 @@ class ConversationProcedures:
             ids_str = ','.join(id36s)
             await self._client.request('POST', '/api/mod/conversations/unread', data={'conversationIds': ids_str})
 
-        return CallChunkCallingAsyncIterator(CallChunk(mass_mark_unread, chunk) for chunk in chunked(ids, 100))
+        return CallChunkCallingAsyncIterator(AsyncCallChunk(mass_mark_unread, chunk) for chunk in chunked(ids, 100))
 
     def bulk_mark_all_read(self, mailbox: str, subrs: Iterable[str]) -> CallChunkChainingAsyncIterator[int]:
         async def mass_mark_all_read(subrs: Sequence[str]) -> Sequence[int]:
@@ -95,7 +95,7 @@ class ConversationProcedures:
             root = await self._client.request('POST', '/api/mod/conversations/bulk/read', data=data)
             return [int(id36, 36) for id36 in root['conversation_ids']]
 
-        return CallChunkChainingAsyncIterator(CallChunk(mass_mark_all_read, chunk) for chunk in chunked(subrs, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_mark_all_read, chunk) for chunk in chunked(subrs, 100))
 
     async def highlight(self, idn: int) -> ConversationAggregate:
         convo_id36 = to_base36(idn)
