@@ -60,7 +60,7 @@ class LiveThreadProcedures:
     async def close(self, idt: str) -> None:
         await self._client.request('POST', f'/api/live/{idt}/close_thread')
 
-    async def get_thread_update(self, idt: str, update_uuid: str) -> LiveUpdate:
+    async def get_live_update(self, idt: str, update_uuid: str) -> LiveUpdate:
         root = await self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')
         return load_live_update(root['data'], self._client)
 
@@ -69,7 +69,7 @@ class LiveThreadProcedures:
         p = LiveUpdateListingAsyncPaginator(self._client, f'/live/{idt}')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    async def post_live_update(self, idt: str, body: str) -> None:
+    async def create_live_update(self, idt: str, body: str) -> None:
         await self._client.request('POST', f'/api/live/{idt}/update', data={'body': body})
 
     async def strike_live_update(self, idt: str, update_uuid: str) -> None:

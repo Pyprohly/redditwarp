@@ -16,7 +16,18 @@ class Message(BaseMessage):
         self.client: Client = client
 
 class ComposedMessage(Message, BaseComposedMessage):
-    pass
+    async def reply(self, body: str) -> ComposedMessage:
+        return await self.client.p.message.reply(self.id, body)
+
+    async def mark_read(self) -> None:
+        await self.client.p.message.mark_read(self.id)
+
+    async def mark_unread(self) -> None:
+        await self.client.p.message.mark_unread(self.id)
 
 class CommentMessage(Message, BaseCommentMessage):
-    pass
+    async def mark_read(self) -> None:
+        await self.client.p.message.mark_comment_read(self.comment.id)
+
+    async def mark_unread(self) -> None:
+        await self.client.p.message.mark_comment_unread(self.comment.id)

@@ -19,6 +19,16 @@ class Conversation(BaseConversation):
         super().__init__(d)
         self.client: Client = client
 
+    async def reply(self, body: str, *, hidden: bool = False, internal: bool = False) -> ConversationAggregate:
+        return await self.client.p.modmail.conversation.reply(self.id, body, hidden=hidden, internal=internal)
+
+    async def mark_read(self) -> None:
+        await self.client.p.modmail.conversation.mark_read(self.id)
+
+    async def mark_unread(self) -> None:
+        await self.client.p.modmail.conversation.mark_unread(self.id)
+
+
 class Message(BaseMessage):
     def __init__(self, d: Mapping[str, Any], client: Client):
         super().__init__(d)

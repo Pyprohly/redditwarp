@@ -16,7 +16,7 @@ class BaseLiveThread:
         self.resources: str = d['resources']
         self.resources_html: str = d['resources_html']
         self.websocket_url: str = d['websocket_url']
-        self.is_closed: bool = d['state'] == 'complete'
+        self.complete: bool = d['state'] == 'complete'
         self.nsfw: bool = d['nsfw']
         self.viewer_count: int = d['viewer_count']
 

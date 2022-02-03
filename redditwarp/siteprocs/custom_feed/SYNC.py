@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Any, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.custom_feed import CustomFeed
+    from ...models.custom_feed_SYNC import CustomFeed
 
 import json
 
-from ...models.load.custom_feed import load_custom_feed
+from ...models.load.custom_feed_SYNC import load_custom_feed
 from ... import exceptions
 from ... import http
 from ...iterators.chunking import chunked
@@ -27,7 +27,7 @@ class CustomFeedProcedures:
             if e.codename == 'MULTI_NOT_FOUND':
                 return None
             raise
-        return load_custom_feed(root['data'])
+        return load_custom_feed(root['data'], self._client)
 
     def retrieve(self, user: str = '') -> Sequence[CustomFeed]:
         uri = '/api/multi/mine'
@@ -35,7 +35,7 @@ class CustomFeedProcedures:
             uri = f'/api/multi/user/{user}'
 
         result = self._client.request('GET', uri)
-        return [load_custom_feed(d['data']) for d in result]
+        return [load_custom_feed(d['data'], self._client) for d in result]
 
     def create(self,
         user: str, feed: str,
@@ -55,7 +55,7 @@ class CustomFeedProcedures:
 
         json_str = self._json_encode(json_data)
         root = self._client.request('POST', f'/api/multi/user/{user}/m/{feed}', data={'model': json_str})
-        return load_custom_feed(root['data'])
+        return load_custom_feed(root['data'], self._client)
 
     def put(self,
         user: str, feed: str,
@@ -75,7 +75,7 @@ class CustomFeedProcedures:
 
         json_str = self._json_encode(json_data)
         root = self._client.request('PUT', f'/api/multi/user/{user}/m/{feed}', data={'model': json_str})
-        return load_custom_feed(root['data'])
+        return load_custom_feed(root['data'], self._client)
 
     def delete(self, user: str, feed: str) -> None:
         self._client.request('DELETE', f'/api/multi/user/{user}/m/{feed}')
@@ -92,7 +92,7 @@ class CustomFeedProcedures:
             data['description_md'] = description
 
         root = self._client.request('POST', '/api/multi/copy', data=data)
-        return load_custom_feed(root['data'])
+        return load_custom_feed(root['data'], self._client)
 
     def contains(self, user: str, feed: str, sr_name: str) -> bool:
         try:
@@ -107,9 +107,9 @@ class CustomFeedProcedures:
             raise
         return True
 
-    def add_to(self, feed: str, sr_name: str) -> None:
+    def add_to(self, user: str, feed: str, sr_name: str) -> None:
         json_str = self._json_encode({"name": "abc"})
-        self._client.request('PUT', f'/api/multi/user/bacon/m/{feed}/r/{sr_name}', data={'model': json_str})
+        self._client.request('PUT', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}', data={'model': json_str})
 
     def bulk_add_to(self, user: str, feed: str, sr_names: Iterable[str]) -> CallChunkCallingIterator[None]:
         def mass_add_to(sr_names: Sequence[str]) -> None:

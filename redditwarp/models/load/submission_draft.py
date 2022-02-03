@@ -34,8 +34,8 @@ def _load_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
     raise ValueError('unknown draft type')
 
 def _construct_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
-    created_utms: float = d[h['created']] / 1000
-    modified_utms: float = d[h['modified']] / 1000
+    created_ts: float = d[h['created']] / 1000
+    modified_ts: float = d[h['modified']] / 1000
 
     subreddit_id: Optional[int] = None
     subreddit: Optional[str] = d[h['subreddit']]
@@ -56,8 +56,8 @@ def _construct_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
     return Draft(
         d=d,
         uuid=d[h['id']],
-        created_at=datetime.fromtimestamp(created_utms, timezone.utc),
-        modified_at=datetime.fromtimestamp(modified_utms, timezone.utc),
+        created_at=datetime.fromtimestamp(created_ts, timezone.utc),
+        modified_at=datetime.fromtimestamp(modified_ts, timezone.utc),
         public=d[h['is_public_link']],
         subreddit_id=subreddit_id,
         title=d[h['title']],

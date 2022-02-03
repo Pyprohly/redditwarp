@@ -113,14 +113,57 @@ class MockSession(SessionBase):
 class TestAuthorized:
     def test_ResourceServerResponseError(self) -> None:
         session = MockSession([
-            Response(401, {'WWW-Authenticate': 'Bearer realm="reddit", error="invalid_token"'}, b''),
             Response(403, {'WWW-Authenticate': 'Bearer realm="reddit", error="insufficient_scope"'}, b'{"message": "Forbidden", "error": 403}'),
         ])
         token_client = MyTokenObtainmentClient(Token('token'))
-        authorizer = MyAuthorizer(
+        authorizer = Authorizer(
             token=None,
             token_client=token_client,
         )
         requestor = Authorized(session, authorizer)
         with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
             requestor.send(Request('', ''))
+
+    def test_invalid_token_to_ResourceServerResponseError(self) -> None:
+        session = MockSession([
+            Response(401, {'WWW-Authenticate': 'Bearer realm="reddit", error="invalid_token"'}, b''),
+            Response(403, {'WWW-Authenticate': 'Bearer realm="reddit", error="insufficient_scope"'}, b'{"message": "Forbidden", "error": 403}'),
+        ])
+        token_client = MyTokenObtainmentClient(Token('token'))
+        authorizer = Authorizer(
+            token=None,
+            token_client=token_client,
+        )
+        requestor = Authorized(session, authorizer)
+        with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
+            requestor.send(Request('', ''))
+
+    def test_token_gets_changed_for_second_request_after_an_invalid_token_response(self) -> None:
+        session = MockSession([
+            Response(401, {'WWW-Authenticate': 'Bearer realm="reddit", error="invalid_token"'}, b''),
+            Response(200, {}, b''),
+        ])
+        token_client = MyTokenObtainmentClient(Token('token_two'))
+        authorizer = Authorizer(
+            token=Token('token_one'),
+            token_client=token_client,
+        )
+        requestor = Authorized(session, authorizer)
+        req = Request('', '')
+        requestor.send(req)
+        assert req.headers[authorizer.authorization_header_name].partition(' ')[-1] == 'token_two'
+
+    '''
+    # Implementation must override Authorization header for invalid token handing logic to work
+    def test_authorization_header_not_overridden(self) -> None:
+        session = MockSession([Response(200, {}, b'')])
+        authorizer = Authorizer(
+            token=Token('TOKEN'),
+            token_client=None,
+        )
+        requestor = Authorized(session, authorizer)
+        authorization = authorizer.authorization_header_name
+        req = Request('', '', headers={authorization: 'ASDF1'})
+        requestor.send(req)
+        assert req.headers[authorization] == 'ASDF1'
+    '''

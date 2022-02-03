@@ -60,7 +60,7 @@ class LiveThreadProcedures:
     def close(self, idt: str) -> None:
         self._client.request('POST', f'/api/live/{idt}/close_thread')
 
-    def get_thread_update(self, idt: str, update_uuid: str) -> LiveUpdate:
+    def get_live_update(self, idt: str, update_uuid: str) -> LiveUpdate:
         root = self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')
         return load_live_update(root['data'], self._client)
 
@@ -69,7 +69,7 @@ class LiveThreadProcedures:
         p = LiveUpdateListingPaginator(self._client, f'/live/{idt}')
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    def post_live_update(self, idt: str, body: str) -> None:
+    def create_live_update(self, idt: str, body: str) -> None:
         self._client.request('POST', f'/api/live/{idt}/update', data={'body': body})
 
     def strike_live_update(self, idt: str, update_uuid: str) -> None:

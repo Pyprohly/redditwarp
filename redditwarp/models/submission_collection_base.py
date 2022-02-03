@@ -25,8 +25,8 @@ class BaseSubmissionCollectionDetails(Artifact):
         self.title: str = d['title']
         self.description: str = d['description']
 
-        self.created_ut: float = d['created_at_utc']
-        self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        self.created_ts: float = d['created_at_utc']
+        self.created_at: datetime = datetime.fromtimestamp(self.created_ts, timezone.utc)
         self.last_post_added_ut: float = d['last_update_utc']
         self.last_post_added_at: datetime = datetime.fromtimestamp(self.last_post_added_ut, timezone.utc)
 
