@@ -9,11 +9,15 @@ from functools import cached_property
 
 from ...util.base_conversion import to_base36
 from ...models.load.message_ASYNC import load_composed_message
+from .get_ASYNC import Get
+from .fetch_ASYNC import Fetch
 from .pull_ASYNC import Pull
 
 class MessageProcedures:
     def __init__(self, client: Client):
         self._client = client
+        self.get: Get = Get(self, client)
+        self.fetch: Fetch = Fetch(client)
         self.pull: Pull = Pull(client)
 
     async def send(self, to: str, subject: str, body: str) -> None:

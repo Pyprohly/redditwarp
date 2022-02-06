@@ -16,7 +16,7 @@ if TYPE_CHECKING:
         RulesWidget,
         MenuBar,
     )
-    from ...dtos.widget.button import (
+    from ...dto_models.widget.button import (
         HoverState,
         TextHoverState,
         ImageHoverState,
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
         TextButton,
         ImageButton,
     )
-    from ...dtos.widget.custom_css import ImageInfo as CustomCSSWidgetImageInfo
-    from ...dtos.widget.image import ImageInfo as ImageWidgetImageInfo
-    from ...dtos.widget.menu_bar import (
+    from ...dto_models.widget.custom_css import ImageInfo as CustomCSSWidgetImageInfo
+    from ...dto_models.widget.image import ImageInfo as ImageWidgetImageInfo
+    from ...dto_models.widget.menu_bar import (
         Tab,
         LinkTab,
         SubmenuTab,

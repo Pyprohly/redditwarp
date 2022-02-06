@@ -30,7 +30,7 @@ class SubredditProcedures:
     def __init__(self, client: Client):
         self._client = client
         self.get: Get = Get(client)
-        self.fetch: Fetch = Fetch(client)
+        self.fetch: Fetch = Fetch(self, client)
         self.pull: Pull = Pull(client)
         self.pulls: Pulls = Pulls(client)
 

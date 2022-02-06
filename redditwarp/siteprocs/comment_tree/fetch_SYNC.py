@@ -23,17 +23,6 @@ class Fetch:
         depth: Optional[int] = None,
         context: Optional[int] = None,
     ) -> SubmissionTreeNode:
-        return self.by_id(submission_id, comment_id, sort=sort, limit=limit, depth=depth, context=context)
-
-    def by_id(self,
-        submission_id: int,
-        comment_id: Optional[int] = None,
-        *,
-        sort: str = 'confidence',
-        limit: Optional[int] = None,
-        depth: Optional[int] = None,
-        context: Optional[int] = None,
-    ) -> SubmissionTreeNode:
         submission_id36 = to_base36(submission_id)
         comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
         return self.by_id36(submission_id36, comment_id36, sort=sort, limit=limit, depth=depth, context=context)

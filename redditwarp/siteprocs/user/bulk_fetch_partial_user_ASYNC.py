@@ -17,9 +17,6 @@ class BulkFetchPartialUser:
         self._client = client
 
     def __call__(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[PartialUser]:
-        return self.by_id(ids)
-
-    def by_id(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[PartialUser]:
         async def mass_fetch_by_id(ids: Sequence[int]) -> Sequence[PartialUser]:
             id36s = map(to_base36, ids)
             full_id36s = map('t2_'.__add__, id36s)

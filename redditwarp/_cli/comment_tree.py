@@ -27,18 +27,19 @@ class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionH
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
 parser._optionals.title = __import__('gettext').gettext('named arguments')
 add = parser.add_argument
-add('access_token', nargs='?')
 add('target', nargs='?')
-add('--access-token', metavar='ACCESS_TOKEN', dest='access_token_opt', help=argparse.SUPPRESS)
+add('--access-token', metavar='ACCESS_TOKEN', dest='access_token_opt')
 add('--target', metavar='TARGET', dest='target_opt', help=argparse.SUPPRESS)
+add('--base', metavar='N', dest='base_opt', type=int, default=36)
 add('--algo', '--algorithm', choices=ALGORITHM_CHOICES, default='dfs', dest='algo', metavar='')
 add('--comment-sort', dest='comment_sort', choices=COMMENT_SORT_CHOICES)
 args = parser.parse_args()
 
-access_token: str = args.access_token or args.access_token_opt or input('Access token: ')
+access_token: str = args.access_token_opt or ''
 target: str = args.target or args.target_opt or input('Target: ')
 chosen_algo: str = args.algo
 comment_sort: str = args.comment_sort
+base: int = args.base_opt
 
 
 def recursive_depth_first_search(node: ICommentSubtreeTreeNode) -> Iterator[tuple[int, Comment]]:
@@ -108,17 +109,27 @@ traversal = {
     'bfs': breadth_first_search,
 }[algo]
 
-client = redditwarp.SYNC.Client.from_access_token(access_token)
+client = (
+    redditwarp.SYNC.Client.from_access_token(access_token)
+    if access_token else
+    redditwarp.SYNC.Client()
+)
+
 client.http.user_agent += " redditwarp.cli.comment_tree"
 
 idn = 0
-length = len(target)
-if length < 8:
-    idn = int(target, 36)
-elif length < 12:
-    idn = int(target, 10)
+if target.isalnum():
+    try:
+        idn = int(target, base)
+    except ValueError as e:
+        print(f'{e.__class__.__name__}: {e}', file=sys.stderr)
+        sys.exit(1)
 else:
-    idn = extract_submission_id_from_url(target)
+    try:
+        idn = extract_submission_id_from_url(target)
+    except ValueError:
+        print('Could not extract comment ID from URL.', file=sys.stderr)
+        sys.exit(1)
 
 tree_node = client.p.comment_tree.get(idn)
 if tree_node is None:

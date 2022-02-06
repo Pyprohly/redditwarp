@@ -16,14 +16,11 @@ class _Common(Generic[T]):
         self._client = client
 
     async def __call__(self, id: int) -> Optional[T]:
-        return await self.by_id(id)
+        id36 = to_base36(id)
+        return await self.by_id36(id36)
 
     def _load_object(self, m: Mapping[str, Any]) -> Optional[T]:
         raise NotImplementedError
-
-    async def by_id(self, id: int) -> Optional[T]:
-        id36 = to_base36(id)
-        return await self.by_id36(id36)
 
     async def by_id36(self, id36: str) -> Optional[T]:
         full_id36 = 't3_' + id36
@@ -33,7 +30,7 @@ class _Common(Generic[T]):
         return None
 
     async def by_url(self, url: str) -> Optional[T]:
-        return await self.by_id(extract_submission_id_from_url(url))
+        return await self(extract_submission_id_from_url(url))
 
 class Get(_Common[Submission]):
     class _AsTextPost(_Common[TextPost]):

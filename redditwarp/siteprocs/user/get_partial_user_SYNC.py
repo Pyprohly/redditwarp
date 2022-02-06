@@ -14,9 +14,6 @@ class GetPartialUser:
         self._client = client
 
     def __call__(self, id: int) -> Optional[PartialUser]:
-        return self.by_id(id)
-
-    def by_id(self, id: int) -> Optional[PartialUser]:
         id36 = to_base36(id)
         return self.by_id36(id36)
 

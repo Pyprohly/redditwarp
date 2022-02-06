@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, Sequence
+from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, Sequence, overload
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.typedefs import AuthorizationGrant
@@ -11,21 +11,28 @@ from .auth import Token
 from .auth import grants
 from .core.reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
 from .auth.const import TOKEN_OBTAINMENT_URL
-from .core.reddit_http_client_SYNC import RedditHTTPClient
+from .core.reddit_http_client_SYNC import RedditHTTPClient, get_user_agent
 from .core.authorizer_SYNC import Authorizer, Authorized
 from .core.rate_limited_SYNC import RateLimited
 from .core.recorded_SYNC import Recorded, Last
 from .util.praw_config import get_praw_config
 from .exceptions import raise_for_reddit_error, raise_for_non_json_response
 from .http.util.json_load import json_loads_response
+from .util.redditwarp_installed_client_credentials import get_redditwarp_client_id, get_installed_client_grant
+from .reddit_internal_api.auth.reddit_internal_api_token_obtainment_client_SYNC import new_reddit_internal_api_token_obtainment_client
+from .reddit_internal_api.core.dark_reddit_http_client_SYNC import DarkRedditHTTPClient
+from .reddit_internal_api.core.authorizer_SYNC import Authorizer as DarkAuthorizer, Authorized as DarkAuthorized
+from .reddit_internal_api.core.rate_limited_SYNC import RateLimited as DarkRateLimited
+from .http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
 
-class CoreClient:
+
+class Client:
     """The gateway to interacting with the Reddit API."""
 
-    _TSelf = TypeVar('_TSelf', bound='CoreClient')
+    _TSelf = TypeVar('_TSelf', bound='Client')
 
     @classmethod
-    def from_http(cls: type[_TSelf], http: RedditHTTPClient) -> _TSelf:
+    def from_http(cls: type[_TSelf], http: RedditHTTPClient, dark_http: Optional[DarkRedditHTTPClient] = None) -> _TSelf:
         """Alternative constructor for testing purposes or advanced uses.
 
         Parameters
@@ -33,7 +40,18 @@ class CoreClient:
         http: Optional[:class:`RedditHTTPClient`]
         """
         self = cls.__new__(cls)
-        self._init(http)
+
+        if dark_http is None:
+            session = http.session
+            headers = {'User-Agent': get_user_agent(session)}
+            recorder = Recorded(session)
+            last = Last(recorder)
+            token_client = new_reddit_internal_api_token_obtainment_client(ApplyDefaultHeaders(session, headers))
+            authorizer = DarkAuthorizer(token_client)
+            requestor = DarkRateLimited(DarkAuthorized(recorder, authorizer))
+            dark_http = DarkRedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
+
+        self._init(http, dark_http)
         return self
 
     @classmethod
@@ -51,11 +69,12 @@ class CoreClient:
         access_token: str
         """
         session = new_session()
+        headers = {'User-Agent': get_user_agent(session)}
         recorder = Recorded(session)
         last = Last(recorder)
         authorizer = Authorizer(token=Token(access_token))
         requestor = RateLimited(Authorized(recorder, authorizer))
-        http = RedditHTTPClient(session, requestor, authorizer=authorizer, last=last)
+        http = RedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
         return cls.from_http(http)
 
     @classmethod
@@ -88,11 +107,17 @@ class CoreClient:
             self.set_user_agent(x)
         return self
 
-    def __init__(self,
-            client_id: str,
-            client_secret: str,
-            *grant_creds: str,
-            grant: Optional[AuthorizationGrant] = None):
+    @overload
+    def __init__(self) -> None: ...
+    @overload
+    def __init__(self, client_id: str, client_secret: str, /) -> None: ...
+    @overload
+    def __init__(self, client_id: str, client_secret: str, /, *, grant: Mapping[str, str]) -> None: ...
+    @overload
+    def __init__(self, client_id: str, client_secret: str, refresh_token: str, /) -> None: ...
+    @overload
+    def __init__(self, client_id: str, client_secret: str, username: str, password: str, /) -> None: ...
+    def __init__(self, *creds: str, grant: Optional[AuthorizationGrant] = None) -> None:
         """
         Parameters
         ----------
@@ -124,21 +149,27 @@ class CoreClient:
         ValueError
             You used :param:`username` without :param:`password` or vice versa.
         """
-        if grant is None:
-            n = len(grant_creds)
-            if n == 0:
+        client_id = client_secret = ''
+        n = len(creds)
+        if n == 0:
+            client_id = get_redditwarp_client_id()
+            grant = get_installed_client_grant()
+        elif n == 2:
+            client_id, client_secret = creds
+            if grant is None:
                 grant = grants.ClientCredentialsGrant()
-            elif n == 1:
-                grant = grants.RefreshTokenGrant(*grant_creds)
-            elif n == 2:
-                grant = grants.ResourceOwnerPasswordCredentialsGrant(*grant_creds)
-            else:
-                raise ValueError("cannot create an authorization grant from the provided credentials")
-
-        elif grant_creds:
-            raise TypeError("you shouldn't pass grant credentials if you explicitly provide a grant")
+        elif n == 3:
+            client_id, client_secret, refresh_token = creds
+            grant = grants.RefreshTokenGrant(refresh_token)
+        elif n == 4:
+            client_id, client_secret, username, password = creds
+            grant = grants.ResourceOwnerPasswordCredentialsGrant(username, password)
+        else:
+            raise TypeError
 
         session = new_session()
+        headers = {'User-Agent': get_user_agent(session)}
+
         recorder = Recorded(session)
         last = Last(recorder)
         token_client = RedditTokenObtainmentClient(
@@ -146,16 +177,32 @@ class CoreClient:
             TOKEN_OBTAINMENT_URL,
             (client_id, client_secret),
             grant,
+            headers=headers,
         )
         authorizer = Authorizer(token_client)
         requestor = RateLimited(Authorized(recorder, authorizer))
-        http = RedditHTTPClient(session, requestor, authorizer=authorizer, last=last)
-        token_client.headers = http.headers
-        self._init(http)
+        http = RedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
 
-    def _init(self, http: RedditHTTPClient) -> None:
+        recorder = Recorded(session)
+        last = Last(recorder)
+        dark_token_client = new_reddit_internal_api_token_obtainment_client(
+            ApplyDefaultHeaders(session, headers),
+        )
+        dark_authorizer = DarkAuthorizer(dark_token_client)
+        dark_requestor = DarkRateLimited(DarkAuthorized(recorder, dark_authorizer))
+        dark_http = DarkRedditHTTPClient(session, dark_requestor, headers=headers, authorizer=dark_authorizer, last=last)
+
+        self._init(http, dark_http)
+
+    def _init(self, http: RedditHTTPClient, dark_http: DarkRedditHTTPClient) -> None:
         self.http: RedditHTTPClient = http
+        self.dark_http: DarkRedditHTTPClient = dark_http
         self.last_value: Any = None
+
+        # Delay heavy import till client instantiation
+        # instead of library import.
+        from .siteprocs.SYNC import SiteProcedures
+        self.p: SiteProcedures = SiteProcedures(self)
 
     def __enter__(self: _TSelf) -> _TSelf:
         return self
@@ -206,6 +253,22 @@ class CoreClient:
         resp.raise_for_status()
         return json_data
 
+    def dark_request(self,
+        verb: str,
+        uri: str,
+        *,
+        params: Optional[Mapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
+        data: Optional[Union[Mapping[str, str], bytes]] = None,
+        json: Any = None,
+        files: Optional[RequestFiles] = None,
+        timeout: float = -2,
+    ) -> Any:
+        resp = self.dark_http.request(verb, uri, params=params, headers=headers,
+                data=data, json=json, files=files, timeout=timeout)
+        resp.raise_for_status()
+        return json_loads_response(resp)
+
     def set_access_token(self, access_token: str) -> None:
         """Manually set the current access token.
 
@@ -226,9 +289,3 @@ class CoreClient:
         if s is not None:
             ua = f'{ua} Bot !-- {s}'
         self.http.user_agent = ua
-
-class Client(CoreClient):
-    def _init(self, http: RedditHTTPClient) -> None:
-        super()._init(http)
-        from .siteprocs.SYNC import SiteProcedures
-        self.p: SiteProcedures = SiteProcedures(self)

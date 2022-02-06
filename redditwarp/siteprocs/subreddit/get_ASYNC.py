@@ -12,9 +12,6 @@ class Get:
         self._client = client
 
     async def __call__(self, id: int) -> Optional[object]:
-        return await self.by_id(id)
-
-    async def by_id(self, id: int) -> Optional[object]:
         id36 = to_base36(id)
         return await self.by_id36(id36)
 

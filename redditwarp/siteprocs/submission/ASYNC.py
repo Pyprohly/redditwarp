@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.submission_ASYNC import Submission
     from ...models.comment_ASYNC import Comment
-    from ...dtos.submission import GalleryItem
+    from ...dto_models.submission import GalleryItem
 
 from functools import cached_property
 
