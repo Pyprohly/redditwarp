@@ -47,10 +47,6 @@ class Session(SessionBase):
                 pld.apply_content_type(headers)
                 response = self.http.urlopen(r.verb, url, headers=headers, body=pld.text.encode(), timeout=tmo)
 
-            elif isinstance(pld, payload.TextData):
-                pld.apply_content_type(headers)
-                response = self.http.urlopen(r.verb, url, headers=headers, body=pld.data, timeout=tmo)
-
             elif isinstance(pld, payload.JSON):
                 pld.apply_content_type(headers)
                 response = self.http.urlopen(r.verb, url, headers=headers, body=json.dumps(pld.json).encode(), timeout=tmo)

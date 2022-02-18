@@ -45,7 +45,7 @@ class BaseSubmissionCollection(BaseSubmissionCollectionDetails):
 
 TSubmission = TypeVar('TSubmission')
 
-class GenericBaseSubmissionCollection(BaseSubmissionCollection, Sequence[TSubmission]):
+class GBaseSubmissionCollection(BaseSubmissionCollection, Sequence[TSubmission]):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         children_data = d['sorted_links']['data']['children']

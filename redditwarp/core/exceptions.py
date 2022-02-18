@@ -73,7 +73,7 @@ def raise_for_reddit_auth_response_exception(e: Exception, req: Request, resp: R
                     raise e
 
         elif status == 401:
-            if not (url := req.uri).startswith("https://www.reddit.com"):
+            if not (url := req.uri).startswith(("https://www.reddit.com", "https://ssl.reddit.com")):
                 raise AuthError(f'bad access token URL: got {url!r}, need {TOKEN_OBTAINMENT_URL!r}')
             if 'Authorization' not in req_headers:
                 raise AuthError('Authorization header missing from request')

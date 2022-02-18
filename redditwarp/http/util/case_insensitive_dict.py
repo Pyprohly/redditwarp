@@ -11,9 +11,8 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
 
     def __init__(self, data: Optional[Mapping[str, V]] = None, **kwargs: V) -> None:
         self._store: MutableMapping[str, Tuple[str, V]] = {}
-        if data is None:
-            data = {}
-        self.update(data, **kwargs)
+        if data is not None:
+            self.update(data, **kwargs)
 
     def __repr__(self) -> str:
         if self._store:

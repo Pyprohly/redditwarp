@@ -27,7 +27,7 @@ class BaseDraftList(Sequence[Draft]):
 
 TSubreddit = TypeVar('TSubreddit', bound=BaseSubreddit)
 
-class GenericBaseDraftList(BaseDraftList, Generic[TSubreddit]):
+class GBaseDraftList(BaseDraftList, Generic[TSubreddit]):
     def __init__(self,
             drafts: Sequence[Draft],
             subreddits: Sequence[TSubreddit]):

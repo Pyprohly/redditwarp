@@ -9,9 +9,9 @@ from .modmail_base import (
     BaseMessage,
     BaseModmailModAction,
     BaseUserDossier,
-    GenericBaseConversationAggregate,
-    GenericBaseUserDossierConversationAggregate,
-    GenericBaseOptionalUserDossierConversationAggregate,
+    GBaseConversationAggregate,
+    GBaseUserDossierConversationAggregate,
+    GBaseOptionalUserDossierConversationAggregate,
 )
 
 class Conversation(BaseConversation):
@@ -41,11 +41,11 @@ class UserDossier(BaseUserDossier):
     pass
 
 
-class ConversationAggregate(GenericBaseConversationAggregate[Conversation, Message, ModmailModAction]):
+class ConversationAggregate(GBaseConversationAggregate[Conversation, Message, ModmailModAction]):
     pass
 
-class UserDossierConversationAggregate(GenericBaseUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
+class UserDossierConversationAggregate(GBaseUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
     pass
 
-class OptionalUserDossierConversationAggregate(GenericBaseOptionalUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
+class OptionalUserDossierConversationAggregate(GBaseOptionalUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
     pass

@@ -38,10 +38,6 @@ def _generate_request_kwargs(r: Request) -> Iterable[tuple[str, Any]]:
         pld.apply_content_type(headers)
         yield ('data', pld.text.encode())
 
-    elif isinstance(pld, payload.TextData):
-        pld.apply_content_type(headers)
-        yield ('data', pld.data)
-
     elif isinstance(pld, payload.JSON):
         yield ('data', json.dumps(pld.json).encode())
         headers['Content-Type'] = 'application/json'

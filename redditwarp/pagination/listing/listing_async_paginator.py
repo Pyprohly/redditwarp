@@ -74,7 +74,7 @@ class ListingAsyncPaginator(Resettable, MoreAvailableAsyncPaginator[T], Bidirect
             if self.before:
                 yield ('before', self.before)
 
-    async def _fetch_data(self) -> Mapping[str, Any]:
+    async def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
         root = await self.client.request('GET', self.uri, params=params)
         data = root['data']

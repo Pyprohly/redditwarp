@@ -58,9 +58,11 @@ class Authorizer:
 
         if tk.refresh_token:
             grant1 = self.token_client.grant
-            if grant1.get('grant_type', '') == 'refresh_token':
-                grant2 = {**grant1, 'refresh_token': tk.refresh_token}
-                self.token_client.grant = grant2
+            if (
+                grant1.get('grant_type', '') == 'refresh_token'
+                and grant1.get('refresh_token', '') != tk.refresh_token
+            ):
+                self.token_client.grant = {**grant1, 'refresh_token': tk.refresh_token}
 
     def should_renew_token(self) -> bool:
         if self.token is None:

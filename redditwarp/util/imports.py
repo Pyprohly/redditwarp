@@ -7,12 +7,10 @@ if TYPE_CHECKING:
 
 import sys
 import importlib.util
-from importlib.abc import Loader
 
 def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
     if spec.loader is None:
         raise ImportError('spec has no loader')
-    assert isinstance(spec.loader, Loader)
 
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -30,7 +28,6 @@ class _LazyImport:
                 raise ImportError(f'module named {name!r} not found')
             if spec.loader is None:
                 raise ImportError('spec has no loader')
-            assert isinstance(spec.loader, Loader)
 
             module = importlib.util.module_from_spec(spec)
             loader = importlib.util.LazyLoader(spec.loader)

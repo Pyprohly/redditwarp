@@ -111,6 +111,8 @@ class MockSession(SessionBase):
         return self.responses.pop(0)
 
 class TestAuthorized:
+    dummy_request = Request('', '', params={}, headers={}, payload=None)
+
     def test_ResourceServerResponseError(self) -> None:
         session = MockSession([
             Response(403, {'WWW-Authenticate': 'Bearer realm="reddit", error="insufficient_scope"'}, b'{"message": "Forbidden", "error": 403}'),
@@ -122,7 +124,7 @@ class TestAuthorized:
         )
         requestor = Authorized(session, authorizer)
         with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
-            requestor.send(Request('', ''))
+            requestor.send(self.dummy_request)
 
     def test_invalid_token_to_ResourceServerResponseError(self) -> None:
         session = MockSession([
@@ -136,7 +138,7 @@ class TestAuthorized:
         )
         requestor = Authorized(session, authorizer)
         with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
-            requestor.send(Request('', ''))
+            requestor.send(self.dummy_request)
 
     def test_token_gets_changed_for_second_request_after_an_invalid_token_response(self) -> None:
         session = MockSession([
@@ -149,21 +151,6 @@ class TestAuthorized:
             token_client=token_client,
         )
         requestor = Authorized(session, authorizer)
-        req = Request('', '')
+        req = self.dummy_request
         requestor.send(req)
         assert req.headers[authorizer.authorization_header_name].partition(' ')[-1] == 'token_two'
-
-    '''
-    # Implementation must override Authorization header for invalid token handing logic to work
-    def test_authorization_header_not_overridden(self) -> None:
-        session = MockSession([Response(200, {}, b'')])
-        authorizer = Authorizer(
-            token=Token('TOKEN'),
-            token_client=None,
-        )
-        requestor = Authorized(session, authorizer)
-        authorization = authorizer.authorization_header_name
-        req = Request('', '', headers={authorization: 'ASDF1'})
-        requestor.send(req)
-        assert req.headers[authorization] == 'ASDF1'
-    '''

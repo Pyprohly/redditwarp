@@ -7,10 +7,10 @@ from datetime import datetime, timezone
 from ..auth.const import AUTHORIZATION_BASE_URL
 from .artifact import Artifact
 
-class BaseMessage(Artifact):
+class BaseMailboxMessage(Artifact):
     pass
 
-class BaseComposedMessage(BaseMessage):
+class BaseComposedMessage(BaseMailboxMessage):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id: int = int(d['id'], 36)
@@ -32,7 +32,7 @@ class BaseComposedMessage(BaseMessage):
         )
         self.via: Optional[str] = None if dest.startswith('#') else d['subreddit']
 
-class BaseCommentMessage(BaseMessage):
+class BaseCommentMessage(BaseMailboxMessage):
     class SubmissionInfo:
         def __init__(self, d: Mapping[str, Any]):
             self.title: str = d['link_title']

@@ -3,33 +3,33 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.message_SYNC import Message, ComposedMessage, CommentMessage
+    from ...models.message_SYNC import MailboxMessage, ComposedMessage, CommentMessage
 
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...pagination.implementations.message_sync import (
     MessageListingPaginator,
     ComposedMessageListingPaginator,
     CommentMessageListingPaginator,
-    ThreadedMessagesListingPaginator,
+    ComposedMessageThreadListingPaginator,
 )
 
 class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, Message]:
+    def __call__(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, MailboxMessage]:
         return self.inbox(amount)
 
-    def inbox(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, Message]:
+    def inbox(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, MailboxMessage]:
         p = MessageListingPaginator(self._client, '/message/inbox')
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    def unread(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, Message]:
+    def unread(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MessageListingPaginator, MailboxMessage]:
         p = MessageListingPaginator(self._client, '/message/unread')
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    def messages(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ThreadedMessagesListingPaginator, Sequence[ComposedMessage]]:
-        p = ThreadedMessagesListingPaginator(self._client, '/message/messages')
+    def messages(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ComposedMessageThreadListingPaginator, Sequence[ComposedMessage]]:
+        p = ComposedMessageThreadListingPaginator(self._client, '/message/messages')
         return ImpartedPaginatorChainingIterator(p, amount)
 
     def sent(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ComposedMessageListingPaginator, ComposedMessage]:

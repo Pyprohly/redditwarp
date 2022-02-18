@@ -36,10 +36,6 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
         pld.apply_content_type(headers)
         yield ('data', pld.text.encode())
 
-    elif isinstance(pld, payload.TextData):
-        pld.apply_content_type(headers)
-        yield ('data', pld.data)
-
     elif isinstance(pld, payload.JSON):
         yield ('json', pld.json)
 
@@ -99,9 +95,8 @@ class Session(SessionBase):
         await self.client.aclose()
 
 def new_session() -> Session:
-    # Waiting on https://github.com/encode/httpx/issues/1171
-    #limits = httpx.Limits(max_connections=20)
-    cl = httpx.AsyncClient()#pool_limits=limits)
+    limits = httpx.Limits(max_connections=20)
+    cl = httpx.AsyncClient(limits=limits)
     return Session(cl)
 
 name: str = httpx.__name__

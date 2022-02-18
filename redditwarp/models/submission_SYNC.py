@@ -11,7 +11,7 @@ from .submission_base import (
     BaseTextPost,
     BaseGalleryPost,
     BasePollPost,
-    GenericBaseCrosspostSubmission,
+    GBaseCrosspostSubmission,
 )
 
 class Submission(BaseSubmission):
@@ -82,7 +82,7 @@ class GalleryPost(Submission, BaseGalleryPost):
 class PollPost(Submission, BasePollPost):
     pass
 
-class CrosspostSubmission(Submission, GenericBaseCrosspostSubmission[Submission]):
+class CrosspostSubmission(Submission, GBaseCrosspostSubmission[Submission]):
     def _load_submission(self, d: Mapping[str, Any]) -> Submission:
         from .load.submission_SYNC import load_submission  # Cyclic import
         return load_submission(d, self.client)

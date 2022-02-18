@@ -4,8 +4,7 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ...http.requestor_SYNC import Requestor
 
-from ...http.request import Request
-from ...http.payload import JSON
+from ...http.request import make_request
 from ...http.util.json_load import json_loads_response
 from .token import Token
 from ...auth.utils import apply_basic_auth
@@ -22,7 +21,7 @@ class RedditInternalAPITokenObtainmentClient:
         self.grant_data: Any = grant_data
 
     def fetch_data(self) -> Mapping[str, Any]:
-        r = Request('POST', self.uri, payload=JSON(self.grant_data))
+        r = make_request('POST', self.uri, json=self.grant_data)
         apply_basic_auth(r, self.client_id, '')
         resp = self.requestor.send(r)
 

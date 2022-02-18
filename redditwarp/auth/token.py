@@ -33,3 +33,6 @@ class Token(Mapping[str, object]):
         return len(self.d)
     def __getitem__(self, key: str) -> object:
         return self.d[key]
+
+    def __str__(self) -> str:
+        return self.access_token

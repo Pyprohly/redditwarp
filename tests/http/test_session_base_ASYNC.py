@@ -20,7 +20,7 @@ class MySession(SessionBase):
         self.timeout_used = self._get_effective_timeout_value(timeout)
         return Response(200, {}, b'')
 
-requ = Request('', '')
+requ = Request('', '', params={}, headers={}, payload=None)
 
 class TestTimeoutAsMethod:
     @pytest.mark.asyncio

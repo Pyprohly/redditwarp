@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from .submission_collection_base import (
     BaseSubmissionCollectionDetails,
-    GenericBaseSubmissionCollection,
+    GBaseSubmissionCollection,
 )
 from .submission_ASYNC import Submission
 from .load.submission_ASYNC import load_submission
@@ -37,7 +37,7 @@ class SubmissionCollectionDetails(BaseSubmissionCollectionDetails):
 
 class SubmissionCollection(
     SubmissionCollectionDetails,
-    GenericBaseSubmissionCollection[Submission],
+    GBaseSubmissionCollection[Submission],
 ):
     def _load_submission(self, m: Mapping[str, Any]) -> Submission:
         return load_submission(m, self.client)

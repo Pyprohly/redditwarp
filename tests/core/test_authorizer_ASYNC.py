@@ -114,6 +114,8 @@ class MockSession(SessionBase):
         return self.responses.pop(0)
 
 class TestAuthorized:
+    dummy_request = Request('', '', params={}, headers={}, payload=None)
+
     @pytest.mark.asyncio
     async def test_ResourceServerResponseError(self) -> None:
         session = MockSession([
@@ -126,7 +128,7 @@ class TestAuthorized:
         )
         requestor = Authorized(session, authorizer)
         with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
-            await requestor.send(Request('', ''))
+            await requestor.send(self.dummy_request)
 
     @pytest.mark.asyncio
     async def test_invalid_token_to_ResourceServerResponseError(self) -> None:
@@ -141,7 +143,7 @@ class TestAuthorized:
         )
         requestor = Authorized(session, authorizer)
         with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
-            await requestor.send(Request('', ''))
+            await requestor.send(self.dummy_request)
 
     @pytest.mark.asyncio
     async def test_token_gets_changed_for_second_request_after_an_invalid_token_response(self) -> None:
@@ -155,22 +157,6 @@ class TestAuthorized:
             token_client=token_client,
         )
         requestor = Authorized(session, authorizer)
-        req = Request('', '')
+        req = self.dummy_request
         await requestor.send(req)
         assert req.headers[authorizer.authorization_header_name].partition(' ')[-1] == 'token_two'
-
-    '''
-    # Implementation must override Authorization header for invalid token handing logic to work
-    @pytest.mark.asyncio
-    async def test_authorization_header_not_overridden(self) -> None:
-        session = MockSession([Response(200, {}, b'')])
-        authorizer = Authorizer(
-            token=Token('TOKEN'),
-            token_client=None,
-        )
-        requestor = Authorized(session, authorizer)
-        authorization = authorizer.authorization_header_name
-        req = Request('', '', headers={authorization: 'ASDF1'})
-        await requestor.send(req)
-        assert req.headers[authorization] == 'ASDF1'
-    '''

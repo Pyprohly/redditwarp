@@ -69,8 +69,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
 
     async def __routine(self) -> None:
         paginator = self._paginator
-        assert isinstance(paginator, Resettable)
-        paginator__resettable = paginator
+        paginator__resettable = self._paginator__resettable
         extractor = self._extractor
         max_limit = self._max_limit
 

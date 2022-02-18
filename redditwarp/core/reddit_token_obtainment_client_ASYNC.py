@@ -5,8 +5,7 @@ if TYPE_CHECKING:
     from ..auth.typedefs import ClientCredentials, AuthorizationGrant
     from ..http.requestor_ASYNC import Requestor
 
-from ..http.request import Request
-from ..http.payload import URLEncodedFormData
+from ..http.request import make_request
 from ..http.util.json_load import json_loads_response
 from ..auth.token_obtainment_client_ASYNC import TokenObtainmentClient
 from ..auth.utils import apply_basic_auth
@@ -21,7 +20,7 @@ class RedditTokenObtainmentClient(TokenObtainmentClient):
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
     async def fetch_data(self) -> Mapping[str, Any]:
-        r = Request('POST', self.uri, payload=URLEncodedFormData(self.grant))
+        r = make_request('POST', self.uri, data=self.grant)
         apply_basic_auth(r, *self.client_credentials)
         r.headers.update(self.headers)
         resp = await self.requestor.send(r)

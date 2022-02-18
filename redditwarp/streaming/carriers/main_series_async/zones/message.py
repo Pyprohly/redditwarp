@@ -3,17 +3,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .....client_ASYNC import Client
-    from .....models.message_ASYNC import Message
+    from .....models.message_ASYNC import MailboxMessage
     from ..stream import IStandardStreamEventSubject
 
 from .....models.message_ASYNC import ComposedMessage, CommentMessage
 from ..stream import Stream
 
 
-def make_unread_message_stream(client: Client) -> IStandardStreamEventSubject[Message]:
+def make_unread_message_stream(client: Client) -> IStandardStreamEventSubject[MailboxMessage]:
     it = client.p.message.pull.unread()
     paginator = it.get_paginator()
-    def extractor(message: Message) -> tuple[int, int]:
+    def extractor(message: MailboxMessage) -> tuple[int, int]:
         if isinstance(message, ComposedMessage):
             return (0, message.id)
         elif isinstance(message, CommentMessage):

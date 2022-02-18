@@ -32,6 +32,9 @@ class NoResultException(ClientException):
 class ResultRejectedException(ClientException):
     pass
 
+class UnexpectedResultException(ClientException):
+    pass
+
 
 class _Throwaway(ArgExc):
     pass

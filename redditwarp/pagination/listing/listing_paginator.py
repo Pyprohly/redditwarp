@@ -74,7 +74,7 @@ class ListingPaginator(Resettable, MoreAvailablePaginator[T], Bidirectional, Cur
             if self.before:
                 yield ('before', self.before)
 
-    def _fetch_data(self) -> Mapping[str, Any]:
+    def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
         root = self.client.request('GET', self.uri, params=params)
         data = root['data']

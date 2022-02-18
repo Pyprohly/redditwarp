@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Optional, Sequence, Iterable, Mapping, Any
+from typing import TYPE_CHECKING, TypeVar, Optional, Sequence, Iterable, Any
 if TYPE_CHECKING:
     from ....client_SYNC import Client
 
@@ -65,7 +65,7 @@ class ModerationUsersPaginator(MoreAvailablePaginator[T], Bidirectional, CursorP
             if self._before:
                 yield ('before', self._before)
 
-    def _fetch_data(self) -> Mapping[str, Any]:
+    def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
         root = self.client.request('GET', self.uri, params=params)
         after = root['after'] or ''

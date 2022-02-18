@@ -5,6 +5,7 @@ from typing import Sequence, Optional
 from ..listing.listing_async_paginator import ListingAsyncPaginator
 from ...models.load.comment_ASYNC import load_extra_submission_fields_comment
 from ...models.load.submission_ASYNC import load_submission
+from ...exceptions import UnexpectedResultException
 
 class SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator(ListingAsyncPaginator[object]):
     async def fetch(self) -> Sequence[object]:
@@ -19,6 +20,6 @@ class SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator(ListingAsyn
             elif kind == 't3':
                 obj = load_submission(data, self.client)
             if obj is None:
-                raise ValueError(f'unexpected kind {kind!r}')
+                raise UnexpectedResultException(f'unexpected kind {kind!r}')
             l.append(obj)
         return l

@@ -19,7 +19,7 @@ from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.submission_sync import SearchSubmissionsListingPaginator
+from ...pagination.implementations.submission_sync import SearchSubmissionsListingPaginator, SubmissionDuplicatesPaginator
 from ...models.load.comment_SYNC import load_comment
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
@@ -587,4 +587,11 @@ class SubmissionProcedures:
         p = SearchSubmissionsListingPaginator(self._client, f'/r/{sr}/search',
                 params={'q': query, 'restrict_sr': '1'},
                 time_filter=time_filter, sort=sort)
+        return ImpartedPaginatorChainingIterator(p, amount)
+
+    def duplicates(self, target: int, amount: Optional[int] = None, *,
+        sort: str = 'num_comments',
+    ) -> ImpartedPaginatorChainingIterator[SubmissionDuplicatesPaginator, Submission]:
+        subm_id = to_base36(target)
+        p = SubmissionDuplicatesPaginator(self._client, f'/duplicates/{subm_id}', sort=sort)
         return ImpartedPaginatorChainingIterator(p, amount)

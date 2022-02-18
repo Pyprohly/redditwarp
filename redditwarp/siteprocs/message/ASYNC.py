@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.message_ASYNC import ComposedMessage
@@ -8,17 +8,19 @@ if TYPE_CHECKING:
 from functools import cached_property
 
 from ...util.base_conversion import to_base36
-from ...models.load.message_ASYNC import load_composed_message
-from .get_ASYNC import Get
-from .fetch_ASYNC import Fetch
+from ...models.load.message_ASYNC import load_composed_message, load_composed_message_thread
 from .pull_ASYNC import Pull
 
 class MessageProcedures:
     def __init__(self, client: Client):
         self._client = client
-        self.get: Get = Get(self, client)
-        self.fetch: Fetch = Fetch(client)
         self.pull: Pull = Pull(client)
+
+    async def get_message_thread(self, idn: int) -> Sequence[ComposedMessage]:
+        id36 = to_base36(idn)
+        root = await self._client.request('GET', f'/message/messages/{id36}')
+        obj_data = root['data']['children'][0]['data']
+        return load_composed_message_thread(obj_data, self._client)
 
     async def send(self, to: str, subject: str, body: str) -> None:
         req_data = {

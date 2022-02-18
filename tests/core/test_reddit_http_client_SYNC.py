@@ -70,18 +70,20 @@ def test_request() -> None:
     assert requ.headers == {'cheese': 'bacon', 'fire': 'air'}
 
 class TestLastMessageRecord:
+    blank_request = Request('', '', params={}, headers={}, payload=None)
+
     def test_last_request(self) -> None:
         session = NeutralSession(200, {'Content-Type': 'text/html'}, b'{"a": 1}')
         recorder = Recorded(session)
         last = Last(recorder)
         http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.request is None
-        req1 = Request('', '')
+        req1 = self.blank_request
         http.send(req1)
         assert http.last.request is req1
 
         session.exception = RuntimeError()
-        req2 = Request('', '')
+        req2 = self.blank_request
         try:
             http.send(req2)
         except RuntimeError:
@@ -96,12 +98,12 @@ class TestLastMessageRecord:
         last = Last(recorder)
         http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.response is None
-        resp = http.send(Request('', ''))
+        resp = http.send(self.blank_request)
         assert http.last.response is resp
 
         session.exception = RuntimeError()
         try:
-            http.send(Request('', ''))
+            http.send(self.blank_request)
         except RuntimeError:
             pass
         assert http.last.response is None
@@ -114,13 +116,13 @@ class TestLastMessageRecord:
         last = Last(recorder)
         http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.transfer is None
-        req1 = Request('', '')
+        req1 = self.blank_request
         resp1 = http.send(req1)
         assert http.last.transfer == (req1, resp1)
 
         session.exception = RuntimeError()
         try:
-            http.send(Request('', ''))
+            http.send(self.blank_request)
         except RuntimeError:
             pass
         assert http.last.transfer is None
@@ -133,12 +135,12 @@ class TestLastMessageRecord:
         last = Last(recorder)
         http = RedditHTTPClient(session=session, requestor=recorder, last=last)
         assert http.last.transmit is None
-        req1 = Request('', '')
+        req1 = self.blank_request
         resp1 = http.send(req1)
         assert http.last.transmit == (req1, resp1)
 
         session.exception = RuntimeError()
-        req2 = Request('', '')
+        req2 = self.blank_request
         try:
             http.send(req2)
         except RuntimeError:

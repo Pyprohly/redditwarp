@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Iterable, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Sequence, Iterable, Tuple
 if TYPE_CHECKING:
     from ...client_SYNC import Client
 
@@ -54,7 +54,7 @@ class ModmailConversationsPaginator(CursorPaginator[Tuple[Conversation, Message]
         if self.sort:
             yield ('sort', self.sort)
 
-    def _fetch_data(self) -> Mapping[str, Any]:
+    def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
         data = self.client.request('GET', self.uri, params=params)
         entries = data['conversationIds']

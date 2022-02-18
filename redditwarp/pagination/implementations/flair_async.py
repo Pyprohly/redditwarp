@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Iterable
+from typing import TYPE_CHECKING, Any, Optional, Sequence, Iterable
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
 
@@ -55,7 +55,7 @@ class UserFlairAssociationAsyncPaginator(
             if self._before:
                 yield ('before', self._before)
 
-    async def _fetch_data(self) -> Mapping[str, Any]:
+    async def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
         data = await self.client.request('GET', self.uri, params=params)
         children = data['users']

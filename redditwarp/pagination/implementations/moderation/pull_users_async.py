@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Optional, Sequence, Iterable, Mapping, Any
+from typing import TYPE_CHECKING, TypeVar, Optional, Sequence, Iterable, Any
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
@@ -65,7 +65,7 @@ class ModerationUsersAsyncPaginator(MoreAvailableAsyncPaginator[T], Bidirectiona
             if self._before:
                 yield ('before', self._before)
 
-    async def _fetch_data(self) -> Mapping[str, Any]:
+    async def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
         root = await self.client.request('GET', self.uri, params=params)
         after = root['after'] or ''

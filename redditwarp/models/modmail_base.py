@@ -110,7 +110,7 @@ TConversation = TypeVar('TConversation', bound=BaseConversation)
 TMessage = TypeVar('TMessage', bound=BaseMessage)
 TModmailModAction = TypeVar('TModmailModAction', bound=BaseModmailModAction)
 
-class GenericBaseConversationAggregate(Generic[TConversation, TMessage, TModmailModAction]):
+class GBaseConversationAggregate(Generic[TConversation, TMessage, TModmailModAction]):
     def __init__(self,
             conversation: TConversation,
             messages: Sequence[TMessage],
@@ -123,8 +123,8 @@ class GenericBaseConversationAggregate(Generic[TConversation, TMessage, TModmail
 
 TUserDossier = TypeVar('TUserDossier', bound=BaseUserDossier)
 
-class GenericBaseUserDossierConversationAggregate(
-    GenericBaseConversationAggregate[TConversation, TMessage, TModmailModAction],
+class GBaseUserDossierConversationAggregate(
+    GBaseConversationAggregate[TConversation, TMessage, TModmailModAction],
     Generic[TConversation, TMessage, TModmailModAction, TUserDossier],
 ):
     def __init__(self,
@@ -136,8 +136,8 @@ class GenericBaseUserDossierConversationAggregate(
         super().__init__(conversation, messages, mod_actions, history)
         self.user_dossier: TUserDossier = user_dossier
 
-class GenericBaseOptionalUserDossierConversationAggregate(
-    GenericBaseConversationAggregate[TConversation, TMessage, TModmailModAction],
+class GBaseOptionalUserDossierConversationAggregate(
+    GBaseConversationAggregate[TConversation, TMessage, TModmailModAction],
     Generic[TConversation, TMessage, TModmailModAction, TUserDossier],
 ):
     def __init__(self,

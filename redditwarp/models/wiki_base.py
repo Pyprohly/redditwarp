@@ -48,7 +48,7 @@ class BaseWikiPageRevisionAuthorUser(Artifact):
 TWikiPageRevisionAuthorUser = TypeVar('TWikiPageRevisionAuthorUser', bound=BaseWikiPageRevisionAuthorUser)
 
 @dataclass(repr=False, eq=False)
-class GenericBaseWikiPage(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
+class GBaseWikiPage(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
     d: Mapping[str, Any]
     body: str
     body_html: str
@@ -63,12 +63,12 @@ class GenericBaseWikiPage(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
         return datetime.fromtimestamp(self.revision_timestamp, timezone.utc)
 
 @dataclass(repr=False, eq=False)
-class BaseWikiPage(GenericBaseWikiPage[BaseWikiPageRevisionAuthorUser]):
+class BaseWikiPage(GBaseWikiPage[BaseWikiPageRevisionAuthorUser]):
     pass
 
 
 @dataclass(repr=False, eq=False)
-class GenericBaseWikiPageRevision(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
+class GBaseWikiPageRevision(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
     d: Mapping[str, Any]
     uuid: str
     timestamp: int
@@ -77,16 +77,16 @@ class GenericBaseWikiPageRevision(IArtifact, Generic[TWikiPageRevisionAuthorUser
     hidden: bool
 
 @dataclass(repr=False, eq=False)
-class BaseWikiPageRevision(GenericBaseWikiPageRevision[BaseWikiPageRevisionAuthorUser]):
+class BaseWikiPageRevision(GBaseWikiPageRevision[BaseWikiPageRevisionAuthorUser]):
     pass
 
 
 @dataclass(repr=False, eq=False)
-class GenericBaseWikiPageSettings(Generic[TWikiPageRevisionAuthorUser]):
+class GBaseWikiPageSettings(Generic[TWikiPageRevisionAuthorUser]):
     permlevel: int
     editors: Sequence[TWikiPageRevisionAuthorUser]
     unlisted: bool
 
 @dataclass(repr=False, eq=False)
-class BaseWikiPageSettings(GenericBaseWikiPageSettings[BaseWikiPageRevisionAuthorUser]):
+class BaseWikiPageSettings(GBaseWikiPageSettings[BaseWikiPageRevisionAuthorUser]):
     pass

@@ -1,2 +1,6 @@
 
-from .client_ASYNC import Client as Client  # noqa: F401
+from .client_ASYNC import (  # noqa: F401
+    Client as Client,
+    RedditClient as RedditClient,
+    Reddit as Reddit,
+)

@@ -8,9 +8,9 @@ from dataclasses import dataclass
 
 from .wiki_base import (
     BaseWikiPageRevisionAuthorUser,
-    GenericBaseWikiPage,
-    GenericBaseWikiPageRevision,
-    GenericBaseWikiPageSettings,
+    GBaseWikiPage,
+    GBaseWikiPageRevision,
+    GBaseWikiPageSettings,
 )
 
 class WikiPageRevisionAuthorUser(BaseWikiPageRevisionAuthorUser):
@@ -19,13 +19,13 @@ class WikiPageRevisionAuthorUser(BaseWikiPageRevisionAuthorUser):
         self.client: Client = client
 
 @dataclass(repr=False, eq=False)
-class WikiPage(GenericBaseWikiPage[WikiPageRevisionAuthorUser]):
+class WikiPage(GBaseWikiPage[WikiPageRevisionAuthorUser]):
     pass
 
 @dataclass(repr=False, eq=False)
-class WikiPageRevision(GenericBaseWikiPageRevision[WikiPageRevisionAuthorUser]):
+class WikiPageRevision(GBaseWikiPageRevision[WikiPageRevisionAuthorUser]):
     pass
 
 @dataclass(repr=False, eq=False)
-class WikiPageSettings(GenericBaseWikiPageSettings[WikiPageRevisionAuthorUser]):
+class WikiPageSettings(GBaseWikiPageSettings[WikiPageRevisionAuthorUser]):
     pass

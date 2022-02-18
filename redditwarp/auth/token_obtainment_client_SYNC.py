@@ -5,8 +5,7 @@ if TYPE_CHECKING:
     from .typedefs import ClientCredentials, AuthorizationGrant
     from ..http.requestor_SYNC import Requestor
 
-from ..http.request import Request
-from ..http.payload import URLEncodedFormData
+from ..http.request import make_request
 from ..http.util.json_load import json_loads_response
 from .token import Token
 from .utils import apply_basic_auth
@@ -26,7 +25,7 @@ class TokenObtainmentClient:
         self.grant: Mapping[str, str] = grant
 
     def fetch_data(self) -> Mapping[str, Any]:
-        r = Request('POST', self.uri, payload=URLEncodedFormData(self.grant))
+        r = make_request('POST', self.uri, data=self.grant)
         apply_basic_auth(r, *self.client_credentials)
         resp = self.requestor.send(r)
 

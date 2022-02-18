@@ -218,7 +218,7 @@ class BasePollPost(BaseSubmission):
 
 TOriginalSubmission = TypeVar('TOriginalSubmission', bound=BaseSubmission)
 
-class GenericBaseCrosspostSubmission(BaseSubmission, Generic[TOriginalSubmission]):
+class GBaseCrosspostSubmission(BaseSubmission, Generic[TOriginalSubmission]):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.original_id36: str = d['crosspost_parent'][3:]

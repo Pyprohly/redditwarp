@@ -3,16 +3,16 @@ from __future__ import annotations
 from typing import Sequence
 
 from ..listing.listing_paginator import ListingPaginator
-from ...models.message_SYNC import Message, ComposedMessage, CommentMessage
+from ...models.message_SYNC import MailboxMessage, ComposedMessage, CommentMessage
 from ...models.load.message_SYNC import (
     load_message,
     load_composed_message,
     load_comment_message,
-    load_threaded_message,
+    load_composed_message_thread,
 )
 
-class MessageListingPaginator(ListingPaginator[Message]):
-    def fetch(self) -> Sequence[Message]:
+class MessageListingPaginator(ListingPaginator[MailboxMessage]):
+    def fetch(self) -> Sequence[MailboxMessage]:
         data = self._fetch_data()
         return [load_message(d['data'], self.client) for d in data['children']]
 
@@ -26,7 +26,7 @@ class CommentMessageListingPaginator(ListingPaginator[CommentMessage]):
         data = self._fetch_data()
         return [load_comment_message(d['data'], self.client) for d in data['children']]
 
-class ThreadedMessagesListingPaginator(ListingPaginator[Sequence[ComposedMessage]]):
+class ComposedMessageThreadListingPaginator(ListingPaginator[Sequence[ComposedMessage]]):
     def fetch(self) -> Sequence[Sequence[ComposedMessage]]:
         data = self._fetch_data()
-        return [load_threaded_message(d['data'], self.client) for d in data['children']]
+        return [load_composed_message_thread(d['data'], self.client) for d in data['children']]

@@ -24,6 +24,7 @@ from .reddit_internal_api.core.dark_reddit_http_client_SYNC import DarkRedditHTT
 from .reddit_internal_api.core.authorizer_SYNC import Authorizer as DarkAuthorizer, Authorized as DarkAuthorized
 from .reddit_internal_api.core.rate_limited_SYNC import RateLimited as DarkRateLimited
 from .http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
+from .http.util.case_insensitive_dict import CaseInsensitiveDict
 
 
 class Client:
@@ -43,7 +44,7 @@ class Client:
 
         if dark_http is None:
             session = http.session
-            headers = {'User-Agent': get_user_agent(session)}
+            headers = http.headers
             recorder = Recorded(session)
             last = Last(recorder)
             token_client = new_reddit_internal_api_token_obtainment_client(ApplyDefaultHeaders(session, headers))
@@ -69,7 +70,7 @@ class Client:
         access_token: str
         """
         session = new_session()
-        headers = {'User-Agent': get_user_agent(session)}
+        headers = CaseInsensitiveDict({'User-Agent': get_user_agent(session)})
         recorder = Recorded(session)
         last = Last(recorder)
         authorizer = Authorizer(token=Token(access_token))
@@ -168,7 +169,7 @@ class Client:
             raise TypeError
 
         session = new_session()
-        headers = {'User-Agent': get_user_agent(session)}
+        headers = CaseInsensitiveDict({'User-Agent': get_user_agent(session)})
 
         recorder = Recorded(session)
         last = Last(recorder)
@@ -203,6 +204,8 @@ class Client:
         # instead of library import.
         from .siteprocs.SYNC import SiteProcedures
         self.p: SiteProcedures = SiteProcedures(self)
+        from .reddit_internal_api.siteprocs.SYNC import SiteProcedures as DarkSiteProcedures
+        self.q: DarkSiteProcedures = DarkSiteProcedures(self)
 
     def __enter__(self: _TSelf) -> _TSelf:
         return self
@@ -289,3 +292,6 @@ class Client:
         if s is not None:
             ua = f'{ua} Bot !-- {s}'
         self.http.user_agent = ua
+
+RedditClient: type[Client] = Client
+Reddit: type[Client] = Client
