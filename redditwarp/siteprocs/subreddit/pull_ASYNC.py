@@ -19,20 +19,16 @@ class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, sr: str, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingAsyncIterator[HotListingAsyncPaginator, Submission]:
-        return self.hot(sr, amount)
-
     def hot(self, sr: str, amount: Optional[int] = None,
             ) -> ImpartedPaginatorChainingAsyncIterator[HotListingAsyncPaginator, Submission]:
         p = HotListingAsyncPaginator(self._client, f'/r/{sr}/hot')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     def top(self, sr: str, amount: Optional[int] = None, *,
-            time_filter: str = '',
+            time: str = '',
             ) -> ImpartedPaginatorChainingAsyncIterator[TopListingAsyncPaginator, Submission]:
         p = TopListingAsyncPaginator(self._client, f'/r/{sr}/top')
-        p.time_filter = time_filter
+        p.time = time
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     def new(self, sr: str, amount: Optional[int] = None,
@@ -46,10 +42,10 @@ class Pull:
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     def controversial(self, sr: str, amount: Optional[int] = None, *,
-            time_filter: str = '',
+            time: str = '',
             ) -> ImpartedPaginatorChainingAsyncIterator[ControversialListingAsyncPaginator, Submission]:
         p = ControversialListingAsyncPaginator(self._client, f'/r/{sr}/controversial')
-        p.time_filter = time_filter
+        p.time = time
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     def gilded(self, sr: str, amount: Optional[int] = None,

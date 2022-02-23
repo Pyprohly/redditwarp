@@ -19,20 +19,16 @@ class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, sr: str, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingIterator[HotListingPaginator, Submission]:
-        return self.hot(sr, amount)
-
     def hot(self, sr: str, amount: Optional[int] = None,
             ) -> ImpartedPaginatorChainingIterator[HotListingPaginator, Submission]:
         p = HotListingPaginator(self._client, f'/r/{sr}/hot')
         return ImpartedPaginatorChainingIterator(p, amount)
 
     def top(self, sr: str, amount: Optional[int] = None, *,
-            time_filter: str = '',
+            time: str = '',
             ) -> ImpartedPaginatorChainingIterator[TopListingPaginator, Submission]:
         p = TopListingPaginator(self._client, f'/r/{sr}/top')
-        p.time_filter = time_filter
+        p.time = time
         return ImpartedPaginatorChainingIterator(p, amount)
 
     def new(self, sr: str, amount: Optional[int] = None,
@@ -46,10 +42,10 @@ class Pull:
         return ImpartedPaginatorChainingIterator(p, amount)
 
     def controversial(self, sr: str, amount: Optional[int] = None, *,
-            time_filter: str = '',
+            time: str = '',
             ) -> ImpartedPaginatorChainingIterator[ControversialListingPaginator, Submission]:
         p = ControversialListingPaginator(self._client, f'/r/{sr}/controversial')
-        p.time_filter = time_filter
+        p.time = time
         return ImpartedPaginatorChainingIterator(p, amount)
 
     def gilded(self, sr: str, amount: Optional[int] = None,

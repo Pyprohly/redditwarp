@@ -579,14 +579,16 @@ class SubmissionProcedures:
         }
         await self._client.request('POST', '/api/v1/modactions/removal_link_message', json=json_data)
 
-    def search_submissions(self, sr: str, query: str, amount: Optional[int] = None, *,
-        time_filter: str = 'all', sort: str = 'relevance',
+    def search(self, sr: str, query: str, amount: Optional[int] = None, *,
+        sort: str = 'relevance', time: str = 'all',
     ) -> ImpartedPaginatorChainingAsyncIterator[SearchSubmissionsListingAsyncPaginator, Submission]:
-        if not sr:
-            raise ValueError('sr must not be empty')
-        p = SearchSubmissionsListingAsyncPaginator(self._client, f'/r/{sr}/search',
+        uri = '/search'
+        if sr:
+            uri = f'/r/{sr}/search'
+        p = SearchSubmissionsListingAsyncPaginator(
+                self._client, uri,
                 params={'q': query, 'restrict_sr': '1'},
-                time_filter=time_filter, sort=sort)
+                    sort=sort, time=time)
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     def duplicates(self, target: int, amount: Optional[int] = None, *,

@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 import json
 
 import urllib3  # type: ignore[import]
+import urllib3.exceptions as urllib3_exceptions  # type: ignore[import]
 
 from ..SYNC import register
 from ...session_base_SYNC import SessionBase
@@ -69,7 +70,7 @@ class Session(SessionBase):
             else:
                 raise Exception('unsupported payload type')
 
-        except urllib3.exceptions.ReadTimeoutError as cause:
+        except urllib3_exceptions.ReadTimeoutError as cause:
             raise exceptions.TimeoutException from cause
         except Exception as cause:
             raise exceptions.TransportError from cause

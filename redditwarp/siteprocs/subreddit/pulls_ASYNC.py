@@ -12,10 +12,6 @@ class Pulls:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingAsyncIterator[SubredditListingAsyncPaginator, Subreddit]:
-        return self.popular(amount)
-
     def popular(self, amount: Optional[int] = None,
             ) -> ImpartedPaginatorChainingAsyncIterator[SubredditListingAsyncPaginator, Subreddit]:
         p = SubredditListingAsyncPaginator(self._client, '/subreddits/popular')

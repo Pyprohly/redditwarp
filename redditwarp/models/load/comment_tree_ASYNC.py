@@ -20,18 +20,18 @@ def load_more_comments(
     go_deeper = d['id'] == '_'
     if go_deeper:
         return ContinueThisThread(
-            submission_id36,
-            comment_id36,
-            sort,
+            submission_id36=submission_id36,
+            comment_id36=comment_id36,
+            sort=sort,
             d=d,
             client=client,
         )
     return LoadMoreComments(
-        submission_id36,
-        comment_id36,
-        sort,
-        d['children'],
-        d['count'],
+        submission_id36=submission_id36,
+        comment_id36=comment_id36,
+        child_id36s=d['children'],
+        sort=sort,
+        count=d['count'],
         d=d,
         client=client,
     )

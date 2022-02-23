@@ -48,5 +48,5 @@ class Fetch:
             if context is not None:
                 yield ('context', str(context))
 
-        dat = await self._client.request('GET', '/comments/' + submission_id36, params=dict(g()))
-        return load_submission_tree_node(dat, self._client, sort)
+        root = await self._client.request('GET', '/comments/' + submission_id36, params=dict(g()))
+        return load_submission_tree_node(root, self._client, sort)

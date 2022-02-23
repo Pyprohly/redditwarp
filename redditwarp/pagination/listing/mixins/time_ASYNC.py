@@ -2,13 +2,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Optional, Callable, Any, Iterable, Mapping
 if TYPE_CHECKING:
-    from ....client_SYNC import Client
+    from ....client_ASYNC import Client
 
-from ..listing_paginator import ListingPaginator
+from ..listing_async_paginator import ListingAsyncPaginator
 
 T = TypeVar('T')
 
-class TimeFilter(ListingPaginator[T]):
+class Time(ListingAsyncPaginator[T]):
     def __init__(self,
         client: Client,
         uri: str,
@@ -18,9 +18,9 @@ class TimeFilter(ListingPaginator[T]):
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
         super().__init__(client, uri, limit=limit, params=params, cursor_extractor=cursor_extractor)
-        self.time_filter: str = ''
+        self.time: str = ''
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()
-        if self.time_filter:
-            yield ('t', self.time_filter)
+        if self.time:
+            yield ('t', self.time)

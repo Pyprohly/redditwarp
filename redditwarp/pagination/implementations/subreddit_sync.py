@@ -8,7 +8,7 @@ from ..listing.mixins.sort_SYNC import Sort
 from ..listing.subreddit_listing_paginator import SubredditListingPaginator
 from ...models.subreddit_SYNC import Subreddit
 
-class ExploreSubredditsPaginator(
+class SearchSubredditsPaginator(
     Sort[Subreddit],
     SubredditListingPaginator,
 ):

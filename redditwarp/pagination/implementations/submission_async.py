@@ -5,14 +5,14 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
 
 from ...models.submission_ASYNC import Submission
-from ..listing.mixins.time_filter_ASYNC import TimeFilter
+from ..listing.mixins.time_ASYNC import Time
 from ..listing.mixins.sort_ASYNC import Sort
 from ..listing.submission_listing_async_paginator import SubmissionListingAsyncPaginator
 from ..listing.listing_async_paginator import ListingAsyncPaginator
 from ...models.load.submission_ASYNC import load_submission
 
 class SearchSubmissionsListingAsyncPaginator(
-    TimeFilter[Submission],
+    Time[Submission],
     Sort[Submission],
     SubmissionListingAsyncPaginator,
 ):
@@ -21,12 +21,12 @@ class SearchSubmissionsListingAsyncPaginator(
         uri: str,
         *,
         params: Optional[Mapping[str, str]] = None,
-        time_filter: str = 'all',
         sort: str = 'relevance',
+        time: str = 'all',
     ):
         super().__init__(client, uri, params=params)
-        self.time_filter: str = time_filter
         self.sort: str = sort
+        self.time: str = time
 
 
 class SubmissionDuplicates(Sequence[Submission]):

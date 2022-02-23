@@ -4,7 +4,7 @@ from __future__ import annotations
 from ..listing.mixins.subreddit_detail_ASYNC import SubredditDetail
 from ..listing.submission_listing_async_paginator import SubmissionListingAsyncPaginator
 from ...models.submission_ASYNC import Submission
-from ..listing.mixins.time_filter_ASYNC import TimeFilter
+from ..listing.mixins.time_ASYNC import Time
 from ..listing.submission_and_comment_listing_async_paginator import SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator
 
 class BestListingAsyncPaginator(
@@ -23,7 +23,7 @@ class NewListingAsyncPaginator(
 ): pass
 
 class TopListingAsyncPaginator(
-    TimeFilter[Submission],
+    Time[Submission],
     SubredditDetail[Submission],
     SubmissionListingAsyncPaginator,
 ): pass
@@ -34,13 +34,13 @@ class RisingListingAsyncPaginator(
 ): pass
 
 class ControversialListingAsyncPaginator(
-    TimeFilter[Submission],
+    Time[Submission],
     SubredditDetail[Submission],
     SubmissionListingAsyncPaginator,
 ): pass
 
 class GildedListingAsyncPaginator(
-    TimeFilter[object],
+    Time[object],
     SubredditDetail[object],
     SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator,
 ): pass

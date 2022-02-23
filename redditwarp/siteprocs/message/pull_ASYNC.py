@@ -17,9 +17,6 @@ class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[MessageListingAsyncPaginator, MailboxMessage]:
-        return self.inbox(amount)
-
     def inbox(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[MessageListingAsyncPaginator, MailboxMessage]:
         p = MessageListingAsyncPaginator(self._client, '/message/inbox')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)

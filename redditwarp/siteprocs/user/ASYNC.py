@@ -6,8 +6,6 @@ if TYPE_CHECKING:
     from ...models.user_ASYNC import User
     from ...models.moderated_subreddit import ModeratedSubreddit
 
-from types import SimpleNamespace
-
 from .get_partial_user_ASYNC import GetPartialUser
 from .bulk_fetch_partial_user_ASYNC import BulkFetchPartialUser
 from .pull_ASYNC import Pull
@@ -41,10 +39,10 @@ class UserProcedures:
         root = await self._client.request('GET', f'/user/{user}/moderated_subreddits')
         return [load_moderated_subreddit(d) for d in root['data']]
 
-    def explore(self, query: str, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingAsyncIterator[SearchUsersListingAsyncPaginator, SimpleNamespace]:
+    def search(self, query: str, amount: Optional[int] = None,
+            ) -> ImpartedPaginatorChainingAsyncIterator[SearchUsersListingAsyncPaginator, User]:
         p = SearchUsersListingAsyncPaginator(self._client, '/users/search', query)
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    async def exists(self, name: str) -> bool:
+    async def name_exists(self, name: str) -> bool:
         return not await self._client.request('GET', '/api/username_available', params={'user': name})

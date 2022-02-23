@@ -1,26 +1,14 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, Any
+from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.submission_SYNC import Submission
 
 import json
-
-from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.submission_sync import SearchSubmissionsListingPaginator
 
 class MiscProcedures:
     def __init__(self, client: Client):
         self._client = client
-
-    def search_submissions(self, query: str, amount: Optional[int] = None, *,
-        time_filter: str = 'all', sort: str = 'relevance',
-    ) -> ImpartedPaginatorChainingIterator[SearchSubmissionsListingPaginator, Submission]:
-        p = SearchSubmissionsListingPaginator(self._client, '/search',
-            params={'q': query},
-            time_filter=time_filter, sort=sort)
-        return ImpartedPaginatorChainingIterator(p, amount)
 
     def convert_rtjson_to_markdown(self, rtjson: Mapping[str, Any]) -> str:
         root = self._client.request('POST', '/api/convert_rte_body_format',

@@ -37,7 +37,7 @@ class Get:
         context: Optional[int] = None,
     ) -> Optional[SubmissionTreeNode]:
         try:
-            v = await self._outer.fetch.by_id36(
+            return await self._outer.fetch.by_id36(
                 submission_id36,
                 comment_id36,
                 sort=sort,
@@ -49,4 +49,3 @@ class Get:
             if e.status_code == 404:
                 return None
             raise
-        return v

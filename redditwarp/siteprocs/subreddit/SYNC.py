@@ -17,7 +17,7 @@ from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...pagination.listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
-from ...pagination.implementations.subreddit_sync import ExploreSubredditsPaginator
+from ...pagination.implementations.subreddit_sync import SearchSubredditsPaginator
 from ... import exceptions
 from ... import http
 from ...http.util.json_load import json_loads_response
@@ -116,14 +116,14 @@ class SubredditProcedures:
     def get_post_requirements(self, sr: str) -> Mapping[str, Any]:
         return self._client.request('GET', f'/api/v1/{sr}/post_requirements')
 
-    def explore(self, query: str, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingIterator[ExploreSubredditsPaginator, Subreddit]:
+    def search(self, query: str, amount: Optional[int] = None,
+            ) -> ImpartedPaginatorChainingIterator[SearchSubredditsPaginator, Subreddit]:
         if not query:
             raise ValueError('query cannot be empty')
-        p = ExploreSubredditsPaginator(self._client, '/subreddits/search', query)
+        p = SearchSubredditsPaginator(self._client, '/subreddits/search', query)
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    def explore_names(self, name: str) -> Sequence[str]:
+    def search_names(self, name: str) -> Sequence[str]:
         root = self._client.request('GET', '/api/search_reddit_names', params={'query': name})
         return root['names']
 

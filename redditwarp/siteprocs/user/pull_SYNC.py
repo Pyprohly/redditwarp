@@ -26,10 +26,6 @@ class Pull:
     def __init__(self, client: Client):
         self._client = client
 
-    def __call__(self, name: str, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingIterator[OverviewListingPaginator, object]:
-        return self.overview(name, amount)
-
     def overview(self, name: str, amount: Optional[int] = None, *,
             sort: str = 'new',
             ) -> ImpartedPaginatorChainingIterator[OverviewListingPaginator, object]:

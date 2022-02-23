@@ -32,3 +32,6 @@ class Response:
 @dataclass(eq=False, repr=False)
 class UResponse(Response):
     underlying_object: object = None
+
+    def __repr__(self) -> str:
+        return f'<Response [{self.status}]>'

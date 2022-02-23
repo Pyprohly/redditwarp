@@ -4,7 +4,7 @@ from __future__ import annotations
 from ..listing.mixins.subreddit_detail_SYNC import SubredditDetail
 from ..listing.submission_listing_paginator import SubmissionListingPaginator
 from ...models.submission_SYNC import Submission
-from ..listing.mixins.time_filter_SYNC import TimeFilter
+from ..listing.mixins.time_SYNC import Time
 from ..listing.submission_and_comment_listing_paginator import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
 
 class BestListingPaginator(
@@ -23,7 +23,7 @@ class NewListingPaginator(
 ): pass
 
 class TopListingPaginator(
-    TimeFilter[Submission],
+    Time[Submission],
     SubredditDetail[Submission],
     SubmissionListingPaginator,
 ): pass
@@ -34,13 +34,13 @@ class RisingListingPaginator(
 ): pass
 
 class ControversialListingPaginator(
-    TimeFilter[Submission],
+    Time[Submission],
     SubredditDetail[Submission],
     SubmissionListingPaginator,
 ): pass
 
 class GildedListingPaginator(
-    TimeFilter[object],
+    Time[object],
     SubredditDetail[object],
     SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
 ): pass

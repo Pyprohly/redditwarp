@@ -7,7 +7,6 @@ if TYPE_CHECKING:
 from ...http.util.json_load import json_loads_response
 from ...exceptions import (
     ClientException,
-    UnexpectedResultException,
     raise_for_reddit_error,
     raise_for_non_json_response,
 )
@@ -46,8 +45,6 @@ class SiteProcedures:
         details = d.get('details', '')
         if details == 'TWO_FA_REQUIRED':
             raise ClientException('TWO_FA_REQUIRED')
-        elif details:
-            raise UnexpectedResultException(json_data)
 
         return (d['cookie'], d['modhash'])
 
