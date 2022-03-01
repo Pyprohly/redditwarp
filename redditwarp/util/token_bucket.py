@@ -38,7 +38,7 @@ class TokenBucket:
             return True
         return False
 
-    def do_consume(self, n: float) -> None:
+    def consume(self, n: float) -> None:
         """Consume `n` tokens. If `n` tokens aren't available, raise an exception."""
         if self.try_consume(n):
             return
@@ -51,12 +51,12 @@ class TokenBucket:
         return n <= u
 
     def consume_all(self) -> None:
-        """Empty the token bucket completely. Like `self.hard_consume(float('inf'))`."""
+        """Empty the token bucket completely."""
         self._checkpoint()
         self._value = 0
 
     def get_cooldown(self, n: float) -> float:
         """Return the duration the client should wait before the consume
-        methods will return `True` again.
+        methods return `True` again.
         """
         return max((n - self.get_value()) / self.rate, 0)

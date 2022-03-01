@@ -1,2 +1,2 @@
 
-from ..transport.implementations import aiohttp  # noqa: F401
+from ..transport.carriers import aiohttp  # noqa: F401

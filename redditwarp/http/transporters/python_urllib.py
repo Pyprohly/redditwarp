@@ -1,2 +1,2 @@
 
-from ..transport.implementations import python_urllib  # noqa: F401
+from ..transport.carriers import python_urllib  # noqa: F401

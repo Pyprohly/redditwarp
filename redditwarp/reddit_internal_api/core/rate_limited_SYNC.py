@@ -18,5 +18,5 @@ class RateLimited(RequestorAugmenter):
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         time.sleep(self._tb.get_cooldown(1))
-        self._tb.do_consume(1)
+        self._tb.consume(1)
         return self.requestor.send(request, timeout=timeout)

@@ -84,12 +84,12 @@ state = str(uuid.uuid4())
 
 port = urllib.parse.urlsplit(redirect_uri).port
 if port is None:
-    raise Exception('could not determine the port number from the redirect uri')
+    raise Exception('could not extract a port number from the redirect URI')
 
 browser = webbrowser.get(web_browser_name)
 
-print('\n        -~=~- Reddit OAuth2 Authorization Code Flow -~=~-\n')
-print('* Step 1. Build the authorization URL and direct the user to the authorization server.\n')
+print('''\n        -~=~- Reddit OAuth2 Authorization Code Flow -~=~-\n
+* Step 1. Build the authorization URL and direct the user to the authorization server.\n''')
 
 params = {
     'response_type': 'code',
@@ -101,38 +101,40 @@ params = {
 }
 url = "%s?%s" % (redditwarp.auth.const.AUTHORIZATION_URL, urllib.parse.urlencode(params))
 print(url)
-print()
 
 if not no_web_browser:
     browser.open(url)
 
-print('* Step 2. Wait for the authorization server response and extract the authorization code.\n')
+print('''\n* Step 2. Wait for the authorization server response and extract the authorization code.\n
+Abort with ^C if the authorization request was rejected.\n''')
 
-print('Abort with ^C if the authorization request was rejected.\n')
+match = None
 
 with socket.socket() as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(('localhost', port))
-    server.listen(1)
-    match = None
+    server.listen()
+
     while not match:
         client, addr = server.accept()
         print('{0}:{1}'.format(*addr))
+
         with client:
             data = client.recv(8192)
-            client.send(b"HTTP/1.1 200 OK\r\n\r\n" + data)
+            client.sendall(b"HTTP/1.1 200 OK\r\n\r\n" + data)
 
-        decoded = data.decode()
-        print(f"```\n{decoded}\n```\n")
-        match = re.match(r"^GET /.*?\?([^ ]*) HTTP", decoded)
+        text = data.decode()
+        print(f"```\n{text}\n```\n")
+        match = re.match(r"^GET /.*?\?([^ ]*) HTTP", text)
 
 assert match is not None
+
 query = match[1]
 response_params = dict(urllib.parse.parse_qsl(query))
 
 received_state = response_params['state']
 if received_state != state:
-    raise Exception(f'sent state ({state}) did not match received ({received_state})')
+    raise Exception(f'sent state ({state}) did not match received state ({received_state})')
 
 code = response_params.get('code', '')
 if not code:
@@ -143,9 +145,7 @@ print(f'Authorization code: {code}')
 if authorization_code_only:
     sys.exit(0)
 
-print()
-
-print('* Step 3. Exchange the authorization code for an access/refresh token.\n')
+print('\n* Step 3. Exchange the authorization code for an access/refresh token.\n')
 
 grant = redditwarp.auth.grants.AuthorizationCodeGrant(code, redirect_uri)
 print('Authorization grant:')

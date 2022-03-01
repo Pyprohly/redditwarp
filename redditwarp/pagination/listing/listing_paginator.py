@@ -27,15 +27,18 @@ class ListingPaginator(Resettable, MoreAvailablePaginator[T], Bidirectional, Cur
 
         self.show_all: bool = False
 
-        self.reset()
+        self.__reset()
 
-    def reset(self) -> None:
+    def __reset(self) -> None:
         self.after: str = ''
         self.before: str = ''
         self.has_after: bool = True
         self.has_before: bool = True
         self.after_count: int = 0
         self.before_count: int = 0
+
+    def reset(self) -> None:
+        self.__reset()
 
     def get_cursor(self) -> str:
         return self.after if self.direction else self.before

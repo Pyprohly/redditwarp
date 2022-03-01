@@ -1,2 +1,2 @@
 
-from ..transport.implementations import requests  # noqa: F401
+from ..transport.carriers import requests  # noqa: F401

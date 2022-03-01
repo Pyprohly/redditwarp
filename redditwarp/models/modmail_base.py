@@ -95,12 +95,12 @@ class BaseUserDossier(IArtifact):
         self.is_muted: bool = mute_status['isMuted']
         self.mute_reason: str = mute_status['reason']
         self.mute_count: int = mute_status['muteCount']
-        self.mute_end_datetime: Optional[datetime] = None if (x := mute_status['endDate']) is None else datetime.fromisoformat(x)
+        self.mute_end_datetime: datetime = datetime.min if (x := mute_status['endDate']) is None else datetime.fromisoformat(x)
         ban_status = d['banStatus']
         self.is_banned: bool = ban_status['isBanned']
         self.ban_reason: str = ban_status['reason']
-        self.ban_permanent: bool = ban_status['isPermanent']
-        self.ban_end_datetime: Optional[datetime] = None if (x := ban_status['endDate']) is None else datetime.fromisoformat(x)
+        self.ban_is_permanent: bool = ban_status['isPermanent']
+        self.ban_end_datetime: datetime = datetime.min if (x := ban_status['endDate']) is None else datetime.fromisoformat(x)
         self.recent_posts: Sequence[BaseUserDossier.RecentPost] = [self.RecentPost(m) for m in d['recentPosts']]
         self.recent_comments: Sequence[BaseUserDossier.RecentComment] = [self.RecentComment(m) for m in d['recentComments']]
         self.recent_convos: Sequence[BaseUserDossier.RecentConvo] = [self.RecentConvo(m) for m in d['recentConvos']]

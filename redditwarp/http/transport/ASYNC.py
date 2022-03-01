@@ -58,7 +58,7 @@ def register(
     transport_info_registry[adaptor_module_name] = info
 
 transport_module_spec_list = [
-    load_spec('.implementations.httpx_async', __package__),
-    load_spec('.implementations.aiohttp', __package__),
+    load_spec('.carriers.httpx_async', __package__),
+    load_spec('.carriers.aiohttp', __package__),
 ]
 transport_info_registry: MutableMapping[str, TransportInfo] = {}

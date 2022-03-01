@@ -58,9 +58,9 @@ def register(
     transport_info_registry[adaptor_module_name] = info
 
 transport_module_spec_list = [
-    load_spec('.implementations.requests', __package__),
-    load_spec('.implementations.httpx_sync', __package__),
-    load_spec('.implementations.urllib3', __package__),
-    load_spec('.implementations.python_urllib', __package__),
+    load_spec('.carriers.requests', __package__),
+    load_spec('.carriers.httpx_sync', __package__),
+    load_spec('.carriers.urllib3', __package__),
+    load_spec('.carriers.python_urllib', __package__),
 ]
 transport_info_registry: MutableMapping[str, TransportInfo] = {}

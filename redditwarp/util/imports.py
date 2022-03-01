@@ -21,7 +21,7 @@ def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
 class _LazyImport:
     def __call__(self, name: str, package: Optional[str] = None) -> ModuleType:
         try:
-            module = sys.modules[name]
+            return sys.modules[name]
         except KeyError:
             spec = importlib.util.find_spec(name, package)
             if spec is None:
@@ -31,16 +31,9 @@ class _LazyImport:
 
             module = importlib.util.module_from_spec(spec)
             loader = importlib.util.LazyLoader(spec.loader)
-
+            loader.exec_module(module)
             sys.modules[spec.name] = module
-
-            try:
-                loader.exec_module(module)
-            except ImportError:
-                del sys.modules[spec.name]
-                raise
-
-        return module
+            return module
 
     def __mod__(self, other: str) -> None:
         if '.' in other:

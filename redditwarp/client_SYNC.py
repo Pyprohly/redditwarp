@@ -40,8 +40,6 @@ class Client:
         ----------
         http: Optional[:class:`RedditHTTPClient`]
         """
-        self = cls.__new__(cls)
-
         if dark_http is None:
             session = http.session
             headers = http.headers
@@ -52,6 +50,7 @@ class Client:
             requestor = DarkRateLimited(DarkAuthorized(recorder, authorizer))
             dark_http = DarkRedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
 
+        self = cls.__new__(cls)
         self._init(http, dark_http)
         return self
 
@@ -94,14 +93,13 @@ class Client:
 
         get = section.get
         grant_creds: Sequence[str] = ()
-        if (refresh_token := get('refresh_token')) is not None:
+        if refresh_token := get('refresh_token'):
             grant_creds = (refresh_token,)
-        elif (username := get('username')) is not None and (password := get('password')) is not None:
+        elif (username := get('username')) and (password := get('password')):
             grant_creds = (username, password)
-
         self = cls(
-            get('client_id'),
-            get('client_secret'),
+            section['client_id'],
+            section['client_secret'],
             *grant_creds,
         )
         if x := get('user_agent'):
@@ -113,7 +111,7 @@ class Client:
     @overload
     def __init__(self, client_id: str, client_secret: str, /) -> None: ...
     @overload
-    def __init__(self, client_id: str, client_secret: str, /, *, grant: Mapping[str, str]) -> None: ...
+    def __init__(self, client_id: str, client_secret: str, /, *, grant: AuthorizationGrant) -> None: ...
     @overload
     def __init__(self, client_id: str, client_secret: str, refresh_token: str, /) -> None: ...
     @overload
@@ -170,7 +168,6 @@ class Client:
 
         session = new_session()
         headers = CaseInsensitiveDict({'User-Agent': get_user_agent(session)})
-
         recorder = Recorded(session)
         last = Last(recorder)
         token_client = RedditTokenObtainmentClient(
@@ -220,6 +217,7 @@ class Client:
 
     def close(self) -> None:
         self.http.close()
+        self.dark_http.close()
 
     def request(self,
         verb: str,
@@ -295,3 +293,4 @@ class Client:
 
 RedditClient: type[Client] = Client
 Reddit: type[Client] = Client
+RedditWarp: type[Client] = Client

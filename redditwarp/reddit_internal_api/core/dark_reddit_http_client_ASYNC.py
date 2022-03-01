@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from ...http.session_base_ASYNC import SessionBase
     from .authorizer_ASYNC import Authorizer
     from ...core.recorded_ASYNC import Last
-    from ...http.response import Response
     from ...http.requestor_ASYNC import Requestor
 
 from ...http.http_client_ASYNC import HTTPClient
@@ -20,10 +19,6 @@ class DarkRedditHTTPClient(HTTPClient):
     @property
     def last(self) -> Last:
         return self.get_last()
-
-    @property
-    def last_response(self) -> Optional[Response]:
-        return self.last.response
 
     def __init__(self,
         session: SessionBase,

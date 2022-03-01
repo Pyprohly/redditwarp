@@ -1,2 +1,2 @@
 
-from ..transport.implementations import websockets  # noqa: F401
+from ..transport.carriers import websockets  # noqa: F401

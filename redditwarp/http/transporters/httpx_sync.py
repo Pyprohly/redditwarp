@@ -1,2 +1,2 @@
 
-from ..transport.implementations import httpx_sync  # noqa: F401
+from ..transport.carriers import httpx_sync  # noqa: F401

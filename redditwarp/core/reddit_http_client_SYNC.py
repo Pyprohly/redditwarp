@@ -6,7 +6,6 @@ if TYPE_CHECKING:
     from ..http.session_base_SYNC import SessionBase
     from .authorizer_SYNC import Authorizer
     from .recorded_SYNC import Last
-    from ..http.response import Response
     from ..http.requestor_SYNC import Requestor
 
 import sys
@@ -37,10 +36,6 @@ class RedditHTTPClient(HTTPClient):
     @property
     def last(self) -> Last:
         return self.get_last()
-
-    @property
-    def last_response(self) -> Optional[Response]:
-        return self.last.response
 
     def __init__(self,
         session: SessionBase,

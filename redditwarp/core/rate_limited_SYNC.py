@@ -23,15 +23,15 @@ class RateLimited(RequestorAugmenter):
 
     def send(self, request: Request, *, timeout: float = -2) -> Response:
         h = self._burst_control.hard_consume(1)
-        if self.remaining < 1:
-            time.sleep(self.reset)
-        else:
-            s = self.reset / self.remaining
-            if not h or s >= 2:
-                # The value 2 is chosen because, at worst, the user is allocated a 2
-                # per second rate limit when a client credentials grant is used.
+        s = 0.
+        if self.remaining < 2:
+            s = self.reset
+        elif h and (w := self.reset / self.remaining) < 2:
+            # Use 2 because at worst the user is allocated a 2/s
+            # rate limit when a client credentials grant is used.
+            s = w
 
-                time.sleep(s)
+        time.sleep(s)
 
         response = self.requestor.send(request, timeout=timeout)
 

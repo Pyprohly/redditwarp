@@ -34,20 +34,22 @@ class RateLimited(RequestorAugmenter):
     async def send(self, request: Request, *, timeout: float = -2) -> Response:
         tb = self._tb
         async with self._lock:
-            if self.remaining < 1:
-                await asyncio.sleep(self.reset)
-
-            elif (s := self.reset / self.remaining) >= 2:
+            s = 0.
+            if self.remaining < 2:
+                s = self.reset
+            elif (w := self.reset / self.remaining) >= 2:
                 # If the API wants us to wait for longer than two seconds then oblige.
+                s = w
 
+            if s:
+                # Don't add tokens for the time spent sleeping here.
                 bv = tb.get_value()
                 await asyncio.sleep(s)
-                # Don't add tokens for the time spent sleeping here.
-                tb.do_consume(tb.get_value() - bv)
+                tb.consume(tb.get_value() - bv)
 
             # The token bucket rate limiting is done in conjunction to the other rate limiting logic.
             await asyncio.sleep(tb.get_cooldown(1))
-            tb.do_consume(1)
+            tb.consume(1)
 
         response = await self.requestor.send(request, timeout=timeout)
 
