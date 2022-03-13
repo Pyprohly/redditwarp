@@ -30,25 +30,25 @@ class Content(Payload):
         headers.setdefault(field_name, self.get_content_type())
 
 class Bytes(Content):
-    CONTENT_TYPE_HINT = 'application/octet-stream'
+    CONTENT_TYPE_HINT: str = 'application/octet-stream'
 
     def __init__(self, data: bytes):
         self.data: bytes = data
 
 class Text(Content):
-    CONTENT_TYPE_HINT = 'text/plain'
+    CONTENT_TYPE_HINT: str = 'text/plain'
 
     def __init__(self, text: str):
         self.text: str = text
 
 class URLEncodedFormData(Content):
-    CONTENT_TYPE_HINT = 'application/x-www-form-urlencoded'
+    CONTENT_TYPE_HINT: str = 'application/x-www-form-urlencoded'
 
     def __init__(self, data: Mapping[str, str]):
         self.data: Mapping[str, str] = data
 
 class JSON(Content):
-    CONTENT_TYPE_HINT = 'application/json'
+    CONTENT_TYPE_HINT: str = 'application/json'
 
     def __init__(self, json: Any):
         self.json: Any = json
@@ -77,10 +77,10 @@ class MultipartFileField(MultipartFormDataField):
 
 
 class Multipart(Payload):
-    CONTENT_TYPE_HINT = 'multipart/*'
+    CONTENT_TYPE_HINT: str = 'multipart/*'
 
 class MultipartFormData(Multipart):
-    CONTENT_TYPE_HINT = 'multipart/form-data'
+    CONTENT_TYPE_HINT: str = 'multipart/form-data'
 
     def __init__(self, parts: Sequence[MultipartFormDataField]):
         self.parts: Sequence[MultipartFormDataField] = parts

@@ -45,22 +45,22 @@ class TokenServerResponseError(OAuth2ResponseError):
 
 class TokenServerResponseErrorTypes:
     class InvalidRequest(TokenServerResponseError):
-        ERROR_NAME = 'invalid_request'
+        ERROR_NAME: ClassVar[str] = 'invalid_request'
 
     class InvalidClient(TokenServerResponseError):
-        ERROR_NAME = 'invalid_client'
+        ERROR_NAME: ClassVar[str] = 'invalid_client'
 
     class InvalidGrant(TokenServerResponseError):
-        ERROR_NAME = 'invalid_grant'
+        ERROR_NAME: ClassVar[str] = 'invalid_grant'
 
     class UnauthorizedClient(TokenServerResponseError):
-        ERROR_NAME = 'unauthorized_client'
+        ERROR_NAME: ClassVar[str] = 'unauthorized_client'
 
     class UnsupportedGrantType(TokenServerResponseError):
-        ERROR_NAME = 'unsupported_grant_type'
+        ERROR_NAME: ClassVar[str] = 'unsupported_grant_type'
 
     class InvalidScope(TokenServerResponseError):
-        ERROR_NAME = 'invalid_scope'
+        ERROR_NAME: ClassVar[str] = 'invalid_scope'
 
 class UnrecognizedTokenServerResponseError(TokenServerResponseError):
     pass
@@ -95,13 +95,13 @@ class ResourceServerResponseError(OAuth2ResponseError):
 
 class ResourceServerResponseErrorTypes:
     class InvalidRequest(ResourceServerResponseError):
-        ERROR_NAME = 'invalid_request'
+        ERROR_NAME: ClassVar[str] = 'invalid_request'
 
     class InvalidToken(ResourceServerResponseError):
-        ERROR_NAME = 'invalid_token'
+        ERROR_NAME: ClassVar[str] = 'invalid_token'
 
     class InsufficientScope(ResourceServerResponseError):
-        ERROR_NAME = 'insufficient_scope'
+        ERROR_NAME: ClassVar[str] = 'insufficient_scope'
 
 class UnrecognizedResourceServerResponseError(ResourceServerResponseError):
     pass

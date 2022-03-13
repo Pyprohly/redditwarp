@@ -32,41 +32,41 @@ class StatusCodeException(ArgExc):
 
 class StatusCodeExceptionTypes:
     class InformationalResponseException(StatusCodeException):
-        STATUS_CODE = -100
+        STATUS_CODE: int = -100
     class SuccessfulResponseException(StatusCodeException):
-        STATUS_CODE = -200
+        STATUS_CODE: int = -200
     class RedirectionResponseException(StatusCodeException):
-        STATUS_CODE = -300
+        STATUS_CODE: int = -300
     class ClientErrorResponseException(StatusCodeException):
-        STATUS_CODE = -400
+        STATUS_CODE: int = -400
     class ServerErrorResponseException(StatusCodeException):
-        STATUS_CODE = -500
+        STATUS_CODE: int = -500
 
     class BadRequest(ClientErrorResponseException):
-        STATUS_CODE = 400
+        STATUS_CODE: int = 400
     class Unauthorized(ClientErrorResponseException):
-        STATUS_CODE = 401
+        STATUS_CODE: int = 401
     class Forbidden(ClientErrorResponseException):
-        STATUS_CODE = 403
+        STATUS_CODE: int = 403
     class NotFound(ClientErrorResponseException):
-        STATUS_CODE = 404
+        STATUS_CODE: int = 404
     class Conflict(ClientErrorResponseException):
-        STATUS_CODE = 409
+        STATUS_CODE: int = 409
     class PayloadTooLarge(ClientErrorResponseException):
-        STATUS_CODE = 413
+        STATUS_CODE: int = 413
     class URITooLong(ClientErrorResponseException):
-        STATUS_CODE = 414
+        STATUS_CODE: int = 414
     class TooManyRequests(ClientErrorResponseException):
-        STATUS_CODE = 429
+        STATUS_CODE: int = 429
 
     class InternalServerError(ServerErrorResponseException):
-        STATUS_CODE = 500
+        STATUS_CODE: int = 500
     class BadGateway(ServerErrorResponseException):
-        STATUS_CODE = 502
+        STATUS_CODE: int = 502
     class ServiceUnavailable(ServerErrorResponseException):
-        STATUS_CODE = 503
+        STATUS_CODE: int = 503
     class GatewayTimeout(ServerErrorResponseException):
-        STATUS_CODE = 504
+        STATUS_CODE: int = 504
 
 status_code_exception_class_by_status_code: Mapping[int, type[StatusCodeException]] = {
     cls.STATUS_CODE: cls

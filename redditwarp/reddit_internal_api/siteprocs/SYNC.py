@@ -1,9 +1,7 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from ...client_SYNC import Client
 
+from ...core.reddit_http_client_SYNC import RedditHTTPClient
 from ...http.util.json_load import json_loads_response
 from ...exceptions import (
     ClientException,
@@ -12,23 +10,23 @@ from ...exceptions import (
 )
 
 
-class SiteProcedures:
-    def __init__(self, client: Client):
-        self._client = client
+class Procedures:
+    def __init__(self, http: RedditHTTPClient):
+        self._http = http
 
     def do_legacy_reddit_web_login(self, username: str, password: str, otp: str = '') -> tuple[str, str]:
-        http = self._client.dark_http
-        resp = http.session.request(
+        resp = self._http.session.request(
                 'POST',
                 'https://www.reddit.com/api/login',
                 params={'api_type': 'json'},
                 headers={
-                    'User-Agent': http.headers['User-Agent'],
+                    'User-Agent': self._http.user_agent,
                     # I don't understand why but the request fails with a `WRONG_PASSWORD` API error if
                     # it includes the `User-Agent` header, but adding some other random header fixes it.
                     'asdf': 'asdf',
                 },
                 data={'user': username, 'passwd': password, 'otp': otp})
+        resp.raise_for_status()
 
         try:
             json_data = json_loads_response(resp)
@@ -49,7 +47,10 @@ class SiteProcedures:
         return (d['cookie'], d['modhash'])
 
     def get_sendbird_access_token(self) -> tuple[str, float]:
-        d = self._client.dark_request('GET', 'https://sendbird.reddit.com/api/v1/sendbird/me')
+        resp = self._http.request('GET', 'https://sendbird.reddit.com/api/v1/sendbird/me')
+        resp.raise_for_status()
+        d = json_loads_response(resp)
         access_token = d['sb_access_token']
-        expires_ts = d['valid_until'] / 1000
+        expires_utms = d['valid_until']
+        expires_ts = expires_utms / 1000
         return (access_token, expires_ts)

@@ -148,7 +148,7 @@ class BaseExtraSubmissionFieldsComment(BaseComment):
     # * `GET /r/{subreddit}/comments`
     # * `GET /user/{username}/overview` (and variants)
 
-    class Submission(BaseComment.Submission):
+    class Submission2(BaseComment.Submission):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.title: str = d['link_title']
@@ -157,10 +157,15 @@ class BaseExtraSubmissionFieldsComment(BaseComment):
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
             self.nsfw: bool = d['over_18']
 
-    class Subreddit(BaseComment.Subreddit):
+    class Subreddit2(BaseComment.Subreddit):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
+
+    def __init__(self, d: Mapping[str, Any]):
+        super().__init__(d)
+        self.submission2: BaseExtraSubmissionFieldsComment.Submission2 = self.Submission2(d)
+        self.subreddit2: BaseExtraSubmissionFieldsComment.Subreddit2 = self.Subreddit2(d)
 
 class BaseEditPostTextEndpointComment(BaseComment):
     # For: `POST /api/editusertext`

@@ -1,37 +1,38 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
-    from typing import Optional, Mapping, MutableMapping
     from ..http.session_base_ASYNC import SessionBase
     from .authorizer_ASYNC import Authorizer
     from .recorded_ASYNC import Last
     from ..http.requestor_ASYNC import Requestor
 
-import sys
+from ..auth.const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL
+from ..http.http_client_ASYNC import BasicRequestDefaultsHTTPClient
+from ..auth.typedefs import AuthorizationGrant
+from .authorizer_ASYNC import Authorized
+from .rate_limited_ASYNC import RateLimited
+from .recorded_ASYNC import Recorded
+from .reddit_give_me_json_please_ASYNC import RedditGiveMeJSONPlease
+from .reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
+from ..http.transport.ASYNC import new_session
+from ..http.util.case_insensitive_dict import CaseInsensitiveDict
+from ..util.user_agent_ASYNC import get_user_agent_from_session
+from ..auth.token import Token
 
-from .. import __about__
-from ..auth.const import RESOURCE_BASE_URL
-from ..http.http_client_ASYNC import HTTPClient
-from ..http.transport.ASYNC import transport_info_registry
 
-class RedditHTTPClient(HTTPClient):
-    DEFAULT_PARAMS: Mapping[str, str] = {
-        'raw_json': '1',
-        'api_type': 'json',
-    }
-
+class RedditHTTPClient(BasicRequestDefaultsHTTPClient):
     @property
     def user_agent(self) -> str:
-        return self.headers['User-Agent']
+        return self.headers.get('User-Agent', '')
 
     @user_agent.setter
     def user_agent(self, value: str) -> None:
         self.headers['User-Agent'] = value
 
-    @property
-    def authorizer(self) -> Authorizer:
-        return self.get_authorizer()
+    @user_agent.deleter
+    def user_agent(self) -> None:
+        self.headers.pop('User-Agent', None)
 
     @property
     def last(self) -> Last:
@@ -43,31 +44,12 @@ class RedditHTTPClient(HTTPClient):
         *,
         params: Optional[MutableMapping[str, str]] = None,
         headers: Optional[MutableMapping[str, str]] = None,
-        authorizer: Optional[Authorizer] = None,
         last: Optional[Last] = None,
     ) -> None:
-        params = dict(self.DEFAULT_PARAMS) if params is None else params
         super().__init__(session, requestor, params=params, headers=headers)
-        self._authorizer = authorizer
-        self._last = last
         self.base_url: str = RESOURCE_BASE_URL
-
         self.user_agent_lead: str = ''
-        key = 'User-Agent'
-        if key in self.headers:
-            self.user_agent_lead = self.headers[key]
-        else:
-            ua = get_user_agent(session)
-            self.user_agent_lead = ua
-            self.headers[key] = ua
-
-    def get_authorizer(self) -> Authorizer:
-        if self._authorizer is None:
-            raise RuntimeError('value not set')
-        return self._authorizer
-
-    def set_authorizer(self, value: Authorizer) -> None:
-        self._authorizer = value
+        self._last: Optional[Last] = last
 
     def get_last(self) -> Last:
         if self._last is None:
@@ -78,13 +60,70 @@ class RedditHTTPClient(HTTPClient):
         self._last = value
 
 
-def get_user_agent(session: object) -> str:
-    tokens = [
-        f"{__about__.__title__}/{__about__.__version__}",
-        f"Python/{sys.version.split(None, 1)[0]}",
-    ]
-    if session:
-        ti = transport_info_registry.get(session.__module__)
-        if ti:
-            tokens.append(f"{ti.name}/{ti.version}")
-    return ' '.join(tokens)
+class PublicAPIRedditHTTPClient(RedditHTTPClient):
+    @property
+    def authorizer(self) -> Authorizer:
+        return self.get_authorizer()
+
+    def __init__(self,
+        session: SessionBase,
+        requestor: Optional[Requestor] = None,
+        *,
+        params: Optional[MutableMapping[str, str]] = None,
+        headers: Optional[MutableMapping[str, str]] = None,
+        last: Optional[Last] = None,
+        authorizer: Optional[Authorizer] = None,
+    ) -> None:
+        super().__init__(session, requestor, params=params, headers=headers, last=last)
+        self._authorizer: Optional[Authorizer] = authorizer
+
+    def get_authorizer(self) -> Authorizer:
+        if self._authorizer is None:
+            raise RuntimeError('value not set')
+        return self._authorizer
+
+    def set_authorizer(self, value: Authorizer) -> None:
+        self._authorizer = value
+
+
+def build_public_api_reddit_http_client(
+    client_id: str,
+    client_secret: str,
+    grant: AuthorizationGrant,
+    *,
+    session: Optional[SessionBase] = None,
+) -> PublicAPIRedditHTTPClient:
+    if session is None:
+        session = new_session()
+    ua = get_user_agent_from_session(session)
+    headers = CaseInsensitiveDict({'User-Agent': ua})
+    recorder = Recorded(session)
+    last = Last(recorder)
+    token_client = RedditTokenObtainmentClient(
+        session,
+        TOKEN_OBTAINMENT_URL,
+        (client_id, client_secret),
+        grant,
+        headers=headers,
+    )
+    authorizer = Authorizer(token_client)
+    requestor = RedditGiveMeJSONPlease(RateLimited(Authorized(recorder, authorizer)))
+    http = PublicAPIRedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
+    http.user_agent_lead = ua
+    return http
+
+def build_public_api_reddit_http_client_from_access_token(
+    access_token: str,
+    *,
+    session: Optional[SessionBase] = None,
+) -> PublicAPIRedditHTTPClient:
+        if session is None:
+            session = new_session()
+        ua = get_user_agent_from_session(session)
+        headers = CaseInsensitiveDict({'User-Agent': ua})
+        recorder = Recorded(session)
+        last = Last(recorder)
+        authorizer = Authorizer(token=Token(access_token))
+        requestor = RedditGiveMeJSONPlease(RateLimited(Authorized(recorder, authorizer)))
+        http = PublicAPIRedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
+        return http

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, TypeVar, Mapping, Optional, Union, Any
 if TYPE_CHECKING:
     from collections.abc import MutableSequence
     from types import TracebackType
+    from contextlib import AbstractContextManager
     from .request import Request
     from .response import Response
     from .payload import RequestFiles
@@ -29,7 +30,6 @@ class SessionBase(Requestor):
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
-        timeout: float = -2,
     ) -> Request:
         return make_request(
             verb,
@@ -39,7 +39,6 @@ class SessionBase(Requestor):
             data=data,
             json=json,
             files=files,
-            timeout=timeout,
         )
 
     def __init__(self) -> None:
@@ -90,24 +89,26 @@ class SessionBase(Requestor):
             return tv
         raise ValueError('a default timeout value could not be determined')
 
+    # Unused for now
     class _TimeoutAsContextManager:
-        def __init__(self, veto_timeout: contextvars.ContextVar[float], timeout: float) -> None:
-            self._veto_timeout = veto_timeout
+        def __init__(self, var: contextvars.ContextVar[float], timeout: float) -> None:
+            self._var = var
             self._timeout = timeout
-            self._reset_token_stack: MutableSequence[contextvars.Token[float]] = deque()
+            self._token_stack: MutableSequence[contextvars.Token[float]] = deque()
 
         def __enter__(self) -> None:
-            tkn = self._veto_timeout.set(self._timeout)
-            self._reset_token_stack.append(tkn)
+            tkn = self._var.set(self._timeout)
+            self._token_stack.append(tkn)
 
         def __exit__(self,
             exc_type: Optional[type[BaseException]],
             exc_value: Optional[BaseException],
             exc_traceback: Optional[TracebackType],
         ) -> Optional[bool]:
-            tkn = self._reset_token_stack.pop()
-            self._veto_timeout.reset(tkn)
+            tkn = self._token_stack.pop()
+            self._var.reset(tkn)
             return None
 
-    def timeout_as(self, timeout: float) -> _TimeoutAsContextManager:
+    # Defer this idea
+    def ___timeout_as(self, timeout: float) -> AbstractContextManager[None]:
         return self._TimeoutAsContextManager(self._veto_timeout, timeout)

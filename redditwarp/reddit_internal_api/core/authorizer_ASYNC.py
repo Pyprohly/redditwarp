@@ -63,6 +63,12 @@ class Authorizer:
             return tk
         raise RuntimeError('token not set')
 
+    def set_token(self, token: Token) -> None:
+        self.token = token
+
+    def set_access_token(self, access_token: str) -> None:
+        self.set_token(Token(access_token))
+
     def prepare_request(self, request: Request, token: Optional[Token] = None) -> None:
         tk = self.get_token() if token is None else token
         request.headers[self.authorization_header_name] = f'bearer {tk.access_token}'

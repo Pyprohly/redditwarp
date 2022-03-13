@@ -63,14 +63,16 @@ class SubmissionProcedures:
                     data={'filepath': filename, 'mimetype': mimetype})
             return load_media_upload_lease(result)
 
-        def deposit_file(self, file: IO[bytes], upload_lease: MediaUploadLease) -> None:
+        def deposit_file(self, file: IO[bytes], upload_lease: MediaUploadLease, *,
+                timeout: float = 1000) -> None:
             session = self._client.http.session
-            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file}, timeout=1000)
+            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields,
+                    files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
-        def upload(self, file: IO[bytes]) -> MediaUploadLease:
+        def upload(self, file: IO[bytes], *, timeout: float = 1000) -> MediaUploadLease:
             upload_lease = self.obtain_upload_lease(filename=file.name)
-            self.deposit_file(file, upload_lease)
+            self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
     upload_media: cached_property[_upload_media] = cached_property(_upload_media)

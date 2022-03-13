@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 
-import contextvars
+# import contextvars
 
 from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.response import Response
@@ -19,6 +19,8 @@ class MySession(SessionBase):
 
 requ = Request('', '', params={}, headers={}, payload=None)
 
+# Unused idea for now
+'''
 class TestTimeoutAsMethod:
     def test_basics(self) -> None:
         sess = MySession()
@@ -124,3 +126,4 @@ class TestTimeoutAsMethod:
         ctx = contextvars.Context()
         ctx.run(f)
         assert len(ctx) == 0
+'''

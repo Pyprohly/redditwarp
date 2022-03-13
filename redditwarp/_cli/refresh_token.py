@@ -50,7 +50,7 @@ from pprint import pp
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport, new_session
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
-from redditwarp.core.reddit_http_client_SYNC import get_user_agent
+from redditwarp.util.user_agent_SYNC import get_user_agent_from_session
 
 def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:
@@ -125,12 +125,11 @@ with socket.socket() as server:
 
         text = data.decode()
         print(f"```\n{text}\n```\n")
-        match = re.match(r"^GET /.*?\?([^ ]*) HTTP", text)
+        match = re.match(r"^GET [^?]*\?([^ ]*) HTTP", text)
 
-assert match is not None
+assert match
 
-query = match[1]
-response_params = dict(urllib.parse.parse_qsl(query))
+response_params = dict(urllib.parse.parse_qsl(match[1]))
 
 received_state = response_params['state']
 if received_state != state:
@@ -139,7 +138,6 @@ if received_state != state:
 code = response_params.get('code', '')
 if not code:
     raise Exception('authorization was declined by the user')
-
 print(f'Authorization code: {code}')
 
 if authorization_code_only:
@@ -153,7 +151,7 @@ pp(dict(grant))
 print()
 
 session = new_session()
-user_agent = get_user_agent(session) + " redditwarp.cli.refresh_token"
+user_agent = get_user_agent_from_session(session) + " redditwarp.cli.refresh_token"
 token_client = RedditTokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,

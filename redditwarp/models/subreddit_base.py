@@ -10,7 +10,8 @@ class BaseSubreddit(Artifact):
     class Me:
         class MeFlair:
             def __init__(self, d: Mapping[str, Any]):
-                self.enabled: bool = d['user_sr_flair_enabled']
+                # Value `False` if object from search item.
+                self.enabled: bool = False if (x := d['user_sr_flair_enabled']) is None else x
                 self.has_had_flair: bool = d['user_flair_text'] is not None
                 self.bg_color: str = d['user_flair_background_color'] or ''
                 user_flair_css_class_temp: Optional[str] = d['user_flair_css_class']
@@ -34,6 +35,7 @@ class BaseSubreddit(Artifact):
 
     class SubredditFlair:
         def __init__(self, d: Mapping[str, Any]):
+            # Value is always `False` if object was from search.
             self.user_flairs_enabled: bool = d['user_flair_enabled_in_sr']
             self.link_flairs_enabled: bool = d['link_flair_enabled']
             self.users_can_assign_user_flair: bool = d['can_assign_user_flair']
@@ -52,7 +54,8 @@ class BaseSubreddit(Artifact):
         self.type: str = d['subreddit_type']
 
         self.subscriber_count: int = d['subscribers']
-        self.viewing_count: int = d['active_user_count']
+        # Value `-1` if object from search item.
+        self.viewing_count: int = -1 if (x := d['active_user_count']) is None else x
 
         self.title: str = d['title']
         self.public_description: str = d['public_description']
@@ -81,6 +84,9 @@ class BaseSubreddit(Artifact):
             self.me = self.Me(d)
 
         self.flair: BaseSubreddit.SubredditFlair = self.SubredditFlair(d)
+
+        # Value is always `False` if object from search item.
+        self.has_menu_widget: bool = d['has_menu_widget']
 
 
 class BaseInaccessibleSubreddit(Artifact):

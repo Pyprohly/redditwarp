@@ -40,7 +40,7 @@ class _LazyImport:
             raise ValueError('dotted module name not supported')
 
         module = self(other)
-        caller_frame = sys._getframe(1)  # pyright: reportPrivateUsage=false
+        caller_frame = sys._getframe(1)  # type: ignore
         caller_frame.f_globals[other] = module
 
 lazy_import: _LazyImport = _LazyImport()

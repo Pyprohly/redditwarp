@@ -53,14 +53,16 @@ class FlairEmojiProcedures:
                     data={'filepath': filename, 'mimetype': mimetype})
             return load_flair_emoji_upload_lease(result)
 
-        def deposit_file(self, file: IO[bytes], upload_lease: FlairEmojiUploadLease) -> None:
+        def deposit_file(self, file: IO[bytes], upload_lease: FlairEmojiUploadLease, *,
+                timeout: float = 1000) -> None:
             session = self._client.http.session
-            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file}, timeout=1000)
+            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields,
+                    files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
-        def upload(self, file: IO[bytes], *, sr: str) -> FlairEmojiUploadLease:
+        def upload(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> FlairEmojiUploadLease:
             upload_lease = self.obtain_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease)
+            self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
         def add(self, sr: str, s3_object_key: str, name: str, *,

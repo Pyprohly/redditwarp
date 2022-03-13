@@ -37,29 +37,31 @@ class RedesignRedditSubredditStyleProcedures:
         def obtain_mobile_banner_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> SubredditStyleAssetUploadLease:
             return self._obtain_upload_lease(sr=sr, filename=filename, mimetype=mimetype, imagetype='mobileBannerImage')
 
-        def deposit_file(self, file: IO[bytes], upload_lease: SubredditStyleAssetUploadLease) -> None:
+        def deposit_file(self, file: IO[bytes], upload_lease: SubredditStyleAssetUploadLease, *,
+                timeout: float = 1000) -> None:
             session = self._client.http.session
-            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields, files={'file': file}, timeout=1000)
+            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields,
+                    files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
-        def upload_banner(self, file: IO[bytes], *, sr: str) -> SubredditStyleAssetUploadLease:
+        def upload_banner(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
             upload_lease = self.obtain_banner_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease)
+            self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-        def upload_banner_overlay(self, file: IO[bytes], *, sr: str) -> SubredditStyleAssetUploadLease:
+        def upload_banner_overlay(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
             upload_lease = self.obtain_banner_overlay_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease)
+            self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-        def upload_banner_overlay_hover(self, file: IO[bytes], *, sr: str) -> SubredditStyleAssetUploadLease:
+        def upload_banner_overlay_hover(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
             upload_lease = self.obtain_banner_overlay_hover_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease)
+            self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-        def upload_mobile_banner(self, file: IO[bytes], *, sr: str) -> SubredditStyleAssetUploadLease:
+        def upload_mobile_banner(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
             upload_lease = self.obtain_mobile_banner_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease)
+            self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
     upload_banner: cached_property[_upload_banner] = cached_property(_upload_banner)

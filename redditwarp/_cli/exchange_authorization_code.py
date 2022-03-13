@@ -33,7 +33,7 @@ from pprint import pp
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport, new_session
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
-from redditwarp.core.reddit_http_client_SYNC import get_user_agent
+from redditwarp.util.user_agent_SYNC import get_user_agent_from_session
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -72,13 +72,13 @@ pp(dict(grant))
 print()
 
 session = new_session()
-user_agent = get_user_agent(session) + " redditwarp.cli.exchange_authorization_code"
+ua = get_user_agent_from_session(session) + " redditwarp.cli.exchange_authorization_code"
 token_client = RedditTokenObtainmentClient(
     session,
     redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
     (client_id, client_secret),
     grant,
-    headers={'User-Agent': user_agent},
+    headers={'User-Agent': ua},
 )
 
 print('Obtaining token(s) from token server...\n')

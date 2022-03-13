@@ -29,7 +29,7 @@ class CustomFeedProcedures:
             raise
         return load_custom_feed(root['data'], self._client)
 
-    def retrieve(self, user: str = '') -> Sequence[CustomFeed]:
+    def list_created(self, user: str = '') -> Sequence[CustomFeed]:
         uri = '/api/multi/mine'
         if user:
             uri = f'/api/multi/user/{user}'

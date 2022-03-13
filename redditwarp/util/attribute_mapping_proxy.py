@@ -10,8 +10,8 @@ class AttributeMappingProxy(Mapping[str, V]):
     __slots__ = ('_store',)
     _store: Mapping[str, V]
 
-    def __init__(self, data: Mapping[str, V]) -> None:
-        object.__setattr__(self, '_store', data)
+    def __init__(self, mapping: Mapping[str, V]) -> None:
+        object.__setattr__(self, '_store', mapping)
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._store})'
@@ -71,6 +71,13 @@ class AttributeMappingProxy(Mapping[str, V]):
     if isinstance(getattr(PrettyPrinter, '_dispatch', None), dict):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
 
+
+class MappingRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
+    def __getattr__(self, name: str) -> Any:
+        attr = super().__getattr__(name)
+        if isinstance(attr, Mapping):
+            return MappingRecursiveAttributeMappingProxy(attr)
+        return attr
 
 class DictRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
     def __getattr__(self, name: str) -> Any:

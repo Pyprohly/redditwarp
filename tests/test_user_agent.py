@@ -3,7 +3,7 @@ from typing import TypeVar, Type, Optional, Sequence, Tuple
 
 from dataclasses import dataclass
 
-from redditwarp.util.user_agent import BOT_USER_AGENT_REGEX
+from redditwarp.util.user_agent import RECOMMENDED_BOT_USER_AGENT_REGEX
 
 @dataclass
 class BotUserAgent:
@@ -16,7 +16,7 @@ class BotUserAgent:
 
     @classmethod
     def parse(cls: Type[T], s: str) -> Optional[T]:
-        m = BOT_USER_AGENT_REGEX.match(s)
+        m = RECOMMENDED_BOT_USER_AGENT_REGEX.match(s)
         if m:
             return cls(**m.groupdict())
         return None

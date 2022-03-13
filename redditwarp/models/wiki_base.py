@@ -35,7 +35,7 @@ class BaseWikiPageRevisionAuthorUser(Artifact):
 
         self.has_premium: bool = d['is_gold']
 
-        self.is_employee: bool = d['is_employee']
+        self.is_admin: bool = d['is_employee']
         self.is_friend: bool = d['is_friend']
         self.is_a_subreddit_moderator: bool = d['is_mod']
 

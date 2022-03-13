@@ -75,9 +75,16 @@ class Authorizer:
         return self.token_client is not None
 
     def get_token(self) -> Token:
-        if (tk := self.token) is not None:
-            return tk
-        raise RuntimeError('token not set')
+        tk = self.token
+        if tk is None:
+            raise RuntimeError('token not set')
+        return tk
+
+    def set_token(self, token: Token) -> None:
+        self.token = token
+
+    def set_access_token(self, access_token: str) -> None:
+        self.set_token(Token(access_token))
 
     def prepare_request(self, request: Request, token: Optional[Token] = None) -> None:
         tk = self.get_token() if token is None else token
@@ -98,9 +105,7 @@ class Authorized(RequestorAugmenter):
 
         token_used = authorizer.get_token()
         authorizer.prepare_request(request, token_used)
-
         resp = await self.requestor.send(request, timeout=timeout)
-
         auth_params = extract_www_authenticate_auth_params(resp)
 
         invalid_token = auth_params.get('error', '') == 'invalid_token'
@@ -110,9 +115,7 @@ class Authorized(RequestorAugmenter):
                     await authorizer.renew_token()
 
             authorizer.prepare_request(request)
-
             resp = await self.requestor.send(request, timeout=timeout)
-
             auth_params = extract_www_authenticate_auth_params(resp)
 
         raise_for_resource_server_response_error(auth_params)

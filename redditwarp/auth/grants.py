@@ -39,31 +39,31 @@ class AuthorizationGrant(Mapping[str, str]):
 
 @dataclass(frozen=True)
 class AuthorizationCodeGrant(AuthorizationGrant):
-    GRANT_TYPE = 'authorization_code'
+    GRANT_TYPE: ClassVar[str] = 'authorization_code'
     code: str
     redirect_uri: Optional[str]
     client_id: Optional[str] = None
 
 @dataclass(frozen=True)
 class ResourceOwnerPasswordCredentialsGrant(AuthorizationGrant):
-    GRANT_TYPE = 'password'
+    GRANT_TYPE: ClassVar[str] = 'password'
     username: str
     password: str
     scope: Optional[str] = None
 
 @dataclass(frozen=True)
 class ClientCredentialsGrant(AuthorizationGrant):
-    GRANT_TYPE = 'client_credentials'
+    GRANT_TYPE: ClassVar[str] = 'client_credentials'
     scope: Optional[str] = None
 
 @dataclass(frozen=True)
 class RefreshTokenGrant(AuthorizationGrant):
-    GRANT_TYPE = 'refresh_token'
+    GRANT_TYPE: ClassVar[str] = 'refresh_token'
     refresh_token: str
     scope: Optional[str] = None
 
 @dataclass(frozen=True)
 class InstalledClientGrant(AuthorizationGrant):
-    GRANT_TYPE = "https://oauth.reddit.com/grants/installed_client"
+    GRANT_TYPE: ClassVar[str] = "https://oauth.reddit.com/grants/installed_client"
     device_id: str
     scope: Optional[str] = None

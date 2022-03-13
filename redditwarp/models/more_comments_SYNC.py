@@ -35,6 +35,8 @@ class ContinueThisThread(MoreComments):
         first_child = node.children[0]
         if first_child.value.id36 != self.comment_id36:
             raise ResultRejectedException(f'comment `{self.submission_id36}/{self.comment_id36}` was not found')
+        if len(node.children) != 1:
+            raise Exception
         return MoreCommentsTreeNode(None, first_child.children, node.more)
 
 class LoadMoreComments(MoreComments):

@@ -29,7 +29,6 @@ def make_request(
     data: Optional[Union[Mapping[str, str], bytes]] = None,
     json: Any = None,
     files: Optional[RequestFiles] = None,
-    timeout: float = -2,
 ) -> Request:
     params = dict(params or {})
     headers = CaseInsensitiveDict(headers or {})

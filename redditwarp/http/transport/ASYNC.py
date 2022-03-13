@@ -27,7 +27,7 @@ def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
     return module_spec
 
 def load_transport() -> TransportInfo:
-    if not transport_info_registry:
+    if not transport_registry:
         for module_spec in transport_module_spec_list:
             try:
                 load_module_from_spec(module_spec)
@@ -37,7 +37,7 @@ def load_transport() -> TransportInfo:
         else:
             raise ModuleNotFoundError('An HTTP transport library needs to be installed.')
 
-    return next(iter(transport_info_registry.values()))
+    return next(iter(transport_registry.values()))
 
 def new_session() -> SessionBase:
     new_session = load_transport().new_session
@@ -55,10 +55,10 @@ def register(
         version=version,
         new_session=new_session,
     )
-    transport_info_registry[adaptor_module_name] = info
+    transport_registry[adaptor_module_name] = info
 
 transport_module_spec_list = [
     load_spec('.carriers.httpx_async', __package__),
     load_spec('.carriers.aiohttp', __package__),
 ]
-transport_info_registry: MutableMapping[str, TransportInfo] = {}
+transport_registry: MutableMapping[str, TransportInfo] = {}

@@ -33,6 +33,7 @@ class BaseUser(Artifact):
         self.has_premium: bool = d['is_gold']
         self.has_verified_email: bool = d['has_verified_email']
 
+        self.is_admin: bool = d['is_employee']
         self.is_friend: bool = d['is_friend']
         self.is_a_subreddit_moderator: bool = d['is_mod']
 

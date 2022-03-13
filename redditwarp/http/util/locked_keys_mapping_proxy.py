@@ -7,17 +7,15 @@ from pprint import PrettyPrinter
 K = TypeVar('K')
 V = TypeVar('V')
 
-class LingeringItemsMapping(MutableMapping[K, V]):
+class LockedKeysMappingProxy(MutableMapping[K, V]):
     def __init__(self,
-        m: Optional[MutableMapping[K, V]] = None,
-        lingering_item_keys: Optional[MutableSet[K]] = None,
+        mapping: MutableMapping[K, V],
+        locked_keys: Optional[MutableSet[K]] = None,
     ) -> None:
-        if m is None:
-            m = {}
-        self._store = m
-        if lingering_item_keys is None:
-            lingering_item_keys = set()
-        self.lingering_item_keys: MutableSet[K] = lingering_item_keys
+        self._store = mapping
+        if locked_keys is None:
+            locked_keys = set()
+        self.locked_keys: MutableSet[K] = locked_keys
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._store})'
@@ -35,12 +33,12 @@ class LingeringItemsMapping(MutableMapping[K, V]):
         return self._store[key]
 
     def __setitem__(self, key: K, value: V) -> None:
-        if key in self.lingering_item_keys:
+        if key in self.locked_keys:
             return
         self._store[key] = value
 
     def __delitem__(self, key: K) -> None:
-        if key in self.lingering_item_keys:
+        if key in self.locked_keys:
             return
         del self._store[key]
 

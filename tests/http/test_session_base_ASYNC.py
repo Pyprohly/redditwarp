@@ -1,10 +1,10 @@
 
 from __future__ import annotations
 
-import asyncio
-import contextvars
+# import asyncio
+# import contextvars
 
-import pytest
+# import pytest
 
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.response import Response
@@ -22,6 +22,8 @@ class MySession(SessionBase):
 
 requ = Request('', '', params={}, headers={}, payload=None)
 
+# Unused idea for now
+'''
 class TestTimeoutAsMethod:
     @pytest.mark.asyncio
     async def test_basics(self) -> None:
@@ -148,3 +150,4 @@ class TestTimeoutAsMethodAsync:
 
         coros = [coro(i) for i in range(100)]
         await asyncio.gather(*coros)
+'''

@@ -44,34 +44,33 @@ class Recorded(RequestorAugmenter):
             raise Exception
         return resp
 
+
+
 class Last:
     @property
     def request(self) -> Optional[Request]:
-        return self._recorder.last_request
+        return self.recorder.last_request
     @property
     def response(self) -> Optional[Response]:
-        return self._recorder.last_response
+        return self.recorder.last_response
     @property
     def transfer(self) -> Optional[tuple[Request, Response]]:
-        return self._recorder.last_transfer
+        return self.recorder.last_transfer
     @property
     def transmit(self) -> Optional[tuple[Request, Optional[Response]]]:
-        return self._recorder.last_transmit
+        return self.recorder.last_transmit
     @property
     def request_queue(self) -> MutableSequence[Request]:
-        return self._recorder.last_request_queue
+        return self.recorder.last_request_queue
     @property
     def response_queue(self) -> MutableSequence[Response]:
-        return self._recorder.last_response_queue
+        return self.recorder.last_response_queue
     @property
     def transfer_queue(self) -> MutableSequence[tuple[Request, Response]]:
-        return self._recorder.last_transfer_queue
+        return self.recorder.last_transfer_queue
     @property
     def transmit_queue(self) -> MutableSequence[tuple[Request, Optional[Response]]]:
-        return self._recorder.last_transmit_queue
+        return self.recorder.last_transmit_queue
 
     def __init__(self, recorder: Recorded) -> None:
-        self._recorder = recorder
-
-    def __abs__(self) -> Recorded:
-        return self._recorder
+        self.recorder: Recorded = recorder

@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import MutableMapping, List, Optional, Dict
+    from typing import MutableMapping, List, Optional
 
 from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
 from redditwarp.core.recorded_SYNC import Recorded, Last
@@ -57,17 +57,17 @@ class BadSession(SessionBase):
 
 def test_request() -> None:
     session = GoodSession(200, {}, b'')
-    headers = {'cheese': 'bacon', 'fire': 'water'}
-    http = RedditHTTPClient(session=session, headers=headers)
-    params: Dict[str, str] = {'water': 'earth'}
-    headers = {'fire': 'air'}
+    params = {'a': '1', 'b': '2'}
+    headers = {'a': '1', 'b': '2'}
+    http = RedditHTTPClient(session=session, params=params, headers=headers)
+    params = {'b': '2', 'c': '3'}
+    headers = {'b': '2', 'c': '3'}
     http.request('DELETE', 'system32', params=params, headers=headers, data={})
     requ = session.history[0]
     assert requ.verb == 'DELETE'
     assert requ.uri == 'https://oauth.reddit.com/system32'
-    assert requ.params == {'raw_json': '1', 'api_type': 'json', 'water': 'earth'}
-    assert requ.headers.pop('User-Agent')
-    assert requ.headers == {'cheese': 'bacon', 'fire': 'air'}
+    assert requ.params == {'a': '1', 'b': '2', 'c': '3'}
+    assert requ.headers == {'a': '1', 'b': '2', 'c': '3'}
 
 class TestLastMessageRecord:
     blank_request = Request('', '', params={}, headers={}, payload=None)
