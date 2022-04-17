@@ -8,19 +8,19 @@ from ..submission_draft import Draft, MarkdownDraft, RichTextDraft
 
 
 draft_column_names_table: Mapping[str, Sequence[str]] = {
-    'id': ['id', 'id'],
-    'kind': ['kind', 'kind'],
-    'created': ['created', 'created'],
-    'modified': ['modified', 'modified'],
-    'is_public_link': ['is_public_link', 'isPublicLink'],
-    'subreddit': ['subreddit', 'subredditId'],
-    'title': ['title', 'title'],
-    'body': ['body', 'body'],
-    'send_replies': ['send_replies', 'sendReplies'],
-    'spoiler': ['spoiler', 'isSpoiler'],
-    'nsfw': ['nsfw', 'isNSFW'],
-    'original_content': ['original_content', 'isOriginalContent'],
-    'flair': ['flair', 'flair'],
+    'id': ('id', 'id'),
+    'kind': ('kind', 'kind'),
+    'created': ('created', 'created'),
+    'modified': ('modified', 'modified'),
+    'is_public_link': ('is_public_link', 'isPublicLink'),
+    'subreddit': ('subreddit', 'subredditId'),
+    'title': ('title', 'title'),
+    'body': ('body', 'body'),
+    'send_replies': ('send_replies', 'sendReplies'),
+    'spoiler': ('spoiler', 'isSpoiler'),
+    'nsfw': ('nsfw', 'isNSFW'),
+    'original_content': ('original_content', 'isOriginalContent'),
+    'flair': ('flair', 'flair'),
 }
 normal_draft_column_names_map: Mapping[str, str] = {k: v[0] for k, v in draft_column_names_table.items()}
 public_draft_column_names_map: Mapping[str, str] = {k: v[1] for k, v in draft_column_names_table.items()}

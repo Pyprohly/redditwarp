@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from ...listing.listing_async_paginator import ListingAsyncPaginator
 from ....models.moderation_action_log_entry import ModerationActionLogEntry
-from ....models.load.moderation_action_log_entry import load_mod_log_action_entry
+from ....models.load.moderation_action_log_entry import load_moderation_action_log_entry
 
 class ModerationActionLogAsyncPaginator(ListingAsyncPaginator[ModerationActionLogEntry]):
     def __init__(self,
@@ -33,4 +33,4 @@ class ModerationActionLogAsyncPaginator(ListingAsyncPaginator[ModerationActionLo
 
     async def fetch(self) -> Sequence[ModerationActionLogEntry]:
         data = await self._fetch_data()
-        return [load_mod_log_action_entry(d['data']) for d in data['children']]
+        return [load_moderation_action_log_entry(d['data']) for d in data['children']]

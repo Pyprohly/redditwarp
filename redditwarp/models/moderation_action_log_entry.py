@@ -1,17 +1,18 @@
 
-from __future__ import annotations
 from typing import Any, Mapping
 
-from datetime import datetime, timezone
+from datetime import datetime
+from dataclasses import dataclass
 
 from .artifact import IArtifact
 
+@dataclass(repr=False, eq=False)
 class ModerationActionLogEntry(IArtifact):
-    def __init__(self, d: Mapping[str, Any]) -> None:
-        self.d: Mapping[str, Any] = d
-        self.uuid: str = d['id'].partition('_')[-1]
-        self.action_name: str = d['action']
-        self.agent_name: str = d['mod']
-        self.agent_id: int = int(d['mod_id36'], 36)
-        self.timestamp: int = int(d['created_utc'])
-        self.datetime: datetime = datetime.fromtimestamp(self.timestamp, timezone.utc)
+    #_: KW_ONLY
+    d: Mapping[str, Any]
+    uuid: str
+    timestamp: int
+    datetime: datetime
+    action: str
+    agent_id: int
+    agent: str

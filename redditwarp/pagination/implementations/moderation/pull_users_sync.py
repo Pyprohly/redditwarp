@@ -27,7 +27,7 @@ class ModerationUsersPaginator(MoreAvailablePaginator[T], Bidirectional, CursorP
         *,
         limit: Optional[int] = 100,
     ):
-        super().__init__()
+        super().__init__(limit=limit)
         self.direction: bool = True
         self.client: Client = client
         self.uri: str = uri

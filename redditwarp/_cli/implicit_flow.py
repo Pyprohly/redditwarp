@@ -43,7 +43,7 @@ from functools import partial
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport
 
-def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
+def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:
         v = input(prompt)
     if v == '.':

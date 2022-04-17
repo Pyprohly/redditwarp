@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
     from ..http.session_base_ASYNC import SessionBase
-    from .authorizer_ASYNC import Authorizer
-    from .recorded_ASYNC import Last
     from ..http.requestor_ASYNC import Requestor
 
 from ..auth.const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL
@@ -19,6 +17,8 @@ from ..http.transport.ASYNC import new_session
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..util.user_agent_ASYNC import get_user_agent_from_session
 from ..auth.token import Token
+from .recorded_ASYNC import Last
+from .authorizer_ASYNC import Authorizer
 
 
 class RedditHTTPClient(BasicRequestDefaultsHTTPClient):
@@ -117,13 +117,13 @@ def build_public_api_reddit_http_client_from_access_token(
     *,
     session: Optional[SessionBase] = None,
 ) -> PublicAPIRedditHTTPClient:
-        if session is None:
-            session = new_session()
-        ua = get_user_agent_from_session(session)
-        headers = CaseInsensitiveDict({'User-Agent': ua})
-        recorder = Recorded(session)
-        last = Last(recorder)
-        authorizer = Authorizer(token=Token(access_token))
-        requestor = RedditGiveMeJSONPlease(RateLimited(Authorized(recorder, authorizer)))
-        http = PublicAPIRedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
-        return http
+    if session is None:
+        session = new_session()
+    ua = get_user_agent_from_session(session)
+    headers = CaseInsensitiveDict({'User-Agent': ua})
+    recorder = Recorded(session)
+    last = Last(recorder)
+    authorizer = Authorizer(token=Token(access_token))
+    requestor = RedditGiveMeJSONPlease(RateLimited(Authorized(recorder, authorizer)))
+    http = PublicAPIRedditHTTPClient(session, requestor, headers=headers, authorizer=authorizer, last=last)
+    return http
