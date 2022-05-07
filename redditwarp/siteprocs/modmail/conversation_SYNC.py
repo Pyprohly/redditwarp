@@ -16,7 +16,7 @@ from ...models.modmail_SYNC import (
     UserDossierConversationAggregate,
     OptionalUserDossierConversationAggregate,
 )
-from ...models.load.modmail_SYNC import (
+from ...model_loaders.modmail_SYNC import (
     load_conversation,
     load_message,
     load_conversation_aggregate,

@@ -14,20 +14,20 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...models.load.subreddit_user_item import (
+from ...model_loaders.subreddit_user_item import (
     load_moderator_user_item,
     load_contributor_user_item,
     load_banned_user_item,
     load_muted_user_item,
 )
-from ...models.load.moderation_note import load_moderation_user_note
+from ...model_loaders.moderation_note import load_moderation_user_note
 from .pull_users_SYNC import PullUsers
 from .legacy_SYNC import Legacy
 from .pull_SYNC import Pull
 from ...util.base_conversion import to_base36
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.moderation.sync import ModerationActionLogPaginator
-from ...pagination.implementations.moderation.note_pulls_sync import ModerationNotePaginator
+from ...pagination.paginators.moderation.sync1 import ModerationActionLogPaginator
+from ...pagination.paginators.moderation.note_pulls_sync1 import ModerationNotePaginator
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk

@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from .ASYNC import CommentTreeProcedures
 
 from ...util.base_conversion import to_base36
-from ...models.load.comment_tree_ASYNC import load_submission_tree_node
+from ...model_loaders.comment_tree_ASYNC import load_submission_tree_node
 
 class Fetch:
     def __init__(self, outer: CommentTreeProcedures, client: Client):

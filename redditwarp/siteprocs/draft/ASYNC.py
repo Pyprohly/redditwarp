@@ -6,8 +6,8 @@ if TYPE_CHECKING:
     from ...models.submission_draft import Draft
     from ...models.submission_draft_ASYNC import DraftList
 
-from ...models.load.submission_draft import load_public_draft
-from ...models.load.submission_draft_ASYNC import load_draft_list
+from ...model_loaders.submission_draft import load_public_draft
+from ...model_loaders.submission_draft_ASYNC import load_draft_list
 from ...util.base_conversion import to_base36
 
 class DraftProcedures:

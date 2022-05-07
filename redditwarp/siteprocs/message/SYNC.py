@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from functools import cached_property
 
 from ...util.base_conversion import to_base36
-from ...models.load.message_SYNC import load_composed_message, load_composed_message_thread
+from ...model_loaders.message_SYNC import load_composed_message, load_composed_message_thread
 from .pull_SYNC import Pull
 
 class MessageProcedures:

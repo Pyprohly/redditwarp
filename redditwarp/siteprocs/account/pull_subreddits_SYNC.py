@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...models.subreddit_SYNC import Subreddit
 
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.account_sync import (
+from ...pagination.paginators.account_sync1 import (
     SubscribedListingPaginator,
     ContributingListingPaginator,
     ModeratingListingPaginator,

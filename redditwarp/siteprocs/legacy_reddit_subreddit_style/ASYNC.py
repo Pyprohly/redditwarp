@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.stylesheet import StylesheetInfo
 
-from ...models.load.stylesheet import load_stylesheet_info
+from ...model_loaders.stylesheet import load_stylesheet_info
 
 class LegacyRedditSubredditStyleProcedures:
     def __init__(self, client: Client):

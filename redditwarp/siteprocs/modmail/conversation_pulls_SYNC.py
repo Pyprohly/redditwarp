@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...models.modmail_SYNC import Conversation, Message
 
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.modmail_sync import ModmailConversationsPaginator
+from ...pagination.paginators.modmail_sync1 import ModmailConversationsPaginator
 
 class Pulls:
     def __init__(self, client: Client) -> None:

@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 import json
 
-from ...models.load.custom_feed_SYNC import load_custom_feed
+from ...model_loaders.custom_feed_SYNC import load_custom_feed
 from ... import exceptions
 from ... import http
 from ...iterators.chunking import chunked

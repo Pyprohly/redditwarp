@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     )
 
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.implementations.moderation.async_ import (
+from ...pagination.paginators.moderation.async1 import (
     UserRelationshipItemListingAsyncPaginator,
     BannedUserRelationshipItemListingAsyncPaginator,
 )

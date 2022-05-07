@@ -6,13 +6,13 @@ if TYPE_CHECKING:
     from ...models.live_thread_SYNC import LiveThread, LiveUpdate
 
 from ...models.live_thread import ContributorList, Contributor
-from ...models.load.live_thread_SYNC import load_live_thread, load_live_update
+from ...model_loaders.live_thread_SYNC import load_live_thread, load_live_update
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk
 from ...util.base_conversion import to_base36
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.live_thread_sync import LiveUpdateListingPaginator
+from ...pagination.paginators.live_thread_sync1 import LiveUpdateListingPaginator
 from ... import http
 
 class LiveThreadProcedures:

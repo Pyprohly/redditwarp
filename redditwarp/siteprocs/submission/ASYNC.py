@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...models.load.submission_ASYNC import load_submission
+from ...model_loaders.submission_ASYNC import load_submission
 from ...models.media_upload_lease import MediaUploadLease
-from ...models.load.media_upload_lease import load_media_upload_lease
+from ...model_loaders.media_upload_lease import load_media_upload_lease
 from ...http.payload import guess_mimetype_from_filename
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
@@ -19,8 +19,8 @@ from ...iterators.call_chunk_calling_async_iterator import CallChunkCallingAsync
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.async_call_chunk import AsyncCallChunk
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.implementations.submission_async import SearchSubmissionsListingAsyncPaginator, SubmissionDuplicatesAsyncPaginator
-from ...models.load.comment_ASYNC import load_comment
+from ...pagination.paginators.submission_async1 import SearchSubmissionsListingAsyncPaginator, SubmissionDuplicatesAsyncPaginator
+from ...model_loaders.comment_ASYNC import load_comment
 from .fetch_ASYNC import Fetch
 from .get_ASYNC import Get
 

@@ -9,7 +9,7 @@ from .submission_collection_base import (
     GBaseSubmissionCollection,
 )
 from .submission_SYNC import Submission
-from .load.submission_SYNC import load_submission
+from ..model_loaders.submission_SYNC import load_submission
 
 class SubmissionCollectionDetails(BaseSubmissionCollectionDetails):
     def __init__(self, d: Mapping[str, Any], client: Client):

@@ -8,10 +8,10 @@ if TYPE_CHECKING:
 from functools import cached_property
 
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.wiki_sync import WikiPageRevisionsPaginator
-from ...pagination.listing.submission_listing_paginator import SubmissionListingPaginator
+from ...pagination.paginators.wiki_sync1 import WikiPageRevisionsPaginator
+from ...pagination.paginators.listing.submission_listing_paginator import SubmissionListingPaginator
 from ...models.wiki_SYNC import WikiPage, WikiPageRevision, WikiPageSettings
-from ...models.load.wiki_SYNC import load_wiki_page, load_wiki_page_settings
+from ...model_loaders.wiki_SYNC import load_wiki_page, load_wiki_page_settings
 
 class WikiProcedures:
     def __init__(self, client: Client):

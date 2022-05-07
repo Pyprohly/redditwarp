@@ -1,5 +1,6 @@
 
 from typing import Callable
+
 import time
 
 class TokenBucket:

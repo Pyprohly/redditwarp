@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.submission_collection_SYNC import SubmissionCollection
 
-from ...models.load.submission_collection_SYNC import load_submission_collection
+from ...model_loaders.submission_collection_SYNC import load_submission_collection
 from ...util.base_conversion import to_base36
 
 class Create:

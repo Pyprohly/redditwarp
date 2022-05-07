@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...models.load.subreddit_style_asset_upload_lease import load_subreddit_style_asset_upload_lease
+from ...model_loaders.subreddit_style_asset_upload_lease import load_subreddit_style_asset_upload_lease
 from ...http.payload import guess_mimetype_from_filename
 
 class RedesignRedditSubredditStyleProcedures:

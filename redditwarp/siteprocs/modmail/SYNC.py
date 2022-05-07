@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.modmail import ModmailModeratedSubreddit
 
-from ...models.load.modmail import load_modmail_moderated_subreddit
+from ...model_loaders.modmail import load_modmail_moderated_subreddit
 from .conversation_SYNC import ConversationProcedures
 
 class ModmailProcedures:

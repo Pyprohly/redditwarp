@@ -37,8 +37,8 @@ from functools import cached_property
 from ...http.payload import guess_mimetype_from_filename
 from ...models.widget import WidgetImageUploadLease
 from ...models.widget.SYNC import WidgetList
-from ...models.load.widget import load_widget_image_upload_lease
-from ...models.load.widget_SYNC import (
+from ...model_loaders.widget import load_widget_image_upload_lease
+from ...model_loaders.widget_SYNC import (
     load_widget,
     load_text_area_widget,
     load_button_widget,

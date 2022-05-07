@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from .SYNC import SubmissionProcedures
 
-from ...models.load.submission_SYNC import load_submission
+from ...model_loaders.submission_SYNC import load_submission
 from ...models.submission_SYNC import Submission, LinkPost, TextPost
 from ...util.base_conversion import to_base36
 from ...util.extract_id_from_url import extract_submission_id_from_url

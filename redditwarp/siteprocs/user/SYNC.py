@@ -6,21 +6,21 @@ if TYPE_CHECKING:
     from ...models.user_SYNC import User
     from ...models.moderated_subreddit import ModeratedSubreddit
 
-from .get_partial_user_SYNC import GetPartialUser
-from .bulk_fetch_partial_user_SYNC import BulkFetchPartialUser
+from .get_user_summary_SYNC import GetUserSummary
+from .bulk_fetch_user_summary_SYNC import BulkFetchUserSummary
 from .pull_SYNC import Pull
 from .pull_user_subreddits_SYNC import PullUserSubreddits
-from ...models.load.user_SYNC import load_user
-from ...models.load.moderated_subreddit import load_moderated_subreddit
+from ...model_loaders.user_SYNC import load_user
+from ...model_loaders.moderated_subreddit import load_moderated_subreddit
 from ... import http
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.user.sync import SearchUsersListingPaginator
+from ...pagination.paginators.user.sync1 import SearchUsersListingPaginator
 
 class UserProcedures:
     def __init__(self, client: Client):
         self._client = client
-        self.get_partial_user: GetPartialUser = GetPartialUser(client)
-        self.bulk_fetch_partial_user: BulkFetchPartialUser = BulkFetchPartialUser(client)
+        self.get_user_summary: GetUserSummary = GetUserSummary(client)
+        self.bulk_fetch_user_summary: BulkFetchUserSummary = BulkFetchUserSummary(client)
         self.pull: Pull = Pull(client)
         self.pull_user_subreddits: PullUserSubreddits = PullUserSubreddits(client)
 

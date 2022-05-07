@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import Comment
 
-from ...models.load.comment_SYNC import load_comment
+from ...model_loaders.comment_SYNC import load_comment
 from ...util.base_conversion import to_base36
 from ...util.extract_id_from_url import extract_comment_id_from_url
 

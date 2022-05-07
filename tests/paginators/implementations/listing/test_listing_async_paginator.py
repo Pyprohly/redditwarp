@@ -8,7 +8,7 @@ from redditwarp.core.recorded_ASYNC import Recorded, Last
 from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.pagination.listing.listing_async_paginator import ListingAsyncPaginator
+from redditwarp.pagination.paginators.listing.listing_async_paginator import ListingAsyncPaginator
 
 class MySession(SessionBase):
     def __init__(self,

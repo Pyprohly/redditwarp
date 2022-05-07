@@ -6,21 +6,21 @@ if TYPE_CHECKING:
     from ...models.user_ASYNC import User
     from ...models.moderated_subreddit import ModeratedSubreddit
 
-from .get_partial_user_ASYNC import GetPartialUser
-from .bulk_fetch_partial_user_ASYNC import BulkFetchPartialUser
+from .get_user_summary_ASYNC import GetUserSummary
+from .bulk_fetch_user_summary_ASYNC import BulkFetchUserSummary
 from .pull_ASYNC import Pull
 from .pull_user_subreddits_ASYNC import PullUserSubreddits
-from ...models.load.user_ASYNC import load_user
-from ...models.load.moderated_subreddit import load_moderated_subreddit
+from ...model_loaders.user_ASYNC import load_user
+from ...model_loaders.moderated_subreddit import load_moderated_subreddit
 from ... import http
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.implementations.user.async_ import SearchUsersListingAsyncPaginator
+from ...pagination.paginators.user.async1 import SearchUsersListingAsyncPaginator
 
 class UserProcedures:
     def __init__(self, client: Client):
         self._client = client
-        self.get_partial_user: GetPartialUser = GetPartialUser(client)
-        self.bulk_fetch_partial_user: BulkFetchPartialUser = BulkFetchPartialUser(client)
+        self.get_user_summary: GetUserSummary = GetUserSummary(client)
+        self.bulk_fetch_user_summary: BulkFetchUserSummary = BulkFetchUserSummary(client)
         self.pull: Pull = Pull(client)
         self.pull_user_subreddits: PullUserSubreddits = PullUserSubreddits(client)
 

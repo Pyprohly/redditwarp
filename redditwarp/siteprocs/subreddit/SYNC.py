@@ -8,16 +8,16 @@ if TYPE_CHECKING:
     from ...models.subreddit_rules import SubredditRules
     from ...models.moderator_list import ModeratorListItem
 
-from ...models.load.subreddit_SYNC import load_subreddit, load_potentially_inaccessible_subreddit
-from ...models.load.subreddit_rules import load_subreddit_rules
-from ...models.load.moderator_list import load_moderator_list_item
+from ...model_loaders.subreddit_SYNC import load_subreddit, load_potentially_inaccessible_subreddit
+from ...model_loaders.subreddit_rules import load_subreddit_rules
+from ...model_loaders.moderator_list import load_moderator_list_item
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
-from ...pagination.implementations.subreddit_sync import SearchSubredditsPaginator
+from ...pagination.paginators.listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
+from ...pagination.paginators.subreddit_sync1 import SearchSubredditsPaginator
 from ... import exceptions
 from ... import http
 from ...http.util.json_load import json_loads_response

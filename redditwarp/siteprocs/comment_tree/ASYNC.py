@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from functools import cached_property
 
 from ...util.base_conversion import to_base36
-from ...models.load.comment_tree_ASYNC import load_more_children
+from ...model_loaders.comment_tree_ASYNC import load_more_children
 from .get_ASYNC import Get
 from .fetch_ASYNC import Fetch
 

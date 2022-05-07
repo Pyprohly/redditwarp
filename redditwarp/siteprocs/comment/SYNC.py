@@ -8,7 +8,7 @@ if TYPE_CHECKING:
         EditPostTextEndpointComment,
     )
 
-from ...models.load.comment_SYNC import load_comment, load_edit_post_text_endpoint_comment
+from ...model_loaders.comment_SYNC import load_comment, load_edit_post_text_endpoint_comment
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator

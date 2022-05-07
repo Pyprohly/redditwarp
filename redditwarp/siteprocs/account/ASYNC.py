@@ -9,10 +9,10 @@ if TYPE_CHECKING:
     from ...models.karma_breakdown_entry import KarmaBreakdownEntry
 
 from .pull_subreddits_ASYNC import PullSubreddits
-from ...models.load.my_account_ASYNC import load_account
-from ...models.load.user_relationship_item import load_user_relationship_item, load_friend_relationship_item
-from ...models.load.karma_breakdown_entry import load_karma_breakdown_entry
-from ...models.load.trophy import load_trophy
+from ...model_loaders.my_account_ASYNC import load_account
+from ...model_loaders.user_relationship_item import load_user_relationship_item, load_friend_relationship_item
+from ...model_loaders.karma_breakdown_entry import load_karma_breakdown_entry
+from ...model_loaders.trophy import load_trophy
 from ... import exceptions
 from ...util.base_conversion import to_base36
 

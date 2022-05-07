@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
 
-from ...models.load.subreddit_SYNC import load_potentially_inaccessible_subreddit
+from ...model_loaders.subreddit_SYNC import load_potentially_inaccessible_subreddit
 from ...util.base_conversion import to_base36
 
 class Get:

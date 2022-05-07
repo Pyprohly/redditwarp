@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from ...models.submission_SYNC import Submission
 
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.front_sync import (
+from ...pagination.paginators.front_sync1 import (
     HotListingPaginator,
     NewListingPaginator,
     TopListingPaginator,

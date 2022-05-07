@@ -83,5 +83,5 @@ class PollPost(Submission, BasePollPost):
 
 class CrosspostSubmission(Submission, GBaseCrosspostSubmission[Submission]):
     def _load_submission(self, d: Mapping[str, Any]) -> Submission:
-        from .load.submission_ASYNC import load_submission  # Cyclic import
+        from ..model_loaders.submission_ASYNC import load_submission  # Cyclic import
         return load_submission(d, self.client)

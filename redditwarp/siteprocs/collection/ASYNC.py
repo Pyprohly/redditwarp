@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...models.load.submission_collection_ASYNC import load_submission_collection_details, load_submission_collection
+from ...model_loaders.submission_collection_ASYNC import load_submission_collection_details, load_submission_collection
 from ...util.base_conversion import to_base36
 from .create_ASYNC import Create
 from .add_post_ASYNC import AddPost

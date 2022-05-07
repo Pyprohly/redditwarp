@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from ..auth.const import AUTHORIZATION_BASE_URL
 from .artifact import Artifact
 from .report import ModReport, UserReport
-from .load.report import load_mod_report, load_user_report
+from ..model_loaders.report import load_mod_report, load_user_report
 
 from dataclasses import dataclass
 

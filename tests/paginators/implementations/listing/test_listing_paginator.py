@@ -6,7 +6,7 @@ from redditwarp.core.recorded_SYNC import Recorded, Last
 from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.pagination.listing.listing_paginator import ListingPaginator
+from redditwarp.pagination.paginators.listing.listing_paginator import ListingPaginator
 
 class MySession(SessionBase):
     def __init__(self,

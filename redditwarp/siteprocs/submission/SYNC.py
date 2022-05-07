@@ -9,9 +9,9 @@ if TYPE_CHECKING:
 
 from functools import cached_property
 
-from ...models.load.submission_SYNC import load_submission
+from ...model_loaders.submission_SYNC import load_submission
 from ...models.media_upload_lease import MediaUploadLease
-from ...models.load.media_upload_lease import load_media_upload_lease
+from ...model_loaders.media_upload_lease import load_media_upload_lease
 from ...http.payload import guess_mimetype_from_filename
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
@@ -19,8 +19,8 @@ from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.implementations.submission_sync import SearchSubmissionsListingPaginator, SubmissionDuplicatesPaginator
-from ...models.load.comment_SYNC import load_comment
+from ...pagination.paginators.submission_sync1 import SearchSubmissionsListingPaginator, SubmissionDuplicatesPaginator
+from ...model_loaders.comment_SYNC import load_comment
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 

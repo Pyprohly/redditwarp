@@ -9,8 +9,8 @@ if TYPE_CHECKING:
     )
     from ...models.moderator_list import ModeratorListItem
 
-from ...models.load.moderator_list import load_moderator_list_item
-from ...models.load.user_relationship_item import load_user_relationship_item, load_banned_user_relation_item
+from ...model_loaders.moderator_list import load_moderator_list_item
+from ...model_loaders.user_relationship_item import load_user_relationship_item, load_banned_user_relation_item
 
 from .legacy_pull_users_ASYNC import LegacyPullUsers
 
