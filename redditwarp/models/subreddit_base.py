@@ -51,7 +51,7 @@ class BaseSubreddit(Artifact):
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.name: str = d['display_name']
-        self.type: str = d['subreddit_type']
+        self.openness: str = d['subreddit_type']
 
         self.subscriber_count: int = d['subscribers']
         # Value `-1` if object from search item.
@@ -98,6 +98,6 @@ class BaseInaccessibleSubreddit(Artifact):
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.name: str = d['display_name']
-        self.type: str = d['subreddit_type']
+        self.openness: str = d['subreddit_type']
 
         self.title: str = d['title']

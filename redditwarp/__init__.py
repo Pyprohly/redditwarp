@@ -19,6 +19,8 @@ from . import websocket  # noqa: F401
 from . import iterators  # noqa: F401
 from . import pagination  # noqa: F401
 from . import models  # noqa: F401
+from . import dto_models  # noqa: F401
+from . import model_loaders  # noqa: F401
 from . import util  # noqa: F401
 from . import exceptions  # noqa: F401
 

@@ -33,5 +33,5 @@ class Signal:
     pass
 
 @dataclass
-class ConnectionClosed:
+class ConnectionClosed(Signal):
     pass

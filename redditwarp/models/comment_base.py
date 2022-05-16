@@ -47,7 +47,7 @@ class BaseComment(Artifact):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
-            self.type: str = d['subreddit_type']
+            self.openness: str = d['subreddit_type']
 
     class Moderator:
         class Approved:

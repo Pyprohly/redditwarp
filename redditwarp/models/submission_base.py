@@ -46,7 +46,7 @@ class BaseSubmission(Artifact):
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
-            self.type: str = d['subreddit_type']
+            self.openness: str = d['subreddit_type']
             self.quarantined: bool = d['quarantine']
             self.subscriber_count: int = d['subreddit_subscribers']
 

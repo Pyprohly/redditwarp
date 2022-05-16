@@ -17,7 +17,7 @@ class ModeratedSubreddit(Artifact):
         self.id36: str = full_id36[3:]
         self.id: int = int(self.id36, 36)
         self.name: str = d['display_name']
-        self.type: str = d['subreddit_type']
+        self.openness: str = d['subreddit_type']
         self.subscriber_count: int = d['subscribers']
         self.title: str = d['title']
         self.nsfw: bool = d['over_18']

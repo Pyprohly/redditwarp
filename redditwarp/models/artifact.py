@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Mapping, Protocol
+from typing import Any, Mapping
 from functools import cached_property
 
 from ..util.data_members_namespace import DataMembersNamespaceMapping
@@ -12,7 +12,7 @@ class Artifact:
         self.a: DataMembersNamespaceMapping[object] = DataMembersNamespaceMapping(self)
         self.b: DictAndListRecursiveAttributeMappingProxy[Any] = DictAndListRecursiveAttributeMappingProxy(d)
 
-class IArtifact(Protocol):
+class IArtifact:
     d: Mapping[str, Any]
 
     @cached_property

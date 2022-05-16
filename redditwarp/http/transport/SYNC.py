@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from ...util.imports import load_module_from_spec
 
-class NewSessionFunction(Protocol):
+class NewSessionFunctionProtocol(Protocol):
     def __call__(self) -> SessionBase: ...
 
 @dataclass
@@ -18,7 +18,7 @@ class TransportInfo:
     adaptor_module_name: str
     name: str
     version: str
-    new_session: NewSessionFunction
+    new_session: NewSessionFunctionProtocol
 
 def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
     module_spec = find_spec(name, package)
@@ -45,7 +45,7 @@ def new_session() -> SessionBase:
 
 def register(
     adaptor_module_name: str,
-    new_session: NewSessionFunction,
+    new_session: NewSessionFunctionProtocol,
     name: str,
     version: str,
 ) -> None:

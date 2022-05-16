@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from ...util.imports import load_module_from_spec
 from ..websocket_connection_SYNC import WebSocketConnection
 
-class ConnectFunction(Protocol):
+class ConnectFunctionProtocol(Protocol):
     def __call__(self, url: str, *,
         subprotocols: Sequence[str] = (), timeout: float = -2
     ) -> WebSocketConnection: ...
@@ -20,7 +20,7 @@ class TransportInfo:
     adaptor_module_name: str
     name: str
     version: str
-    connect: ConnectFunction
+    connect: ConnectFunctionProtocol
 
 def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
     module_spec = find_spec(name, package)
@@ -50,7 +50,7 @@ def register(
     adaptor_module_name: str,
     name: str,
     version: str,
-    connect: ConnectFunction,
+    connect: ConnectFunctionProtocol,
 ) -> None:
     info = TransportInfo(
         adaptor_module_name=adaptor_module_name,

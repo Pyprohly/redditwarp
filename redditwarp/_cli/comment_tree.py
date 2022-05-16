@@ -131,7 +131,7 @@ else:
         print('Could not extract comment ID from URL.', file=sys.stderr)
         sys.exit(1)
 
-tree_node = client.p.comment_tree.get(idn)
+tree_node = client.p.comment_tree.get(idn, sort=comment_sort)
 if tree_node is None:
     print('Submission not found', file=sys.stderr)
     sys.exit(1)

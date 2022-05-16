@@ -43,11 +43,11 @@ def _main() -> None:
     class Example:
         pass
 
-    class IExampleHandler(Protocol):
+    class ExampleHandlerProtocol(Protocol):
         def __call__(self, example: Example, /) -> None:
             ...
 
-    class ExampleEventDispatcher(EventDispatcher[IExampleHandler]):
+    class ExampleEventDispatcher(EventDispatcher[ExampleHandlerProtocol]):
         def __call__(self, example: Example) -> None:
             for handler in self:
                 handler(example)

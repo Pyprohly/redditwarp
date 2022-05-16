@@ -17,11 +17,11 @@ from ...util.event_dispatcher import EventDispatcher
 TEvent_contra = TypeVar('TEvent_contra', contravariant=True)
 TEvent = TypeVar('TEvent')
 
-class IStreamEventHandler(Protocol[TEvent_contra]):
+class StreamEventHandlerProtocol(Protocol[TEvent_contra]):
     async def __call__(self, event: TEvent_contra, /) -> None:
         ...
 
-class StreamEventDispatcher(EventDispatcher[IStreamEventHandler[TEvent]], Generic[TEvent]):
+class StreamEventDispatcher(EventDispatcher[StreamEventHandlerProtocol[TEvent]], Generic[TEvent]):
     async def __call__(self, event: TEvent) -> None:
         for handler in self:
             await handler(event)

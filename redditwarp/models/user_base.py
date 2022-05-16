@@ -10,7 +10,7 @@ class BaseUser(Artifact):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
-            self.type: str = d['subreddit_type']
+            self.openness: str = d['subreddit_type']
             self.subscriber_count: int = d['subscribers']
             self.title: str = d['title']
             self.public_description: str = d['public_description']

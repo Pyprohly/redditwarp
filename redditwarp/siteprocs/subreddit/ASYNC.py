@@ -35,18 +35,14 @@ class SubredditProcedures:
         self.pulls: Pulls = Pulls(client)
 
     async def get_by_name(self, name: str) -> Optional[Subreddit]:
-        if not name:
-            raise ValueError('`name` must not be empty')
         try:
             root = await self._client.request('GET', f'/r/{name}/about')
         except http.exceptions.StatusCodeException as e:
             if e.status_code == 404:
                 return None
             raise
-
-        if root['kind'] != 't5':
+        if root['kind'] == 'Listing':
             return None
-
         return load_subreddit(root['data'], self._client)
 
     async def fetch_by_name(self, name: str) -> Subreddit:
@@ -55,7 +51,19 @@ class SubredditProcedures:
             raise exceptions.NoResultException('target not found')
         return load_subreddit(root['data'], self._client)
 
-    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[object]:
+    async def get_potentially_inaccessible_subreddit_by_name(self, name: str) -> Optional[object]:
+        root = await self._client.request('GET', '/api/info', params={'sr_name': name})
+        if children := root['data']['children']:
+            return load_potentially_inaccessible_subreddit(children[0]['data'], self._client)
+        return None
+
+    async def fetch_potentially_inaccessible_subreddit_by_name(self, name: str) -> object:
+        v = await self.get_potentially_inaccessible_subreddit_by_name(name)
+        if v is None:
+            raise exceptions.NoResultException('target not found')
+        return v
+
+    def bulk_fetch_potentially_inaccessible_subreddits(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[object]:
         async def mass_fetch(ids: Sequence[int]) -> Sequence[object]:
             id36s = map(to_base36, ids)
             full_id36s = map('t5_'.__add__, id36s)
@@ -65,7 +73,7 @@ class SubredditProcedures:
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
-    def bulk_fetch_by_name(self, names: Iterable[str]) -> CallChunkChainingAsyncIterator[object]:
+    def bulk_fetch_potentially_inaccessible_subreddits_by_name(self, names: Iterable[str]) -> CallChunkChainingAsyncIterator[object]:
         async def mass_fetch(names: Sequence[str]) -> Sequence[object]:
             root = await self._client.request('GET', '/api/info', params={'sr_name': ','.join(names)})
             return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]
