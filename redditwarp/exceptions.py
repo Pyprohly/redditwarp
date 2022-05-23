@@ -29,7 +29,7 @@ class ClientException(ArgExc):
 class NoResultException(ClientException):
     pass
 
-class ResultRejectedException(ClientException):
+class RejectedResultException(ClientException):
     pass
 
 class UnexpectedResultException(ClientException):

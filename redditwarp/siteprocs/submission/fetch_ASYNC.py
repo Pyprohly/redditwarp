@@ -9,7 +9,7 @@ from ...model_loaders.submission_ASYNC import load_submission
 from ...models.submission_ASYNC import Submission, LinkPost, TextPost
 from ...util.base_conversion import to_base36
 from ...util.extract_id_from_url import extract_submission_id_from_url
-from ...exceptions import NoResultException, ResultRejectedException
+from ...exceptions import NoResultException, RejectedResultException
 
 T = TypeVar('T')
 
@@ -40,14 +40,14 @@ class Fetch(_Common[Submission]):
             post = load_submission(m, self._client)
             if isinstance(post, TextPost):
                 return post
-            raise ResultRejectedException('the submission is not a text post')
+            raise RejectedResultException('the submission is not a text post')
 
     class _AsLinkPost(_Common[LinkPost]):
         def _load_object(self, m: Mapping[str, Any]) -> LinkPost:
             post = load_submission(m, self._client)
             if isinstance(post, LinkPost):
                 return post
-            raise ResultRejectedException('the submission is not a link post')
+            raise RejectedResultException('the submission is not a link post')
 
     def __init__(self, outer: SubmissionProcedures, client: Client):
         super().__init__(client)
