@@ -16,7 +16,8 @@ def run(*streams: Union[Awaitable[None], AsyncIterator[float]], client: Optional
         if inspect.isawaitable(obj):
             awbls.append(obj)
         else:
-            assert isinstance(obj, AsyncIterator)
+            if not isinstance(obj, AsyncIterator):
+                raise Exception
             aitrs.append(obj)
 
     async def main() -> None:

@@ -26,9 +26,9 @@ from . import exceptions  # noqa: F401
 
 
 
-import sys
+import sys as _sys
 
 globals()[__name__] = __import__(__name__)
 
 from . import _cli
-sys.modules[__name__ + '.cli'] = _cli
+_sys.modules[__name__ + '.cli'] = _cli
