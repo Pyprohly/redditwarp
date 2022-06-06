@@ -1,31 +1,40 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Awaitable, AsyncIterator, Optional, Union
+from typing import TYPE_CHECKING, AsyncIterator, Optional
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
 import asyncio
 from asyncio.queues import Queue
-import inspect
 
 
-def run(*streams: Union[Awaitable[None], AsyncIterator[float]], client: Optional[Client] = None) -> None:
-    awbls = []
-    aitrs = []
-    for obj in streams:
-        if inspect.isawaitable(obj):
-            awbls.append(obj)
-        else:
-            if not isinstance(obj, AsyncIterator):
-                raise Exception
-            aitrs.append(obj)
+def run(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
+    run_parallel(*streams, client=client)
 
+
+def run_series(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
     async def main() -> None:
         try:
-            await asyncio.gather(
-                _run_series_async(*aitrs),
-                _run_parallel_async(*awbls),
-            )
+            loop = asyncio.get_running_loop()
+
+            aq: Queue[AsyncIterator[float]] = Queue()
+            count = 0
+            for aitr in streams:
+                aq.put_nowait(aitr)
+                count += 1
+
+            while count > 0:
+                aitr = await aq.get()
+
+                try:
+                    t = await aitr.__anext__()
+                except StopAsyncIteration:
+                    count -= 1
+                else:
+                    loop.call_later(t, (lambda: aq.put_nowait(aitr)))
+
+                aq.task_done()
+
         finally:
             if client is not None:
                 await client.close()
@@ -33,46 +42,17 @@ def run(*streams: Union[Awaitable[None], AsyncIterator[float]], client: Optional
     asyncio.run(main())
 
 
-async def _run_series_async(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
-    try:
-        loop = asyncio.get_running_loop()
-
-        q: Queue[AsyncIterator[float]] = Queue()
-        count = 0
-        for aitr in streams:
-            count += 1
-            q.put_nowait(aitr)
-
-        while count > 0:
-            aitr = await q.get()
-
-            try:
-                t = await aitr.__anext__()
-            except StopAsyncIteration:
-                count -= 1
-            else:
-                loop.call_later(t, (lambda: q.put_nowait(aitr)))
-
-            q.task_done()
-
-    finally:
-        if client is not None:
-            await client.close()
-
-def run_series(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
+def run_parallel(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
     async def main() -> None:
-        await _run_series_async(*streams, client=client)
-    asyncio.run(main())
+        async def _coro_func(aitr: AsyncIterator[float]) -> None:
+            async for t in aitr:
+                await asyncio.sleep(t)
 
+        awbls = (_coro_func(m) for m in streams)
+        try:
+            await asyncio.gather(*awbls)
+        finally:
+            if client is not None:
+                await client.close()
 
-async def _run_parallel_async(*streams: Awaitable[None], client: Optional[Client] = None) -> None:
-    try:
-        await asyncio.gather(*streams)
-    finally:
-        if client is not None:
-            await client.close()
-
-def run_parallel(*streams: Awaitable[None], client: Optional[Client] = None) -> None:
-    async def main() -> None:
-        await _run_parallel_async(*streams, client=client)
     asyncio.run(main())

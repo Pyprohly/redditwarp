@@ -26,7 +26,6 @@ def run_series(*streams: Iterator[float], client: Optional[Client] = None) -> No
 
     try:
         shdlr.run()
-
     finally:
         if client is not None:
             client.close()
