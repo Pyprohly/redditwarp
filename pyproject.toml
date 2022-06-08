@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = 'redditwarp'
-version = '0.3.3'
+version = '0.3.4'
 description = "The unofficial, type-complete Reddit API library for Python"
 authors = ["Pyprohly <pyprohly@gmail.com>"]
 license = 'MIT'

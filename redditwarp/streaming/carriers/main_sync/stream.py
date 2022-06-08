@@ -37,7 +37,7 @@ class IStandardStreamEventSubject(Iterator[float], Generic[TOutput]):
 
 class Stream(IStandardStreamEventSubject[TOutput]):
     _BASE_POLL_INTERVAL: float = 5.0
-    _MAX_POLL_INTERVAL: float = 50.0
+    _MAX_POLL_INTERVAL: float = 42.0
     _BACKOFF_FACTOR: float =  2.0
     _JITTER_FACTOR: float = 0.4
 
