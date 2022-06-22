@@ -58,8 +58,8 @@ def register(
     transport_registry[adaptor_module_name] = info
 
 transport_module_spec_list = [
-    load_spec('.carriers.requests', __package__),
     load_spec('.carriers.httpx_sync', __package__),
+    load_spec('.carriers.requests', __package__),
     load_spec('.carriers.urllib3', __package__),
     load_spec('.carriers.python_urllib', __package__),
 ]

@@ -35,14 +35,14 @@ class Client:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_ini(cls: type[_TSelf], site_name: str) -> _TSelf:
+    def from_praw_ini_section_name(cls: type[_TSelf], name: str) -> _TSelf:
         config = get_praw_config()
-        section_name = site_name or config.default_section
+        section_name = name or config.default_section
         try:
             section = config[section_name]
         except KeyError:
             empty = not any(s.values() for s in config.values())
-            msg = f"No section {section_name!r} in{' empty' if empty else ''} praw.ini config"
+            msg = f"No section named {section_name!r} in{' empty' if empty else ''} praw.ini config."
             class StrReprStr(str):
                 def __repr__(self) -> str:
                     return str(self)
@@ -138,11 +138,11 @@ class Client:
             if resp.data:
                 try:
                     json_data = json_loads_response(resp)
-                except ValueError as cause:
+                except ValueError:
                     try:
                         raise_for_non_json_response(resp)
                     except Exception as exc:
-                        raise exc from cause
+                        raise exc from None
                     raise
 
                 if snub is not None:

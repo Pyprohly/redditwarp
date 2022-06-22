@@ -147,3 +147,10 @@ class SubredditProcedures:
     def list_moderators(self, sr: str) -> Sequence[ModeratorListItem]:
         root = self._client.request('GET', f'/r/{sr}/about/moderators')
         return [load_moderator_list_item(d) for d in root['data']['children']]
+
+    def get_similar_subreddits(self, sr_id: int, n: Optional[int] = None) -> Sequence[Subreddit]:
+        params = {'sr_fullnames': 't5_' + to_base36(sr_id)}
+        if n is not None:
+            params['max_recs'] = str(n)
+        root = self._client.request('GET', '/api/similar_subreddits', params=params)
+        return [load_subreddit(d['data'], client=self._client) for d in root['data']['children']]
