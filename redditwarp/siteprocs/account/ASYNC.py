@@ -15,6 +15,7 @@ from ...model_loaders.karma_breakdown_entry import load_karma_breakdown_entry
 from ...model_loaders.trophy import load_trophy
 from ... import exceptions
 from ...util.base_conversion import to_base36
+from ...exceptions import RejectedResultException
 
 class AccountProcedures:
     def __init__(self, client: Client):
@@ -23,8 +24,8 @@ class AccountProcedures:
 
     async def fetch(self) -> MyAccount:
         root = await self._client.request('GET', '/api/v1/me')
-        if len(root) < 3:
-            raise RuntimeError('no user context')
+        if len(root) < 6:
+            raise RejectedResultException('no user context')
         return load_account(root, self._client)
 
     async def get_preferences(self) -> Mapping[str, Any]:

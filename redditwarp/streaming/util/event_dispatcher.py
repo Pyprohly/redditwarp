@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, Iterator, Optional, overload, Callable, Union
+from typing import TypeVar, Iterator#, Optional, overload, Callable, Union
 from collections.abc import Collection
 
 T = TypeVar('T')
@@ -24,15 +24,20 @@ class EventDispatcher(Collection[T]):
     def detach(self, handler: T) -> None:
         self._handlers.discard(handler)
 
-    @overload
-    def attach_handler(self, handler: T) -> T: ...
+    '''
     @overload
     def attach_handler(self) -> Callable[[T], T]: ...
-    def attach_handler(self, handler: Optional[T] = None) -> Union[T, Callable[[T], T]]:
+    @overload
+    def attach_handler(self, handler: T) -> T: ...
+    def attach_handler(self, handler: Optional[T] = None) -> Union[Callable[[T], T], T]:
+        """Same as `self.attach` but returns the given argument."""
         if handler is None:
             return self.attach_handler
         self.attach(handler)
         return handler
+
+    attach_passthru = attach_handler
+    '''
 
 
 
@@ -52,18 +57,15 @@ def _main() -> None:
             for handler in self:
                 handler(example)
 
+    example_event = ExampleEventDispatcher()
+
     def handler1(example: Example) -> None:
         print('Got:', example)
 
-    example_event = ExampleEventDispatcher()
     example_event.attach(handler1)
 
-    @example_event.attach_handler
+    @example_event.attach
     def handler2(obj: object) -> None:
-        print('Got:', obj)
-
-    @example_event.attach_handler()
-    def handler3(obj: object) -> None:
         print('Got:', obj)
 
     example_event(Example())

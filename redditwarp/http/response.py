@@ -13,10 +13,6 @@ class Response:
     headers: MutableMapping[str, str]
     data: bytes
 
-    @property
-    def successful(self) -> bool:
-        return self.status_successful()
-
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} [{self.status}]>'
 

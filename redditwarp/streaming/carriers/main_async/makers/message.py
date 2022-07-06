@@ -10,8 +10,8 @@ from .....models.message_ASYNC import ComposedMessage, CommentMessage
 from ..stream import Stream
 
 
-def make_unread_message_stream(client: Client) -> IStandardStreamEventSubject[MailboxMessage]:
-    it = client.p.message.pull.unread()
+def make_inbox_message_stream(client: Client) -> IStandardStreamEventSubject[MailboxMessage]:
+    it = client.p.message.pulls.inbox()
     paginator = it.get_paginator()
     def extractor(message: MailboxMessage) -> tuple[int, int]:
         if isinstance(message, ComposedMessage):
@@ -22,6 +22,6 @@ def make_unread_message_stream(client: Client) -> IStandardStreamEventSubject[Ma
     return Stream(paginator, extractor)
 
 def make_mentions_message_stream(client: Client) -> IStandardStreamEventSubject[CommentMessage]:
-    it = client.p.message.pull.mentions()
+    it = client.p.message.pulls.mentions()
     paginator = it.get_paginator()
     return Stream(paginator, lambda x: x.comment.id)

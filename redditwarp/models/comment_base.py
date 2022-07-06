@@ -19,7 +19,7 @@ class BaseComment(Artifact):
     class Author:
         class AuthorFlair:
             def __init__(self, d: Mapping[str, Any]):
-                self.template_uuid: Optional[str] = d['author_flair_template_id']
+                self.template_uuid: str = d['author_flair_template_id'] or ''
                 author_flair_text: Optional[str] = d['author_flair_text']
                 self.text: str = author_flair_text or ''
                 self.has_had_flair: bool = author_flair_text is not None
@@ -82,14 +82,15 @@ class BaseComment(Artifact):
 
             self.reports: BaseComment.Moderator.Reports = self.Reports(d)
 
-            self.removal_reason_by: Optional[str] = d['mod_reason_by']
-            self.removal_reason_title: Optional[str] = d['mod_reason_title']
-            self.removal_note: Optional[str] = d['mod_note']
+            self.has_removal_reason: bool = bool(d['mod_reason_by'])
+            self.removal_reason_by: str = d['mod_reason_by'] or ''
+            self.removal_reason_title: str = d['mod_reason_title'] or ''
+            self.removal_note: str = d['mod_note'] or ''
 
-    class _Edited:
-        def __init__(self, d: Mapping[str, Any]):
-            self.ut: int = d['edited']
-            self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
+    class Edited:
+        def __init__(self, outer: BaseComment):
+            self.ut: int = outer.edited_ut
+            self.at: datetime = outer.edited_at
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
@@ -100,16 +101,22 @@ class BaseComment(Artifact):
 
         self.body: str = d['body']
         self.body_html: str = d.get('body_html', '')
-        #: Works even if score is hidden (`hide_score` JSON field is `True`).
         self.score: int = d['score']
         self.score_hidden: bool = d['score_hidden']
 
         self.rel_permalink: str = d['permalink']
         self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
 
-        self.edited: Optional[BaseComment._Edited] = None
-        if d['edited']:
-            self.edited = self._Edited(d)
+        edited: Any = d['edited']
+        self.is_edited: bool = bool(edited)
+        self.edited_ut: int = int(edited) if edited else 0
+        self.edited_at: datetime = datetime.min
+        if self.is_edited:
+            self.edited_at = datetime.fromtimestamp(self.edited_ut, timezone.utc)
+
+        self.edited: Optional[BaseComment.Edited] = None
+        if edited:
+            self.edited = self.Edited(self)
 
         self.is_submitter: bool = d['is_submitter']
         self.stickied: bool = d['stickied']
@@ -120,9 +127,10 @@ class BaseComment(Artifact):
 
         parent_id: str = d['parent_id']
         self.is_top_level: bool = parent_id.startswith('t3_')
-        self.parent_comment_id36: Optional[str] = None
-        self.parent_comment_id: Optional[int] = None
-        if parent_id.startswith('t1_'):
+        self.has_parent_comment: bool = not self.is_top_level
+        self.parent_comment_id36: str = ''
+        self.parent_comment_id: int = 0
+        if self.has_parent_comment:
             self.parent_comment_id36 = parent_id.partition('_')[2]
             self.parent_comment_id = int(self.parent_comment_id36, 36)
 

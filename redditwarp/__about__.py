@@ -46,24 +46,21 @@
 
 
 version_major: int = 0
-version_minor: int = 3
-version_micro: int = 5
+version_minor: int = 5
+version_micro: int = 0
 version_extra: str = 'a0.dev0'
 
 version_patch: int = version_micro
 version_triad: tuple[int, int, int] = (version_major, version_minor, version_micro)
 version_string: str = '.'.join(map(str, version_triad)) + version_extra
 
+__version__: str = version_string
 
 __title__: str = 'RedditWarp'
 __summary__: str = "The unofficial Reddit API library for Python"
 __uri__: str = "https://github.com/Pyprohly/redditwarp"
 __url__: str = __uri__
-
-__version__: str = version_string
-
-__author__: str = 'Pyprohly'
+__author__: str = 'Pyprohly'  # u/Pyprohly
 __email__: str = 'pyprohly@gmail.com'
-
 __license__: str = 'MIT'
-__copyright__: str = 'Copyright 2020 Pyprohly'
+__copyright__: str = 'Copyright 2022 Pyprohly'

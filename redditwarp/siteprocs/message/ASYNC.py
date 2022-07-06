@@ -9,12 +9,12 @@ from functools import cached_property
 
 from ...util.base_conversion import to_base36
 from ...model_loaders.message_ASYNC import load_composed_message, load_composed_message_thread
-from .pull_ASYNC import Pull
+from .pulls_ASYNC import Pulls
 
 class MessageProcedures:
     def __init__(self, client: Client):
         self._client = client
-        self.pull: Pull = Pull(client)
+        self.pulls: Pulls = Pulls(client)
 
     async def get_message_thread(self, idn: int) -> Sequence[ComposedMessage]:
         id36 = to_base36(idn)

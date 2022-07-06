@@ -23,7 +23,7 @@ class BaseSubmission(Artifact):
     class Author:
         class AuthorFlair:
             def __init__(self, d: Mapping[str, Any]):
-                self.template_uuid: Optional[str] = d['author_flair_template_id']
+                self.template_uuid: str = d['author_flair_template_id'] or ''
                 author_flair_text: Optional[str] = d['author_flair_text']
                 self.text: str = author_flair_text or ''
                 self.has_had_flair: bool = author_flair_text is not None
@@ -83,9 +83,10 @@ class BaseSubmission(Artifact):
 
             self.reports: BaseSubmission.Moderator.Reports = self.Reports(d)
 
-            self.removal_reason_by: Optional[str] = d['mod_reason_by']
-            self.removal_reason_title: Optional[str] = d['mod_reason_title']
-            self.removal_note: Optional[str] = d['mod_note']
+            self.has_removal_reason: bool = bool(d['mod_reason_by'])
+            self.removal_reason_by: str = d['mod_reason_by'] or ''
+            self.removal_reason_title: str = d['mod_reason_title'] or ''
+            self.removal_note: str = d['mod_note'] or ''
 
     class Event:
         def __init__(self, d: Mapping[str, Any]):
@@ -101,7 +102,7 @@ class BaseSubmission(Artifact):
             self.bg_color: str = d['link_flair_background_color']
             link_flair_css_class_temp: Optional[str] = d['link_flair_css_class']
             self.css_class: str = link_flair_css_class_temp or ''
-            self.template_uuid: Optional[str] = d.get('link_flair_template_id', None)
+            self.template_uuid: str = d.get('link_flair_template_id', '')
             self.text: str = d['link_flair_text'] or ''
             self.fg_light_or_dark: str = d['link_flair_text_color']
             self.type: str = d['link_flair_type']
@@ -112,6 +113,11 @@ class BaseSubmission(Artifact):
             self.num_reports: int = d['num_reports']
             self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
             self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
+
+    class Edited:
+        def __init__(self, outer: BaseSubmission):
+            self.ut: int = outer.edited_ut
+            self.at: datetime = outer.edited_at
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
@@ -128,16 +134,20 @@ class BaseSubmission(Artifact):
         self.rel_permalink: str = d['permalink']
         self.permalink: str = AUTHORIZATION_BASE_URL + d['permalink']
 
-        a: Any = d['edited']
-        self.edited: bool = bool(a)
-        self.edited_ut: Optional[int] = int(a) if self.edited else None
-        self.edited_at: Optional[datetime] = None
-        if self.edited_ut is not None:
+        edited: Any = d['edited']
+        self.is_edited: bool = bool(edited)
+        self.edited_ut: int = int(edited) if edited else 0
+        self.edited_at: datetime = datetime.min
+        if self.is_edited:
             self.edited_at = datetime.fromtimestamp(self.edited_ut, timezone.utc)
 
+        self.edited: Optional[BaseSubmission.Edited] = None
+        if edited:
+            self.edited = self.Edited(self)
+
         self.upvote_ratio: float = d['upvote_ratio']
-        self.removal_category: Optional[str] = d['removed_by_category']
-        self.suggested_sort: Optional[str] = d['suggested_sort']
+        self.removal_category: str = d['removed_by_category'] or ''
+        self.suggested_sort: str = d['suggested_sort'] or ''
         self.stickied: bool = d['stickied']
         self.archived: bool = d['archived']
         self.locked: bool = d['locked']

@@ -13,13 +13,11 @@ def load_moderation_note(d: Mapping[str, Any]) -> ModerationNote:
     return load_moderation_action_note(d)
 
 def load_moderation_action_note(d: Mapping[str, Any]) -> ModerationActionNote:
-    timestamp = int(d['created_at'])
-    d_mod_action_data = d['mod_action_data']
     return ModerationActionNote(
         d=d,
         uuid=d['id'].partition('_')[-1],
-        timestamp=timestamp,
-        datetime=datetime.fromtimestamp(timestamp, timezone.utc),
+        unixtime=(unixtime := int(d['created_at'])),
+        datetime=datetime.fromtimestamp(unixtime, timezone.utc),
         type=d['type'],
         subreddit_id=int(d['subreddit_id'].partition('_')[-1], 36),
         subreddit=d['subreddit'],
@@ -27,11 +25,10 @@ def load_moderation_action_note(d: Mapping[str, Any]) -> ModerationActionNote:
         agent=d['operator'],
         target_id=int(d['user_id'].partition('_')[-1], 36),
         target=d['user'],
-        action=d_mod_action_data['action'],
+        action=d['mod_action_data']['action'],
     )
 
 def load_moderation_user_note(d: Mapping[str, Any]) -> ModerationUserNote:
-    timestamp = int(d['created_at'])
     d_user_note_data = d['user_note_data']
 
     anchor_submission_id = None
@@ -48,8 +45,8 @@ def load_moderation_user_note(d: Mapping[str, Any]) -> ModerationUserNote:
     return ModerationUserNote(
         d=d,
         uuid=d['id'].partition('_')[-1],
-        timestamp=timestamp,
-        datetime=datetime.fromtimestamp(timestamp, timezone.utc),
+        unixtime=(unixtime := int(d['created_at'])),
+        datetime=datetime.fromtimestamp(unixtime, timezone.utc),
         type=d['type'],
         subreddit_id=int(d['subreddit_id'].partition('_')[-1], 36),
         subreddit=d['subreddit'],

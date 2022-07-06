@@ -18,7 +18,7 @@ class BaseSubreddit(Artifact):
                 self.has_had_css_class_when_no_flair_template: bool = user_flair_css_class_temp is not None
                 self.css_class: str = user_flair_css_class_temp or ''
                 self.position: str = d['user_flair_position']
-                self.template_uuid: Optional[str] = d['user_flair_template_id']
+                self.template_uuid: str = d['user_flair_template_id'] or ''
                 self.text: str = d['user_flair_text'] or ''
                 self.fg_light_or_dark: str = d['user_flair_text_color'] or ''
                 self.type: str = d['user_flair_type']

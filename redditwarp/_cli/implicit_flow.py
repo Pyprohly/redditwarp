@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from types import FrameType
 
-
+###
 import argparse
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
@@ -29,7 +29,7 @@ add('--duration', choices=['temporary', 'permanent'], default='permanent', help=
 add('--no-web-browser', action='store_true', help="don't launch a browser")
 add('--web-browser-name', help="the web browser to open")
 args = parser.parse_args()
-
+###;
 
 import sys
 import os
@@ -53,7 +53,7 @@ def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
 
 if not sys.flags.interactive:
     @partial(signal.signal, signal.SIGINT)
-    def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
+    def _(sig: int, frame: Optional[FrameType]) -> None:
         print('KeyboardInterrupt', file=sys.stderr)
         sys.exit(130)
 

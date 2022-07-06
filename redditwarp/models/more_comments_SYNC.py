@@ -4,10 +4,19 @@ from typing import TYPE_CHECKING, Sequence, Optional, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from ..exceptions import RejectedResultException
+from functools import cached_property
+
 from .comment_tree_SYNC import MoreCommentsTreeNode
 
 class MoreComments:
+    @cached_property
+    def submission_id(self) -> int:
+        return int(self.submission_id36, 36)
+
+    @cached_property
+    def comment_id(self) -> int:
+        return int(self.comment_id36, 36)
+
     def __init__(self,
         *,
         submission_id36: str,
@@ -32,11 +41,13 @@ class ContinueThisThread(MoreComments):
         depth: Optional[int] = None,
     ) -> MoreCommentsTreeNode:
         node = self.client.p.comment_tree.fetch.by_id36(self.submission_id36, self.comment_id36)
+
         first_child = node.children[0]
         if first_child.value.id36 != self.comment_id36:
-            raise RejectedResultException(f'comment `{self.submission_id36}/{self.comment_id36}` was not found')
+            raise Exception('assertion: 1')
         if len(node.children) != 1:
-            raise Exception
+            raise Exception('assertion: 2')
+
         return MoreCommentsTreeNode(None, first_child.children, node.more)
 
 class LoadMoreComments(MoreComments):

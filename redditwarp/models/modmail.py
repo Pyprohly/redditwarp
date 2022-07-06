@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Mapping, Any
 
 from enum import IntEnum
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from .artifact import IArtifact
 
@@ -25,9 +25,9 @@ class ModmailModActionType(IntEnum):
     DISAPPROVE_USER = 10
 
 
-@dataclass
+@dataclass(repr=False, eq=False)
 class ModmailModeratedSubreddit(IArtifact):
-    d: Mapping[str, Any] = field(repr=False)
+    d: Mapping[str, Any]
     id: int
     name: str
     subscriber_count: int

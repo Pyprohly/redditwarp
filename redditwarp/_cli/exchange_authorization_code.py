@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from types import FrameType
 
-
+###
 import argparse
 class Formatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
@@ -22,7 +22,7 @@ add('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=a
 add('--authorization-code', metavar='CLIENT_SECRET', dest='authorization_code_opt', help=argparse.SUPPRESS)
 add('--redirect-uri', default="http://localhost:8080", help="\N{ZERO WIDTH SPACE}")
 args = parser.parse_args()
-
+###;
 
 import sys
 import os
@@ -53,7 +53,7 @@ def get_client_secret(args: argparse.Namespace) -> str:
 
 if not sys.flags.interactive:
     @partial(signal.signal, signal.SIGINT)
-    def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
+    def _(sig: int, frame: Optional[FrameType]) -> None:
         print('KeyboardInterrupt', file=sys.stderr)
         sys.exit(130)
 

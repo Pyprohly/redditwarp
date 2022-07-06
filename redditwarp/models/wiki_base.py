@@ -54,13 +54,13 @@ class GBaseWikiPage(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
     body_html: str
     can_revise: bool
     revision_uuid: str
-    revision_timestamp: int
+    revision_unixtime: int
     revision_author: TWikiPageRevisionAuthorUser
     revision_message: str
 
     @cached_property
     def revision_datetime(self) -> datetime:
-        return datetime.fromtimestamp(self.revision_timestamp, timezone.utc)
+        return datetime.fromtimestamp(self.revision_unixtime, timezone.utc)
 
 @dataclass(repr=False, eq=False)
 class BaseWikiPage(GBaseWikiPage[BaseWikiPageRevisionAuthorUser]):
@@ -71,7 +71,7 @@ class BaseWikiPage(GBaseWikiPage[BaseWikiPageRevisionAuthorUser]):
 class GBaseWikiPageRevision(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
     d: Mapping[str, Any]
     uuid: str
-    timestamp: int
+    unixtime: int
     author: TWikiPageRevisionAuthorUser
     message: str
     hidden: bool

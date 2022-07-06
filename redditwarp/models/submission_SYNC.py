@@ -22,9 +22,6 @@ class Submission(BaseSubmission):
     def reply(self, text: str) -> Comment:
         return self.client.p.submission.reply(self.id, text)
 
-    def edit_post_text(self, text: str) -> Submission:
-        return self.client.p.submission.edit_post_text(self.id, text)
-
     def delete(self) -> None:
         self.client.p.submission.delete(self.id)
 
@@ -74,7 +71,8 @@ class LinkPost(Submission, BaseLinkPost):
     pass
 
 class TextPost(Submission, BaseTextPost):
-    pass
+    def edit_body(self, text: str) -> TextPost:
+        return self.client.p.submission.edit_text_post_body(self.id, text)
 
 class GalleryPost(Submission, BaseGalleryPost):
     pass
@@ -84,5 +82,5 @@ class PollPost(Submission, BasePollPost):
 
 class CrosspostSubmission(Submission, GBaseCrosspostSubmission[Submission]):
     def _load_submission(self, d: Mapping[str, Any]) -> Submission:
-        from ..model_loaders.submission_SYNC import load_submission  # Cyclic import
+        from ..model_loaders.submission_SYNC import load_submission  # Avoid cyclic import
         return load_submission(d, self.client)

@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.submission_SYNC import Submission
+    from ...models.submission_SYNC import Submission, TextPost
     from ...models.comment_SYNC import Comment
     from ...dto_models.submission import GalleryItem
 
 from functools import cached_property
 
-from ...model_loaders.submission_SYNC import load_submission
+from ...model_loaders.submission_SYNC import load_submission, load_text_post
 from ...models.media_upload_lease import MediaUploadLease
 from ...model_loaders.media_upload_lease import load_media_upload_lease
 from ...http.payload import guess_mimetype_from_filename
@@ -334,14 +334,14 @@ class SubmissionProcedures:
         root = self._client.request('POST', '/api/submit', data=dict(g()))
         return int(root['json']['data']['id'], 36)
 
-    def edit_post_text(self, submission_id: int, text: str) -> Submission:
+    def edit_text_post_body(self, submission_id: int, text: str) -> TextPost:
         data = {
             'thing_id': 't3_' + to_base36(submission_id),
             'text': text,
             'return_rtjson': '1',
         }
         result = self._client.request('POST', '/api/editusertext', data=data)
-        return load_submission(result, self._client)
+        return load_text_post(result, self._client)
 
     def delete(self, submission_id: int) -> None:
         data = {'id': 't3_' + to_base36(submission_id)}
@@ -473,12 +473,11 @@ class SubmissionProcedures:
         }
         self._client.request('POST', '/api/set_contest_mode', data=data)
 
-    def set_suggested_sort(self, submission_id: int, sort: Optional[str]) -> None:
+    def set_suggested_sort(self, submission_id: int, sort: str) -> None:
         data = {
             'id': 't3_' + to_base36(submission_id),
+            'sort': sort,
         }
-        if sort is not None:
-            data['sort'] = sort
         self._client.request('POST', '/api/set_suggested_sort', data=data)
 
     def enable_reply_notifications(self, submission_id: int) -> None:

@@ -11,7 +11,6 @@ from asyncio.queues import Queue
 def run(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
     run_parallel(*streams, client=client)
 
-
 def run_series(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
     async def main() -> None:
         try:
@@ -40,7 +39,6 @@ def run_series(*streams: AsyncIterator[float], client: Optional[Client] = None) 
                 await client.close()
 
     asyncio.run(main())
-
 
 def run_parallel(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
     async def main() -> None:

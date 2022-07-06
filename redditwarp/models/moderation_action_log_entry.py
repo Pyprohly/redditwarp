@@ -11,7 +11,7 @@ class ModerationActionLogEntry(IArtifact):
     #_: KW_ONLY
     d: Mapping[str, Any]
     uuid: str
-    timestamp: int
+    unixtime: int
     datetime: datetime
     action: str
     agent_id: int

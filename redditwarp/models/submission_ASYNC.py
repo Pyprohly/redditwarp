@@ -22,9 +22,6 @@ class Submission(BaseSubmission):
     async def reply(self, text: str) -> Comment:
         return await self.client.p.submission.reply(self.id, text)
 
-    async def edit_post_text(self, text: str) -> Submission:
-        return await self.client.p.submission.edit_post_text(self.id, text)
-
     async def delete(self) -> None:
         await self.client.p.submission.delete(self.id)
 
@@ -69,11 +66,13 @@ class Submission(BaseSubmission):
             exposed: bool = False) -> None:
         await self.client.p.submission.send_removal_message(self.id, title, message, exposed=exposed)
 
+
 class LinkPost(Submission, BaseLinkPost):
     pass
 
 class TextPost(Submission, BaseTextPost):
-    pass
+    async def edit_body(self, text: str) -> TextPost:
+        return await self.client.p.submission.edit_text_post_body(self.id, text)
 
 class GalleryPost(Submission, BaseGalleryPost):
     pass
@@ -83,5 +82,5 @@ class PollPost(Submission, BasePollPost):
 
 class CrosspostSubmission(Submission, GBaseCrosspostSubmission[Submission]):
     def _load_submission(self, d: Mapping[str, Any]) -> Submission:
-        from ..model_loaders.submission_ASYNC import load_submission  # Cyclic import
+        from ..model_loaders.submission_ASYNC import load_submission  # Avoid cyclic import
         return load_submission(d, self.client)

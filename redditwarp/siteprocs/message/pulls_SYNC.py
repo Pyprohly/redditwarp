@@ -13,7 +13,7 @@ from ...pagination.paginators.message_sync1 import (
     ComposedMessageThreadListingPaginator,
 )
 
-class Pull:
+class Pulls:
     def __init__(self, client: Client) -> None:
         self._client = client
 

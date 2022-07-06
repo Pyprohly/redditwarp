@@ -7,6 +7,8 @@ if TYPE_CHECKING:
     from .http.payload import RequestFiles
     from .core.reddit_http_client_ASYNC import RedditHTTPClient
 
+from configparser import ConfigParser
+
 from .auth import Token
 from .auth import grants
 from .core.reddit_http_client_ASYNC import (
@@ -14,7 +16,7 @@ from .core.reddit_http_client_ASYNC import (
     build_public_api_reddit_http_client,
     build_public_api_reddit_http_client_from_access_token,
 )
-from .util.praw_config import get_praw_config
+from .util.praw_config import get_praw_ini_potential_file_locations
 from .exceptions import raise_for_reddit_error, raise_for_non_json_response
 from .http.util.json_load import json_loads_response
 from .util.redditwarp_installed_client_credentials import get_redditwarp_client_id, get_device_id
@@ -35,9 +37,10 @@ class Client:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_ini_section_name(cls: type[_TSelf], name: str) -> _TSelf:
-        config = get_praw_config()
-        section_name = name or config.default_section
+    def from_praw_config(cls: type[_TSelf], section_name: str, *, filename: Optional[str] = None) -> _TSelf:
+        config = ConfigParser()
+        config.read(get_praw_ini_potential_file_locations() if filename is None else filename)
+        section_name = section_name or config.default_section
         try:
             section = config[section_name]
         except KeyError:

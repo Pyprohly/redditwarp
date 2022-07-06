@@ -4,14 +4,7 @@ from typing import TYPE_CHECKING, MutableSequence, cast, Iterator
 if TYPE_CHECKING:
     from redditwarp.models.comment_tree_SYNC import ICommentSubtreeTreeNode, CommentSubtreeTreeNode, T
 
-import sys
-import shutil
-from collections import deque
-
-import redditwarp
-from redditwarp.util.extract_id_from_url import extract_submission_id_from_url
-from redditwarp.models.comment_SYNC import Comment
-
+###
 ALGORITHM_CHOICES = {
     'iterative_depth_first_search': 'dfs',
     'depth_first_search': 'dfs',
@@ -34,6 +27,15 @@ add('--base', metavar='N', dest='base_opt', type=int, default=36)
 add('--algo', '--algorithm', choices=ALGORITHM_CHOICES, default='dfs', dest='algo', metavar='')
 add('--comment-sort', dest='comment_sort', choices=COMMENT_SORT_CHOICES)
 args = parser.parse_args()
+###;
+
+import sys
+import shutil
+from collections import deque
+
+import redditwarp
+from redditwarp.util.extract_id_from_url import extract_submission_id_from_url
+from redditwarp.models.comment_SYNC import Comment
 
 access_token: str = args.access_token_opt or ''
 target: str = args.target or args.target_opt or input('Target: ')

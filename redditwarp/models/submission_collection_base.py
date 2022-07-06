@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Optional, Sequence, TypeVar, overload, Iterator, Union
+from typing import Mapping, Any, Sequence, TypeVar, overload, Iterator, Union
 
 from datetime import datetime, timezone
 
@@ -30,7 +30,7 @@ class BaseSubmissionCollectionDetails(Artifact):
         self.last_post_added_ut: float = d['last_update_utc']
         self.last_post_added_at: datetime = datetime.fromtimestamp(self.last_post_added_ut, timezone.utc)
 
-        self.display_layout: Optional[str] = d['display_layout']
+        self.display_layout: str = d['display_layout'] or ''
         self.layout: str = 'TIMELINE'
         if self.display_layout is not None:
             self.layout = self.display_layout

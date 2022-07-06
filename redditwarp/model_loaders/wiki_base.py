@@ -16,7 +16,7 @@ def load_base_wiki_page(d: Mapping[str, Any]) -> BaseWikiPage:
         body_html=d['content_html'],
         can_revise=d['may_revise'],
         revision_uuid=d['revision_id'],
-        revision_timestamp=d['revision_date'],
+        revision_unixtime=d['revision_date'],
         revision_author=load_base_wiki_page_revision_author_user(d['revision_by']['data']),
         revision_message=d['reason'] or '',
     )
@@ -25,7 +25,7 @@ def load_base_wiki_page_revision(d: Mapping[str, Any]) -> BaseWikiPageRevision:
     return BaseWikiPageRevision(
         d=d,
         uuid=d['id'],
-        timestamp=d['timestamp'],
+        unixtime=d['unixtime'],
         author=load_base_wiki_page_revision_author_user(d['author']['data']),
         message=d['reason'] or '',
         hidden=d['revision_hidden'],

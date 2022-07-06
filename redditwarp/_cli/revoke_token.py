@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from types import FrameType
 
-
+###
 import argparse
 class Formatter(argparse.RawDescriptionHelpFormatter): pass
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=Formatter)
@@ -25,7 +25,7 @@ parser.add_argument('token', nargs='?')
 parser.add_argument('--client-id', metavar='CLIENT_ID', dest='client_id_opt', help=argparse.SUPPRESS)
 parser.add_argument('--client-secret', metavar='CLIENT_SECRET', dest='client_secret_opt', help=argparse.SUPPRESS)
 args = parser.parse_args()
-
+###;
 
 import sys
 import os
@@ -48,7 +48,7 @@ def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
 
 if not sys.flags.interactive:
     @partial(signal.signal, signal.SIGINT)
-    def handle_sigint(sig: int, frame: Optional[FrameType]) -> None:
+    def _(sig: int, frame: Optional[FrameType]) -> None:
         print('KeyboardInterrupt', file=sys.stderr)
         sys.exit(130)
 

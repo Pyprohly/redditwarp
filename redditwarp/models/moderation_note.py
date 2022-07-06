@@ -11,7 +11,7 @@ class ModerationNote(IArtifact):
     #_: KW_ONLY
     d: Mapping[str, Any]
     uuid: str
-    timestamp: int
+    unixtime: int
     datetime: datetime
     type: str
     subreddit_id: int

@@ -33,7 +33,7 @@ def _load_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
         return load_rich_text_draft(d)
     raise ValueError('unknown draft type')
 
-def _construct_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
+def _xload_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
     created_ts: float = d[h['created']] / 1000
     modified_ts: float = d[h['modified']] / 1000
 
@@ -69,47 +69,46 @@ def _construct_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
     )
 
 def _load_markdown_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> MarkdownDraft:
-    u = construct_draft(d)
+    up = xload_draft(d)
     return MarkdownDraft(
-        d=u.d,
-        uuid=u.uuid,
-        created_at=u.created_at,
-        modified_at=u.modified_at,
-        public=u.public,
-        subreddit_id=u.subreddit_id,
-        title=u.title,
-        reply_notifications=u.reply_notifications,
-        spoiler=u.spoiler,
-        nsfw=u.nsfw,
-        original_content=u.original_content,
-        flair=u.flair,
-        #,
+        d=up.d,
+        uuid=up.uuid,
+        created_at=up.created_at,
+        modified_at=up.modified_at,
+        public=up.public,
+        subreddit_id=up.subreddit_id,
+        title=up.title,
+        reply_notifications=up.reply_notifications,
+        spoiler=up.spoiler,
+        nsfw=up.nsfw,
+        original_content=up.original_content,
+        flair=up.flair,
         body=d['body'],
     )
 
 def _load_rich_text_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> RichTextDraft:
-    u = construct_draft(d)
+    up = xload_draft(d)
     return RichTextDraft(
-        d=u.d,
-        uuid=u.uuid,
-        created_at=u.created_at,
-        modified_at=u.modified_at,
-        public=u.public,
-        subreddit_id=u.subreddit_id,
-        title=u.title,
-        reply_notifications=u.reply_notifications,
-        spoiler=u.spoiler,
-        nsfw=u.nsfw,
-        original_content=u.original_content,
-        flair=u.flair,
+        d=up.d,
+        uuid=up.uuid,
+        created_at=up.created_at,
+        modified_at=up.modified_at,
+        public=up.public,
+        subreddit_id=up.subreddit_id,
+        title=up.title,
+        reply_notifications=up.reply_notifications,
+        spoiler=up.spoiler,
+        nsfw=up.nsfw,
+        original_content=up.original_content,
+        flair=up.flair,
     )
 
 
 def load_draft(d: Mapping[str, Any]) -> Draft:
     return _load_draft_impl(d, normal_draft_column_names_map)
 
-def construct_draft(d: Mapping[str, Any]) -> Draft:
-    return _construct_draft_impl(d, normal_draft_column_names_map)
+def xload_draft(d: Mapping[str, Any]) -> Draft:
+    return _xload_draft_impl(d, normal_draft_column_names_map)
 
 def load_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
     return _load_markdown_draft_impl(d, normal_draft_column_names_map)
@@ -121,8 +120,8 @@ def load_rich_text_draft(d: Mapping[str, Any]) -> RichTextDraft:
 def load_public_draft(d: Mapping[str, Any]) -> Draft:
     return _load_draft_impl(d, public_draft_column_names_map)
 
-def construct_public_draft(d: Mapping[str, Any]) -> Draft:
-    return _construct_draft_impl(d, public_draft_column_names_map)
+def xload_public_draft(d: Mapping[str, Any]) -> Draft:
+    return _xload_draft_impl(d, public_draft_column_names_map)
 
 def load_public_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
     return _load_markdown_draft_impl(d, public_draft_column_names_map)

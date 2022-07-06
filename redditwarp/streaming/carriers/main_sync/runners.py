@@ -10,7 +10,6 @@ from ...util.sched import Scheduler
 def run(*streams: Iterator[float], client: Optional[Client] = None) -> None:
     run_series(*streams, client=client)
 
-
 def run_series(*streams: Iterator[float], client: Optional[Client] = None) -> None:
     def _invoke_and_reschedule(itr: Iterator[float], shdlr: Scheduler) -> None:
         try:
