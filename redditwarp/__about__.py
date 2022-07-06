@@ -47,7 +47,7 @@
 
 version_major: int = 0
 version_minor: int = 5
-version_micro: int = 0
+version_micro: int = 1
 version_extra: str = 'a0.dev0'
 
 version_patch: int = version_micro

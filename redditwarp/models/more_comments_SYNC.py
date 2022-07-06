@@ -41,14 +41,7 @@ class ContinueThisThread(MoreComments):
         depth: Optional[int] = None,
     ) -> MoreCommentsTreeNode:
         node = self.client.p.comment_tree.fetch.by_id36(self.submission_id36, self.comment_id36)
-
-        first_child = node.children[0]
-        if first_child.value.id36 != self.comment_id36:
-            raise Exception('assertion: 1')
-        if len(node.children) != 1:
-            raise Exception('assertion: 2')
-
-        return MoreCommentsTreeNode(None, first_child.children, node.more)
+        return MoreCommentsTreeNode(None, node.children[0].children, node.more)
 
 class LoadMoreComments(MoreComments):
     def __init__(self,

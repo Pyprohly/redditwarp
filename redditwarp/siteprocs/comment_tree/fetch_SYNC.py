@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 from ...util.base_conversion import to_base36
 from ...model_loaders.comment_tree_SYNC import load_submission_tree_node
+from ...exceptions import RejectedResultException
 
 class Fetch:
     def __init__(self, outer: CommentTreeProcedures, client: Client):
@@ -24,7 +25,7 @@ class Fetch:
         context: Optional[int] = None,
     ) -> SubmissionTreeNode:
         submission_id36 = to_base36(submission_id)
-        comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
+        comment_id36 = None if comment_id is None else to_base36(comment_id)
         return self.by_id36(submission_id36, comment_id36, sort=sort, limit=limit, depth=depth, context=context)
 
     def by_id36(self,
@@ -49,4 +50,11 @@ class Fetch:
                 yield ('context', str(context))
 
         root = self._client.request('GET', '/comments/' + submission_id36, params=dict(g()))
-        return load_submission_tree_node(root, self._client, sort)
+        tree_node = load_submission_tree_node(root, self._client, sort)
+
+        if comment_id36 is not None and not tree_node.children:
+            raise RejectedResultException('''\
+The returned comment list is empty so the specified comment was not returned. \
+This happens when the comment existed at one point but is no longer available anymore.''')
+
+        return tree_node

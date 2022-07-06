@@ -8,6 +8,7 @@ if TYPE_CHECKING:
 
 from ...util.base_conversion import to_base36
 from ... import http
+from ...exceptions import RejectedResultException
 
 class Get:
     def __init__(self, outer: CommentTreeProcedures, client: Client):
@@ -24,7 +25,7 @@ class Get:
         context: Optional[int] = None,
     ) -> Optional[SubmissionTreeNode]:
         submission_id36 = to_base36(submission_id)
-        comment_id36 = comment_id if comment_id is None else to_base36(comment_id)
+        comment_id36 = None if comment_id is None else to_base36(comment_id)
         return await self.by_id36(submission_id36, comment_id36, sort=sort, limit=limit, depth=depth, context=context)
 
     async def by_id36(self,
@@ -49,3 +50,5 @@ class Get:
             if e.status_code == 404:
                 return None
             raise
+        except RejectedResultException:
+            return None
