@@ -9,7 +9,7 @@ from ..listing.listing_paginator import ListingPaginator
 from ....models.user_SYNC import User
 from ....model_loaders.user_SYNC import load_user
 
-class SearchUsersListingPaginator(
+class UserSearchPaginator(
     Sort[User],
     ListingPaginator[User],
 ):

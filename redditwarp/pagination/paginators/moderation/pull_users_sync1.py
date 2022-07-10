@@ -7,13 +7,13 @@ if TYPE_CHECKING:
 from ...paginator import MoreAvailablePaginator, Bidirectional, CursorPaginator
 from ....models.subreddit_user_item import (
     ModeratorUserItem,
-    ContributorUserItem,
+    ApprovedUserItem,
     BannedUserItem,
     MutedUserItem,
 )
 from ....model_loaders.subreddit_user_item import (
     load_moderator_user_item,
-    load_contributor_user_item,
+    load_approved_user_item,
     load_banned_user_item,
     load_muted_user_item,
 )
@@ -84,21 +84,21 @@ class ModeratorsPaginator(ModerationUsersPaginator[ModeratorUserItem]):
         object_map = root['moderators']
         return [load_moderator_user_item(object_map[full_id36]) for full_id36 in order]
 
-class ContributorsPaginator(ModerationUsersPaginator[ContributorUserItem]):
-    def fetch(self) -> Sequence[ContributorUserItem]:
+class ApprovedUsersPaginator(ModerationUsersPaginator[ApprovedUserItem]):
+    def fetch(self) -> Sequence[ApprovedUserItem]:
         root = self._fetch_data()
         order = root['approvedSubmitterIds']
         object_map = root['approvedSubmitters']
-        return [load_contributor_user_item(object_map[full_id36]) for full_id36 in order]
+        return [load_approved_user_item(object_map[full_id36]) for full_id36 in order]
 
-class BannedPaginator(ModerationUsersPaginator[BannedUserItem]):
+class BannedUsersPaginator(ModerationUsersPaginator[BannedUserItem]):
     def fetch(self) -> Sequence[BannedUserItem]:
         root = self._fetch_data()
         order = root['bannedUserIds']
         object_map = root['bannedUsers']
         return [load_banned_user_item(object_map[full_id36]) for full_id36 in order]
 
-class MutedPaginator(ModerationUsersPaginator[MutedUserItem]):
+class MutedUsersPaginator(ModerationUsersPaginator[MutedUserItem]):
     def fetch(self) -> Sequence[MutedUserItem]:
         root = self._fetch_data()
         order = root['mutedUserIds']

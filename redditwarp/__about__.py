@@ -46,9 +46,9 @@
 
 
 version_major: int = 0
-version_minor: int = 5
-version_micro: int = 2
-version_extra: str = 'a0.dev0'
+version_minor: int = 6
+version_micro: int = 1
+version_extra: str = ''
 
 version_patch: int = version_micro
 version_triad: tuple[int, int, int] = (version_major, version_minor, version_micro)

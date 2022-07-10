@@ -8,7 +8,7 @@ from .listing.mixins.sort_ASYNC import Sort
 from .listing.subreddit_listing_async_paginator import SubredditListingAsyncPaginator
 from ...models.subreddit_ASYNC import Subreddit
 
-class SearchSubredditsAsyncPaginator(
+class SubredditSearchAsyncPaginator(
     Sort[Subreddit],
     SubredditListingAsyncPaginator,
 ):

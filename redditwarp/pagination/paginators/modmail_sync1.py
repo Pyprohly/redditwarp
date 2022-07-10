@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Any, Optional, Sequence, Iterable, Tuple
 if TYPE_CHECKING:
     from ...client_SYNC import Client
 
-from ..paginator import CursorPaginator
+from ..paginator import CursorPaginator, Resettable
 from ...model_loaders.modmail_SYNC import load_conversation, load_message
 from ...models.modmail_SYNC import Conversation, Message
 
-class ModmailConversationsPaginator(CursorPaginator[Tuple[Conversation, Message]]):
+class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conversation, Message]]):
     def __init__(self,
         client: Client,
         uri: str,
@@ -25,8 +25,14 @@ class ModmailConversationsPaginator(CursorPaginator[Tuple[Conversation, Message]
         self.mailbox: str = mailbox
         self.subreddit_names: Sequence[str] = subreddit_names
         self.sort: str = sort
+        self.__reset()
+
+    def __reset(self) -> None:
         self._after: str = ''
         self._has_after: bool = True
+
+    def reset(self) -> None:
+        self.__reset()
 
     def get_cursor(self) -> str:
         return self._after
@@ -74,10 +80,8 @@ class ModmailConversationsPaginator(CursorPaginator[Tuple[Conversation, Message]
             conversation_data = conversations_mapping[convo_id36]
             message_id36 = conversation_data['objIds'][0]['id']
             message_data = messages_mapping[message_id36]
-            results.append(
-                (
-                    load_conversation(conversation_data, self.client),
-                    load_message(message_data, self.client),
-                )
-            )
+            results.append((
+                load_conversation(conversation_data, self.client),
+                load_message(message_data, self.client),
+            ))
         return results

@@ -46,7 +46,8 @@ class BaseConversation(IArtifact):
 class BaseMessage(IArtifact):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
-        self.id: int = int(d['id'], 36)
+        self.id36: str = d['id']
+        self.id: int = int(self.id36, 36)
         author = d['author']
         self.author_name: str = author['name']
         self.author_id: int = author['id']

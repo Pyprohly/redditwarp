@@ -11,7 +11,7 @@ from .listing.submission_listing_paginator import SubmissionListingPaginator
 from .listing.listing_paginator import ListingPaginator
 from ...model_loaders.submission_SYNC import load_submission
 
-class SearchSubmissionsListingPaginator(
+class SubmissionSearchPaginator(
     Time[Submission],
     Sort[Submission],
     SubmissionListingPaginator,

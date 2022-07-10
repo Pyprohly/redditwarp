@@ -23,12 +23,10 @@ from ...model_loaders.modmail_ASYNC import (
     load_user_dossier_conversation_aggregate,
     load_optional_user_dossier_conversation_aggregate,
 )
-from .conversation_pulls_ASYNC import Pulls
 
 class ConversationProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.pulls: Pulls = Pulls(client)
 
     async def fetch(self, idn: int, *, mark_read: bool = False) -> OptionalUserDossierConversationAggregate:
         convo_id36 = to_base36(idn)
@@ -148,7 +146,7 @@ class ConversationProcedures:
             client=self._client,
         )
 
-    async def disapprove_user(self, idn: int) -> UserDossierConversationAggregate:
+    async def unapprove_user(self, idn: int) -> UserDossierConversationAggregate:
         convo_id36 = to_base36(idn)
         root = await self._client.request('POST', f'/api/mod/conversations/{convo_id36}/disapprove')
         return load_user_dossier_conversation_aggregate(

@@ -29,7 +29,7 @@ class ModeratorUserItem(SubredditUserItem):
         self.permissions: set[str] = {k for k, v in d['modPermissions'].items() if v}
         self.post_karma: int = d['postKarma']
 
-class ContributorUserItem(SubredditUserItem):
+class ApprovedUserItem(SubredditUserItem):
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.added_ut: int = d['approvedAtUTC']

@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_user_item import (
         ModeratorUserItem,
-        ContributorUserItem,
+        ApprovedUserItem,
         BannedUserItem,
         MutedUserItem,
     )
@@ -15,7 +15,7 @@ from functools import cached_property
 
 from ...model_loaders.subreddit_user_item import (
     load_moderator_user_item,
-    load_contributor_user_item,
+    load_approved_user_item,
     load_banned_user_item,
     load_muted_user_item,
 )
@@ -41,6 +41,7 @@ class ModerationProcedures:
         p = ModerationActionLogPaginator(self._client, f'/r/{sr}/about/log', action=action, mod=mod)
         return ImpartedPaginatorChainingIterator(p, amount)
 
+
     def get_moderator(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators', params={'username': user})
         order = root['moderatorIds']
@@ -59,11 +60,11 @@ class ModerationProcedures:
         object_map = root['moderators']
         return load_moderator_user_item(object_map[order[0]]) if order else None
 
-    def get_approved_contributor(self, sr: str, user: str) -> Optional[ContributorUserItem]:
+    def get_approved_user(self, sr: str, user: str) -> Optional[ApprovedUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/contributors', params={'username': user})
         order = root['approvedSubmitterIds']
         object_map = root['approvedSubmitters']
-        return load_contributor_user_item(object_map[order[0]]) if order else None
+        return load_approved_user_item(object_map[order[0]]) if order else None
 
     def get_banned_user(self, sr: str, user: str) -> Optional[BannedUserItem]:
         root = self._client.request('GET', f'/api/v1/{sr}/banned', params={'username': user})
@@ -76,6 +77,7 @@ class ModerationProcedures:
         order = root['mutedUserIds']
         object_map = root['mutedUsers']
         return load_muted_user_item(object_map[order[0]]) if order else None
+
 
     def send_moderator_invite(self, sr: str, user: str, permissions: Iterable[str]) -> None:
         data = {
@@ -97,9 +99,6 @@ class ModerationProcedures:
         }
         self._client.request('POST', '/api/friend', data=data)
 
-    def leave_moderator(self, subreddit_id: int) -> None:
-        self._client.request('POST', '/api/leavemoderator', data={'id': 't5_' + to_base36(subreddit_id)})
-
     def remove_moderator(self, sr: str, user: str) -> None:
         data = {
             'r': sr,
@@ -107,6 +106,9 @@ class ModerationProcedures:
             'name': user,
         }
         self._client.request('POST', '/api/unfriend', data=data)
+
+    def leave_moderator(self, subreddit_id: int) -> None:
+        self._client.request('POST', '/api/leavemoderator', data={'id': 't5_' + to_base36(subreddit_id)})
 
     def set_moderator_permissions(self, sr: str, user: str, permissions: Iterable[str]) -> None:
         data = {
@@ -126,7 +128,7 @@ class ModerationProcedures:
         }
         self._client.request('POST', '/api/setpermissions', data=data)
 
-    def add_approved_contributor(self, sr: str, user: str) -> None:
+    def add_approved_user(self, sr: str, user: str) -> None:
         data = {
             'r': sr,
             'type': 'contributor',
@@ -134,16 +136,16 @@ class ModerationProcedures:
         }
         self._client.request('POST', '/api/friend', data=data)
 
-    def leave_approved_contributor(self, subreddit_id: int) -> None:
-        self._client.request('POST', '/api/leavecontributor', data={'id': 't5_' + to_base36(subreddit_id)})
-
-    def remove_approved_contributor(self, sr: str, user: str) -> None:
+    def remove_approved_user(self, sr: str, user: str) -> None:
         data = {
             'r': sr,
             'type': 'contributor',
             'name': user,
         }
         self._client.request('POST', '/api/unfriend', data=data)
+
+    def leave_approved_user(self, subreddit_id: int) -> None:
+        self._client.request('POST', '/api/leavecontributor', data={'id': 't5_' + to_base36(subreddit_id)})
 
     def ban_user(self, sr: str, user: str, *,
             reason: str = '',
@@ -188,7 +190,7 @@ class ModerationProcedures:
         }
         self._client.request('POST', '/api/unfriend', data=data)
 
-    def add_approved_wiki_contributor(self, sr: str, user: str) -> None:
+    def add_wiki_contributor(self, sr: str, user: str) -> None:
         data = {
             'r': sr,
             'type': 'wikicontributor',
@@ -196,7 +198,7 @@ class ModerationProcedures:
         }
         self._client.request('POST', '/api/friend', data=data)
 
-    def remove_approved_wiki_contributor(self, sr: str, user: str) -> None:
+    def remove_wiki_contributor(self, sr: str, user: str) -> None:
         data = {
             'r': sr,
             'type': 'wikicontributor',
@@ -227,6 +229,7 @@ class ModerationProcedures:
             'name': user,
         }
         self._client.request('POST', '/api/unfriend', data=data)
+
 
     class _removal_reason:
         def __init__(self, outer: ModerationProcedures) -> None:

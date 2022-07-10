@@ -23,12 +23,13 @@ class Legacy:
         root = self._client.request('GET', f'/r/{sr}/about/moderators')
         return [load_moderator_list_item(d) for d in root['data']['children']]
 
-    def get_approved_contributor(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
+
+    def get_approved_user(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
         root = self._client.request('GET', f'/r/{sr}/about/contributors', params={'user': user})
         children = root['data']['children']
         return load_user_relationship_item(children[0]) if children else None
 
-    def get_approved_wiki_contributor(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
+    def get_wiki_contributor(self, sr: str, user: str) -> Optional[UserRelationshipItem]:
         root = self._client.request('GET', f'/r/{sr}/about/wikicontributors', params={'user': user})
         children = root['data']['children']
         return load_user_relationship_item(children[0]) if children else None

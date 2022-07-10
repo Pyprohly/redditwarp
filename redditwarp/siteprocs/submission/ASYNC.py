@@ -19,7 +19,7 @@ from ...iterators.call_chunk_calling_async_iterator import CallChunkCallingAsync
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.async_call_chunk import AsyncCallChunk
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.paginators.submission_async1 import SearchSubmissionsListingAsyncPaginator, SubmissionDuplicatesAsyncPaginator
+from ...pagination.paginators.submission_async1 import SubmissionSearchAsyncPaginator, SubmissionDuplicatesAsyncPaginator
 from ...model_loaders.comment_ASYNC import load_comment
 from .fetch_ASYNC import Fetch
 from .get_ASYNC import Get
@@ -582,11 +582,11 @@ class SubmissionProcedures:
 
     def search(self, sr: str, query: str, amount: Optional[int] = None, *,
         sort: str = 'relevance', time: str = 'all',
-    ) -> ImpartedPaginatorChainingAsyncIterator[SearchSubmissionsListingAsyncPaginator, Submission]:
+    ) -> ImpartedPaginatorChainingAsyncIterator[SubmissionSearchAsyncPaginator, Submission]:
         uri = '/search'
         if sr:
             uri = f'/r/{sr}/search'
-        p = SearchSubmissionsListingAsyncPaginator(
+        p = SubmissionSearchAsyncPaginator(
                 self._client, uri,
                 params={'q': query, 'restrict_sr': '1'},
                     sort=sort, time=time)

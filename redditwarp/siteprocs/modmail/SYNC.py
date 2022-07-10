@@ -7,11 +7,13 @@ if TYPE_CHECKING:
 
 from ...model_loaders.modmail import load_modmail_moderated_subreddit
 from .conversation_SYNC import ConversationProcedures
+from .pull_SYNC import Pull
 
 class ModmailProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
         self.conversation: ConversationProcedures = ConversationProcedures(client)
+        self.pull: Pull = Pull(client)
 
     def get_unread_counts(self) -> Mapping[str, int]:
         return self._client.request('GET', '/api/mod/conversations/unread/count')

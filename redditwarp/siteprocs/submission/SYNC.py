@@ -19,7 +19,7 @@ from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.paginators.submission_sync1 import SearchSubmissionsListingPaginator, SubmissionDuplicatesPaginator
+from ...pagination.paginators.submission_sync1 import SubmissionSearchPaginator, SubmissionDuplicatesPaginator
 from ...model_loaders.comment_SYNC import load_comment
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
@@ -582,11 +582,11 @@ class SubmissionProcedures:
 
     def search(self, sr: str, query: str, amount: Optional[int] = None, *,
         sort: str = 'relevance', time: str = 'all',
-    ) -> ImpartedPaginatorChainingIterator[SearchSubmissionsListingPaginator, Submission]:
+    ) -> ImpartedPaginatorChainingIterator[SubmissionSearchPaginator, Submission]:
         uri = '/search'
         if sr:
             uri = f'/r/{sr}/search'
-        p = SearchSubmissionsListingPaginator(
+        p = SubmissionSearchPaginator(
                 self._client, uri,
                 params={'q': query, 'restrict_sr': '1'},
                     sort=sort, time=time)

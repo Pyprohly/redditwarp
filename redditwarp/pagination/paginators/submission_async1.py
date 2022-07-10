@@ -11,7 +11,7 @@ from .listing.submission_listing_async_paginator import SubmissionListingAsyncPa
 from .listing.listing_async_paginator import ListingAsyncPaginator
 from ...model_loaders.submission_ASYNC import load_submission
 
-class SearchSubmissionsListingAsyncPaginator(
+class SubmissionSearchAsyncPaginator(
     Time[Submission],
     Sort[Submission],
     SubmissionListingAsyncPaginator,

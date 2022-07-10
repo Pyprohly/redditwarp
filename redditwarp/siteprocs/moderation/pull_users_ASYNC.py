@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.subreddit_user_item import (
         ModeratorUserItem,
-        ContributorUserItem,
+        ApprovedUserItem,
         BannedUserItem,
         MutedUserItem,
     )
@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
 from ...pagination.paginators.moderation.async1 import (
     ModeratorsAsyncPaginator,
-    ContributorsAsyncPaginator,
-    BannedAsyncPaginator,
-    MutedAsyncPaginator,
+    ApprovedUsersAsyncPaginator,
+    BannedUsersAsyncPaginator,
+    MutedUsersAsyncPaginator,
 )
 
 class PullUsers:
@@ -34,14 +34,14 @@ class PullUsers:
         p = ModeratorsAsyncPaginator(self._client, f'/api/v1/{sr}/moderators_editable')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def contributors(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ContributorsAsyncPaginator, ContributorUserItem]:
-        p = ContributorsAsyncPaginator(self._client, f'/api/v1/{sr}/contributors')
+    def approved_users(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ApprovedUsersAsyncPaginator, ApprovedUserItem]:
+        p = ApprovedUsersAsyncPaginator(self._client, f'/api/v1/{sr}/contributors')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def banned(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[BannedAsyncPaginator, BannedUserItem]:
-        p = BannedAsyncPaginator(self._client, f'/api/v1/{sr}/banned')
+    def banned(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[BannedUsersAsyncPaginator, BannedUserItem]:
+        p = BannedUsersAsyncPaginator(self._client, f'/api/v1/{sr}/banned')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def muted(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[MutedAsyncPaginator, MutedUserItem]:
-        p = MutedAsyncPaginator(self._client, f'/api/v1/{sr}/muted')
+    def muted(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[MutedUsersAsyncPaginator, MutedUserItem]:
+        p = MutedUsersAsyncPaginator(self._client, f'/api/v1/{sr}/muted')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)

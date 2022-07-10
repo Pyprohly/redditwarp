@@ -7,13 +7,13 @@ if TYPE_CHECKING:
 from ...async_paginator import MoreAvailableAsyncPaginator, Bidirectional, CursorAsyncPaginator
 from ....models.subreddit_user_item import (
     ModeratorUserItem,
-    ContributorUserItem,
+    ApprovedUserItem,
     BannedUserItem,
     MutedUserItem,
 )
 from ....model_loaders.subreddit_user_item import (
     load_moderator_user_item,
-    load_contributor_user_item,
+    load_approved_user_item,
     load_banned_user_item,
     load_muted_user_item,
 )
@@ -84,21 +84,21 @@ class ModeratorsAsyncPaginator(ModerationUsersAsyncPaginator[ModeratorUserItem])
         object_map = root['moderators']
         return [load_moderator_user_item(object_map[full_id36]) for full_id36 in order]
 
-class ContributorsAsyncPaginator(ModerationUsersAsyncPaginator[ContributorUserItem]):
-    async def fetch(self) -> Sequence[ContributorUserItem]:
+class ApprovedUsersAsyncPaginator(ModerationUsersAsyncPaginator[ApprovedUserItem]):
+    async def fetch(self) -> Sequence[ApprovedUserItem]:
         root = await self._fetch_data()
         order = root['approvedSubmitterIds']
         object_map = root['approvedSubmitters']
-        return [load_contributor_user_item(object_map[full_id36]) for full_id36 in order]
+        return [load_approved_user_item(object_map[full_id36]) for full_id36 in order]
 
-class BannedAsyncPaginator(ModerationUsersAsyncPaginator[BannedUserItem]):
+class BannedUsersAsyncPaginator(ModerationUsersAsyncPaginator[BannedUserItem]):
     async def fetch(self) -> Sequence[BannedUserItem]:
         root = await self._fetch_data()
         order = root['bannedUserIds']
         object_map = root['bannedUsers']
         return [load_banned_user_item(object_map[full_id36]) for full_id36 in order]
 
-class MutedAsyncPaginator(ModerationUsersAsyncPaginator[MutedUserItem]):
+class MutedUsersAsyncPaginator(ModerationUsersAsyncPaginator[MutedUserItem]):
     async def fetch(self) -> Sequence[MutedUserItem]:
         root = await self._fetch_data()
         order = root['mutedUserIds']

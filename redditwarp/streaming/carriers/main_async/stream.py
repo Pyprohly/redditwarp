@@ -98,7 +98,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         paginator.limit = max_limit
 
         retrieved: Sequence[TOutput] = ()
-        while not retrieved:
+        while True:
             try:
                 retrieved = await paginator.fetch()
             except Exception as error:
@@ -109,6 +109,8 @@ class Stream(IStandardStreamEventSubject[TOutput]):
                         delay * (1 - self._JITTER_FACTOR),
                         delay * (1 + self._JITTER_FACTOR))):
                     yield v
+                continue
+            break
 
         delay = self._BASE_POLL_INTERVAL
 

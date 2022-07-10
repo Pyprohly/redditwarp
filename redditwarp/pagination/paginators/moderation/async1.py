@@ -16,9 +16,9 @@ from .pull_async1 import (  # noqa: F401
 )
 from .pull_users_async1 import (  # noqa: F401
     ModeratorsAsyncPaginator as ModeratorsAsyncPaginator,
-    ContributorsAsyncPaginator as ContributorsAsyncPaginator,
-    BannedAsyncPaginator as BannedAsyncPaginator,
-    MutedAsyncPaginator as MutedAsyncPaginator,
+    ApprovedUsersAsyncPaginator as ApprovedUsersAsyncPaginator,
+    BannedUsersAsyncPaginator as BannedUsersAsyncPaginator,
+    MutedUsersAsyncPaginator as MutedUsersAsyncPaginator,
 )
 from .legacy_pull_users_async1 import (  # noqa: F401
     UserRelationshipItemListingAsyncPaginator as UserRelationshipItemListingAsyncPaginator,

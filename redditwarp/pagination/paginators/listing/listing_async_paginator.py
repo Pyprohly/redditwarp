@@ -22,11 +22,8 @@ class ListingAsyncPaginator(Resettable, MoreAvailableAsyncPaginator[T], Bidirect
         self.uri: str = uri
         self.params: Mapping[str, str] = {} if params is None else params
         self.cursor_extractor: Callable[[Any], str] = cursor_extractor
-
         self.direction: bool = True
-
         self.show_all: bool = False
-
         self.__reset()
 
     def __reset(self) -> None:

@@ -14,7 +14,7 @@ from ...model_loaders.user_ASYNC import load_user, load_potentially_suspended_us
 from ...model_loaders.moderated_subreddit import load_moderated_subreddit
 from ... import http
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.paginators.user.async1 import SearchUsersListingAsyncPaginator
+from ...pagination.paginators.user.async1 import UserSearchAsyncPaginator
 from ...exceptions import RejectedResultException
 
 class UserProcedures:
@@ -62,8 +62,8 @@ class UserProcedures:
         return [load_moderated_subreddit(d) for d in root['data']]
 
     def search(self, query: str, amount: Optional[int] = None,
-            ) -> ImpartedPaginatorChainingAsyncIterator[SearchUsersListingAsyncPaginator, User]:
-        p = SearchUsersListingAsyncPaginator(self._client, '/users/search', query)
+            ) -> ImpartedPaginatorChainingAsyncIterator[UserSearchAsyncPaginator, User]:
+        p = UserSearchAsyncPaginator(self._client, '/users/search', query)
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     async def name_exists(self, name: str) -> bool:

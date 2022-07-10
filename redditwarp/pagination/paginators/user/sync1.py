@@ -12,4 +12,4 @@ from .pull_sync1 import (  # noqa: F401
     SavedCommentsListingPaginator as SavedCommentsListingPaginator,
 )
 from .pull_user_subreddits_sync1 import UserSubredditListingPaginator as UserSubredditListingPaginator  # noqa: F401
-from .explore_sync1 import SearchUsersListingPaginator as SearchUsersListingPaginator  # noqa: F401
+from .explore_sync1 import UserSearchPaginator as UserSearchPaginator  # noqa: F401

@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_user_item import (
         ModeratorUserItem,
-        ContributorUserItem,
+        ApprovedUserItem,
         BannedUserItem,
         MutedUserItem,
     )
@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...pagination.paginators.moderation.sync1 import (
     ModeratorsPaginator,
-    ContributorsPaginator,
-    BannedPaginator,
-    MutedPaginator,
+    ApprovedUsersPaginator,
+    BannedUsersPaginator,
+    MutedUsersPaginator,
 )
 
 class PullUsers:
@@ -34,14 +34,14 @@ class PullUsers:
         p = ModeratorsPaginator(self._client, f'/api/v1/{sr}/moderators_editable')
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    def contributors(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ContributorsPaginator, ContributorUserItem]:
-        p = ContributorsPaginator(self._client, f'/api/v1/{sr}/contributors')
+    def approved_users(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ApprovedUsersPaginator, ApprovedUserItem]:
+        p = ApprovedUsersPaginator(self._client, f'/api/v1/{sr}/contributors')
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    def banned(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[BannedPaginator, BannedUserItem]:
-        p = BannedPaginator(self._client, f'/api/v1/{sr}/banned')
+    def banned(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[BannedUsersPaginator, BannedUserItem]:
+        p = BannedUsersPaginator(self._client, f'/api/v1/{sr}/banned')
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    def muted(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MutedPaginator, MutedUserItem]:
-        p = MutedPaginator(self._client, f'/api/v1/{sr}/muted')
+    def muted(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[MutedUsersPaginator, MutedUserItem]:
+        p = MutedUsersPaginator(self._client, f'/api/v1/{sr}/muted')
         return ImpartedPaginatorChainingIterator(p, amount)

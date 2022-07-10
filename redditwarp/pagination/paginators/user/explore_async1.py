@@ -9,7 +9,7 @@ from ..listing.listing_async_paginator import ListingAsyncPaginator
 from ....models.user_ASYNC import User
 from ....model_loaders.user_ASYNC import load_user
 
-class SearchUsersListingAsyncPaginator(
+class UserSearchAsyncPaginator(
     Sort[User],
     ListingAsyncPaginator[User],
 ):

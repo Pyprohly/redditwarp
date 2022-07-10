@@ -9,7 +9,12 @@ if TYPE_CHECKING:
 from ..stream import Stream
 
 
-def make_conversation_and_message_stream(client: Client) -> IStandardStreamEventSubject[tuple[Conversation, Message]]:
-    it = client.p.modmail.conversation.pulls.new()
+def make_conversation_message_new_stream(client: Client) -> IStandardStreamEventSubject[tuple[Conversation, Message]]:
+    it = client.p.modmail.pull.new()
+    paginator = it.get_paginator()
+    return Stream(paginator, lambda x: (x[0].id, x[1].id))
+
+def make_conversation_message_join_request_stream(client: Client) -> IStandardStreamEventSubject[tuple[Conversation, Message]]:
+    it = client.p.modmail.pull.join_requests()
     paginator = it.get_paginator()
     return Stream(paginator, lambda x: (x[0].id, x[1].id))

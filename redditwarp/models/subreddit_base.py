@@ -26,7 +26,7 @@ class BaseSubreddit(Artifact):
         def __init__(self, d: Mapping[str, Any]):
             self.favorited: bool = d['user_has_favorited']
             self.is_banned: bool = d['user_is_banned']
-            self.is_contributor: bool = d['user_is_contributor']
+            self.is_approved_user: bool = d['user_is_contributor']
             self.is_moderator: bool = d['user_is_moderator']
             self.is_muted: bool = d['user_is_muted']
             self.is_subscribed: bool = d['user_is_subscriber']

@@ -18,7 +18,7 @@ class LegacyPullUsers:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def contributors(self, sr: str, amount: Optional[int] = None,
+    def approved_users(self, sr: str, amount: Optional[int] = None,
             ) -> ImpartedPaginatorChainingAsyncIterator[UserRelationshipItemListingAsyncPaginator, UserRelationshipItem]:
         p = UserRelationshipItemListingAsyncPaginator(self._client, f'/r/{sr}/about/contributors')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)

@@ -12,4 +12,4 @@ from .pull_async1 import (  # noqa: F401
     SavedCommentsListingAsyncPaginator as SavedCommentsListingAsyncPaginator,
 )
 from .pull_user_subreddits_async1 import UserSubredditListingAsyncPaginator as UserSubredditListingAsyncPaginator  # noqa: F401
-from .explore_async1 import SearchUsersListingAsyncPaginator as SearchUsersListingAsyncPaginator  # noqa: F401
+from .explore_async1 import UserSearchAsyncPaginator as UserSearchAsyncPaginator  # noqa: F401

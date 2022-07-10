@@ -89,7 +89,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         paginator.limit = max_limit
 
         retrieved: Sequence[TOutput] = ()
-        while not retrieved:
+        while True:
             try:
                 retrieved = paginator.fetch()
             except Exception as error:
@@ -99,6 +99,8 @@ class Stream(IStandardStreamEventSubject[TOutput]):
                 yield from self._intermit(random.uniform(
                     delay * (1 - self._JITTER_FACTOR),
                     delay * (1 + self._JITTER_FACTOR)))
+                continue
+            break
 
         delay = self._BASE_POLL_INTERVAL
 
