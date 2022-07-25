@@ -6,11 +6,9 @@ if TYPE_CHECKING:
     from ...models.subreddit_SYNC import Subreddit
     from ...models.comment_SYNC import ExtraSubmissionFieldsComment
     from ...models.subreddit_rules import SubredditRules
-    from ...models.moderator_list import ModeratorListItem
 
 from ...model_loaders.subreddit_SYNC import load_subreddit, load_potentially_inaccessible_subreddit
 from ...model_loaders.subreddit_rules import load_subreddit_rules
-from ...model_loaders.moderator_list import load_moderator_list_item
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
@@ -143,10 +141,6 @@ class SubredditProcedures:
                 return False
             raise
         return True
-
-    def list_moderators(self, sr: str) -> Sequence[ModeratorListItem]:
-        root = self._client.request('GET', f'/r/{sr}/about/moderators')
-        return [load_moderator_list_item(d) for d in root['data']['children']]
 
     def get_similar_subreddits(self, sr_id: int, n: Optional[int] = None) -> Sequence[Subreddit]:
         params = {'sr_fullnames': 't5_' + to_base36(sr_id)}

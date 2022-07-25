@@ -138,13 +138,13 @@ if tree_node is None:
     print('Submission not found', file=sys.stderr)
     sys.exit(1)
 
-m = submission = tree_node.value
+m = tree_node.value
 
 print(f'''\
 {m.permalink}
-{m.score} :: {m.title}
-comments/{m.id36} by u/{m.author_name} to r/{m.subreddit.name}
-Submitted at {m.created_at.astimezone().ctime()}{' *' if m.edited else ''}
+{m.id36}+ | {m.score} :: {m.title}
+Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
+by u/{m.author_name} to r/{m.subreddit.name}
 ''')
 
 columns, _lines = shutil.get_terminal_size()
