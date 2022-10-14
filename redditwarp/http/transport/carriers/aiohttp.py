@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, Optional
 if TYPE_CHECKING:
     from ...request import Request
     from ...response import Response
@@ -16,7 +16,25 @@ from ... import payload
 from ...response import UResponse
 from ...util.case_insensitive_dict import CaseInsensitiveDict
 
-def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]]:
+def _get_effective_timeout_value(timeouts: Iterable[float]) -> float:
+    for tv in timeouts:
+        if tv == -2:
+            continue
+        if 0 > tv != -1:
+            raise ValueError('invalid timeout value: %s' % tv)
+        return tv
+    raise ValueError('a default timeout value could not be determined')
+
+def _generate_request_kwargs(
+    session: SessionBase,
+    request: Request,
+    *,
+    timeout: float = -2,
+    follow_redirects: Optional[bool] = None,
+) -> Iterable[tuple[str, Any]]:
+    r = request
+    etv = _get_effective_timeout_value((timeout, session.timeout))
+
     client_timeout = aiohttp.ClientTimeout(
         total=etv,
         connect=etv,
@@ -35,6 +53,8 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
     yield ('method', r.verb)
     yield ('url', r.uri)
     yield ('params', r.params)
+
+    yield ('allow_redirects', (session.follow_redirects if follow_redirects is None else follow_redirects))
 
     headers = dict(r.headers)
     pld = r.payload
@@ -89,9 +109,10 @@ class Session(SessionBase):
         super().__init__()
         self.session: aiohttp.ClientSession = aiohttp_client
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
-        etv = self._get_effective_timeout_value(timeout)
-        kwargs = dict(_generate_request_kwargs(request, etv))
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
+        kwargs = dict(_generate_request_kwargs(self, request,
+                timeout=timeout, follow_redirects=follow_redirects))
         try:
             async with self.session.request(**kwargs) as response:
                 content = await response.content.read()

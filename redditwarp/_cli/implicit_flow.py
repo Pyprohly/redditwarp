@@ -2,12 +2,12 @@
 """
 Step through the OAuth2 Implicit Flow to obtain an access token.
 
-Visit <https://www.reddit.com/prefs/apps> to create an app for your client.
-This flow requires an 'installed app' app type.
+Visit <https://www.reddit.com/prefs/apps> to create an OAuth2 application profile
+for your client before running this script.
 
 Your app's redirect URI must *exactly* match `http://localhost:8080`.
 
-Access tokens expire after one hour.
+This flow requires an 'installed app' app type.
 """
 
 from __future__ import annotations

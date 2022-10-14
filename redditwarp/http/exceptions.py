@@ -11,12 +11,14 @@ class ArgExc(ArgExcMixin):
 
 
 class TransportError(ArgExc):
-    pass
+    """A catch-all exception for HTTP transport library errors."""
 
 class TimeoutException(ArgExc):
-    pass
+    """A timeout exception class to wrap timeout errors from HTTP transport libraries."""
 
 class StatusCodeException(ArgExc):
+    """An exception class representing HTTP status codes as errors."""
+
     STATUS_CODE: int = 0
 
     def __init__(self, arg: object = None, *, status_code: int) -> None:
@@ -106,11 +108,14 @@ def get_status_code_exception_class_by_status_code(n: int) -> type[StatusCodeExc
     return klass
 
 def status_successful(n: int) -> bool:
+    """Return true if `200 <= n <= 299`."""
     return 200 <= n <= 299
 
 def raise_now(n: int) -> None:
+    """Raises a :class:`.StatusCodeException` exception type based on the given HTTP error number."""
     raise get_status_code_exception_class_by_status_code(n)(status_code=n)
 
 def raise_for_status(n: int) -> None:
+    """Raises a :class:`.StatusCodeException` exception if `status_successful(n)` returns false."""
     if not status_successful(n):
         raise_now(n)

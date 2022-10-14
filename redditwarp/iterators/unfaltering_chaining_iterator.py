@@ -8,7 +8,7 @@ class UnfalteringChainingIterator(Iterator[E]):
     """Like `itertools.chain.from_iterable()` but is able to continue when
     an exception occurs during iteration.
 
-    Also has a `self.current_iter` attribute.
+    Also has a `self.current_iter` attribute to get the current iterator.
     """
 
     def __init__(self, source: Iterable[Iterable[E]]) -> None:

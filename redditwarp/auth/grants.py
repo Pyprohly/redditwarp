@@ -9,12 +9,14 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class AuthorizationGrant(Mapping[str, str]):
-    """An authorization grant is a credential representing the resource
+    """A class to construct authorization grant mappings conveniently.
+
+    An authorization grant is a credential representing the resource
     owner's authorization that's used to exchange for a bearer token.
 
     An empty string should be treated the same as `None` in all fields
-    annotated as `Optional`. The annotation is a reflection of the field
-    value requirements of various grants types defined in the OAuth2 spec.
+    annotated as `Optional`. The annotations reflect the field value
+    requirements of the various grants types defined in the OAuth2 spec.
     """
     GRANT_TYPE: ClassVar[str] = ''
     _d: dict[str, str] = field(init=False, repr=False, default_factory=dict)

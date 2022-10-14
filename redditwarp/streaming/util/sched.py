@@ -1,10 +1,15 @@
+"""A general purpose event scheduler.
+
+This is just a reimplementation of the `sched` module from the standard library.
+However, the names of the methods are different.
+"""
 
 from __future__ import annotations
 from typing import Callable
 
 from collections.abc import Sized
 import time
-from heapq import heappush, heappop
+import heapq
 
 class Entry:
     def __init__(self, when: float, callback: Callable[[], None]) -> None:
@@ -40,12 +45,12 @@ class Handle:
 
     def get_when(self) -> float:
         return self._entry.when
-
-    def get_cancelled(self) -> bool:
-        return self._entry.cancelled
-
+    def get_callback(self) -> Callable[[], None]:
+        return self._entry.callback
     def get_scheduled(self) -> bool:
         return self._entry.scheduled
+    def get_cancelled(self) -> bool:
+        return self._entry.cancelled
 
     def cancel(self) -> None:
         self._entry.cancelled = True
@@ -72,7 +77,7 @@ class Scheduler(Sized):
 
     def call_at(self, when: float, callback: Callable[[], None]) -> Handle:
         entry = Entry(when, callback)
-        heappush(self._pq, entry)
+        heapq.heappush(self._pq, entry)
         return Handle(entry)
 
     def call_later(self, delay: float, callback: Callable[[], None]) -> Handle:
@@ -82,11 +87,16 @@ class Scheduler(Sized):
         return self.call_later(0, callback)
 
     def jog(self) -> float:
+        """Run the scheduler while there are immediate events to be processed.
+
+        Return the amount of time it will take until the next event is ready.
+        If there are no further scheduled events, the value `-1` is returned.
+        """
         pq = self._pq
         while pq:
             entry = pq[0]
             if entry.cancelled:
-                heappop(pq)
+                heapq.heappop(pq)
                 entry.scheduled = False
                 continue
 
@@ -94,12 +104,13 @@ class Scheduler(Sized):
             if entry.when > curr_time:
                 return entry.when - curr_time
 
-            heappop(pq)
+            heapq.heappop(pq)
             entry.scheduled = False
             entry.callback()
         return -1
 
     def run(self) -> None:
+        """Run the scheduller until all scheduled events are complete."""
         while True:
             t = self.jog()
             if t < 0:

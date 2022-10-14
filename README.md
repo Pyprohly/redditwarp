@@ -1,6 +1,7 @@
+
 # RedditWarp
 
-An easy-to-use, comprehensive, type-complete Python Reddit API wrapper.
+An easy-to-learn, comprehensive, type-complete Python Reddit API wrapper.
 
 RedditWarp is an advanced Python Reddit API library designed to handle the complexities
 of the Reddit API in a package that is comprehensive, highly discoverable, static-type
@@ -22,14 +23,15 @@ for subm in it:
 
 ## Features
 
-* Modern type-complete Python code.
-* Synchronous and async IO support.
+* A consistent and simple API.
+* Modern type-complete codebase.
+* Sync and asynchronous IO support.
 * Automatic rate limit handling.
 * A comprehensive and discoverable index of API procedures.
 * Rich objects that accurately wrap API models and structures.
 * Formal data structures, e.g., that facilitate: comment tree traversals, pagination.
 * HTTP transport library agnosticism.
-* OAuth2 tooling and CLI utilities to help manage Reddit auth tokens.
+* OAuth2 tooling and CLI utilities to help manage auth tokens.
 * A simple event-based listing endpoint streaming framework.
 * A built-in Pushshift Client.
 

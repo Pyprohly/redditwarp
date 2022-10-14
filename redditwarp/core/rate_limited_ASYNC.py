@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ..http.requestor_ASYNC import Requestor
     from ..http.request import Request
@@ -31,7 +31,8 @@ class RateLimited(RequestorAugmenter):
         self._lock = asyncio.Lock()
         self._datetime_extremum = datetime.min.replace(tzinfo=timezone.utc)
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         tb = self._tb
         async with self._lock:
             s = 0.
@@ -51,7 +52,7 @@ class RateLimited(RequestorAugmenter):
             await asyncio.sleep(tb.get_cooldown(1))
             tb.consume(1)
 
-        response = await self.requestor.send(request, timeout=timeout)
+        response = await self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
         now = time.monotonic()
         self._delta = now - self._timestamp

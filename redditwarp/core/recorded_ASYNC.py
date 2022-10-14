@@ -22,10 +22,11 @@ class Recorded(RequestorAugmenter):
         self.last_transfer_queue: MutableSequence[tuple[Request, Response]] = deque(maxlen=16)
         self.last_transmit_queue: MutableSequence[tuple[Request, Optional[Response]]] = deque(maxlen=16)
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         resp = None
         try:
-            resp = await self.requestor.send(request, timeout=timeout)
+            resp = await self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
         finally:
             self.last_request = request
             self.last_transmit = (request, resp)

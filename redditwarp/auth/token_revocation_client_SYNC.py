@@ -9,6 +9,8 @@ from ..http.request import make_request
 from .utils import apply_basic_auth
 
 class TokenRevocationClient:
+    """Makes token revocation requests."""
+
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials):
         self.requestor: Requestor = requestor

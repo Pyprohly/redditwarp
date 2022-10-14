@@ -24,7 +24,7 @@ def raise_for_reddit_token_server_response_error(json_dict: Any) -> None:
 
 
 class _Throwaway(ArgExc):
-    pass
+    """These exceptions are not intended to be caught."""
 
 class AuthError(_Throwaway):
     pass
@@ -92,15 +92,15 @@ def raise_for_reddit_auth_response_exception(e: Exception, req: Request, resp: R
                         " Remove it from your User-Agent string."
                     )
 
-        elif status == 429:
-            ua = req_headers['User-Agent']
-            if 'curl' in ua:
-                msg = "The pattern 'curl', in your User-Agent string, is known to interfere with rate limits. Remove it from your User-Agent string."
-                raise FaultyUserAgent(msg)
-
-        elif status == 500:
+        elif status == 404:
             if isinstance(pld := req.payload, http.payload.URLEncodedFormData):
                 grant = pld.data
                 if grant.get('grant_type') == 'authorization_code':
                     e.arg = "The authorization code might be expired."
                     raise e
+
+        elif status == 429:
+            ua = req_headers['User-Agent']
+            if 'curl' in ua:
+                msg = "The pattern 'curl', in your User-Agent string, is known to interfere with rate limits. Remove it from your User-Agent string."
+                raise FaultyUserAgent(msg)

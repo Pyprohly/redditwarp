@@ -1,16 +1,23 @@
 
 from __future__ import annotations
-from typing import TypeVar, Mapping, MutableMapping, Iterator, IO, cast, Tuple, Optional, Any
+from typing import TypeVar, Mapping, MutableMapping, Iterator, IO, cast, Optional, Any
 
 from pprint import PrettyPrinter
 
 V = TypeVar('V')
 
 class CaseInsensitiveDict(MutableMapping[str, V]):
-    """A case-folding-case-preserving dictionary."""
+    """A case-folding, case-preserving dictionary.
+
+    Entries are stored as if `str.casefold()` was called on the key.
+
+    Iterators producing keys will contain case-sensitive keys since the casing of the
+    last key supplied when setting is retained. However, as expected, lookups and
+    membership checks are not case-sensitive, as are comparisons with other mappings.
+    """
 
     def __init__(self, data: Optional[Mapping[str, V]] = None, **kwargs: V) -> None:
-        self._store: MutableMapping[str, Tuple[str, V]] = {}
+        self._store: MutableMapping[str, tuple[str, V]] = {}
         if data is None:
             data = {}
         self.update(data, **kwargs)
@@ -42,10 +49,10 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
             return other.items() == self.items()
         return NotImplemented
 
-    def __getstate__(self) -> Mapping[str, Tuple[str, V]]:
+    def __getstate__(self) -> Mapping[str, tuple[str, V]]:
         return self._store
 
-    def __setstate__(self, state: Mapping[str, Tuple[str, V]]) -> None:
+    def __setstate__(self, state: Mapping[str, tuple[str, V]]) -> None:
         object.__setattr__(self, '_store', state)
 
     @staticmethod

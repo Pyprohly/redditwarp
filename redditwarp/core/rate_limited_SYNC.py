@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ..http.requestor_SYNC import Requestor
     from ..http.request import Request
@@ -21,7 +21,8 @@ class RateLimited(RequestorAugmenter):
         self._timestamp: float = time.monotonic()
         self._burst_control = TokenBucket(5, 1/2)
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         h = self._burst_control.hard_consume(1)
         s = 0.
         if self.remaining < 2:
@@ -33,7 +34,7 @@ class RateLimited(RequestorAugmenter):
 
         time.sleep(s)
 
-        response = self.requestor.send(request, timeout=timeout)
+        response = self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
         now = time.monotonic()
         self._delta = now - self._timestamp

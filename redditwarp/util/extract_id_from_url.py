@@ -1,3 +1,4 @@
+"""Extract the ID from a Reddit submission or comment URL."""
 
 import urllib.parse
 from pathlib import Path

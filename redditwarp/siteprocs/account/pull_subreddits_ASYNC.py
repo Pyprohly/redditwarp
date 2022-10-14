@@ -13,7 +13,7 @@ from ...pagination.paginators.account_async1 import (
 )
 
 class PullSubreddits:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def subscribed(self, amount: Optional[int] = None

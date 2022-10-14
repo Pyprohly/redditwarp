@@ -1,3 +1,4 @@
+"""An API wrapper for the Reddit API."""
 
 __all__ = '*'
 

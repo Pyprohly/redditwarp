@@ -15,7 +15,25 @@ from ... import exceptions
 from ... import payload
 from ...response import UResponse
 
-def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]]:
+def _get_effective_timeout_value(timeouts: Iterable[float]) -> float:
+    for tv in timeouts:
+        if tv == -2:
+            continue
+        if 0 > tv != -1:
+            raise ValueError('invalid timeout value: %s' % tv)
+        return tv
+    raise ValueError('a default timeout value could not be determined')
+
+def _generate_request_kwargs(
+    session: SessionBase,
+    request: Request,
+    *,
+    timeout: float = -2,
+    follow_redirects: Optional[bool] = None,
+) -> Iterable[tuple[str, Any]]:
+    r = request
+    etv = _get_effective_timeout_value((timeout, session.timeout))
+
     t: Optional[float] = etv
     if t == -1:
         t = None
@@ -25,6 +43,8 @@ def _generate_request_kwargs(r: Request, etv: float) -> Iterable[tuple[str, Any]
     yield ('url', r.uri)
     yield ('params', r.params)
     yield ('headers', r.headers)
+
+    yield ('allow_redirects', (session.follow_redirects if follow_redirects is None else follow_redirects))
 
     headers = dict(r.headers)
     pld = r.payload
@@ -75,9 +95,10 @@ class Session(SessionBase):
         super().__init__()
         self.session: requests.Session = requests_session
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
-        etv = self._get_effective_timeout_value(timeout)
-        kwargs = dict(_generate_request_kwargs(request, etv))
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
+        kwargs = dict(_generate_request_kwargs(self, request,
+                timeout=timeout, follow_redirects=follow_redirects))
         try:
             response = self.session.request(**kwargs)
         except requests.exceptions.ReadTimeout as cause:

@@ -1,3 +1,4 @@
+"""Provides a class to assist publisher classes in declaring events."""
 
 from __future__ import annotations
 from typing import TypeVar, Iterator#, Optional, overload, Callable, Union
@@ -6,6 +7,16 @@ from collections.abc import Collection
 T = TypeVar('T')
 
 class EventDispatcher(Collection[T]):
+    """An event dispatcher.
+
+    This class doesn't do any event dispatching on its own. You must subclass this class
+    and implement it yourself, typically by implementing `def __call__`. See the example
+    at the bottom of this module.
+
+    Handlers are registered in a set. Because of this, handlers cannot be registered
+    multiple times, and the order in which they are fired is indeterminable.
+    """
+
     def __init__(self) -> None:
         self._handlers: set[T] = set()
 
@@ -41,6 +52,8 @@ class EventDispatcher(Collection[T]):
 
 
 
+
+# The following example shows how to use EventDispatcher to declare and raise an event.
 
 from typing import Protocol
 

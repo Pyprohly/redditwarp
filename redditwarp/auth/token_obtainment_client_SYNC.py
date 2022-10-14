@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
-    from .typedefs import ClientCredentials, AuthorizationGrant
+    from .typedefs import ClientCredentials, AuthorizationGrantType as AuthorizationGrant
     from ..http.requestor_SYNC import Requestor
 
 from ..http.request import make_request
@@ -12,9 +12,7 @@ from .utils import apply_basic_auth
 from .exceptions import raise_for_token_server_response_error
 
 class TokenObtainmentClient:
-    """The token client will exchange an authorisation grant
-    for an OAuth2 token.
-    """
+    """The token client exchanges an authorisation grant for an OAuth2 token."""
 
     def __init__(self, requestor: Requestor, uri: str,
             client_credentials: ClientCredentials,
@@ -25,6 +23,13 @@ class TokenObtainmentClient:
         self.grant: Mapping[str, str] = grant
 
     def fetch_data(self) -> Mapping[str, Any]:
+        """Exchange an authorisation grant for an OAuth2 token.
+
+        .. RETURNS
+
+        :returns:
+            OAuth2 token data.
+        """
         r = make_request('POST', self.uri, data=self.grant)
         apply_basic_auth(r, *self.client_credentials)
         resp = self.requestor.send(r)
@@ -40,4 +45,5 @@ class TokenObtainmentClient:
         return resp_json
 
     def fetch_token(self) -> Token:
+        """Call :meth:`self.fetch_data <.fetch_data>` and construct a :class:`~.token.Token` from it."""
         return Token.from_dict(self.fetch_data())

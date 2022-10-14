@@ -43,7 +43,8 @@ class SessionBase(Requestor):
 
     def __init__(self) -> None:
         self.timeout: float = DEFAULT_TIMEOUT
-        self._veto_timeout: contextvars.ContextVar[float] = contextvars.ContextVar('veto_timeout', default=-2.)
+        self.follow_redirects: bool = False
+        self.___veto_timeout: contextvars.ContextVar[float] = contextvars.ContextVar('___veto_timeout', default=-2.)
 
     def __enter__(self: T) -> T:
         return self
@@ -56,18 +57,27 @@ class SessionBase(Requestor):
         self.close()
         return None
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         """
-        Parameters
-        ----------
-        timeout: Optional[float]
-            The connect timeout. The number of seconds the client will
-            wait to establish a connection to the server.
+        .. PARAMETERS
 
-            A None value will use a default that is specific to the transport
-            adaptor. A negative number will wait an infinite amount of time.
-        aux_info: Optional[Mapping[Any, Any]]
-            Additional information to be consumed by a custom :class:`SessionBase` class.
+        :param request:
+            The request to send.
+        :param timeout:
+            A timeout value for the total exchange.
+
+            A value of `0` has no special meaning.
+            A :class:`~.exceptions.TimeoutException` will be raised immediately.
+
+            A value of `-1` means infinite timeout.
+
+            A value of `-2` means use the session default.
+
+        .. RAISES
+
+        :raises ValueError:
+            An invalid timeout value was specified.
         """
         raise NotImplementedError
 
@@ -81,16 +91,17 @@ class SessionBase(Requestor):
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
+        follow_redirects: Optional[bool] = None,
     ) -> Response:
         r = self.make_request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files)
-        return self.send(r, timeout=timeout)
+        return self.send(r, timeout=timeout, follow_redirects=follow_redirects)
 
     def close(self) -> None:
         pass
 
-    def _get_effective_timeout_value(self, timeout: float) -> float:
-        t1 = self._veto_timeout.get()
+    def ___get_effective_timeout_value(self, timeout: float) -> float:
+        t1 = self.___veto_timeout.get()
         t2 = timeout
         t3 = self.timeout
         for tv in (t1, t2, t3):
@@ -101,8 +112,7 @@ class SessionBase(Requestor):
             return tv
         raise ValueError('a default timeout value could not be determined')
 
-    # Unused for now
-    class _TimeoutAsContextManager:
+    class ___TimeoutAsContextManager:
         def __init__(self, var: contextvars.ContextVar[float], timeout: float) -> None:
             self._var = var
             self._timeout = timeout
@@ -121,6 +131,5 @@ class SessionBase(Requestor):
             self._var.reset(tkn)
             return None
 
-    # Defer this idea
     def ___timeout_as(self, timeout: float) -> AbstractContextManager[None]:
-        return self._TimeoutAsContextManager(self._veto_timeout, timeout)
+        return self.___TimeoutAsContextManager(self.___veto_timeout, timeout)

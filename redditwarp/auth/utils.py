@@ -28,9 +28,9 @@ def ___authorization_url(  # UNUSED: scrapped idea
     params = {k: v for k, v in params.items() if v}
     return '%s?%s' % (url, urlencode(params))
 
-
 def basic_auth(userid: str, password: str, *,
-        scheme: str = "Basic") -> str:
+        scheme: str = 'Basic') -> str:
+    """Make a basic auth string suitable for use in an `Authorization` header."""
     b64_user_pass = b64encode(f"{userid}:{password}".encode()).decode()
     return f"{scheme} {b64_user_pass}"
 
@@ -39,7 +39,8 @@ def apply_basic_auth(
     userid: str,
     password: str,
     *,
-    scheme: str = "Basic",
-    header: str = "Authorization",
+    scheme: str = 'Basic',
+    header: str = 'Authorization',
 ) -> None:
+    """Write a basic auth string into the `Authorization` header of a request."""
     request.headers[header] = basic_auth(userid, password, scheme=scheme)

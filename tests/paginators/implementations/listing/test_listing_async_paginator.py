@@ -1,7 +1,7 @@
 
 import pytest
 
-from typing import Sequence, Any, MutableMapping, Callable
+from typing import Sequence, Any, MutableMapping, Callable, Optional
 from redditwarp.client_ASYNC import Client
 from redditwarp.core.reddit_http_client_ASYNC import RedditHTTPClient
 from redditwarp.core.recorded_ASYNC import Recorded, Last
@@ -21,7 +21,8 @@ class MySession(SessionBase):
         self.response_headers = response_headers
         self.response_data = response_data
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         return Response(self.response_status, self.response_headers, self.response_data)
 
 class MyListingAsyncPaginator(ListingAsyncPaginator[str]):

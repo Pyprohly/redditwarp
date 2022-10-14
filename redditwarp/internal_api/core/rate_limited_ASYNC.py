@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...http.requestor_ASYNC import Requestor
     from ...http.request import Request
@@ -20,7 +20,8 @@ class RateLimited(RequestorAugmenter):
         super().__init__(requestor)
         self._tb = TokenBucket(3, 1/2)
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         await asyncio.sleep(self._tb.get_cooldown(1))
         self._tb.consume(1)
-        return await self.requestor.send(request, timeout=timeout)
+        return await self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)

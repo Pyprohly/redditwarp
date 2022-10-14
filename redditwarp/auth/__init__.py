@@ -1,3 +1,9 @@
+"""OAuth2 utilities.
+
+This module aims to provide general-purpose OAuth2 utilities.
+
+Some Reddit API-specific symbols are included in certain modules to aid this library.
+"""
 
 from . import (SYNC, ASYNC)  # noqa: F401
 from . import (token_obtainment_client_SYNC, token_obtainment_client_ASYNC)  # noqa: F401

@@ -1,3 +1,4 @@
+"""General tree node data structures."""
 
 from __future__ import annotations
 from typing import TypeVar, Generic, Optional, Sequence

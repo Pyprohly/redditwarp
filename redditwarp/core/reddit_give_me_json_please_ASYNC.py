@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING, Mapping, Optional
 if TYPE_CHECKING:
     from ..http.requestor_ASYNC import Requestor
     from ..http.request import Request
@@ -22,7 +22,8 @@ class RedditGiveMeJSONPlease(RequestorAugmenter):
         self.params: Mapping[str, str] = dict(self.PARAMS)
         self.public_api_host: str = self.PUBLIC_API_HOST
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         targeting_public_api = urlsplit(request.uri).netloc == self.public_api_host
         if targeting_public_api:
             rp = request.params
@@ -30,4 +31,4 @@ class RedditGiveMeJSONPlease(RequestorAugmenter):
                 if rp.setdefault(k, v) == '\0':
                     del rp[k]
 
-        return await self.requestor.send(request, timeout=timeout)
+        return await self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)

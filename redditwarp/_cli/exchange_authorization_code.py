@@ -33,7 +33,7 @@ from pprint import pp
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport, new_session
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
-from redditwarp.util.user_agent_SYNC import get_user_agent_from_session
+from redditwarp.core.user_agent_SYNC import get_user_agent_from_session
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:

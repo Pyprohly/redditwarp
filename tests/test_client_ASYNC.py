@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping
+from typing import TYPE_CHECKING, MutableMapping, Optional
 if TYPE_CHECKING:
     from redditwarp.http.request import Request
 
@@ -14,7 +14,8 @@ from redditwarp.http.session_base_ASYNC import SessionBase
 from redditwarp.http.response import Response
 
 class MySession(SessionBase):
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         raise Exception
 
 class MyHTTPClient(RedditHTTPClient):
@@ -30,7 +31,8 @@ class MyHTTPClient(RedditHTTPClient):
         self.response_headers = response_headers
         self.response_data = response_data
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         return Response(self.response_status, self.response_headers, self.response_data)
 
 

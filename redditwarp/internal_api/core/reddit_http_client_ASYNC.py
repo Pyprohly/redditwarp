@@ -16,7 +16,7 @@ from ...http.transport.ASYNC import new_session
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..auth.reddit_internal_api_token_obtainment_client_ASYNC import new_reddit_internal_api_token_obtainment_client
 from .authorizer_ASYNC import Authorized
-from ...util.user_agent_ASYNC import get_user_agent_from_session
+from ...core.user_agent_ASYNC import get_user_agent_from_session
 
 
 class InternalAPIRedditHTTPClient(RedditHTTPClient):

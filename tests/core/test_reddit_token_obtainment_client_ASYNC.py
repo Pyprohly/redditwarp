@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from redditwarp.http.request import Request
 
@@ -15,7 +15,8 @@ class MockRequestor(Requestor):
     def __init__(self, response: Response) -> None:
         self.response = response
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         return self.response
 
 

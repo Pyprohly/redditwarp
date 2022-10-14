@@ -1,3 +1,4 @@
+"""Reddit API specific constants."""
 
 AUTHORIZATION_BASE_URL: str = "https://www.reddit.com"
 AUTHORIZATION_ENDPOINT_PATH: str = "/api/v1/authorize"

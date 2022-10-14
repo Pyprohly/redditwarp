@@ -3,7 +3,7 @@
 Revoke an access or refresh token.
 
 If neither -a nor -r is specified then the token server will automatically
-determine the token type, as per RFC 7009 (Section 2.1).
+determine the token type, as per RFC 7009 Section 2.1.
 """
 
 from __future__ import annotations
@@ -36,7 +36,7 @@ import redditwarp
 from redditwarp.http.transport.SYNC import load_transport, new_session
 from redditwarp.auth.SYNC import TokenRevocationClient
 from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
-from redditwarp.util.user_agent_SYNC import get_user_agent_from_session
+from redditwarp.core.user_agent_SYNC import get_user_agent_from_session
 
 def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:

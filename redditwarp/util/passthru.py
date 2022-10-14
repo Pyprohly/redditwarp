@@ -1,3 +1,4 @@
+"""Provides functions that makes functions more decorator-friendly."""
 
 from __future__ import annotations
 from typing import TypeVar, Callable

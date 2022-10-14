@@ -60,8 +60,9 @@ class HTTPClient:
     async def close(self) -> None:
         await self.session.close()
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
-        return await self.requestor.send(request, timeout=timeout)
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
+        return await self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
     async def request(self,
         verb: str,
@@ -73,10 +74,11 @@ class HTTPClient:
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
+        follow_redirects: Optional[bool] = None,
     ) -> Response:
         r = self.make_request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files)
-        return await self.send(r, timeout=timeout)
+        return await self.send(r, timeout=timeout, follow_redirects=follow_redirects)
 
 
 class BasicRequestDefaultsHTTPClient(HTTPClient):
@@ -98,9 +100,11 @@ class BasicRequestDefaultsHTTPClient(HTTPClient):
         (_d0 := r.params).update({**self.params, **_d0})
         (_d1 := r.headers).update({**self.headers, **_d1})
 
-    async def _do_send(self, request: Request, *, timeout: float = -2) -> Response:
-        return await super().send(request, timeout=timeout)
+    async def _do_send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
+        return await super().send(request, timeout=timeout, follow_redirects=follow_redirects)
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         self._prepare_request(request)
-        return await self._do_send(request, timeout=timeout)
+        return await self._do_send(request, timeout=timeout, follow_redirects=follow_redirects)

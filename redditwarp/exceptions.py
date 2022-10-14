@@ -17,6 +17,7 @@ class ArgExcMixin(Exception):
         return str(self.arg)
 
     def get_default_message(self) -> str:
+        """Get a default exception message for this exception type."""
         return ''
 
 class ArgExc(ArgExcMixin):
@@ -24,26 +25,34 @@ class ArgExc(ArgExcMixin):
 
 
 class ClientException(ArgExc):
-    pass
+    """A class of exceptions for when client objects need to raise an exception.
+
+    Typically these exceptions are raised when no natural exception has occurred
+    but an exception is needed.
+    """
 
 class NoResultException(ClientException):
-    pass
+    """Raised when a requested target does not exist."""
 
 class RejectedResultException(ClientException):
-    pass
+    """Raised when a returned value does not fulfil an invariant."""
 
 class UnexpectedResultException(ClientException):
-    pass
+    """Raised when a certain result was not expected."""
 
 
 class _Throwaway(ArgExc):
     pass
 
 class UserAgentRequired(_Throwaway):
-    pass
+    """Raised when the client detects that the Reddit API wants you to set a user agent."""
 
 
 def raise_for_non_json_response(resp: Response) -> None:
+    """Raise exceptions for a HTTP response from Reddit that does not contain JSON.
+
+    This function assumes the given response object does not contain JSON.
+    """
     data = resp.data
     is_html_content = resp.headers.get('Content-Type', '').startswith('text/html')
 
@@ -65,9 +74,36 @@ def raise_for_non_json_response(resp: Response) -> None:
 
 
 class APIError(ArgExc):
-    pass
+    """A formal API-specified error."""
 
 class RedditError(APIError):
+    """
+
+    Errors from Reddit's API typically consist of three pieces of information:
+    an error label, an explanation, and the name of a related parameter field.
+
+    .. ATTRIBUTES
+
+    .. attribute:: codename
+        :type: str
+
+        A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
+        In rare cases this label may not always be in uppercase. It can even contain spaces.
+        The value may be an empty string.
+
+    .. attribute:: explanation
+        :type: str
+
+        A description for the error.
+        The value may be an empty string.
+
+    .. attribute:: field
+        :type: str
+
+        The name of the parameter relevant to the error, if applicable.
+        The value may be an empty string.
+    """
+
     def __init__(self,
         arg: object = None,
         *,
@@ -96,6 +132,12 @@ class RedditError(APIError):
 
 
 def raise_for_reddit_error(json_data: Any) -> None:
+    """Examine JSON data returned from the API and raise appropriate exceptions if
+    any API errors were detected.
+
+    This function is the default `snub` parameter value for the
+    :meth:`Client.request <.client_SYNC.Client.request>` method.
+    """
     if not isinstance(json_data, Mapping):
         return
 

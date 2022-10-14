@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, Optional
 if TYPE_CHECKING:
     from ...request import Request
     from ...response import Response
@@ -19,6 +19,15 @@ from ... import payload
 from ...response import UResponse
 from ...util.merge_query_params import merge_query_params
 from ...util.case_insensitive_dict import CaseInsensitiveDict
+
+def _get_effective_timeout_value(timeouts: Iterable[float]) -> float:
+    for tv in timeouts:
+        if tv == -2:
+            continue
+        if 0 > tv != -1:
+            raise ValueError('invalid timeout value: %s' % tv)
+        return tv
+    raise ValueError('a default timeout value could not be determined')
 
 def _generate_request_kwargs(r: Request) -> Iterable[tuple[str, Any]]:
     yield ('method', r.verb)
@@ -58,8 +67,12 @@ class Session(SessionBase):
     def __init__(self) -> None:
         super().__init__()
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
-        etv = self._get_effective_timeout_value(timeout)
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
+        etv = _get_effective_timeout_value((timeout, self.timeout))
+        follow_redirects = self.follow_redirects if follow_redirects is None else follow_redirects
+        if not follow_redirects:
+            raise RuntimeError('Python urllib does not support `follow_redirects=False`')
         kwargs = dict(_generate_request_kwargs(request))
         req = urllib.request.Request(**kwargs)
         t = None if etv == -1 else etv
@@ -86,7 +99,9 @@ class Session(SessionBase):
         pass
 
 def new_session() -> Session:
-    return Session()
+    sess = Session()
+    sess.follow_redirects = True
+    return sess
 
 name: str = 'python-urllib'
 version: str = '%d.%d' % sys.version_info[:2]

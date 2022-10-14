@@ -24,7 +24,8 @@ class MockRequestor(Requestor):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 

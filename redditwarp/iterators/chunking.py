@@ -11,7 +11,10 @@ def chunked(src: Iterable[T], size: int) -> Iterator[Sequence[T]]:
         yield chunk
 
 class ChunkingIterator(Iterator[Sequence[T]]):
-    """Control chunk size during iteration with `.size`."""
+    """Chunking iterator.
+
+    The chunk size can be controlled during iteration using `.size`.
+    """
 
     def __init__(self, src: Iterable[T], size: int) -> None:
         self._itr = iter(src)

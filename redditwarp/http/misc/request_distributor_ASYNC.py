@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping
+from typing import TYPE_CHECKING, MutableMapping, Optional
 if TYPE_CHECKING:
     from ..request import Request
     from ..response import Response
@@ -16,12 +16,13 @@ class RequestDistributor(Requestor):
         super().__init__()
         self.directions: MutableMapping[Request, Requestor] = {}
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         try:
             dest = self.directions[request]
         except KeyError:
             raise DestinationNotEstablishedException from None
-        return await dest.send(request)
+        return await dest.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
     def get_director(self, sender: Requestor, receiver: Requestor) -> RequestDirector:
         return RequestDirector(sender, self, receiver)
@@ -32,11 +33,12 @@ class RequestDirector(RequestorAugmenter):
         self.target: RequestDistributor = target
         self.receiver: Requestor = receiver
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         directions = self.target.directions
         directions[request] = self.receiver
         try:
-            resp = await self.requestor.send(request)
+            resp = await self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
         finally:
             del directions[request]
         return resp

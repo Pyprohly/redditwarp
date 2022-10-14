@@ -1,6 +1,10 @@
+"""Provides a dynamic object that wraps an object and exposes only its data members.
+
+The data members of an object are defined as any objects that do not implement '__call__'.
+"""
 
 from __future__ import annotations
-from typing import Any, Dict, Collection, TypeVar, Iterator, Iterable, Tuple, Mapping, IO, cast, Generic, Callable
+from typing import Any, Collection, Iterator, Iterable, Tuple, Mapping, IO, cast, Callable
 
 import inspect
 from ast import literal_eval
@@ -13,15 +17,15 @@ rep: reprlib.Repr = reprlib.Repr()
 rep.maxlevel = 1
 rep.maxstring = 250
 rep.maxother = 250
-reprepr: Callable[[Any], str] = rep.repr
+rep_repr: Callable[[Any], str] = rep.repr
 
 class StrReprStr(str):
     def __repr__(self) -> str:
         return str(self)
 
-def neat_repr_dict(d: Dict[Any, Any]) -> Dict[Any, Any]:
+def neat_repr_dict(d: dict[Any, Any]) -> dict[Any, Any]:
     return {
-        k: (literal_eval(reprepr(v)) if isinstance(v, str) else StrReprStr(reprepr(v)))
+        k: (literal_eval(rep_repr(v)) if isinstance(v, str) else StrReprStr(rep_repr(v)))
         for k, v in d.items()
     }
 
@@ -38,10 +42,8 @@ def pretty_format(obj: object) -> str:
     return sio.getvalue()
 
 
-T = TypeVar('T')
-
-class DataMembersNamespace(Collection[str], Generic[T]):
-    def __init__(self, instance: T):
+class DataMembersNamespace(Collection[str]):
+    def __init__(self, instance: object):
         self._instance = instance
 
     def __repr__(self) -> str:
@@ -72,7 +74,7 @@ class DataMembersNamespace(Collection[str], Generic[T]):
     def __dir__(self) -> Iterable[str]:
         return list(self)
 
-    def __abs__(self) -> T:
+    def __abs__(self) -> object:
         return self._instance
 
     def _data_member(self, value: object) -> bool:
@@ -89,7 +91,7 @@ class DataMembersNamespace(Collection[str], Generic[T]):
     @staticmethod
     def _pprint(
         printer: PrettyPrinter,
-        obj: DataMembersNamespace[T],
+        obj: DataMembersNamespace,
         stream: IO[str],
         indent: int,
         allowance: int,
@@ -111,7 +113,7 @@ class DataMembersNamespace(Collection[str], Generic[T]):
         PrettyPrinter._dispatch[__repr__] = _pprint.__func__  # type: ignore[attr-defined]
 
 
-class DataMembersNamespaceMapping(DataMembersNamespace[T]):
+class DataMembersNamespaceMapping(DataMembersNamespace):
     def __getitem__(self, key: str) -> Any:
         try:
             value = getattr(self._instance, key)

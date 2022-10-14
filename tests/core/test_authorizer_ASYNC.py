@@ -55,7 +55,7 @@ class TestAuthorizer:
         o.renewal_time = 9999
         o.expires_in_fallback = None
         await o.renew_token()
-        assert o.token is my_token
+        assert o.get_token() is my_token
         assert o.renewal_time is None
 
         o.renewal_time = 9999
@@ -110,7 +110,8 @@ class MockSession(SessionBase):
         super().__init__()
         self.responses = responses
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         return self.responses.pop(0)
 
 class TestAuthorized:

@@ -37,10 +37,11 @@ class Client:
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
+        follow_redirects: Optional[bool] = None,
     ) -> Any:
         json_data = None
         resp = await self.http.request(verb, uri, params=params, headers=headers,
-                data=data, json=json, files=files, timeout=timeout)
+                data=data, json=json, files=files, timeout=timeout, follow_redirects=follow_redirects)
         if resp.data:
             json_data = json_loads_response(resp)
         resp.raise_for_status()

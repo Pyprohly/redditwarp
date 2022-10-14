@@ -43,7 +43,8 @@ class SessionBase(Requestor):
 
     def __init__(self) -> None:
         self.timeout: float = DEFAULT_TIMEOUT
-        self._veto_timeout: contextvars.ContextVar[float] = contextvars.ContextVar('veto_timeout', default=-2.)
+        self.follow_redirects: bool = False
+        self.___veto_timeout: contextvars.ContextVar[float] = contextvars.ContextVar('___veto_timeout', default=-2.)
 
     async def __aenter__(self: T) -> T:
         return self
@@ -56,7 +57,8 @@ class SessionBase(Requestor):
         await self.close()
         return None
 
-    async def send(self, request: Request, *, timeout: float = -2) -> Response:
+    async def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         raise NotImplementedError
 
     async def request(self,
@@ -69,16 +71,17 @@ class SessionBase(Requestor):
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
+        follow_redirects: Optional[bool] = None,
     ) -> Response:
         r = self.make_request(verb, uri, params=params, headers=headers,
                 data=data, json=json, files=files)
-        return await self.send(r, timeout=timeout)
+        return await self.send(r, timeout=timeout, follow_redirects=follow_redirects)
 
     async def close(self) -> None:
         pass
 
-    def _get_effective_timeout_value(self, timeout: float) -> float:
-        t1 = self._veto_timeout.get()
+    def ___get_effective_timeout_value(self, timeout: float) -> float:
+        t1 = self.___veto_timeout.get()
         t2 = timeout
         t3 = self.timeout
         for tv in (t1, t2, t3):
@@ -89,8 +92,7 @@ class SessionBase(Requestor):
             return tv
         raise ValueError('a default timeout value could not be determined')
 
-    # Unused for now
-    class _TimeoutAsContextManager:
+    class ___TimeoutAsContextManager:
         def __init__(self, var: contextvars.ContextVar[float], timeout: float) -> None:
             self._var = var
             self._timeout = timeout
@@ -109,6 +111,5 @@ class SessionBase(Requestor):
             self._var.reset(tkn)
             return None
 
-    # Defer this idea
     def ___timeout_as(self, timeout: float) -> AbstractContextManager[None]:
-        return self._TimeoutAsContextManager(self._veto_timeout, timeout)
+        return self.___TimeoutAsContextManager(self.___veto_timeout, timeout)

@@ -1,3 +1,25 @@
+"""Mapping wrappers that allow dot access to mapping entires.
+
+Examples:
+
+::
+
+    >>> d = AttributeMappingProxy({'foo': 'bar'})
+    >>> d.foo
+    'bar'
+
+::
+
+    >>> d = DictRecursiveAttributeMappingProxy({'foo': {'bar': 'baz'}})
+    >>> d.foo.bar
+    'baz'
+
+::
+
+    >>> d = DictAndListRecursiveAttributeMappingProxy({'foo': [1, 'bar', {'c': 3}]})
+    >>> d.foo[2].c
+    3
+"""
 
 from __future__ import annotations
 from typing import Any, TypeVar, Mapping, Iterable, Iterator, IO, Sequence, overload, Union

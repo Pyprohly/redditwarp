@@ -67,7 +67,7 @@ class SubmissionDuplicatesPaginator(ListingPaginator[Submission]):
         if self.crossposts_only:
             yield ('crossposts_only', '1')
         if self.sort:
-            ('sort', self.sort)
+            yield ('sort', self.sort)
 
     def _fetch_data(self) -> Any:
         params = dict(self._generate_params())

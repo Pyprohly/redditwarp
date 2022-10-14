@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, Sequence, overload
 if TYPE_CHECKING:
     from types import TracebackType
-    from .auth.typedefs import AuthorizationGrant
+    from .auth.typedefs import AuthorizationGrantType as AuthorizationGrant
     from .http.payload import RequestFiles
     from .core.reddit_http_client_ASYNC import RedditHTTPClient
 
@@ -77,7 +77,7 @@ class Client:
     @overload
     def __init__(self, client_id: str, client_secret: str, username: str, password: str, /) -> None: ...
     def __init__(self, *creds: str, grant: Optional[AuthorizationGrant] = None) -> None:
-        client_id = client_secret = ""
+        client_id = client_secret = ''
         n = len(creds)
         if n == 0:
             client_id = get_redditwarp_client_id()
@@ -131,12 +131,13 @@ class Client:
         json: Any = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
+        follow_redirects: Optional[bool] = None,
         snub: Optional[Callable[[Any], None]] = raise_for_reddit_error,
     ) -> Any:
         json_data = None
         try:
             resp = await self.http.request(verb, uri, params=params, headers=headers,
-                    data=data, json=json, files=files, timeout=timeout)
+                    data=data, json=json, files=files, timeout=timeout, follow_redirects=follow_redirects)
 
             if resp.data:
                 try:
@@ -160,7 +161,7 @@ class Client:
         http = self.http
         if not isinstance(http, PublicAPIRedditHTTPClient):
             raise RuntimeError(f'self.http must be {PublicAPIRedditHTTPClient.__name__}')
-        http.authorizer.token = Token(access_token)
+        http.authorizer.set_token(Token(access_token))
 
     def set_user_agent(self, s: Optional[str]) -> None:
         ua = self.http.user_agent_lead

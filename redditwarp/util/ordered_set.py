@@ -1,3 +1,4 @@
+"""An ordered set implementation."""
 
 from __future__ import annotations
 from typing import TypeVar, Iterator, Iterable
@@ -8,6 +9,11 @@ from itertools import islice
 T = TypeVar('T')
 
 class OrderedSet(MutableSet[T]):
+    """An ordered set.
+
+    An ordered set is a set that remembers insertion order.
+    """
+
     def __init__(self, it: Iterable[T]) -> None:
         store: dict[T, None] = {}
         self._store = store
@@ -34,6 +40,12 @@ class OrderedSet(MutableSet[T]):
 
 
 class BoundedSet(OrderedSet[T]):
+    """An ordered set with a maximum capacity.
+
+    When the maximum size is reached and a new item is added, the oldest item is
+    silently evicted first.
+    """
+
     @property
     def capacity(self) -> int:
         return self._capacity

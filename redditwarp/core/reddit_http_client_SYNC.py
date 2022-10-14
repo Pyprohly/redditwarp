@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from ..auth.const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL
 from ..http.http_client_SYNC import BasicRequestDefaultsHTTPClient
-from ..auth.typedefs import AuthorizationGrant
+from ..auth.typedefs import AuthorizationGrantType as AuthorizationGrant
 from .authorizer_SYNC import Authorized
 from .rate_limited_SYNC import RateLimited
 from .recorded_SYNC import Recorded
@@ -15,13 +15,15 @@ from .reddit_give_me_json_please_SYNC import RedditGiveMeJSONPlease
 from .reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
 from ..http.transport.SYNC import new_session
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
-from ..util.user_agent_SYNC import get_user_agent_from_session
+from .user_agent_SYNC import get_user_agent_from_session
 from ..auth.token import Token
 from .recorded_SYNC import Last
 from .authorizer_SYNC import Authorizer
 
 
 class RedditHTTPClient(BasicRequestDefaultsHTTPClient):
+    """An HTTP client specialised for this library."""
+
     @property
     def user_agent(self) -> str:
         return self.headers.get('User-Agent', '')
@@ -61,6 +63,8 @@ class RedditHTTPClient(BasicRequestDefaultsHTTPClient):
 
 
 class PublicAPIRedditHTTPClient(RedditHTTPClient):
+    """An HTTP client for making requests to the public Reddit REST API."""
+
     @property
     def authorizer(self) -> Authorizer:
         return self.get_authorizer()

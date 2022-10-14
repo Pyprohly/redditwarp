@@ -1,3 +1,4 @@
+"""An implementation of the token bucket algorithm."""
 
 from typing import Callable
 

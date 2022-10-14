@@ -19,6 +19,8 @@ def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
 
 
 class _LazyImport:
+    """An object for lazily loading modules."""
+
     def __call__(self, name: str, package: Optional[str] = None) -> ModuleType:
         try:
             return sys.modules[name]

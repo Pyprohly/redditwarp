@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+from typing import Optional
 
 # import contextvars
 
@@ -11,10 +12,11 @@ class MySession(SessionBase):
     def __init__(self) -> None:
         super().__init__()
         self.timeout = 100
-        self.timeout_used: float = 0
+        # self.timeout_used: float = 0
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
-        self.timeout_used = self._get_effective_timeout_value(timeout)
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
+        # self.timeout_used = self._get_effective_timeout_value(timeout)
         return Response(200, {}, b'')
 
 requ = Request('', '', params={}, headers={}, payload=None)

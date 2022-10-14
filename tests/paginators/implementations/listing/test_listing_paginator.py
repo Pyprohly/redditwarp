@@ -1,5 +1,5 @@
 
-from typing import Sequence, Any, MutableMapping, Callable
+from typing import Sequence, Any, MutableMapping, Callable, Optional
 from redditwarp.client_SYNC import Client
 from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
 from redditwarp.core.recorded_SYNC import Recorded, Last
@@ -19,7 +19,8 @@ class MySession(SessionBase):
         self.response_headers = response_headers
         self.response_data = response_data
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         return Response(self.response_status, self.response_headers, self.response_data)
 
 class MyListingPaginator(ListingPaginator[str]):

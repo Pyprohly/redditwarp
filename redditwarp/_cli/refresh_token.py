@@ -2,9 +2,13 @@
 """
 Step through the OAuth2 Authorization Code Flow to obtain OAuth2 tokens.
 
-Visit <https://www.reddit.com/prefs/apps> to create an app for your client.
+Visit <https://www.reddit.com/prefs/apps> to create an OAuth2 application profile
+for your client before running this script.
 
 Your app's redirect URI must *exactly* match `http://localhost:8080`.
+
+Try not to lose the reference to the refresh token you get from this script.
+Refresh tokens will expire after 1 year of non-use.
 """
 
 from __future__ import annotations
@@ -50,7 +54,7 @@ from pprint import pp
 import redditwarp
 from redditwarp.http.transport.SYNC import load_transport, new_session
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
-from redditwarp.util.user_agent_SYNC import get_user_agent_from_session
+from redditwarp.core.user_agent_SYNC import get_user_agent_from_session
 
 def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:

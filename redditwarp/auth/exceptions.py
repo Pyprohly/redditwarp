@@ -15,14 +15,27 @@ class ArgExc(ArgExcMixin):
 
 
 class UnknownTokenType(ArgExc):
+    """An exception for when the client receives an unexpected token type.
+
+    This exception class is provided for user code to raise.
+
+    Typically the client will expect that the `token_type` field in a token
+    response has the value `bearer`, and the token should be rejected if not.
+    See `section 7.1`_ of the OAuth2 specification.
+
+    .. _`section 7.1`: https://datatracker.ietf.org/doc/html/rfc6749#section-7.1
+    """
+
     def __init__(self, arg: object = None, *, token: Token):
         super().__init__(arg)
         self.token: Token = token
 
 class OAuth2ResponseError(ArgExc):
-    """
-    As detailed in the OAuth2 spec. For more information see
-    https://tools.ietf.org/html/rfc6749#section-5.2
+    """An OAuth2 response error as detailed in the OAuth2 spec.
+
+    For more information see `section 5.2`_ of the OAuth2 specification.
+
+    .. _`section 5.2`: https://tools.ietf.org/html/rfc6749#section-5.2
     """
     ERROR_NAME: ClassVar[str] = ''
 
@@ -41,7 +54,7 @@ class OAuth2ResponseError(ArgExc):
         return ''
 
 class TokenServerResponseError(OAuth2ResponseError):
-    pass
+    """Error responses that from the token server."""
 
 class TokenServerResponseErrorTypes:
     class InvalidRequest(TokenServerResponseError):
@@ -91,7 +104,7 @@ def raise_for_token_server_response_error(json_dict: Any) -> None:
     )
 
 class ResourceServerResponseError(OAuth2ResponseError):
-    pass
+    """Error responses that from the resource server (i.e., the API)."""
 
 class ResourceServerResponseErrorTypes:
     class InvalidRequest(ResourceServerResponseError):

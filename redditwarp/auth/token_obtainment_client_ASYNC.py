@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
-    from .typedefs import ClientCredentials, AuthorizationGrant
+    from .typedefs import ClientCredentials, AuthorizationGrantType as AuthorizationGrant
     from ..http.requestor_ASYNC import Requestor
 
 from ..http.request import make_request

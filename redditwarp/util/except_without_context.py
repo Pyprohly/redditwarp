@@ -6,7 +6,10 @@ if TYPE_CHECKING:
     from types import TracebackType
 
 class except_without_context(ContextManager[bool]):
-    """
+    """A context manager for handling exceptions while ignoring the current exception context.
+
+    This is best explained through a series of examples:
+
     Example 1::
 
         def f() -> None:

@@ -8,7 +8,7 @@ from ...core.reddit_http_client_ASYNC import RedditHTTPClient
 from ...core.recorded_ASYNC import Recorded
 from ...http.transport.ASYNC import new_session
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
-from ...util.user_agent_ASYNC import get_user_agent_from_session
+from ...core.user_agent_ASYNC import get_user_agent_from_session
 from ...http.http_client_ASYNC import HTTPClient
 from ..const import PUSHSHIFT_BASE_URL
 from ...core.recorded_ASYNC import Last

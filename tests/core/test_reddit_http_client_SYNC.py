@@ -22,7 +22,8 @@ class GoodSession(SessionBase):
         self.response_data = response_data
         self.history: List[Request] = []
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         self.history.append(request)
         return Response(self.response_status, self.response_headers, self.response_data)
 
@@ -40,7 +41,8 @@ class NeutralSession(SessionBase):
         self.response_data = response_data
         self.exception = exception
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         if self.exception is not None:
             raise self.exception
         return Response(self.response_status, self.response_headers, self.response_data)
@@ -52,7 +54,8 @@ class BadSession(SessionBase):
         super().__init__()
         self.exception = exc
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         raise self.exception
 
 def test_request() -> None:

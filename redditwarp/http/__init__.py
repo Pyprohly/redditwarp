@@ -1,3 +1,4 @@
+"""HTTP client."""
 
 from . import (SYNC, ASYNC)  # noqa: F401
 from . import (session_base_SYNC, session_base_ASYNC)  # noqa: F401

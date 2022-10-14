@@ -16,10 +16,11 @@ class ApplyParamsAndHeaders(RequestorAugmenter):
         self.params: Mapping[str, str] = {} if params is None else params
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         request.params.update(self.params)
         request.headers.update(self.headers)
-        return self.requestor.send(request, timeout=timeout)
+        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
 class ApplyDefaultParamsAndHeaders(RequestorAugmenter):
     def __init__(self, requestor: Requestor, *,
@@ -29,10 +30,11 @@ class ApplyDefaultParamsAndHeaders(RequestorAugmenter):
         self.params: Mapping[str, str] = {} if params is None else params
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         (pd := request.params).update({**self.params, **pd})
         (hd := request.headers).update({**self.headers, **hd})
-        return self.requestor.send(request, timeout=timeout)
+        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
 
 
@@ -41,18 +43,20 @@ class ApplyParams(RequestorAugmenter):
         super().__init__(requestor)
         self.params: Mapping[str, str] = {} if params is None else params
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         request.params.update(self.params)
-        return self.requestor.send(request, timeout=timeout)
+        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
 class ApplyDefaultParams(RequestorAugmenter):
     def __init__(self, requestor: Requestor, params: Optional[Mapping[str, str]] = None):
         super().__init__(requestor)
         self.params: Mapping[str, str] = {} if params is None else params
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         (pd := request.params).update({**self.params, **pd})
-        return self.requestor.send(request, timeout=timeout)
+        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
 
 
@@ -61,15 +65,17 @@ class ApplyHeaders(RequestorAugmenter):
         super().__init__(requestor)
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         request.headers.update(self.headers)
-        return self.requestor.send(request, timeout=timeout)
+        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
 
 class ApplyDefaultHeaders(RequestorAugmenter):
     def __init__(self, requestor: Requestor, headers: Optional[Mapping[str, str]] = None):
         super().__init__(requestor)
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *, timeout: float = -2) -> Response:
+    def send(self, request: Request, *,
+            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
         (hd := request.headers).update({**self.headers, **hd})
-        return self.requestor.send(request, timeout=timeout)
+        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
