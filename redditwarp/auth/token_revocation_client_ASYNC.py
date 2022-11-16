@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .typedefs import ClientCredentials
+    from .types import ClientCredentials
     from ..http.requestor_ASYNC import Requestor
 
 from ..http.request import make_request

@@ -4,7 +4,10 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from .subreddit_base import BaseSubreddit, BaseInaccessibleSubreddit
+from .subreddit import (
+    Subreddit as BaseSubreddit,
+    InaccessibleSubreddit as BaseInaccessibleSubreddit,
+)
 
 class Subreddit(BaseSubreddit):
     def __init__(self, d: Mapping[str, Any], client: Client):

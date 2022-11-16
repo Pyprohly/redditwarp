@@ -5,7 +5,10 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
 from ..models.message_ASYNC import MailboxMessage, ComposedMessage, CommentMessage
-from .message_base import load_base_composed_message, load_base_comment_message
+from .message import (
+    load_composed_message as load_base_composed_message,
+    load_comment_message as load_base_comment_message,
+)
 
 def load_composed_message(d: Mapping[str, Any], client: Client) -> ComposedMessage:
     up = load_base_composed_message(d)

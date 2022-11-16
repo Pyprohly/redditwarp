@@ -6,9 +6,9 @@ if TYPE_CHECKING:
 
 from ..listing.listing_async_paginator import ListingAsyncPaginator
 from ..listing.mixins.subreddit_detail_ASYNC import SubredditDetail
-from ..listing.submission_and_comment_listing_async_paginator import SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator
+from ..listing.submission_and_comment_listing_async_paginator import SubmissionAndLooseCommentListingAsyncPaginator
 from ..listing.submission_listing_async_paginator import SubmissionListingAsyncPaginator
-from ..listing.comment_listing_async_paginator import ExtraSubmissionFieldsCommentListingAsyncPaginator
+from ..listing.comment_listing_async_paginator import LooseCommentListingAsyncPaginator
 from ....models.submission_ASYNC import Submission
 from ....models.comment_ASYNC import Comment
 
@@ -55,7 +55,7 @@ class CommentOnlyFilter(OnlyFilter[Comment]):
 
 class ModQueueListingAsyncPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator,
+    SubmissionAndLooseCommentListingAsyncPaginator,
 ): pass
 class ModQueueSubmissionListingAsyncPaginator(
     SubredditDetail[Submission],
@@ -65,12 +65,12 @@ class ModQueueSubmissionListingAsyncPaginator(
 class ModQueueCommentListingAsyncPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingAsyncPaginator,
+    LooseCommentListingAsyncPaginator,
 ): pass
 
 class ReportsListingAsyncPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator,
+    SubmissionAndLooseCommentListingAsyncPaginator,
 ): pass
 class ReportsSubmissionListingAsyncPaginator(
     SubredditDetail[Submission],
@@ -80,12 +80,12 @@ class ReportsSubmissionListingAsyncPaginator(
 class ReportsCommentListingAsyncPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingAsyncPaginator,
+    LooseCommentListingAsyncPaginator,
 ): pass
 
 class SpamListingAsyncPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator,
+    SubmissionAndLooseCommentListingAsyncPaginator,
 ): pass
 class SpamSubmissionListingAsyncPaginator(
     SubredditDetail[Submission],
@@ -95,12 +95,12 @@ class SpamSubmissionListingAsyncPaginator(
 class SpamCommentListingAsyncPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingAsyncPaginator,
+    LooseCommentListingAsyncPaginator,
 ): pass
 
 class EditedListingAsyncPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingAsyncPaginator,
+    SubmissionAndLooseCommentListingAsyncPaginator,
 ): pass
 class EditedSubmissionListingAsyncPaginator(
     SubredditDetail[Submission],
@@ -110,7 +110,7 @@ class EditedSubmissionListingAsyncPaginator(
 class EditedCommentListingAsyncPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingAsyncPaginator,
+    LooseCommentListingAsyncPaginator,
 ): pass
 
 class UnmoderatedSubmissionListingAsyncPaginator(

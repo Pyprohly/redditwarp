@@ -6,9 +6,9 @@ if TYPE_CHECKING:
 
 from ..listing.listing_paginator import ListingPaginator
 from ..listing.mixins.subreddit_detail_SYNC import SubredditDetail
-from ..listing.submission_and_comment_listing_paginator import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
+from ..listing.submission_and_comment_listing_paginator import SubmissionAndLooseCommentListingPaginator
 from ..listing.submission_listing_paginator import SubmissionListingPaginator
-from ..listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
+from ..listing.comment_listing_paginator import LooseCommentListingPaginator
 from ....models.submission_SYNC import Submission
 from ....models.comment_SYNC import Comment
 
@@ -55,7 +55,7 @@ class CommentOnlyFilter(OnlyFilter[Comment]):
 
 class ModQueueListingPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass
 class ModQueueSubmissionListingPaginator(
     SubredditDetail[Submission],
@@ -65,12 +65,12 @@ class ModQueueSubmissionListingPaginator(
 class ModQueueCommentListingPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingPaginator,
+    LooseCommentListingPaginator,
 ): pass
 
 class ReportsListingPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass
 class ReportsSubmissionListingPaginator(
     SubredditDetail[Submission],
@@ -80,12 +80,12 @@ class ReportsSubmissionListingPaginator(
 class ReportsCommentListingPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingPaginator,
+    LooseCommentListingPaginator,
 ): pass
 
 class SpamListingPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass
 class SpamSubmissionListingPaginator(
     SubredditDetail[Submission],
@@ -95,12 +95,12 @@ class SpamSubmissionListingPaginator(
 class SpamCommentListingPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingPaginator,
+    LooseCommentListingPaginator,
 ): pass
 
 class EditedListingPaginator(
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass
 class EditedSubmissionListingPaginator(
     SubredditDetail[Submission],
@@ -110,7 +110,7 @@ class EditedSubmissionListingPaginator(
 class EditedCommentListingPaginator(
     SubredditDetail[Comment],
     CommentOnlyFilter,
-    ExtraSubmissionFieldsCommentListingPaginator,
+    LooseCommentListingPaginator,
 ): pass
 
 class UnmoderatedSubmissionListingPaginator(

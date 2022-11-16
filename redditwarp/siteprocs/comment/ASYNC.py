@@ -3,12 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterable
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
-    from ...models.comment_ASYNC import (
-        Comment,
-        EditPostTextEndpointComment,
-    )
+    from ...models.comment_ASYNC import Comment
 
-from ...model_loaders.comment_ASYNC import load_comment, load_edit_post_text_endpoint_comment
+from ...model_loaders.comment_ASYNC import load_comment
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
@@ -41,14 +38,14 @@ class CommentProcedures:
         result = await self._client.request('POST', '/api/comment', data=data)
         return load_comment(result, self._client)
 
-    async def edit_body(self, comment_id: int, text: str) -> EditPostTextEndpointComment:
+    async def edit_body(self, comment_id: int, text: str) -> Comment:
         data = {
             'thing_id': 't1_' + to_base36(comment_id),
             'text': text,
             'return_rtjson': '1',
         }
         result = await self._client.request('POST', '/api/editusertext', data=data)
-        return load_edit_post_text_endpoint_comment(result, self._client)
+        return load_comment(result, self._client)
 
     async def delete(self, comment_id: int) -> None:
         data = {'id': 't1_' + to_base36(comment_id)}

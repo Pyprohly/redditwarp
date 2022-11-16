@@ -17,19 +17,19 @@ class UnknownTokenType(ArgExc):
 
 class RedditInternalAPITokenServerResponseError(ArgExc):
     def __init__(self, arg: object = None, *,
-            codename: str = '',
+            label: str = '',
             explanation: str = '') -> None:
         super().__init__(arg)
-        self.codename: str = codename
+        self.label: str = label
         self.explanation: str = explanation
 
     def get_default_message(self) -> str:
-        co = self.codename
+        la = self.label
         xp = self.explanation
-        if co:
+        if la:
             if xp:
-                return f'{co}: {xp}'
-            return co
+                return f'{la}: {xp}'
+            return la
         return ''
 
 def raise_for_token_server_response_error(json_dict: Any) -> None:
@@ -38,6 +38,6 @@ def raise_for_token_server_response_error(json_dict: Any) -> None:
 
     error = json_dict['error']
     raise RedditInternalAPITokenServerResponseError(
-        codename=error.get('reason') or '',
+        label=error.get('reason') or '',
         explanation=error.get('explanation') or '',
     )

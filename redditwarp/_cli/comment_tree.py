@@ -33,7 +33,7 @@ import sys
 import shutil
 from collections import deque
 
-import redditwarp
+import redditwarp.SYNC
 from redditwarp.util.extract_id_from_url import extract_submission_id_from_url
 from redditwarp.models.comment_SYNC import Comment
 

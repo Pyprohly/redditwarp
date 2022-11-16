@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, Sequence, overload
 if TYPE_CHECKING:
     from types import TracebackType
-    from .auth.typedefs import AuthorizationGrantType as AuthorizationGrant
+    from .auth.types import AuthorizationGrantType as AuthorizationGrant
     from .http.payload import RequestFiles
     from .core.reddit_http_client_SYNC import RedditHTTPClient
 

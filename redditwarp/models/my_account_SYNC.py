@@ -4,9 +4,7 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from .my_account_base import (
-    BaseMyAccount,
-)
+from .my_account import MyAccount as BaseMyAccount
 
 class MyAccount(BaseMyAccount):
     def __init__(self, d: Mapping[str, Any], client: Client):

@@ -9,7 +9,7 @@ import asyncio
 
 import aiohttp  # type: ignore[import]
 
-from ..ASYNC import register
+from ..reg_ASYNC import register
 from ...websocket_connection_ASYNC import WebSocketConnection
 from ... import exceptions
 from ... import events

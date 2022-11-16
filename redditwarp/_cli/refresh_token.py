@@ -52,7 +52,7 @@ from functools import partial
 from pprint import pp
 
 import redditwarp
-from redditwarp.http.transport.SYNC import load_transport, new_session
+from redditwarp.http.transport.reg_SYNC import load_transport, new_session
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
 from redditwarp.core.user_agent_SYNC import get_user_agent_from_session
 

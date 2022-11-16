@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from .live_thread_base import BaseLiveThread, BaseLiveUpdate
+from .live_thread import LiveThread as BaseLiveThread, LiveUpdate as BaseLiveUpdate
 
 class LiveThread(BaseLiveThread):
     def __init__(self, d: Mapping[str, Any], client: Client):

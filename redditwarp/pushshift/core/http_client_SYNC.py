@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from ...core.reddit_http_client_SYNC import RedditHTTPClient
 from ...core.recorded_SYNC import Recorded
-from ...http.transport.SYNC import new_session
+from ...http.transport.reg_SYNC import new_session
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ...core.user_agent_SYNC import get_user_agent_from_session
 from ...http.http_client_SYNC import HTTPClient

@@ -12,7 +12,7 @@ from .artifact import IArtifact, Artifact
 # WikiPageRevisionAuthorUser is pretty much the same as User except the
 # `awardee_karma`, `awarder_karma`, `total_karma` fields are missing.
 
-class BaseWikiPageRevisionAuthorUser(Artifact):
+class WikiPageRevisionAuthorUser(Artifact):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             self.name: str = d['display_name']
@@ -41,11 +41,11 @@ class BaseWikiPageRevisionAuthorUser(Artifact):
 
         self.icon_img: str = d['icon_img']
 
-        self.subreddit: BaseWikiPageRevisionAuthorUser.Subreddit = self.Subreddit(d['subreddit'])
+        self.subreddit: WikiPageRevisionAuthorUser.Subreddit = self.Subreddit(d['subreddit'])
 
 
 
-TWikiPageRevisionAuthorUser = TypeVar('TWikiPageRevisionAuthorUser', bound=BaseWikiPageRevisionAuthorUser)
+TWikiPageRevisionAuthorUser = TypeVar('TWikiPageRevisionAuthorUser', bound=WikiPageRevisionAuthorUser)
 
 @dataclass(repr=False, eq=False)
 class GBaseWikiPage(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
@@ -63,7 +63,7 @@ class GBaseWikiPage(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
         return datetime.fromtimestamp(self.revision_unixtime, timezone.utc)
 
 @dataclass(repr=False, eq=False)
-class BaseWikiPage(GBaseWikiPage[BaseWikiPageRevisionAuthorUser]):
+class WikiPage(GBaseWikiPage[WikiPageRevisionAuthorUser]):
     pass
 
 
@@ -77,7 +77,7 @@ class GBaseWikiPageRevision(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
     hidden: bool
 
 @dataclass(repr=False, eq=False)
-class BaseWikiPageRevision(GBaseWikiPageRevision[BaseWikiPageRevisionAuthorUser]):
+class WikiPageRevision(GBaseWikiPageRevision[WikiPageRevisionAuthorUser]):
     pass
 
 
@@ -88,5 +88,5 @@ class GBaseWikiPageSettings(Generic[TWikiPageRevisionAuthorUser]):
     unlisted: bool
 
 @dataclass(repr=False, eq=False)
-class BaseWikiPageSettings(GBaseWikiPageSettings[BaseWikiPageRevisionAuthorUser]):
+class WikiPageSettings(GBaseWikiPageSettings[WikiPageRevisionAuthorUser]):
     pass

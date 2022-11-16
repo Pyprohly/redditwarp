@@ -19,6 +19,8 @@ class TimeoutException(ArgExc):
 class StatusCodeException(ArgExc):
     """An exception class representing HTTP status codes as errors."""
 
+    __match_args__ = ('status_code',)
+
     STATUS_CODE: int = 0
 
     def __init__(self, arg: object = None, *, status_code: int) -> None:
@@ -33,41 +35,41 @@ class StatusCodeException(ArgExc):
             return f"{sts}"
 
 class StatusCodeExceptionTypes:
-    class InformationalResponseException(StatusCodeException):
+    class InformationalStatusCodeException(StatusCodeException):
         STATUS_CODE: int = -100
-    class SuccessfulResponseException(StatusCodeException):
+    class SuccessfulStatusCodeException(StatusCodeException):
         STATUS_CODE: int = -200
-    class RedirectionResponseException(StatusCodeException):
+    class RedirectionStatusCodeException(StatusCodeException):
         STATUS_CODE: int = -300
-    class ClientErrorResponseException(StatusCodeException):
+    class ClientErrorStatusCodeException(StatusCodeException):
         STATUS_CODE: int = -400
-    class ServerErrorResponseException(StatusCodeException):
+    class ServerErrorStatusCodeException(StatusCodeException):
         STATUS_CODE: int = -500
 
-    class BadRequest(ClientErrorResponseException):
+    class BadRequest(ClientErrorStatusCodeException):
         STATUS_CODE: int = 400
-    class Unauthorized(ClientErrorResponseException):
+    class Unauthorized(ClientErrorStatusCodeException):
         STATUS_CODE: int = 401
-    class Forbidden(ClientErrorResponseException):
+    class Forbidden(ClientErrorStatusCodeException):
         STATUS_CODE: int = 403
-    class NotFound(ClientErrorResponseException):
+    class NotFound(ClientErrorStatusCodeException):
         STATUS_CODE: int = 404
-    class Conflict(ClientErrorResponseException):
+    class Conflict(ClientErrorStatusCodeException):
         STATUS_CODE: int = 409
-    class PayloadTooLarge(ClientErrorResponseException):
+    class PayloadTooLarge(ClientErrorStatusCodeException):
         STATUS_CODE: int = 413
-    class URITooLong(ClientErrorResponseException):
+    class URITooLong(ClientErrorStatusCodeException):
         STATUS_CODE: int = 414
-    class TooManyRequests(ClientErrorResponseException):
+    class TooManyRequests(ClientErrorStatusCodeException):
         STATUS_CODE: int = 429
 
-    class InternalServerError(ServerErrorResponseException):
+    class InternalServerError(ServerErrorStatusCodeException):
         STATUS_CODE: int = 500
-    class BadGateway(ServerErrorResponseException):
+    class BadGateway(ServerErrorStatusCodeException):
         STATUS_CODE: int = 502
-    class ServiceUnavailable(ServerErrorResponseException):
+    class ServiceUnavailable(ServerErrorStatusCodeException):
         STATUS_CODE: int = 503
-    class GatewayTimeout(ServerErrorResponseException):
+    class GatewayTimeout(ServerErrorStatusCodeException):
         STATUS_CODE: int = 504
 
 status_code_exception_class_by_status_code: Mapping[int, type[StatusCodeException]] = {
@@ -96,15 +98,15 @@ def get_status_code_exception_class_by_status_code(n: int) -> type[StatusCodeExc
     if klass is None:
         klass = StatusCodeException
         if 100 <= n <= 199:
-            klass = StatusCodeExceptionTypes.InformationalResponseException
+            klass = StatusCodeExceptionTypes.InformationalStatusCodeException
         elif 200 <= n <= 299:
-            klass = StatusCodeExceptionTypes.SuccessfulResponseException
+            klass = StatusCodeExceptionTypes.SuccessfulStatusCodeException
         elif 300 <= n <= 399:
-            klass = StatusCodeExceptionTypes.RedirectionResponseException
+            klass = StatusCodeExceptionTypes.RedirectionStatusCodeException
         elif 400 <= n <= 499:
-            klass = StatusCodeExceptionTypes.ClientErrorResponseException
+            klass = StatusCodeExceptionTypes.ClientErrorStatusCodeException
         elif 500 <= n <= 599:
-            klass = StatusCodeExceptionTypes.ServerErrorResponseException
+            klass = StatusCodeExceptionTypes.ServerErrorStatusCodeException
     return klass
 
 def status_successful(n: int) -> bool:

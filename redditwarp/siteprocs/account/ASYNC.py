@@ -54,10 +54,10 @@ class AccountProcedures:
 
         except http_exceptions.StatusCodeException as e:
             if e.status_code == 302:
-                raise exceptions.ClientException('no user context')
+                raise exceptions.OperationException('no user context')
             raise
         if isinstance(root, str):
-            raise exceptions.ClientException('no user context')
+            raise exceptions.OperationException('no user context')
 
         entries = root['data']['children']
         return [load_user_relationship_item(d) for d in entries]
@@ -76,10 +76,10 @@ class AccountProcedures:
 
         except http_exceptions.StatusCodeException as e:
             if e.status_code == 302:
-                raise exceptions.ClientException('no user context')
+                raise exceptions.OperationException('no user context')
             raise
         if isinstance(root, str):
-            raise exceptions.ClientException('no user context')
+            raise exceptions.OperationException('no user context')
 
         entries = root['data']['children']
         return [load_user_relationship_item(d) for d in entries]
@@ -112,10 +112,10 @@ class AccountProcedures:
 
         except http_exceptions.StatusCodeException as e:
             if e.status_code == 302:
-                raise exceptions.ClientException('no user context')
+                raise exceptions.OperationException('no user context')
             raise
         if isinstance(root, str):
-            raise exceptions.ClientException('no user context')
+            raise exceptions.OperationException('no user context')
 
         entries = root['data']['children']
         return [load_user_relationship_item(d) for d in entries]
@@ -132,10 +132,10 @@ class AccountProcedures:
 
         except http_exceptions.StatusCodeException as e:
             if e.status_code == 302:
-                raise exceptions.ClientException('no user context')
+                raise exceptions.OperationException('no user context')
             raise
         if isinstance(root, str):
-            raise exceptions.ClientException('no user context')
+            raise exceptions.OperationException('no user context')
 
         blocked_entries = root[0]['data']['children']
         trusted_entries = root[1]['data']['children']

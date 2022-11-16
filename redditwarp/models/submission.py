@@ -11,7 +11,7 @@ from ..model_loaders.report import load_mod_report, load_user_report
 
 from dataclasses import dataclass
 
-class BaseSubmission(Artifact):
+class Submission(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             self.saved: bool = d['saved']
@@ -39,7 +39,7 @@ class BaseSubmission(Artifact):
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.has_premium: bool = d['author_premium']
-            self.flair: BaseSubmission.Author.AuthorFlair = self.AuthorFlair(d)
+            self.flair: Submission.Author.AuthorFlair = self.AuthorFlair(d)
 
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
@@ -73,15 +73,15 @@ class BaseSubmission(Artifact):
         def __init__(self, d: Mapping[str, Any]):
             self.spam: bool = d['spam']
 
-            self.approved: Optional[BaseSubmission.Moderator.Approved] = None
+            self.approved: Optional[Submission.Moderator.Approved] = None
             if d['approved_by']:
                 self.approved = self.Approved(d)
 
-            self.removed: Optional[BaseSubmission.Moderator.Removed] = None
+            self.removed: Optional[Submission.Moderator.Removed] = None
             if d['banned_by']:
                 self.removed = self.Removed(d)
 
-            self.reports: BaseSubmission.Moderator.Reports = self.Reports(d)
+            self.reports: Submission.Moderator.Reports = self.Reports(d)
 
             self.has_removal_reason: bool = bool(d['mod_reason_by'])
             self.removal_reason_by: str = d['mod_reason_by'] or ''
@@ -115,7 +115,7 @@ class BaseSubmission(Artifact):
             self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
 
     class Edited:
-        def __init__(self, outer: BaseSubmission):
+        def __init__(self, outer: Submission):
             self.ut: int = outer.edited_ut
             self.at: datetime = outer.edited_at
 
@@ -141,7 +141,7 @@ class BaseSubmission(Artifact):
         if self.is_edited:
             self.edited_at = datetime.fromtimestamp(self.edited_ut, timezone.utc)
 
-        self.edited: Optional[BaseSubmission.Edited] = None
+        self.edited: Optional[Submission.Edited] = None
         if edited:
             self.edited = self.Edited(self)
 
@@ -161,43 +161,43 @@ class BaseSubmission(Artifact):
         self.pinned: bool = d['pinned']
         self.distinguished: str = d['distinguished'] or ''
 
-        self.event: Optional[BaseSubmission.Event] = None
+        self.event: Optional[Submission.Event] = None
         if 'event_start' in d:
             self.event = self.Event(d)
 
-        self.me: BaseSubmission.Me = self.Me(d)
+        self.me: Submission.Me = self.Me(d)
 
-        self.subreddit: BaseSubmission.Subreddit = self.Subreddit(d)
+        self.subreddit: Submission.Subreddit = self.Subreddit(d)
 
         author: str = d['author']
         self.author_name: str = author
-        self.author: Optional[BaseSubmission.Author] = None
+        self.author: Optional[Submission.Author] = None
         if not author.startswith('['):
             self.author = self.Author(d)
 
-        self.mod: Optional[BaseSubmission.Moderator] = None
+        self.mod: Optional[Submission.Moderator] = None
         if 'spam' in d:
             self.mod = self.Moderator(d)
 
-        self.flair: BaseSubmission.Flair = self.Flair(d)
+        self.flair: Submission.Flair = self.Flair(d)
 
-        self.reports: Optional[BaseSubmission.Reports] = None
+        self.reports: Optional[Submission.Reports] = None
         if d['num_reports'] is not None:
             self.reports = self.Reports(d)
 
 
-class BaseLinkPost(BaseSubmission):
+class LinkPost(Submission):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.link: str = d['url_overridden_by_dest']
 
-class BaseTextPost(BaseSubmission):
+class TextPost(Submission):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.body: str = d['selftext']
         self.body_html: str = d['selftext_html']
 
-class BaseGalleryPost(BaseSubmission):
+class GalleryPost(Submission):
     @dataclass(repr=False, eq=False)
     class GalleryItem:
         id: int
@@ -212,7 +212,7 @@ class BaseGalleryPost(BaseSubmission):
         gallery_data_items: Sequence[Any] = ()
         if gallery_data := d.get('gallery_data'):
             gallery_data_items = gallery_data['items']
-        self.gallery: Sequence[BaseGalleryPost.GalleryItem] = [
+        self.gallery: Sequence[GalleryPost.GalleryItem] = [
             self.GalleryItem(
                 id=m['id'],
                 media_id=m['media_id'],
@@ -222,13 +222,13 @@ class BaseGalleryPost(BaseSubmission):
             for m in gallery_data_items
         ]
 
-class BasePollPost(BaseSubmission):
+class PollPost(Submission):
     pass
 
 
-TOriginalSubmission = TypeVar('TOriginalSubmission', bound=BaseSubmission)
+TOriginalSubmission = TypeVar('TOriginalSubmission', bound=Submission)
 
-class GBaseCrosspostSubmission(BaseSubmission, Generic[TOriginalSubmission]):
+class GBaseCrosspostSubmission(Submission, Generic[TOriginalSubmission]):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.original_id36: str = d['crosspost_parent'][3:]
@@ -237,3 +237,8 @@ class GBaseCrosspostSubmission(BaseSubmission, Generic[TOriginalSubmission]):
 
     def _load_submission(self, d: Mapping[str, Any]) -> TOriginalSubmission:
         raise NotImplementedError
+
+class CrosspostSubmission(GBaseCrosspostSubmission[Submission]):
+    def _load_submission(self, d: Mapping[str, Any]) -> Submission:
+        from ..model_loaders.submission import load_submission  # Avoid cyclic import
+        return load_submission(d)

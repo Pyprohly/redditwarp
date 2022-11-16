@@ -5,12 +5,12 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
     from .comment_ASYNC import Comment
 
-from .submission_base import (
-    BaseSubmission,
-    BaseLinkPost,
-    BaseTextPost,
-    BaseGalleryPost,
-    BasePollPost,
+from .submission import (
+    Submission as BaseSubmission,
+    LinkPost as BaseLinkPost,
+    TextPost as BaseTextPost,
+    GalleryPost as BaseGalleryPost,
+    PollPost as BasePollPost,
     GBaseCrosspostSubmission,
 )
 

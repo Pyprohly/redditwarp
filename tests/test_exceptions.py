@@ -13,7 +13,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'private'
+    assert exc.label == 'private'
     assert exc.explanation == ''
     assert exc.field == ''
 
@@ -21,7 +21,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'INVALID_REVISION'
+    assert exc.label == 'INVALID_REVISION'
     assert exc.explanation == ''
     assert exc.field == ''
 
@@ -29,7 +29,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'USER_REQUIRED'
+    assert exc.label == 'USER_REQUIRED'
     assert exc.explanation == 'Please log in to do that.'
     assert exc.field == ''
 
@@ -37,7 +37,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'NO_TEXT'
+    assert exc.label == 'NO_TEXT'
     assert exc.explanation == "we need something here"
     assert exc.field == 'subject'
 
@@ -45,7 +45,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'MUTED_FROM_SUBREDDIT'
+    assert exc.label == 'MUTED_FROM_SUBREDDIT'
     assert exc.explanation == ''
     assert exc.field == 'to'
 
@@ -53,7 +53,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'SUBREDDIT_NO_ACCESS'
+    assert exc.label == 'SUBREDDIT_NO_ACCESS'
     assert exc.explanation == ''
     assert exc.field == ''
 
@@ -61,7 +61,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'Must pass an id or list of ids.'
+    assert exc.label == 'Must pass an id or list of ids.'
     assert exc.explanation == ''
     assert exc.field == ''
 
@@ -69,7 +69,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'NO_LINKS'
+    assert exc.label == 'NO_LINKS'
     assert exc.explanation == "that subreddit only allows text posts"
     assert exc.field == 'sr'
 
@@ -77,7 +77,7 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'LIVEUPDATE_NO_INVITE_FOUND'
+    assert exc.label == 'LIVEUPDATE_NO_INVITE_FOUND'
     assert exc.explanation == "there is no pending invite for that thread"
     assert exc.field == ''
 
@@ -85,6 +85,6 @@ def test_raise_for_reddit_error() -> None:
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)
     exc = exc_info.value
-    assert exc.codename == 'BAD_CSS_NAME'
+    assert exc.label == 'BAD_CSS_NAME'
     assert exc.explanation == "bad image name"
     assert exc.field == ''

@@ -9,7 +9,7 @@ from .artifact import Artifact
 from .report import ModReport, UserReport
 from ..model_loaders.report import load_mod_report, load_user_report
 
-class BaseComment(Artifact):
+class Comment(Artifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             self.saved: bool = d['saved']
@@ -35,7 +35,7 @@ class BaseComment(Artifact):
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.has_premium: bool = d['author_premium']
-            self.flair: BaseComment.Author.AuthorFlair = self.AuthorFlair(d)
+            self.flair: Comment.Author.AuthorFlair = self.AuthorFlair(d)
 
     class Submission:
         def __init__(self, d: Mapping[str, Any]):
@@ -72,15 +72,15 @@ class BaseComment(Artifact):
         def __init__(self, d: Mapping[str, Any]):
             self.spam: bool = d['spam']
 
-            self.approved: Optional[BaseComment.Moderator.Approved] = None
+            self.approved: Optional[Comment.Moderator.Approved] = None
             if d['approved_by']:
                 self.approved = self.Approved(d)
 
-            self.removed: Optional[BaseComment.Moderator.Removed] = None
+            self.removed: Optional[Comment.Moderator.Removed] = None
             if d['banned_by']:
                 self.removed = self.Removed(d)
 
-            self.reports: BaseComment.Moderator.Reports = self.Reports(d)
+            self.reports: Comment.Moderator.Reports = self.Reports(d)
 
             self.has_removal_reason: bool = bool(d['mod_reason_by'])
             self.removal_reason_by: str = d['mod_reason_by'] or ''
@@ -88,7 +88,7 @@ class BaseComment(Artifact):
             self.removal_note: str = d['mod_note'] or ''
 
     class Edited:
-        def __init__(self, outer: BaseComment):
+        def __init__(self, outer: Comment):
             self.ut: int = outer.edited_ut
             self.at: datetime = outer.edited_at
 
@@ -114,7 +114,7 @@ class BaseComment(Artifact):
         if self.is_edited:
             self.edited_at = datetime.fromtimestamp(self.edited_ut, timezone.utc)
 
-        self.edited: Optional[BaseComment.Edited] = None
+        self.edited: Optional[Comment.Edited] = None
         if edited:
             self.edited = self.Edited(self)
 
@@ -134,29 +134,29 @@ class BaseComment(Artifact):
             self.parent_comment_id36 = parent_id.partition('_')[2]
             self.parent_comment_id = int(self.parent_comment_id36, 36)
 
-        self.me: BaseComment.Me = self.Me(d)
+        self.me: Comment.Me = self.Me(d)
 
-        self.submission: BaseComment.Submission = self.Submission(d)
-        self.subreddit: BaseComment.Subreddit = self.Subreddit(d)
+        self.submission: Comment.Submission = self.Submission(d)
+        self.subreddit: Comment.Subreddit = self.Subreddit(d)
 
         s: str = d['author']
         self.author_name: str = s
-        self.author: Optional[BaseComment.Author] = None
+        self.author: Optional[Comment.Author] = None
         if not s.startswith('['):
             self.author = self.Author(d)
 
-        self.mod: Optional[BaseComment.Moderator] = None
+        self.mod: Optional[Comment.Moderator] = None
         if 'spam' in d:
             self.mod = self.Moderator(d)
 
 
-class BaseExtraSubmissionFieldsComment(BaseComment):
+class LooseComment(Comment):
     # For:
     # * `GET /comments`
     # * `GET /r/{subreddit}/comments`
     # * `GET /user/{username}/overview` (and variants)
 
-    class Submission2(BaseComment.Submission):
+    class Submission2(Comment.Submission):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.title: str = d['link_title']
@@ -165,16 +165,12 @@ class BaseExtraSubmissionFieldsComment(BaseComment):
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
             self.nsfw: bool = d['over_18']
 
-    class Subreddit2(BaseComment.Subreddit):
+    class Subreddit2(Comment.Subreddit):
         def __init__(self, d: Mapping[str, Any]):
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
 
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
-        self.submission2: BaseExtraSubmissionFieldsComment.Submission2 = self.Submission2(d)
-        self.subreddit2: BaseExtraSubmissionFieldsComment.Subreddit2 = self.Subreddit2(d)
-
-class BaseEditPostTextEndpointComment(BaseComment):
-    # For: `POST /api/editusertext`
-    pass
+        self.submission2: LooseComment.Submission2 = self.Submission2(d)
+        self.subreddit2: LooseComment.Subreddit2 = self.Subreddit2(d)

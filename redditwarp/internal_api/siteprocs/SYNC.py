@@ -4,7 +4,7 @@ from __future__ import annotations
 from ...core.reddit_http_client_SYNC import RedditHTTPClient
 from ...http.util.json_load import json_loads_response
 from ...exceptions import (
-    ClientException,
+    OperationException,
     raise_for_reddit_error,
     raise_for_non_json_response,
 )
@@ -42,7 +42,7 @@ class Procedures:
         d = json_data['json']['data']
         details = d.get('details', '')
         if details == 'TWO_FA_REQUIRED':
-            raise ClientException('TWO_FA_REQUIRED')
+            raise OperationException('TWO_FA_REQUIRED')
 
         return (d['cookie'], d['modhash'])
 

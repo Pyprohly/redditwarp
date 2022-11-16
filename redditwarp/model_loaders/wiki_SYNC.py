@@ -4,9 +4,13 @@ from typing import TYPE_CHECKING, Any, Mapping
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from ..models.wiki_base import BaseWikiPageRevisionAuthorUser
+from ..models.wiki import WikiPageRevisionAuthorUser as BaseWikiPageRevisionAuthorUser
 from ..models.wiki_SYNC import WikiPageRevisionAuthorUser, WikiPage, WikiPageRevision, WikiPageSettings
-from .wiki_base import load_base_wiki_page, load_base_wiki_page_revision, load_base_wiki_page_settings
+from .wiki import (
+    load_wiki_page as load_base_wiki_page,
+    load_wiki_page_revision as load_base_wiki_page_revision,
+    load_wiki_page_settings as load_base_wiki_page_settings,
+)
 
 
 def promote_base_wiki_page_revision_author_user(base: BaseWikiPageRevisionAuthorUser, client: Client) -> WikiPageRevisionAuthorUser:

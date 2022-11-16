@@ -152,7 +152,7 @@ Please check <a href="http://www.redditstatus.com/">www.redditstatus.com</a> if 
         with pytest.raises(exceptions.RedditError) as exc_info:
             client.request('', '')
         exc = exc_info.value
-        assert exc.codename == "USER_REQUIRED"
+        assert exc.label == "USER_REQUIRED"
         assert exc.explanation == "Please log in to do that."
         assert exc.field == ""
 
@@ -169,7 +169,7 @@ Please check <a href="http://www.redditstatus.com/">www.redditstatus.com</a> if 
         with pytest.raises(exceptions.RedditError) as exc_info:
             client.request('', '')
         exc = exc_info.value
-        assert exc.codename == "TOO_LONG"
+        assert exc.label == "TOO_LONG"
         assert exc.explanation == "this is too long (max: 50)"
         assert exc.field == "title"
 
@@ -189,6 +189,6 @@ Please check <a href="http://www.redditstatus.com/">www.redditstatus.com</a> if 
         with pytest.raises(exceptions.RedditError) as exc_info:
             client.request('', '')
         exc = exc_info.value
-        assert exc.codename == 'NO_TEXT'
+        assert exc.label == 'NO_TEXT'
         assert exc.explanation == 'we need something here'
         assert exc.field == 'title'

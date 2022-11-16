@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Mapping, Any, Sequence
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from .submission_collection_base import (
-    BaseSubmissionCollectionDetails,
+from .submission_collection import (
+    SubmissionCollectionDetails as BaseSubmissionCollectionDetails,
     GBaseSubmissionCollection,
 )
 from .submission_ASYNC import Submission

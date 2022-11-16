@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping, Optional, Sequence, Protocol
+from typing import TYPE_CHECKING, MutableMapping, Optional, Sequence, Protocol, MutableSequence
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
 
@@ -9,6 +9,7 @@ from dataclasses import dataclass
 
 from ...util.imports import load_module_from_spec
 from ..websocket_connection_ASYNC import WebSocketConnection
+
 
 class ConnectFunctionProtocol(Protocol):
     async def __call__(self, url: str, *,
@@ -22,11 +23,13 @@ class TransportInfo:
     version: str
     connect: ConnectFunctionProtocol
 
+
 def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
     module_spec = find_spec(name, package)
     if module_spec is None:
         raise RuntimeError(f'module spec not found: {name} ({package})')
     return module_spec
+
 
 def load_transport() -> TransportInfo:
     if not transport_info_registry:
@@ -60,7 +63,7 @@ def register(
     )
     transport_info_registry[adaptor_module_name] = info
 
-transport_module_spec_list = [
+transport_module_spec_list: MutableSequence[ModuleSpec] = [
     load_spec('.carriers.websockets', __package__),
     load_spec('.carriers.aiohttp', __package__),
 ]

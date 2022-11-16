@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Any, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_SYNC import Subreddit
-    from ...models.comment_SYNC import ExtraSubmissionFieldsComment
+    from ...models.comment_SYNC import LooseComment
     from ...models.subreddit_rules import SubredditRules
 
 from ...model_loaders.subreddit_SYNC import load_subreddit, load_potentially_inaccessible_subreddit
@@ -14,7 +14,7 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from ...iterators.call_chunk import CallChunk
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
-from ...pagination.paginators.listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
+from ...pagination.paginators.listing.comment_listing_paginator import LooseCommentListingPaginator
 from ...pagination.paginators.subreddit_sync1 import SubredditSearchPaginator
 from ... import exceptions
 from ... import http
@@ -78,8 +78,8 @@ class SubredditProcedures:
 
         return CallChunkChainingIterator(CallChunk(mass_fetch, chunk) for chunk in chunked(names, 100))
 
-    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[ExtraSubmissionFieldsCommentListingPaginator, ExtraSubmissionFieldsComment]:
-        p = ExtraSubmissionFieldsCommentListingPaginator(self._client, f'/r/{sr}/comments')
+    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[LooseCommentListingPaginator, LooseComment]:
+        p = LooseCommentListingPaginator(self._client, f'/r/{sr}/comments')
         return ImpartedPaginatorChainingIterator(p, amount)
 
     def get_settings(self, sr: str) -> Mapping[str, Any]:

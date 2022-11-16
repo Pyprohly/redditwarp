@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from .artifact import IArtifact
 
-class BaseUser(IArtifact):
+class User(IArtifact):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]):
             d = d['subreddit']
@@ -44,11 +44,11 @@ class BaseUser(IArtifact):
 
         self.icon_img: str = d['icon_img']
 
-        self.subreddit: BaseUser.Subreddit = self.Subreddit(d)
-        self.me: BaseUser.Me = self.Me(d)
+        self.subreddit: User.Subreddit = self.Subreddit(d)
+        self.me: User.Me = self.Me(d)
 
 
-class BaseSuspendedUser(IArtifact):
+class SuspendedUser(IArtifact):
     class Me:
         def __init__(self, d: Mapping[str, Any]):
             self.is_blocked: bool = d['is_blocked']
@@ -59,4 +59,4 @@ class BaseSuspendedUser(IArtifact):
         self.awarder_karma: int = d['awarder_karma']
         self.total_karma: int = d['total_karma']
 
-        self.me: BaseSuspendedUser.Me = self.Me(d)
+        self.me: SuspendedUser.Me = self.Me(d)

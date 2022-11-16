@@ -33,7 +33,7 @@ import signal
 from functools import partial
 
 import redditwarp
-from redditwarp.http.transport.SYNC import load_transport, new_session
+from redditwarp.http.transport.reg_SYNC import load_transport, new_session
 from redditwarp.auth.SYNC import TokenRevocationClient
 from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
 from redditwarp.core.user_agent_SYNC import get_user_agent_from_session

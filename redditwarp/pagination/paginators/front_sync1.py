@@ -5,7 +5,7 @@ from .listing.mixins.subreddit_detail_SYNC import SubredditDetail
 from .listing.submission_listing_paginator import SubmissionListingPaginator
 from ...models.submission_SYNC import Submission
 from .listing.mixins.time_SYNC import Time
-from .listing.submission_and_comment_listing_paginator import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
+from .listing.submission_and_comment_listing_paginator import SubmissionAndLooseCommentListingPaginator
 
 class BestListingPaginator(
     SubredditDetail[Submission],
@@ -42,5 +42,5 @@ class ControversialListingPaginator(
 class GildedListingPaginator(
     Time[object],
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass

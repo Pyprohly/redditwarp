@@ -5,21 +5,21 @@ from typing import Iterable
 from ..listing.mixins.sort_SYNC import Sort
 from ..listing.mixins.subreddit_detail_SYNC import SubredditDetail
 from ..listing.submission_listing_paginator import SubmissionListingPaginator
-from ..listing.comment_listing_paginator import ExtraSubmissionFieldsCommentListingPaginator
-from ..listing.submission_and_comment_listing_paginator import SubmissionAndExtraSubmissionFieldsCommentListingPaginator
-from ....models.comment_SYNC import ExtraSubmissionFieldsComment
+from ..listing.comment_listing_paginator import LooseCommentListingPaginator
+from ..listing.submission_and_comment_listing_paginator import SubmissionAndLooseCommentListingPaginator
+from ....models.comment_SYNC import LooseComment
 from ....models.submission_SYNC import Submission
 
 class OverviewListingPaginator(
     Sort[object],
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass
 
 class CommentsListingPaginator(
-    Sort[ExtraSubmissionFieldsComment],
-    SubredditDetail[ExtraSubmissionFieldsComment],
-    ExtraSubmissionFieldsCommentListingPaginator,
+    Sort[LooseComment],
+    SubredditDetail[LooseComment],
+    LooseCommentListingPaginator,
 ): pass
 
 class SubmittedListingPaginator(
@@ -31,7 +31,7 @@ class SubmittedListingPaginator(
 class GildedListingPaginator(
     Sort[object],
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass
 
 class UpvotedListingPaginator(
@@ -55,7 +55,7 @@ class HiddenListingPaginator(
 class SavedListingPaginator(
     Sort[object],
     SubredditDetail[object],
-    SubmissionAndExtraSubmissionFieldsCommentListingPaginator,
+    SubmissionAndLooseCommentListingPaginator,
 ): pass
 
 class SavedSubmissionsListingPaginator(
@@ -68,9 +68,9 @@ class SavedSubmissionsListingPaginator(
         yield ('type', 'links')
 
 class SavedCommentsListingPaginator(
-    Sort[ExtraSubmissionFieldsComment],
-    SubredditDetail[ExtraSubmissionFieldsComment],
-    ExtraSubmissionFieldsCommentListingPaginator,
+    Sort[LooseComment],
+    SubredditDetail[LooseComment],
+    LooseCommentListingPaginator,
 ):
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

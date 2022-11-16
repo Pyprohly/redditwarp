@@ -12,7 +12,7 @@ from ...core.rate_limited_ASYNC import RateLimited
 from ...core.recorded_ASYNC import Recorded
 from ...core.reddit_give_me_json_please_ASYNC import RedditGiveMeJSONPlease
 from ...http.misc.apply_params_and_headers_ASYNC import ApplyDefaultHeaders
-from ...http.transport.ASYNC import new_session
+from ...http.transport.reg_ASYNC import new_session
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..auth.reddit_internal_api_token_obtainment_client_ASYNC import new_reddit_internal_api_token_obtainment_client
 from .authorizer_ASYNC import Authorized

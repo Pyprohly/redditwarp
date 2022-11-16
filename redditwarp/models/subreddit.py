@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from .artifact import Artifact
 
-class BaseSubreddit(Artifact):
+class Subreddit(Artifact):
     class Me:
         class MeFlair:
             def __init__(self, d: Mapping[str, Any]):
@@ -31,7 +31,7 @@ class BaseSubreddit(Artifact):
             self.is_muted: bool = d['user_is_muted']
             self.is_subscribed: bool = d['user_is_subscriber']
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
-            self.flair: BaseSubreddit.Me.MeFlair = self.MeFlair(d)
+            self.flair: Subreddit.Me.MeFlair = self.MeFlair(d)
 
     class SubredditFlair:
         def __init__(self, d: Mapping[str, Any]):
@@ -79,17 +79,17 @@ class BaseSubreddit(Artifact):
         self.public_traffic: bool = d['public_traffic']
         self.quarantined: bool = d['quarantine']
 
-        self.me: Optional[BaseSubreddit.Me] = None
+        self.me: Optional[Subreddit.Me] = None
         if d['user_is_moderator'] is not None:
             self.me = self.Me(d)
 
-        self.flair: BaseSubreddit.SubredditFlair = self.SubredditFlair(d)
+        self.flair: Subreddit.SubredditFlair = self.SubredditFlair(d)
 
         # Value is always `False` if object from search item.
         self.has_menu_widget: bool = d['has_menu_widget']
 
 
-class BaseInaccessibleSubreddit(Artifact):
+class InaccessibleSubreddit(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.id36: str = d['id']

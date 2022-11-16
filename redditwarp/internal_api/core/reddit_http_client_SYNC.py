@@ -12,7 +12,7 @@ from ...core.rate_limited_SYNC import RateLimited
 from ...core.recorded_SYNC import Recorded
 from ...core.reddit_give_me_json_please_SYNC import RedditGiveMeJSONPlease
 from ...http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
-from ...http.transport.SYNC import new_session
+from ...http.transport.reg_SYNC import new_session
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..auth.reddit_internal_api_token_obtainment_client_SYNC import new_reddit_internal_api_token_obtainment_client
 from .authorizer_SYNC import Authorized

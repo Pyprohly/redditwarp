@@ -116,7 +116,7 @@ class TestRequestExceptions:
         with pytest.raises(exceptions.RedditError) as exc_info:
             await client.request('', '')
         exc = exc_info.value
-        assert exc.codename == "USER_REQUIRED"
+        assert exc.label == "USER_REQUIRED"
         assert exc.explanation == "Please log in to do that."
         assert exc.field == ""
 
@@ -133,7 +133,7 @@ class TestRequestExceptions:
         with pytest.raises(exceptions.RedditError) as exc_info:
             await client.request('', '')
         exc = exc_info.value
-        assert exc.codename == "TOO_LONG"
+        assert exc.label == "TOO_LONG"
         assert exc.explanation == "this is too long (max: 50)"
         assert exc.field == "title"
 
@@ -154,6 +154,6 @@ class TestRequestExceptions:
         with pytest.raises(exceptions.RedditError) as exc_info:
             await client.request('', '')
         exc = exc_info.value
-        assert exc.codename == 'NO_TEXT'
+        assert exc.label == 'NO_TEXT'
         assert exc.explanation == 'we need something here'
         assert exc.field == 'title'

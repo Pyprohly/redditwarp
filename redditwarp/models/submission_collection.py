@@ -1,12 +1,15 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Sequence, TypeVar, overload, Iterator, Union
+from typing import TYPE_CHECKING, Mapping, Any, Sequence, TypeVar, overload, Iterator, Union
+if TYPE_CHECKING:
+    from .submission import Submission
 
 from datetime import datetime, timezone
 
 from .artifact import Artifact
+from ..model_loaders.submission import load_submission
 
-class BaseSubmissionCollectionDetails(Artifact):
+class SubmissionCollectionDetails(Artifact):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         self.uuid: str = d['collection_id']
@@ -39,13 +42,9 @@ class BaseSubmissionCollectionDetails(Artifact):
         self.submission_id36s: Sequence[str] = [s[3:] for s in submission_full_id36s]
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
 
-class BaseSubmissionCollection(BaseSubmissionCollectionDetails):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
-
 TSubmission = TypeVar('TSubmission')
 
-class GBaseSubmissionCollection(BaseSubmissionCollection, Sequence[TSubmission]):
+class GBaseSubmissionCollection(SubmissionCollectionDetails, Sequence[TSubmission]):
     def __init__(self, d: Mapping[str, Any]):
         super().__init__(d)
         children_data = d['sorted_links']['data']['children']
@@ -70,3 +69,7 @@ class GBaseSubmissionCollection(BaseSubmissionCollection, Sequence[TSubmission])
 
     def _load_submission(self, m: Mapping[str, Any]) -> TSubmission:
         raise NotImplementedError
+
+class SubmissionCollection(GBaseSubmissionCollection[Submission]):
+    def _load_submission(self, m: Mapping[str, Any]) -> Submission:
+        return load_submission(m)

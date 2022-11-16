@@ -4,7 +4,7 @@ from __future__ import annotations
 import sys
 
 from .. import __about__
-from ..http.transport.ASYNC import load_transport, transport_registry
+from ..http.transport.reg_ASYNC import load_transport, transport_registry
 
 def get_user_agent() -> str:
     tt = load_transport()

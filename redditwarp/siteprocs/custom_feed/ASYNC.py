@@ -24,7 +24,7 @@ class CustomFeedProcedures:
         try:
             root = await self._client.request('GET', f'/api/multi/user/{user}/m/{feed}')
         except exceptions.RedditError as e:
-            if e.codename == 'MULTI_NOT_FOUND':
+            if e.label == 'MULTI_NOT_FOUND':
                 return None
             raise
         return load_custom_feed(root['data'], self._client)
@@ -102,7 +102,7 @@ class CustomFeedProcedures:
                 return False
             raise
         except exceptions.RedditError as e:
-            if e.codename == 'SUBREDDIT_NOEXIST':
+            if e.label == 'SUBREDDIT_NOEXIST':
                 return False
             raise
         return True

@@ -5,18 +5,17 @@ from typing import Any, Mapping
 from datetime import datetime, timezone
 
 from ..auth.const import AUTHORIZATION_BASE_URL
-from ..models.message import CommentMessageCause
-from ..models.message_base import BaseMailboxMessage, BaseComposedMessage, BaseCommentMessage
+from ..models.message import CommentMessageCause, MailboxMessage, ComposedMessage, CommentMessage
 
-def load_base_mailbox_message(d: Mapping[str, Any]) -> BaseMailboxMessage:
-    return BaseMailboxMessage(
+def load_mailbox_message(d: Mapping[str, Any]) -> MailboxMessage:
+    return MailboxMessage(
         d=d,
         subject=d['subject'],
         author_name=d['author'] or '',
         unread=d['new'],
     )
 
-def load_base_composed_message(d: Mapping[str, Any]) -> BaseComposedMessage:
+def load_composed_message(d: Mapping[str, Any]) -> ComposedMessage:
     source_user_name: str = d['author'] or ''
     source_subreddit_name: str = ''
     destination_user_name: str = ''
@@ -28,8 +27,8 @@ def load_base_composed_message(d: Mapping[str, Any]) -> BaseComposedMessage:
         source_subreddit_name = d['subreddit'] or ''
         destination_user_name = dest
 
-    up = load_base_mailbox_message(d)
-    return BaseComposedMessage(
+    up = load_mailbox_message(d)
+    return ComposedMessage(
         d=up.d,
         subject=up.subject,
         author_name=up.author_name,
@@ -55,9 +54,9 @@ def load_base_composed_message(d: Mapping[str, Any]) -> BaseComposedMessage:
         ),
     )
 
-def load_base_comment_message(d: Mapping[str, Any]) -> BaseCommentMessage:
-    up = load_base_mailbox_message(d)
-    return BaseCommentMessage(
+def load_comment_message(d: Mapping[str, Any]) -> CommentMessage:
+    up = load_mailbox_message(d)
+    return CommentMessage(
         d=up.d,
         subject=up.subject,
         author_name=up.author_name,
@@ -67,14 +66,14 @@ def load_base_comment_message(d: Mapping[str, Any]) -> BaseCommentMessage:
             'post_reply': CommentMessageCause.SUBMISSION_REPLY,
             'comment_reply': CommentMessageCause.COMMENT_REPLY,
         }[d['type']],
-        submission=BaseCommentMessage.Submission(
+        submission=CommentMessage.Submission(
             id=int((context := d['context']).split('/', 5)[4], 36),
             title=d['link_title'],
             comment_count=d['num_comments'],
             rel_permalink=(rel_permalink := '/'.join(context.split('/', 6)[:-1]) + '/'),
             permalink=AUTHORIZATION_BASE_URL + rel_permalink,
         ),
-        comment=BaseCommentMessage.Comment(
+        comment=CommentMessage.Comment(
             id=int(d['id'], 36),
             created_ut=(created_ut := int(d['created_utc'])),
             created_at=datetime.fromtimestamp(created_ut, timezone.utc),

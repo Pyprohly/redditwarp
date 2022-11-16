@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from .modmail_base import (
-    BaseConversation,
-    BaseMessage,
-    BaseModmailModAction,
-    BaseUserDossier,
+from .modmail import (
+    Conversation as BaseConversation,
+    Message as BaseMessage,
+    ModmailModAction as BaseModmailModAction,
+    UserDossier as BaseUserDossier,
     GBaseConversationAggregate,
     GBaseUserDossierConversationAggregate,
     GBaseOptionalUserDossierConversationAggregate,

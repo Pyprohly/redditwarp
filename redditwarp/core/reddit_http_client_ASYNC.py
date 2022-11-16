@@ -7,13 +7,13 @@ if TYPE_CHECKING:
 
 from ..auth.const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL
 from ..http.http_client_ASYNC import BasicRequestDefaultsHTTPClient
-from ..auth.typedefs import AuthorizationGrantType as AuthorizationGrant
+from ..auth.types import AuthorizationGrantType as AuthorizationGrant
 from .authorizer_ASYNC import Authorized
 from .rate_limited_ASYNC import RateLimited
 from .recorded_ASYNC import Recorded
 from .reddit_give_me_json_please_ASYNC import RedditGiveMeJSONPlease
 from .reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
-from ..http.transport.ASYNC import new_session
+from ..http.transport.reg_ASYNC import new_session
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 from .user_agent_ASYNC import get_user_agent_from_session
 from ..auth.token import Token

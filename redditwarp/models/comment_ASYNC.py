@@ -4,10 +4,9 @@ from typing import TYPE_CHECKING, Mapping, Any, Optional
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from .comment_base import (
-    BaseComment,
-    BaseExtraSubmissionFieldsComment,
-    BaseEditPostTextEndpointComment,
+from .comment import (
+    Comment as BaseComment,
+    LooseComment as BaseLooseComment,
 )
 
 class Comment(BaseComment):
@@ -18,7 +17,7 @@ class Comment(BaseComment):
     async def reply(self, text: str) -> Comment:
         return await self.client.p.comment.reply(self.id, text)
 
-    async def edit_body(self, text: str) -> EditPostTextEndpointComment:
+    async def edit_body(self, text: str) -> Comment:
         return await self.client.p.comment.edit_body(self.id, text)
 
     async def delete(self) -> None:
@@ -66,8 +65,5 @@ class Comment(BaseComment):
         await self.client.p.comment.send_removal_message(self.id, title, message, exposed=exposed)
 
 
-class ExtraSubmissionFieldsComment(Comment, BaseExtraSubmissionFieldsComment):
-    pass
-
-class EditPostTextEndpointComment(Comment, BaseEditPostTextEndpointComment):
+class LooseComment(Comment, BaseLooseComment):
     pass

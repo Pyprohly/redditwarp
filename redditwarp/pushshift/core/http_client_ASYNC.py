@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from ...core.reddit_http_client_ASYNC import RedditHTTPClient
 from ...core.recorded_ASYNC import Recorded
-from ...http.transport.ASYNC import new_session
+from ...http.transport.reg_ASYNC import new_session
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ...core.user_agent_ASYNC import get_user_agent_from_session
 from ...http.http_client_ASYNC import HTTPClient

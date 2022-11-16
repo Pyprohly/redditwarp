@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Any, Mapping
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.subreddit_ASYNC import Subreddit
-    from ...models.comment_ASYNC import ExtraSubmissionFieldsComment
+    from ...models.comment_ASYNC import LooseComment
     from ...models.subreddit_rules import SubredditRules
 
 from ...model_loaders.subreddit_ASYNC import load_subreddit, load_potentially_inaccessible_subreddit
@@ -14,7 +14,7 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.async_call_chunk import AsyncCallChunk
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.paginators.listing.comment_listing_async_paginator import ExtraSubmissionFieldsCommentListingAsyncPaginator
+from ...pagination.paginators.listing.comment_listing_async_paginator import LooseCommentListingAsyncPaginator
 from ...pagination.paginators.subreddit_async1 import SubredditSearchAsyncPaginator
 from ... import exceptions
 from ... import http
@@ -78,8 +78,8 @@ class SubredditProcedures:
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(names, 100))
 
-    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ExtraSubmissionFieldsCommentListingAsyncPaginator, ExtraSubmissionFieldsComment]:
-        p = ExtraSubmissionFieldsCommentListingAsyncPaginator(self._client, f'/r/{sr}/comments')
+    def pull_new_comments(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[LooseCommentListingAsyncPaginator, LooseComment]:
+        p = LooseCommentListingAsyncPaginator(self._client, f'/r/{sr}/comments')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     async def get_settings(self, sr: str) -> Mapping[str, Any]:

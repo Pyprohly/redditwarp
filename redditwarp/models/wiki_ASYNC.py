@@ -6,8 +6,8 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass
 
-from .wiki_base import (
-    BaseWikiPageRevisionAuthorUser,
+from .wiki import (
+    WikiPageRevisionAuthorUser as BaseWikiPageRevisionAuthorUser,
     GBaseWikiPage,
     GBaseWikiPageRevision,
     GBaseWikiPageSettings,

@@ -6,10 +6,10 @@ if TYPE_CHECKING:
 
 from dataclasses import dataclass
 
-from .message_base import (
-    BaseMailboxMessage,
-    BaseComposedMessage,
-    BaseCommentMessage,
+from .message import (
+    MailboxMessage as BaseMailboxMessage,
+    ComposedMessage as BaseComposedMessage,
+    CommentMessage as BaseCommentMessage,
 )
 
 @dataclass(repr=False, eq=False)

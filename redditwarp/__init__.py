@@ -2,8 +2,7 @@
 
 __all__ = '*'
 
-from . import (SYNC, ASYNC)  # noqa: F401
-from . import (client_SYNC, client_ASYNC)  # noqa: F401
+from . import __about__  # noqa: F401
 from .__about__ import (  # noqa: F401
     __title__ as __title__,
     __summary__ as __summary__,
@@ -20,7 +19,7 @@ from . import websocket  # noqa: F401
 from . import iterators  # noqa: F401
 from . import pagination  # noqa: F401
 from . import models  # noqa: F401
-from . import dto_models  # noqa: F401
+from . import dtos  # noqa: F401
 from . import model_loaders  # noqa: F401
 from . import util  # noqa: F401
 from . import exceptions  # noqa: F401

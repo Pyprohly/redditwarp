@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
-from .user_base import (
-    BaseUser,
-    BaseSuspendedUser,
+from .user import (
+    User as BaseUser,
+    SuspendedUser as BaseSuspendedUser,
 )
 
 class User(BaseUser):

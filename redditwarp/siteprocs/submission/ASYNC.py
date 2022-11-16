@@ -1,11 +1,11 @@
-
+ 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.submission_ASYNC import Submission, TextPost
     from ...models.comment_ASYNC import Comment
-    from ...dto_models.submission import GalleryItem
+    from ...dtos.submission import GalleryItem
 
 from functools import cached_property
 

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .....client_SYNC import Client
     from .....models.submission_SYNC import Submission
-    from .....models.comment_SYNC import ExtraSubmissionFieldsComment
+    from .....models.comment_SYNC import LooseComment
     from .....models.subreddit_SYNC import Subreddit
     from ..stream import IStandardStreamEventSubject
 
@@ -16,7 +16,7 @@ def make_submission_stream(client: Client, sr: str) -> IStandardStreamEventSubje
     paginator = it.get_paginator()
     return Stream(paginator, lambda x: x.id)
 
-def make_comment_stream(client: Client, sr: str) -> IStandardStreamEventSubject[ExtraSubmissionFieldsComment]:
+def make_comment_stream(client: Client, sr: str) -> IStandardStreamEventSubject[LooseComment]:
     it = client.p.subreddit.pull_new_comments(sr)
     paginator = it.get_paginator()
     return Stream(paginator, lambda x: x.id)

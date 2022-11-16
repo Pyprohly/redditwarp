@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.comment_SYNC import ExtraSubmissionFieldsComment
+    from ...models.comment_SYNC import LooseComment
     from ...models.submission_SYNC import Submission
 
 from functools import cached_property
@@ -35,7 +35,7 @@ class Pull:
 
     def comments(self, name: str, amount: Optional[int] = None, *,
             sort: str = 'new',
-            ) -> ImpartedPaginatorChainingIterator[CommentsListingPaginator, ExtraSubmissionFieldsComment]:
+            ) -> ImpartedPaginatorChainingIterator[CommentsListingPaginator, LooseComment]:
         p = CommentsListingPaginator(self._client, f'/user/{name}/comments')
         p.sort = sort
         return ImpartedPaginatorChainingIterator(p, amount)
@@ -87,7 +87,7 @@ class Pull:
             return ImpartedPaginatorChainingIterator(p, amount)
 
         def comments(self, name: str, amount: Optional[int] = None,
-                ) -> ImpartedPaginatorChainingIterator[SavedCommentsListingPaginator, ExtraSubmissionFieldsComment]:
+                ) -> ImpartedPaginatorChainingIterator[SavedCommentsListingPaginator, LooseComment]:
             p = SavedCommentsListingPaginator(self._client, f'/user/{name}/saved')
             return ImpartedPaginatorChainingIterator(p, amount)
 

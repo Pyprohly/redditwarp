@@ -5,6 +5,6 @@ from dataclasses import dataclass
 
 @dataclass
 class KarmaBreakdownEntry:
-    sr_name: str
+    sr: str
     comment_karma: int
     submission_karma: int

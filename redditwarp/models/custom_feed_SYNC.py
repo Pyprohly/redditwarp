@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from ..client_SYNC import Client
     from ..iterators.call_chunk_calling_iterator import CallChunkCallingIterator
 
-from .custom_feed_base import BaseCustomFeed
+from .custom_feed import CustomFeed as BaseCustomFeed
 
 class CustomFeed(BaseCustomFeed):
     def __init__(self, d: Mapping[str, Any], client: Client):
