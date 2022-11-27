@@ -85,7 +85,7 @@ params = {
     'scope': scope,
     'state': state,
 }
-url = "%s?%s" % (redditwarp.auth.const.AUTHORIZATION_URL, urllib.parse.urlencode(params))
+url = "%s?%s" % (redditwarp.core.const.AUTHORIZATION_URL, urllib.parse.urlencode(params))
 
 print(url)
 print()

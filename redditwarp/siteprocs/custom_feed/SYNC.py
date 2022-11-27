@@ -30,11 +30,11 @@ class CustomFeedProcedures:
         return load_custom_feed(root['data'], self._client)
 
     def list_created(self, user: str = '') -> Sequence[CustomFeed]:
-        uri = '/api/multi/mine'
+        url = '/api/multi/mine'
         if user:
-            uri = f'/api/multi/user/{user}'
+            url = f'/api/multi/user/{user}'
 
-        result = self._client.request('GET', uri)
+        result = self._client.request('GET', url)
         return [load_custom_feed(d['data'], self._client) for d in result]
 
     def create(self,

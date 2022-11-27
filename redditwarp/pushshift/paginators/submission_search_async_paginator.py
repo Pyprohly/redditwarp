@@ -46,10 +46,11 @@ class SubmissionSearchDocumentAsyncPaginator(
     def __init__(self,
         *,
         client: Client,
-        uri: str,
+        url: str,
         limit: Optional[int] = 100,
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
         fields: Iterable[str] = (),
         query: str = '',
         query_exclude: str = '',
@@ -62,10 +63,11 @@ class SubmissionSearchDocumentAsyncPaginator(
     ) -> None:
         super().__init__(
             client=client,
-            uri=uri,
+            url=url,
             limit=limit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
             fields=fields,
         )
         self._query: str = query
@@ -84,10 +86,11 @@ class SubmissionSearchDocumentIDAsyncPaginator(
     def __init__(self,
         *,
         client: Client,
-        uri: str,
+        url: str,
         limit: Optional[int] = 100,
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
         query: str = '',
         query_exclude: str = '',
         query_title: str = '',
@@ -99,10 +102,11 @@ class SubmissionSearchDocumentIDAsyncPaginator(
     ) -> None:
         super().__init__(
             client=client,
-            uri=uri,
+            url=url,
             limit=limit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
         )
         self._query: str = query
         self._query_exclude: str = query_exclude

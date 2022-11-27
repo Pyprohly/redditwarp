@@ -1,10 +1,9 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Optional
+from typing import TYPE_CHECKING, Mapping, Optional, ClassVar
 if TYPE_CHECKING:
     from typing import Iterator
 
-from typing import ClassVar
 from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
@@ -62,10 +61,4 @@ class ClientCredentialsGrant(AuthorizationGrant):
 class RefreshTokenGrant(AuthorizationGrant):
     GRANT_TYPE: ClassVar[str] = 'refresh_token'
     refresh_token: str
-    scope: Optional[str] = None
-
-@dataclass(frozen=True)
-class InstalledClientGrant(AuthorizationGrant):
-    GRANT_TYPE: ClassVar[str] = "https://oauth.reddit.com/grants/installed_client"
-    device_id: str
     scope: Optional[str] = None

@@ -40,7 +40,6 @@ def load_wiki_page_revision(d: Mapping[str, Any]) -> WikiPageRevision:
 def load_wiki_page_settings(d: Mapping[str, Any]) -> WikiPageSettings:
     return WikiPageSettings(
         permlevel=d['permlevel'],
-        # Type ignore due to https://github.com/python/mypy/issues/10986
-        editors=[load_wiki_page_revision_author_user(m['data']) for m in d['editors']],  # type: ignore[misc]
+        editors=[load_wiki_page_revision_author_user(m['data']) for m in d['editors']],
         unlisted=not d['listed'],
     )

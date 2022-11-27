@@ -31,9 +31,11 @@ from functools import partial
 from pprint import pp
 
 import redditwarp
-from redditwarp.http.transport.reg_SYNC import load_transport, new_session
+from redditwarp.http.transport.reg_SYNC import load_transport, new_connector
+from redditwarp.http.http_client_SYNC import HTTPClient
+from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
-from redditwarp.core.user_agent_SYNC import get_user_agent_from_session
+from redditwarp.core.user_agent_SYNC import get_user_agent
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -71,14 +73,14 @@ print('Authorization grant:')
 pp(dict(grant))
 print()
 
-session = new_session()
-ua = get_user_agent_from_session(session) + " redditwarp.cli.exchange_authorization_code"
+connector = new_connector()
+user_agent = get_user_agent(module_member=connector) + " redditwarp.cli.exchange_authorization_code"
+headers = {'User-Agent': user_agent}
 token_client = RedditTokenObtainmentClient(
-    session,
-    redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
+    HTTPClient(ApplyDefaultHeaders(connector)),
+    redditwarp.core.const.TOKEN_OBTAINMENT_URL,
     (client_id, client_secret),
     grant,
-    headers={'User-Agent': ua},
 )
 
 print('Obtaining token(s) from token server...\n')

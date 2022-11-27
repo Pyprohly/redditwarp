@@ -11,16 +11,16 @@ from ....model_loaders.moderation_action_log_entry import load_moderation_action
 class ModerationActionLogAsyncPaginator(ListingAsyncPaginator[ModerationActionLogEntry]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 500,
         action: str = '',
         mod: str = '',
     ) -> None:
         cursor_extractor = lambda x: x['data']['id']
-        super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
+        super().__init__(client, url, limit=limit, cursor_extractor=cursor_extractor)
         self.client: Client = client
-        self.uri: str = uri
+        self.url: str = url
         self.action: str = action
         self.mod: str = mod
 

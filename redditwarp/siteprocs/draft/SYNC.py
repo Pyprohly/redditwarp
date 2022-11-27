@@ -46,8 +46,8 @@ class DraftProcedures:
         return load_draft_list(root, self._client)
 
     def read_public_draft(self, user: str, draft_uuid: str) -> Draft:
-        uri = f"https://gateway.reddit.com/desktopapi/v1/draftpreviewpage/{user}/{draft_uuid}"
-        root = self._client.request('GET', uri)
+        url = f"https://gateway.reddit.com/desktopapi/v1/draftpreviewpage/{user}/{draft_uuid}"
+        root = self._client.request('GET', url)
         draft_data = root['drafts'][draft_uuid]
         return load_public_draft(draft_data)
 

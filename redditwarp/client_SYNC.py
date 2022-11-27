@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, Sequence, overload
 if TYPE_CHECKING:
     from types import TracebackType
-    from .auth.types import AuthorizationGrantType as AuthorizationGrant
+    from .auth.types import AuthorizationGrant
     from .http.payload import RequestFiles
     from .core.reddit_http_client_SYNC import RedditHTTPClient
 
@@ -11,10 +11,11 @@ from configparser import ConfigParser
 
 from .auth import Token
 from .auth import grants
+from .core.auth import grants as core_grants
 from .core.reddit_http_client_SYNC import (
-    PublicAPIRedditHTTPClient,
-    build_public_api_reddit_http_client,
-    build_public_api_reddit_http_client_from_access_token,
+    PublicRedditHTTPClient,
+    build_public_reddit_http_client,
+    build_public_reddit_http_client_from_access_token,
 )
 from .util.praw_config import get_praw_ini_potential_file_locations
 from .exceptions import raise_for_reddit_error, raise_for_non_json_response
@@ -46,7 +47,7 @@ class Client:
 
         Use the :meth:`set_access_token` instance method to assign a new token.
         """
-        http = build_public_api_reddit_http_client_from_access_token(access_token)
+        http = build_public_reddit_http_client_from_access_token(access_token)
         return cls.from_http(http)
 
     @classmethod
@@ -138,7 +139,7 @@ class Client:
         n = len(creds)
         if n == 0:
             client_id = get_redditwarp_client_id()
-            grant = grants.InstalledClientGrant(get_device_id())
+            grant = core_grants.InstalledClientGrant(get_device_id())
         elif n == 2:
             client_id, client_secret = creds
             if grant is None:
@@ -152,7 +153,7 @@ class Client:
         else:
             raise TypeError
 
-        http = build_public_api_reddit_http_client(client_id, client_secret, grant)
+        http = build_public_reddit_http_client(client_id, client_secret, grant)
         self._init(http)
 
     def _init(self, http: RedditHTTPClient) -> None:
@@ -182,7 +183,7 @@ class Client:
 
     def request(self,
         verb: str,
-        uri: str,
+        url: str,
         *,
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
@@ -214,7 +215,7 @@ class Client:
         """
         json_data = None
         try:
-            resp = self.http.request(verb, uri, params=params, headers=headers,
+            resp = self.http.request(verb, url, params=params, headers=headers,
                     data=data, json=json, files=files, timeout=timeout, follow_redirects=follow_redirects)
 
             if resp.data:
@@ -238,8 +239,8 @@ class Client:
     def set_access_token(self, access_token: str) -> None:
         """Manually set the current access token."""
         http = self.http
-        if not isinstance(http, PublicAPIRedditHTTPClient):
-            raise RuntimeError(f'self.http must be {PublicAPIRedditHTTPClient.__name__}')
+        if not isinstance(http, PublicRedditHTTPClient):
+            raise RuntimeError(f'self.http must be {PublicRedditHTTPClient.__name__}')
         http.authorizer.set_token(Token(access_token))
 
     def set_user_agent(self, s: Optional[str]) -> None:
@@ -247,10 +248,10 @@ class Client:
 
         To view or set the current user agent string directly, see `self.http.user_agent`.
         """
-        ua = self.http.user_agent_lead
+        ua = self.http.user_agent_base
         if s is not None:
             ua = f"{ua} Bot !-- {s}"
-        self.http.user_agent = ua
+        self.http.set_user_agent(ua)
 
 RedditClient: type[Client] = Client
 Reddit: type[Client] = Client

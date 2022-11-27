@@ -1,13 +1,12 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Any, Sequence, TypeVar, overload, Iterator, Union
-if TYPE_CHECKING:
-    from .submission import Submission
+from typing import Mapping, Any, Sequence, TypeVar, overload, Iterator, Union
 
 from datetime import datetime, timezone
 
 from .artifact import Artifact
 from ..model_loaders.submission import load_submission
+from .submission import Submission
 
 class SubmissionCollectionDetails(Artifact):
     def __init__(self, d: Mapping[str, Any]):

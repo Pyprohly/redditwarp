@@ -50,7 +50,6 @@ def load_wiki_page_settings(d: Mapping[str, Any], client: Client) -> WikiPageSet
     up = load_base_wiki_page_settings(d)
     return WikiPageSettings(
         permlevel=up.permlevel,
-        # Type ignore due to https://github.com/python/mypy/issues/10986
-        editors=[promote_base_wiki_page_revision_author_user(o, client) for o in up.editors],  # type: ignore[misc]
+        editors=[promote_base_wiki_page_revision_author_user(o, client) for o in up.editors],
         unlisted=up.unlisted,
     )

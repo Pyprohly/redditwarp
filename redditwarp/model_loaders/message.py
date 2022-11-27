@@ -4,7 +4,7 @@ from typing import Any, Mapping
 
 from datetime import datetime, timezone
 
-from ..auth.const import AUTHORIZATION_BASE_URL
+from ..core.const import AUTHORIZATION_BASE_URL
 from ..models.message import CommentMessageCause, MailboxMessage, ComposedMessage, CommentMessage
 
 def load_mailbox_message(d: Mapping[str, Any]) -> MailboxMessage:

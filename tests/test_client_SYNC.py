@@ -1,8 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping, Optional
-if TYPE_CHECKING:
-    from redditwarp.http.request import Request
+from typing import Mapping
 
 import pytest
 
@@ -10,30 +8,36 @@ from redditwarp import exceptions
 from redditwarp.http import exceptions as http_exceptions
 from redditwarp.client_SYNC import Client
 from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
-from redditwarp.http.session_base_SYNC import SessionBase
+from redditwarp.http.handler_SYNC import Handler
+from redditwarp.http.send_params import SendParams
+from redditwarp.http.exchange import Exchange
+from redditwarp.http.requisition import Requisition
+from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 
-class MySession(SessionBase):
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        raise Exception
 
 class MyHTTPClient(RedditHTTPClient):
-    SESSION = MySession()
+    DUMMY_REQUISITION = Requisition('', '', {}, {}, None)
+    DUMMY_REQUEST = Request('', '', {})
 
     def __init__(self,
         response_status: int,
-        response_headers: MutableMapping[str, str],
+        response_headers: Mapping[str, str],
         response_data: bytes,
     ) -> None:
-        super().__init__(session=self.SESSION)
+        super().__init__(Handler())
         self.response_status = response_status
         self.response_headers = response_headers
         self.response_data = response_data
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        return Response(self.response_status, self.response_headers, self.response_data)
+    def send(self, p: SendParams) -> Exchange:
+        resp = Response(self.response_status, self.response_headers, self.response_data)
+        return Exchange(
+            requisition=self.DUMMY_REQUISITION,
+            request=self.DUMMY_REQUEST,
+            response=resp,
+            history=(),
+        )
 
 
 def test_request() -> None:

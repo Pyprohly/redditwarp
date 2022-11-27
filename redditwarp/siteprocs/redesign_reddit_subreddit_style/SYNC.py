@@ -39,8 +39,7 @@ class RedesignRedditSubredditStyleProcedures:
 
         def deposit_file(self, file: IO[bytes], upload_lease: SubredditStyleAssetUploadLease, *,
                 timeout: float = 1000) -> None:
-            session = self._client.http.session
-            resp = session.request('POST', upload_lease.endpoint, data=upload_lease.fields,
+            resp = self._client.http.request('POST', upload_lease.endpoint, data=upload_lease.fields,
                     files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 

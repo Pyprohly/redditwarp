@@ -11,7 +11,7 @@ T = TypeVar('T')
 class ListingPaginator(Resettable, MoreAvailablePaginator[T], Bidirectional, CursorPaginator[T]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
         params: Optional[Mapping[str, str]] = None,
@@ -19,7 +19,7 @@ class ListingPaginator(Resettable, MoreAvailablePaginator[T], Bidirectional, Cur
     ):
         super().__init__(limit=limit)
         self.client: Client = client
-        self.uri: str = uri
+        self.url: str = url
         self.params: Mapping[str, str] = {} if params is None else params
         self.cursor_extractor: Callable[[Any], str] = cursor_extractor
         self.direction: bool = True
@@ -46,10 +46,10 @@ class ListingPaginator(Resettable, MoreAvailablePaginator[T], Bidirectional, Cur
         else:
             self.before = value
 
-    def more_available(self) -> bool:
+    def has_more_available(self) -> bool:
         return self.has_after if self.direction else self.has_before
 
-    def set_more_available_flag(self, value: bool) -> None:
+    def set_has_more_available(self, value: bool) -> None:
         if self.direction:
             self.has_after = value
         else:
@@ -76,7 +76,7 @@ class ListingPaginator(Resettable, MoreAvailablePaginator[T], Bidirectional, Cur
 
     def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
-        root = self.client.request('GET', self.uri, params=params)
+        root = self.client.request('GET', self.url, params=params)
         data = root['data']
         children = data['children']
 

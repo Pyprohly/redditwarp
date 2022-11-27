@@ -11,7 +11,7 @@ from ...models.modmail_SYNC import Conversation, Message
 class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conversation, Message]]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         mailbox: str,
         subreddit_names: Sequence[str],
         sort: str,
@@ -21,7 +21,7 @@ class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conv
         super().__init__()
         self.limit: Optional[int] = limit
         self.client: Client = client
-        self.uri: str = uri
+        self.url: str = url
         self.mailbox: str = mailbox
         self.subreddit_names: Sequence[str] = subreddit_names
         self.sort: str = sort
@@ -40,10 +40,10 @@ class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conv
     def set_cursor(self, value: str) -> None:
         self._after = value
 
-    def more_available(self) -> bool:
+    def has_more_available(self) -> bool:
         return self._has_after
 
-    def set_more_available_flag(self, value: bool) -> None:
+    def set_has_more_available(self, value: bool) -> None:
         self._has_after = value
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
@@ -62,7 +62,7 @@ class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conv
 
     def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
-        data = self.client.request('GET', self.uri, params=params)
+        data = self.client.request('GET', self.url, params=params)
         entries = data['conversationIds']
 
         if entries:

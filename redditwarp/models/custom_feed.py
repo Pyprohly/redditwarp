@@ -5,7 +5,7 @@ from typing import Mapping, Any, Sequence
 from datetime import datetime, timezone
 from functools import cached_property
 
-from ..auth.const import AUTHORIZATION_BASE_URL
+from ..core.const import AUTHORIZATION_BASE_URL
 
 class CustomFeed:
     def __init__(self, d: Mapping[str, Any]):

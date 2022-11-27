@@ -32,13 +32,13 @@ class MoreAvailablePaginator(Paginator[T]):
     def __iter__(self) -> Iterator[Sequence[T]]:
         if x := self.fetch():
             yield x
-        while self.more_available() and (x := self.fetch()):
+        while self.has_more_available() and (x := self.fetch()):
             yield x
 
-    def more_available(self) -> bool:
+    def has_more_available(self) -> bool:
         raise NotImplementedError
 
-    def set_more_available_flag(self, value: bool) -> None:
+    def set_has_more_available(self, value: bool) -> None:
         raise NotImplementedError
 
 

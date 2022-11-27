@@ -2,80 +2,79 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Mapping
 if TYPE_CHECKING:
-    from ..requestor_SYNC import Requestor
-    from ..request import Request
-    from ..response import Response
+    from ..handler_SYNC import Handler
+    from ..send_params import SendParams
+    from ..exchange import Exchange
 
-from ..requestor_augmenter_SYNC import RequestorAugmenter
+from ..delegating_handler_SYNC import DelegatingHandler
 
-class ApplyParamsAndHeaders(RequestorAugmenter):
-    def __init__(self, requestor: Requestor, *,
+
+class ApplyParamsAndHeaders(DelegatingHandler):
+    def __init__(self, handler: Handler, *,
             params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):
-        super().__init__(requestor)
+        super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        request.params.update(self.params)
-        request.headers.update(self.headers)
-        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def _send(self, p: SendParams) -> Exchange:
+        reqi = p.requisition
+        reqi.params.update(self.params)
+        reqi.headers.update(self.headers)
+        return super()._send(p)
 
-class ApplyDefaultParamsAndHeaders(RequestorAugmenter):
-    def __init__(self, requestor: Requestor, *,
+class ApplyDefaultParamsAndHeaders(DelegatingHandler):
+    def __init__(self, handler: Handler, *,
             params: Optional[Mapping[str, str]] = None,
             headers: Optional[Mapping[str, str]] = None):
-        super().__init__(requestor)
+        super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        (pd := request.params).update({**self.params, **pd})
-        (hd := request.headers).update({**self.headers, **hd})
-        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def _send(self, p: SendParams) -> Exchange:
+        reqi = p.requisition
+        (pd := reqi.params).update({**self.params, **pd})
+        (hd := reqi.headers).update({**self.headers, **hd})
+        return super()._send(p)
 
 
-
-class ApplyParams(RequestorAugmenter):
-    def __init__(self, requestor: Requestor, params: Optional[Mapping[str, str]] = None):
-        super().__init__(requestor)
+class ApplyParams(DelegatingHandler):
+    def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None):
+        super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        request.params.update(self.params)
-        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def _send(self, p: SendParams) -> Exchange:
+        reqi = p.requisition
+        reqi.params.update(self.params)
+        return super()._send(p)
 
-class ApplyDefaultParams(RequestorAugmenter):
-    def __init__(self, requestor: Requestor, params: Optional[Mapping[str, str]] = None):
-        super().__init__(requestor)
+class ApplyDefaultParams(DelegatingHandler):
+    def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None):
+        super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        (pd := request.params).update({**self.params, **pd})
-        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def _send(self, p: SendParams) -> Exchange:
+        reqi = p.requisition
+        (pd := reqi.params).update({**self.params, **pd})
+        return super()._send(p)
 
 
-
-class ApplyHeaders(RequestorAugmenter):
-    def __init__(self, requestor: Requestor, headers: Optional[Mapping[str, str]] = None):
-        super().__init__(requestor)
+class ApplyHeaders(DelegatingHandler):
+    def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None):
+        super().__init__(handler)
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        request.headers.update(self.headers)
-        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def _send(self, p: SendParams) -> Exchange:
+        reqi = p.requisition
+        reqi.headers.update(self.headers)
+        return super()._send(p)
 
-class ApplyDefaultHeaders(RequestorAugmenter):
-    def __init__(self, requestor: Requestor, headers: Optional[Mapping[str, str]] = None):
-        super().__init__(requestor)
+class ApplyDefaultHeaders(DelegatingHandler):
+    def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None):
+        super().__init__(handler)
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        (hd := request.headers).update({**self.headers, **hd})
-        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def _send(self, p: SendParams) -> Exchange:
+        reqi = p.requisition
+        (hd := reqi.headers).update({**self.headers, **hd})
+        return super()._send(p)

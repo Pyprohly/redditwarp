@@ -2,41 +2,46 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar
 if TYPE_CHECKING:
-    from typing import Any, Optional, Mapping, MutableMapping, Union
+    from typing import Any, Optional, Mapping, Union
     from types import TracebackType
-    from .session_base_SYNC import SessionBase
-    from .requestor_SYNC import Requestor
-    from .request import Request
+    from .requisition import Requisition
     from .response import Response
     from .payload import RequestFiles
+    from .handler_SYNC import Handler
+    from .exchange import Exchange
 
 from urllib.parse import urljoin
 
-from .request import make_request
-from .util.case_insensitive_dict import CaseInsensitiveDict
+from .requisition import make_requisition
+from .send_params import SendParams
+from .invoker_SYNC import Invoker
 
-T = TypeVar('T')
+
+DEFAULT_TIMEOUT: float = 100.
+
 
 class HTTPClient:
-    """A high-level object that wraps a HTTP session.
+    """A class for sending HTTP requests.
 
     The purpose of the HTTPClient is to be as useful as possible.
     """
 
+    _TSelf = TypeVar('_TSelf', bound='HTTPClient')
+
     @staticmethod
-    def make_request(
+    def make_requisition(
         verb: str,
-        uri: str,
+        url: str,
         *,
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: Any = None,
         files: Optional[RequestFiles] = None,
-    ) -> Request:
-        return make_request(
+    ) -> Requisition:
+        return make_requisition(
             verb,
-            uri,
+            url,
             params=params,
             headers=headers,
             data=data,
@@ -44,14 +49,13 @@ class HTTPClient:
             files=files,
         )
 
-    def __init__(self,
-        session: SessionBase,
-        requestor: Optional[Requestor] = None,
-    ) -> None:
-        self.session: SessionBase = session
-        self.requestor: Requestor = session if requestor is None else requestor
+    def __init__(self, handler: Handler) -> None:
+        self._invoker: Invoker = Invoker(handler)
+        self.base_url: str = ''
+        self.timeout: float = DEFAULT_TIMEOUT
+        self.follow_redirects: Optional[bool] = False
 
-    def __enter__(self: T) -> T:
+    def __enter__(self: _TSelf) -> _TSelf:
         return self
 
     def __exit__(self,
@@ -62,16 +66,9 @@ class HTTPClient:
         self.close()
         return None
 
-    def close(self) -> None:
-        self.session.close()
-
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        return self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
-
     def request(self,
         verb: str,
-        uri: str,
+        url: str,
         *,
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
@@ -81,35 +78,48 @@ class HTTPClient:
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
     ) -> Response:
-        r = self.make_request(verb, uri, params=params, headers=headers,
-                data=data, json=json, files=files)
-        return self.send(r, timeout=timeout, follow_redirects=follow_redirects)
+        xchg = self.inquire(verb, url, params=params, headers=headers,
+                data=data, json=json, files=files,
+                timeout=timeout, follow_redirects=follow_redirects)
+        return xchg.response
 
-
-class BasicRequestDefaultsHTTPClient(HTTPClient):
-    def __init__(self,
-        session: SessionBase,
-        requestor: Optional[Requestor] = None,
+    def inquire(self,
+        verb: str,
+        url: str,
         *,
-        params: Optional[MutableMapping[str, str]] = None,
-        headers: Optional[MutableMapping[str, str]] = None,
-    ) -> None:
-        super().__init__(session, requestor)
-        self.base_url: str = ''
-        self.params: MutableMapping[str, str] = CaseInsensitiveDict() if params is None else params
-        self.headers: MutableMapping[str, str] = CaseInsensitiveDict() if headers is None else headers
+        params: Optional[Mapping[str, str]] = None,
+        headers: Optional[Mapping[str, str]] = None,
+        data: Optional[Union[Mapping[str, str], bytes]] = None,
+        json: Any = None,
+        files: Optional[RequestFiles] = None,
+        timeout: float = -2,
+        follow_redirects: Optional[bool] = None,
+    ) -> Exchange:
+        reqi = self.make_requisition(verb, url, params=params, headers=headers,
+                data=data, json=json, files=files)
+        return self.submit(reqi, timeout=timeout, follow_redirects=follow_redirects)
 
-    def _prepare_request(self, request: Request) -> None:
-        r = request
-        r.uri = urljoin(self.base_url, r.uri)
-        (_d0 := r.params).update({**self.params, **_d0})
-        (_d1 := r.headers).update({**self.headers, **_d1})
+    def submit(self,
+        reqi: Requisition,
+        *,
+        timeout: float = -2,
+        follow_redirects: Optional[bool] = None,
+    ) -> Exchange:
+        p = SendParams(
+            reqi,
+            timeout=timeout,
+            follow_redirects=follow_redirects,
+        )
+        return self.send(p)
 
-    def _do_send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        return super().send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def send(self, p: SendParams) -> Exchange:
+        reqi = p.requisition
+        reqi.url = urljoin(self.base_url, reqi.url)
+        if p.timeout == -2:
+            p.timeout = self.timeout
+        if p.follow_redirects is None:
+            p.follow_redirects = self.follow_redirects
+        return self._invoker.send(p)
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        self._prepare_request(request)
-        return self._do_send(request, timeout=timeout, follow_redirects=follow_redirects)
+    def close(self) -> None:
+        self._invoker.close()

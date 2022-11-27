@@ -23,14 +23,14 @@ T = TypeVar('T')
 class ModerationUsersPaginator(MoreAvailablePaginator[T], Bidirectional, CursorPaginator[T]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
     ):
         super().__init__(limit=limit)
         self.direction: bool = True
         self.client: Client = client
-        self.uri: str = uri
+        self.url: str = url
         self._after: str = ''
         self._before: str = ''
         self._has_after: bool = True
@@ -45,10 +45,10 @@ class ModerationUsersPaginator(MoreAvailablePaginator[T], Bidirectional, CursorP
         else:
             self._before = value
 
-    def more_available(self) -> bool:
+    def has_more_available(self) -> bool:
         return self._has_after if self.direction else self._has_before
 
-    def set_more_available_flag(self, value: bool) -> None:
+    def set_has_more_available(self, value: bool) -> None:
         if self.direction:
             self._has_after = value
         else:
@@ -67,7 +67,7 @@ class ModerationUsersPaginator(MoreAvailablePaginator[T], Bidirectional, CursorP
 
     def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
-        root = self.client.request('GET', self.uri, params=params)
+        root = self.client.request('GET', self.url, params=params)
         after = root['after'] or ''
         before = root['before'] or ''
         self._after = after

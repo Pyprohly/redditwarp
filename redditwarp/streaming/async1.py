@@ -1,4 +1,4 @@
 
-from .carriers.main_async import (  # noqa: F401
+from .runners_ASYNC import (  # noqa: F401
     run_parallel as run_parallel,
 )

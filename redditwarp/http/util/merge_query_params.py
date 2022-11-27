@@ -6,13 +6,13 @@ import urllib.parse
 
 _NO_VALUE_PARAM_PLACEHOLDER = 'NO_VALUE_PARAM_PLACEHOLDER__d07d4b7d-d881-4217-9bca-42ed0c6a3d04'
 
-def merge_query_params(uri: str, params: Mapping[str, Optional[str]]) -> str:
-    """Merge and return `uri` with `params`.
+def merge_query_params(url: str, params: Mapping[str, Optional[str]]) -> str:
+    """Merge and return `url` with `params`.
 
     The mapping values for `params` can be `None`. A `None` value indicates that the
     equals delimiter symbol should be omitted.
     """
-    urlparts = list(urllib.parse.urlparse(uri))
+    urlparts = list(urllib.parse.urlparse(url))
     query_dict = urllib.parse.parse_qs(urlparts[4])
 
     none_keys = []

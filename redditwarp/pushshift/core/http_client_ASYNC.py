@@ -1,30 +1,20 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ...http.session_base_ASYNC import SessionBase
+    from ...http.http_client_ASYNC import HTTPClient
 
 from ...core.reddit_http_client_ASYNC import RedditHTTPClient
-from ...core.recorded_ASYNC import Recorded
-from ...http.transport.reg_ASYNC import new_session
+from ...http.transport.reg_ASYNC import new_connector
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
-from ...core.user_agent_ASYNC import get_user_agent_from_session
-from ...http.http_client_ASYNC import HTTPClient
-from ..const import PUSHSHIFT_BASE_URL
-from ...core.recorded_ASYNC import Last
+from ...core.user_agent_ASYNC import get_user_agent
+from .const import PUSHSHIFT_BASE_URL
 from .rate_limited_ASYNC import RateLimited
 
-def build_http_client(
-    *,
-    session: Optional[SessionBase] = None,
-) -> HTTPClient:
-    if session is None:
-        session = new_session()
-    ua = get_user_agent_from_session(session)
+def build_http_client() -> HTTPClient:
+    connector = new_connector()
+    ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
-    recorder = Recorded(session)
-    last = Last(recorder)
-    requestor = RateLimited(recorder)
-    http = RedditHTTPClient(session, requestor, headers=headers, last=last)
+    http = RedditHTTPClient(RateLimited(connector), headers=headers)
     http.base_url = PUSHSHIFT_BASE_URL
     return http

@@ -3,28 +3,27 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .types import ClientCredentials
-    from ..http.requestor_SYNC import Requestor
+    from ..http.http_client_SYNC import HTTPClient
 
-from ..http.request import make_request
 from .utils import apply_basic_auth
 
 class TokenRevocationClient:
     """Makes token revocation requests."""
 
-    def __init__(self, requestor: Requestor, uri: str,
-            client_credentials: ClientCredentials):
-        self.requestor: Requestor = requestor
-        self.uri: str = uri
-        self.client_credentials: tuple[str, str] = client_credentials
+    def __init__(self, http: HTTPClient, url: str,
+            client_credentials: ClientCredentials) -> None:
+        self.http: HTTPClient = http
+        self.url: str = url
+        self.client_credentials: ClientCredentials = client_credentials
 
     def revoke_token(self, token: str, token_type_hint: str = '') -> None:
         data = {'token': token}
         if token_type_hint:
             data['token_type_hint'] = token_type_hint
 
-        r = make_request('POST', self.uri, data=data)
-        apply_basic_auth(r, *self.client_credentials)
-        resp = self.requestor.send(r)
+        headers: dict[str, str] = {}
+        apply_basic_auth(headers, *self.client_credentials)
+        resp = self.http.request('POST', self.url, headers=headers, data=data)
         resp.raise_for_status()
 
     def revoke_access_token(self, token: str) -> None:

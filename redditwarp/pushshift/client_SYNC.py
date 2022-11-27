@@ -29,7 +29,7 @@ class Client:
 
     def request(self,
         verb: str,
-        uri: str,
+        url: str,
         *,
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
@@ -40,7 +40,7 @@ class Client:
         follow_redirects: Optional[bool] = None,
     ) -> Any:
         json_data = None
-        resp = self.http.request(verb, uri, params=params, headers=headers,
+        resp = self.http.request(verb, url, params=params, headers=headers,
                 data=data, json=json, files=files, timeout=timeout, follow_redirects=follow_redirects)
         if resp.data:
             json_data = json_loads_response(resp)

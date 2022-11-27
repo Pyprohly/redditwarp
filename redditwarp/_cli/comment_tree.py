@@ -117,7 +117,7 @@ client = (
     redditwarp.SYNC.Client()
 )
 
-client.http.user_agent += " redditwarp.cli.comment_tree"
+client.http.set_user_agent(client.http.get_user_agent() + " redditwarp.cli.comment_tree")
 
 idn = 0
 if target.isalnum():

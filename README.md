@@ -13,7 +13,7 @@ This library can be used to build robust statically-typed Reddit bots and progra
 Look how easy it is to use:
 
 ```python
-import redditwarp
+import redditwarp.SYNC
 client = redditwarp.SYNC.Client()
 
 it = client.p.front.pull.hot(5)
@@ -51,7 +51,7 @@ Install/update:
   <summary>Examples</summary>
 
 ```python
-import redditwarp
+import redditwarp.SYNC
 client = redditwarp.SYNC.Client()
 
 # Display the first 5 submissions on the Reddit frontpage.
@@ -60,13 +60,13 @@ l = list(it)
 for subm in l:
     print("r/{0.subreddit.name} | {0.score} | {0.title!r:.90}".format(subm))
 
-# Has r/Python reached 1 million subscribers yet?
+# How many subscribers does r/Python have?
 subr = client.p.subreddit.fetch_by_name('Python')
-print(subr.subscriber_count > 1_000_000)
+print(subr.subscriber_count)
 
 # Display the top submission of the week in the r/YouShouldKnow subreddit.
-it = client.p.subreddit.pull.top('YouShouldKnow', amount=1, time='week')
-m = next(it)
+it1 = client.p.subreddit.pull.top('YouShouldKnow', amount=1, time='week')
+m = next(it1)
 print(f'''\
 {m.permalink}
 {m.id36}+ | {m.score} :: {m.title}
@@ -84,8 +84,8 @@ u/{c.author_name} says:
 ''')
 
 # List the moderators of r/redditdev.
-it = client.p.moderation.pull_users.moderators('redditdev')
-for mod in it:
+it2 = client.p.moderation.pull_users.moderators('redditdev')
+for mod in it2:
     print(mod.name)
 ```
 
@@ -95,6 +95,8 @@ for mod in it:
   <summary>More examples</summary>
 
 ```python
+# ...
+
 # Need credentials for these next few API calls.
 CLIENT_ID = '...'
 CLIENT_SECRET = '...'
@@ -106,16 +108,16 @@ me = client1.p.account.fetch()
 print(f"I am u/{me.name}")
 
 # Show my last 5 comments.
-it = client.p.user.pull.comments(me.name, 5)
-for comm in it:
+it3 = client.p.user.pull.comments(me.name, 5)
+for comm in it3:
     print('###')
     print(comm.body)
 
 # Show my last 10 saved items.
 from redditwarp.models.submission_SYNC import Submission
 from redditwarp.models.comment_SYNC import Comment
-it = client1.p.user.pull.saved(me.name, 10)
-l = list(it)
+it4 = client1.p.user.pull.saved(me.name, 10)
+l = list(it4)
 for obj in l:
     print('###')
     match obj:
@@ -135,17 +137,17 @@ u/{c.author_name} says:
 ''')
 
 # Submit a link post to r/test.
-subm = client1.p.submission.create_link_post('test',
+subm_id = client1.p.submission.create_link_post('test',
         "Check out this cool website", "https://www.reddit.com")
 
 # Reply to a submission.
 from redditwarp.util.extract_id_from_url import extract_submission_id_from_url
 idn = extract_submission_id_from_url("https://www.reddit.com/comments/5e1az9")
-comm = client1.p.submission.reply(idn, "Pretty cool stuff!")
+comm1 = client1.p.submission.reply(idn, "Pretty cool stuff!")
 
 # Delete the post and the comment reply.
-client1.p.submission.delete(subm.id)
-client1.p.comment.delete(comm.id)
+client1.p.submission.delete(subm_id)
+client1.p.comment.delete(comm1.id)
 ```
 
 </details>
@@ -159,9 +161,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from redditwarp.models.submission_ASYNC import Submission
 
-import asyncio
-
-import redditwarp
+import redditwarp.ASYNC
 from redditwarp.streaming.makers.subreddit_ASYNC import make_submission_stream
 from redditwarp.streaming.ASYNC import run
 

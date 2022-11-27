@@ -46,17 +46,19 @@ class Procedures:
         *,
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
     ) -> CommentSearchDocumentPaginator:
         return CommentSearchDocumentPaginator(
             client=self._client,
-            uri='/reddit/search/comment',
+            url='/reddit/search/comment',
             query=query,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
         )
 
     def page_search_comments_select_id(self,
@@ -64,17 +66,19 @@ class Procedures:
         *,
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
     ) -> CommentSearchDocumentIDPaginator:
         return CommentSearchDocumentIDPaginator(
             client=self._client,
-            uri='/reddit/search/comment',
+            url='/reddit/search/comment',
             query=query,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
         )
 
     def page_search_comments_selecting_fields(self,
@@ -82,18 +86,20 @@ class Procedures:
         *,
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
         fields: Iterable[str],
     ) -> CommentSearchDocumentPaginator:
         return CommentSearchDocumentPaginator(
             client=self._client,
-            uri='/reddit/search/comment',
+            url='/reddit/search/comment',
             query=query,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
             fields=fields,
         )
 
@@ -102,19 +108,21 @@ class Procedures:
         *,
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
+        after: Optional[int] = None,
+        before: Optional[int] = None,
     ) -> int:
         p = self.page_search_comments(
             query=query,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
+            after=after,
+            before=before,
         )
         p.limit = 0
         query_pairs = list(p.generate_doseq_params()) + [('metadata', ('true',))]
         query_string = urllib.parse.urlencode(query_pairs, doseq=True)
-        uri = '%s?%s' % (p.uri, query_string)
-        root = self._client.request('GET', uri)
+        url = '%s?%s' % (p.url, query_string)
+        root = self._client.request('GET', url)
         return root['metadata']['total_results']
 
 
@@ -129,12 +137,13 @@ class Procedures:
         query_body_exclude: str = '',
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
     ) -> SubmissionSearchDocumentPaginator:
         return SubmissionSearchDocumentPaginator(
             client=self._client,
-            uri='/reddit/search/submission',
+            url='/reddit/search/submission',
             query=query,
             query_exclude=query_exclude,
             query_title=query_title,
@@ -143,8 +152,9 @@ class Procedures:
             query_body_exclude=query_body_exclude,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
         )
 
     def page_search_submissions_select_id(self,
@@ -157,12 +167,13 @@ class Procedures:
         query_body_exclude: str = '',
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
     ) -> SubmissionSearchDocumentIDPaginator:
         return SubmissionSearchDocumentIDPaginator(
             client=self._client,
-            uri='/reddit/search/submission',
+            url='/reddit/search/submission',
             query=query,
             query_exclude=query_exclude,
             query_title=query_title,
@@ -171,8 +182,9 @@ class Procedures:
             query_body_exclude=query_body_exclude,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
         )
 
     def page_search_submissions_selecting_fields(self,
@@ -185,13 +197,14 @@ class Procedures:
         query_body_exclude: str = '',
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
         fields: Iterable[str],
     ) -> SubmissionSearchDocumentPaginator:
         return SubmissionSearchDocumentPaginator(
             client=self._client,
-            uri='/reddit/search/submission',
+            url='/reddit/search/submission',
             query=query,
             query_exclude=query_exclude,
             query_title=query_title,
@@ -200,8 +213,9 @@ class Procedures:
             query_body_exclude=query_body_exclude,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
             fields=fields,
         )
 
@@ -215,7 +229,8 @@ class Procedures:
         query_body_exclude: str = '',
         author: str = '',
         subreddit: str = '',
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
+        after: Optional[int] = None,
+        before: Optional[int] = None,
     ) -> int:
         p = self.page_search_submissions(
             query=query,
@@ -226,11 +241,12 @@ class Procedures:
             query_body_exclude=query_body_exclude,
             author=author,
             subreddit=subreddit,
-            time_range=time_range,
+            after=after,
+            before=before,
         )
         p.limit = 0
         query_pairs = list(p.generate_doseq_params()) + [('metadata', ('true',))]
         query_string = urllib.parse.urlencode(query_pairs, doseq=True)
-        uri = '%s?%s' % (p.uri, query_string)
-        root = self._client.request('GET', uri)
+        url = '%s?%s' % (p.url, query_string)
+        root = self._client.request('GET', url)
         return root['metadata']['total_results']

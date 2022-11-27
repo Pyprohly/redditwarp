@@ -1,2 +1,2 @@
 
-from . import websocket_connection_ASYNC  # noqa: F401
+from . import websocket_ASYNC  # noqa: F401

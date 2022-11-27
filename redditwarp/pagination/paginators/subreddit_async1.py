@@ -14,11 +14,11 @@ class SubredditSearchAsyncPaginator(
 ):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         query: str,
         show_users: bool = False,
     ):
-        super().__init__(client, uri)
+        super().__init__(client, url)
         self.query: str = query
         self.show_users: bool = show_users
 

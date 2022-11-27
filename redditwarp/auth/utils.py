@@ -2,8 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from typing import Optional, Mapping
-    from ..http.request import Request
+    from typing import Optional, Mapping, MutableMapping
 
 from base64 import b64encode
 from urllib.parse import urlencode
@@ -35,12 +34,12 @@ def basic_auth(userid: str, password: str, *,
     return f"{scheme} {b64_user_pass}"
 
 def apply_basic_auth(
-    request: Request,
+    headers: MutableMapping[str, str],
     userid: str,
     password: str,
     *,
     scheme: str = 'Basic',
-    header: str = 'Authorization',
+    header_name: str = 'Authorization',
 ) -> None:
-    """Write a basic auth string into the `Authorization` header of a request."""
-    request.headers[header] = basic_auth(userid, password, scheme=scheme)
+    """Write a basic auth string into the `Authorization` field of a headers mapping."""
+    headers[header_name] = basic_auth(userid, password, scheme=scheme)

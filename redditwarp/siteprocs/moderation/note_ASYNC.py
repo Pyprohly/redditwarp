@@ -38,7 +38,7 @@ class Note:
     ) -> ImpartedPaginatorChainingAsyncIterator[ModerationNoteAsyncPaginator, ModerationUserNote]:
         p = ModerationNoteAsyncPaginator(
             client=self._client,
-            uri='/api/mod/notes',
+            url='/api/mod/notes',
             subreddit=subreddit,
             user=user,
             type=type,

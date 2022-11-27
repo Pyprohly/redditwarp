@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, MutableMapping, Optional, Protocol, MutableSequence
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
-    from ..session_base_SYNC import SessionBase
+    from .connector_SYNC import Connector
 
 from dataclasses import dataclass
 from importlib.util import find_spec
@@ -11,15 +11,15 @@ from importlib.util import find_spec
 from ...util.imports import load_module_from_spec
 
 
-class NewSessionFunctionProtocol(Protocol):
-    def __call__(self) -> SessionBase: ...
+class NewConnectorFunctionProtocol(Protocol):
+    def __call__(self) -> Connector: ...
 
 @dataclass
 class TransportInfo:
     adaptor_module_name: str
     name: str
     version: str
-    new_session: NewSessionFunctionProtocol
+    new_connector: NewConnectorFunctionProtocol
 
 
 def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
@@ -42,28 +42,29 @@ def load_transport() -> TransportInfo:
 
     return next(iter(transport_registry.values()))
 
-def new_session() -> SessionBase:
-    new_session = load_transport().new_session
-    return new_session()
+def new_connector() -> Connector:
+    new_connector = load_transport().new_connector
+    return new_connector()
 
 def register(
+    *,
     adaptor_module_name: str,
-    new_session: NewSessionFunctionProtocol,
     name: str,
     version: str,
+    new_connector: NewConnectorFunctionProtocol,
 ) -> None:
     info = TransportInfo(
         adaptor_module_name=adaptor_module_name,
         name=name,
         version=version,
-        new_session=new_session,
+        new_connector=new_connector,
     )
     transport_registry[adaptor_module_name] = info
 
 transport_module_spec_list: MutableSequence[ModuleSpec] = [
-    load_spec('.carriers.httpx_sync', __package__),
-    load_spec('.carriers.requests', __package__),
-    load_spec('.carriers.urllib3', __package__),
-    load_spec('.carriers.python_urllib', __package__),
+    load_spec('.connectors.httpx_sync', __package__),
+    load_spec('.connectors.requests', __package__),
+    load_spec('.connectors.urllib3', __package__),
+    load_spec('.connectors.python_urllib', __package__),
 ]
 transport_registry: MutableMapping[str, TransportInfo] = {}

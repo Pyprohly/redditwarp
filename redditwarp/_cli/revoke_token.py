@@ -33,10 +33,11 @@ import signal
 from functools import partial
 
 import redditwarp
-from redditwarp.http.transport.reg_SYNC import load_transport, new_session
-from redditwarp.auth.SYNC import TokenRevocationClient
+from redditwarp.http.transport.reg_SYNC import load_transport, new_connector
 from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultParamsAndHeaders
-from redditwarp.core.user_agent_SYNC import get_user_agent_from_session
+from redditwarp.http.http_client_SYNC import HTTPClient
+from redditwarp.auth.SYNC import TokenRevocationClient
+from redditwarp.core.user_agent_SYNC import get_user_agent
 
 def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:
@@ -64,12 +65,12 @@ token: str = args.token or input('Token: ')
 access_token_needs_revoking: bool = args.a
 refresh_token_needs_revoking: bool = args.r
 
-session = new_session()
-ua = get_user_agent_from_session(session) + " redditwarp.cli.revoke_token"
-requestor = ApplyDefaultParamsAndHeaders(session, headers={'User-Agent': ua})
+connector = new_connector()
+ua = get_user_agent(module_member=connector) + " redditwarp.cli.revoke_token"
+handler = ApplyDefaultParamsAndHeaders(connector, headers={'User-Agent': ua})
 revoke_token_client = TokenRevocationClient(
-    requestor,
-    redditwarp.auth.const.TOKEN_REVOCATION_URL,
+    HTTPClient(handler),
+    redditwarp.core.const.TOKEN_REVOCATION_URL,
     (client_id, client_secret),
 )
 

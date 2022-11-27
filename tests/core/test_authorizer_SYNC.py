@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Optional, MutableSequence
+from typing import Optional, MutableSequence, Sequence
 
 import pytest
 
@@ -8,20 +8,17 @@ from redditwarp.core.authorizer_SYNC import Authorizer, Authorized
 from redditwarp.auth.token import Token
 from redditwarp.auth.token_obtainment_client_SYNC import TokenObtainmentClient
 from redditwarp.auth.exceptions import UnknownTokenType
-from redditwarp.http.requestor_SYNC import Requestor
+from redditwarp.http.http_client_SYNC import HTTPClient
+from redditwarp.http.handler_SYNC import Handler
+from redditwarp.http.send_params import SendParams
+from redditwarp.http.exchange import Exchange
 from redditwarp.http.request import Request
 from redditwarp.http.response import Response
-from redditwarp.http.session_base_SYNC import SessionBase
 from redditwarp import auth
 
 class MyTokenObtainmentClient(TokenObtainmentClient):
     def __init__(self, my_token: Token) -> None:
-        super().__init__(
-            requestor=Requestor(),
-            uri='',
-            client_credentials=('', ''),
-            grant={},
-        )
+        super().__init__(HTTPClient(Handler()), '', ('', ''), {})
         self.my_token = my_token
 
     def fetch_token(self) -> Token:
@@ -34,7 +31,7 @@ class MyAuthorizer(Authorizer):
 
 class TestAuthorizer:
     def test_renew_token(self) -> None:
-        def get_token(expires_in: Optional[int]) -> Token:
+        def new_token(expires_in: Optional[int]) -> Token:
             return Token(
                 access_token='a',
                 token_type='bearer',
@@ -43,11 +40,11 @@ class TestAuthorizer:
                 scope='d',
             )
 
-        my_token = get_token(expires_in=None)
+        my_token = new_token(expires_in=None)
         token_client = MyTokenObtainmentClient(my_token)
         o = MyAuthorizer(
-            token=None,
             token_client=token_client,
+            token=None,
         )
         o.renewal_skew = 40
 
@@ -58,7 +55,7 @@ class TestAuthorizer:
         assert o.renewal_time is None
 
         o.renewal_time = 9999
-        token_client.my_token = get_token(expires_in=234)
+        token_client.my_token = new_token(expires_in=234)
         o.expires_in_fallback = None
         o.renew_token()
         expires_in = token_client.my_token.expires_in
@@ -66,17 +63,17 @@ class TestAuthorizer:
         assert o.renewal_time == int(o.time()) + expires_in - o.renewal_skew
 
         o.renewal_time = 9999
-        token_client.my_token = get_token(expires_in=None)
+        token_client.my_token = new_token(expires_in=None)
         o.expires_in_fallback = 125
         o.renew_token()
         assert o.renewal_time == int(o.time()) + o.expires_in_fallback - o.renewal_skew
 
     def test_renew_token__no_token_client(self) -> None:
         with pytest.raises(RuntimeError):
-            Authorizer(token=None, token_client=None).renew_token()
+            Authorizer(token_client=None, token=None).renew_token()
 
     def test_renew_token__unknown_token_Type(self) -> None:
-        def get_token(token_type: str) -> Token:
+        def new_token(token_type: str) -> Token:
             return Token(
                 access_token='a',
                 token_type=token_type,
@@ -85,73 +82,77 @@ class TestAuthorizer:
                 scope='d',
             )
 
-        token_client = MyTokenObtainmentClient(get_token('bearer'))
-        o = Authorizer(token=None, token_client=token_client)
+        token_client = MyTokenObtainmentClient(new_token('bearer'))
+        o = Authorizer(token_client=token_client, token=None)
         o.renew_token()
 
-        token_client.my_token = get_token('Bearer')
+        token_client.my_token = new_token('Bearer')
         o.renew_token()
 
-        token_client.my_token = get_token('bEaReR')
+        token_client.my_token = new_token('bEaReR')
         o.renew_token()
 
-        token_client.my_token = get_token('bear')
+        token_client.my_token = new_token('bear')
         with pytest.raises(UnknownTokenType):
             o.renew_token()
 
 
-class MockSession(SessionBase):
-    def __init__(self,
-        responses: MutableSequence[Response],
-    ) -> None:
-        super().__init__()
-        self.responses = responses
+class ReplayingHandler(Handler):
+    DUMMY_REQUEST = Request('', '', {})
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        return self.responses.pop(0)
+    def __init__(self, responses: Sequence[Response]) -> None:
+        super().__init__()
+        self.responses: MutableSequence[Response] = list(responses)
+
+    def _send(self, p: SendParams) -> Exchange:
+        resp = self.responses.pop(0)
+        return Exchange(
+            requisition=p.requisition,
+            request=self.DUMMY_REQUEST,
+            response=resp,
+            history=(),
+        )
+
 
 class TestAuthorized:
-    dummy_request = Request('', '', params={}, headers={}, payload=None)
-
     def test_ResourceServerResponseError(self) -> None:
-        session = MockSession([
+        handler: Handler = ReplayingHandler([
             Response(403, {'WWW-Authenticate': 'Bearer realm="reddit", error="insufficient_scope"'}, b'{"message": "Forbidden", "error": 403}'),
         ])
         token_client = MyTokenObtainmentClient(Token('token'))
         authorizer = Authorizer(
-            token=None,
             token_client=token_client,
+            token=None,
         )
-        requestor = Authorized(session, authorizer)
+        handler = Authorized(handler, authorizer)
         with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
-            requestor.send(self.dummy_request)
+            HTTPClient(handler).request('', '')
 
     def test_invalid_token_to_ResourceServerResponseError(self) -> None:
-        session = MockSession([
+        handler: Handler = ReplayingHandler([
             Response(401, {'WWW-Authenticate': 'Bearer realm="reddit", error="invalid_token"'}, b''),
             Response(403, {'WWW-Authenticate': 'Bearer realm="reddit", error="insufficient_scope"'}, b'{"message": "Forbidden", "error": 403}'),
         ])
         token_client = MyTokenObtainmentClient(Token('token'))
         authorizer = Authorizer(
-            token=None,
             token_client=token_client,
+            token=None,
         )
-        requestor = Authorized(session, authorizer)
+        handler = Authorized(handler, authorizer)
         with pytest.raises(auth.exceptions.ResourceServerResponseErrorTypes.InsufficientScope):
-            requestor.send(self.dummy_request)
+            HTTPClient(handler).request('', '')
 
     def test_token_gets_changed_for_second_request_after_an_invalid_token_response(self) -> None:
-        session = MockSession([
+        handler: Handler = ReplayingHandler([
             Response(401, {'WWW-Authenticate': 'Bearer realm="reddit", error="invalid_token"'}, b''),
             Response(200, {}, b''),
         ])
         token_client = MyTokenObtainmentClient(Token('token_two'))
         authorizer = Authorizer(
-            token=Token('token_one'),
             token_client=token_client,
+            token=Token('token_one'),
         )
-        requestor = Authorized(session, authorizer)
-        req = self.dummy_request
-        requestor.send(req)
-        assert req.headers[authorizer.authorization_header_name].partition(' ')[-1] == 'token_two'
+        handler = Authorized(handler, authorizer)
+        reqi = HTTPClient.make_requisition('', '')
+        HTTPClient(handler).submit(reqi)
+        assert reqi.headers[authorizer.authorization_header_name].partition(' ')[-1] == 'token_two'

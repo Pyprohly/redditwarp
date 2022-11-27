@@ -12,7 +12,7 @@ from ....model_loaders.moderation_note import load_moderation_note
 class ModerationNoteAsyncPaginator(MoreAvailableAsyncPaginator[ModerationNote], CursorAsyncPaginator[ModerationNote]):
     def __init__(self,
         client: Client,
-        uri: str = '/api/mod/notes',
+        url: str = '/api/mod/notes',
         *,
         limit: Optional[int] = 100,
         cursor: str = '',
@@ -22,7 +22,7 @@ class ModerationNoteAsyncPaginator(MoreAvailableAsyncPaginator[ModerationNote], 
     ):
         super().__init__(limit=limit)
         self.client: Client = client
-        self.uri: str = uri
+        self.url: str = url
         self._cursor: str = cursor
         self._has_next_page: bool = True
         self._subreddit: str = subreddit
@@ -35,10 +35,10 @@ class ModerationNoteAsyncPaginator(MoreAvailableAsyncPaginator[ModerationNote], 
     def set_cursor(self, value: str) -> None:
         self._cursor = value
 
-    def more_available(self) -> bool:
+    def has_more_available(self) -> bool:
         return self._has_next_page
 
-    def set_more_available_flag(self, value: bool) -> None:
+    def set_has_more_available(self, value: bool) -> None:
         self._has_next_page = value
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
@@ -55,7 +55,7 @@ class ModerationNoteAsyncPaginator(MoreAvailableAsyncPaginator[ModerationNote], 
 
     async def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
-        root = await self.client.request('GET', self.uri, params=params)
+        root = await self.client.request('GET', self.url, params=params)
         self._cursor = root['end_cursor']
         self._has_next_page = root['has_next_page']
         return root

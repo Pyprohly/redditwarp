@@ -18,13 +18,13 @@ class SubmissionSearchAsyncPaginator(
 ):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         params: Optional[Mapping[str, str]] = None,
         sort: str = 'relevance',
         time: str = 'all',
     ):
-        super().__init__(client, uri, params=params)
+        super().__init__(client, url, params=params)
         self.sort: str = sort
         self.time: str = time
 
@@ -53,12 +53,12 @@ class SubmissionDuplicates(Sequence[Submission]):
 class SubmissionDuplicatesAsyncPaginator(ListingAsyncPaginator[Submission]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         sort: str = 'num_comments',
         crossposts_only: bool = False,
     ):
-        super().__init__(client, uri)
+        super().__init__(client, url)
         self.sort: str = sort
         self.crossposts_only: bool = crossposts_only
 
@@ -71,7 +71,7 @@ class SubmissionDuplicatesAsyncPaginator(ListingAsyncPaginator[Submission]):
 
     async def _fetch_data(self) -> Any:
         params = dict(self._generate_params())
-        root = await self.client.request('GET', self.uri, params=params)
+        root = await self.client.request('GET', self.url, params=params)
         data = root[1]['data']
         children = data['children']
 

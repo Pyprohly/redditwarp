@@ -18,7 +18,6 @@ from ...pagination.paginators.listing.comment_listing_paginator import LooseComm
 from ...pagination.paginators.subreddit_sync1 import SubredditSearchPaginator
 from ... import exceptions
 from ... import http
-from ...http.util.json_load import json_loads_response
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 from .pull_SYNC import Pull
@@ -90,12 +89,6 @@ class SubredditProcedures:
 
     def update_settings(self, data: Mapping[str, Any]) -> None:
         self._client.request('PATCH', '/api/v1/subreddit/update_settings', json=data)
-
-    def DEFUNCT__trending_subreddit_names(self) -> Sequence[str]:
-        req = self._client.http.session.make_request('GET', 'https://reddit.com/api/trending_subreddits.json')
-        resp = self._client.http.send(req)
-        jdata = json_loads_response(resp)
-        return jdata['subreddit_names']
 
     def subscribe_by_name(self, sr: str) -> None:
         self._client.request('POST', '/api/subscribe', data={'action': 'sub', 'sr_name': sr})

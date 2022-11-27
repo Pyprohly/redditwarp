@@ -8,13 +8,13 @@ from importlib.util import find_spec
 from dataclasses import dataclass
 
 from ...util.imports import load_module_from_spec
-from ..websocket_connection_ASYNC import WebSocketConnection
+from ..websocket_ASYNC import WebSocket
 
 
 class ConnectFunctionProtocol(Protocol):
     async def __call__(self, url: str, *,
         subprotocols: Sequence[str] = (), timeout: float = -2
-    ) -> WebSocketConnection: ...
+    ) -> WebSocket: ...
 
 @dataclass
 class TransportInfo:
@@ -45,7 +45,7 @@ def load_transport() -> TransportInfo:
     return next(iter(transport_info_registry.values()))
 
 async def connect(url: str, *,
-        subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketConnection:
+        subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocket:
     connect = load_transport().connect
     return await connect(url, subprotocols=subprotocols, timeout=timeout)
 

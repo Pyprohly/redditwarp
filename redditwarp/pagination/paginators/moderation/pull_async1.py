@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Optional, Iterable, Callable, Any
+from typing import TYPE_CHECKING, TypeVar, Optional, Iterable, Callable, Any, Mapping
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
@@ -10,19 +10,20 @@ from ..listing.submission_and_comment_listing_async_paginator import SubmissionA
 from ..listing.submission_listing_async_paginator import SubmissionListingAsyncPaginator
 from ..listing.comment_listing_async_paginator import LooseCommentListingAsyncPaginator
 from ....models.submission_ASYNC import Submission
-from ....models.comment_ASYNC import Comment
+from ....models.comment_ASYNC import LooseComment
 
 T = TypeVar('T')
 
 class OnlyFilter(ListingAsyncPaginator[T]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
+        params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
-        super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
+        super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self._only = ''
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
@@ -33,23 +34,25 @@ class OnlyFilter(ListingAsyncPaginator[T]):
 class SubmissionOnlyFilter(OnlyFilter[Submission]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
+        params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
-        super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
+        super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self._only = 'links'
 
-class CommentOnlyFilter(OnlyFilter[Comment]):
+class CommentOnlyFilter(OnlyFilter[LooseComment]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
+        params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
-        super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
+        super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self._only = 'comments'
 
 
@@ -63,7 +66,7 @@ class ModQueueSubmissionListingAsyncPaginator(
     SubmissionListingAsyncPaginator,
 ): pass
 class ModQueueCommentListingAsyncPaginator(
-    SubredditDetail[Comment],
+    SubredditDetail[LooseComment],
     CommentOnlyFilter,
     LooseCommentListingAsyncPaginator,
 ): pass
@@ -78,7 +81,7 @@ class ReportsSubmissionListingAsyncPaginator(
     SubmissionListingAsyncPaginator,
 ): pass
 class ReportsCommentListingAsyncPaginator(
-    SubredditDetail[Comment],
+    SubredditDetail[LooseComment],
     CommentOnlyFilter,
     LooseCommentListingAsyncPaginator,
 ): pass
@@ -93,7 +96,7 @@ class SpamSubmissionListingAsyncPaginator(
     SubmissionListingAsyncPaginator,
 ): pass
 class SpamCommentListingAsyncPaginator(
-    SubredditDetail[Comment],
+    SubredditDetail[LooseComment],
     CommentOnlyFilter,
     LooseCommentListingAsyncPaginator,
 ): pass
@@ -108,7 +111,7 @@ class EditedSubmissionListingAsyncPaginator(
     SubmissionListingAsyncPaginator,
 ): pass
 class EditedCommentListingAsyncPaginator(
-    SubredditDetail[Comment],
+    SubredditDetail[LooseComment],
     CommentOnlyFilter,
     LooseCommentListingAsyncPaginator,
 ): pass

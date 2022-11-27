@@ -15,11 +15,11 @@ T = TypeVar('T')
 class LegacyModerationUsersAsyncPaginator(ListingAsyncPaginator[T]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
     ):
-        super().__init__(client, uri, limit=limit, cursor_extractor=itemgetter('rel_id'))
+        super().__init__(client, url, limit=limit, cursor_extractor=itemgetter('rel_id'))
 
 
 class UserRelationshipItemListingAsyncPaginator(LegacyModerationUsersAsyncPaginator[UserRelationshipItem]):

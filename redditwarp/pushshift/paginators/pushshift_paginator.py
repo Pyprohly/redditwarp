@@ -19,19 +19,20 @@ class PushshiftPaginator(Paginator[T]):
     def __init__(self,
         *,
         client: Client,
-        uri: str,
+        url: str,
         limit: Optional[int] = 100,
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
         fields: Iterable[str] = (),
     ) -> None:
         super().__init__(limit=limit)
         self.client: Client = client
-        self.uri: str = uri
-        self._ascending: bool = ascending
+        self.url: str = url
+        self._descending: bool = descending
         self._fields: Iterable[str] = fields
-        self._time_range_start: Optional[int] = time_range[0]
-        self._time_range_stop: Optional[int] = time_range[1]
+        self._time_initial_after: Optional[int] = after
+        self._time_initial_before: Optional[int] = before
         self._before_created_utc: Optional[int] = None
         self._after_created_utc: Optional[int] = None
         self._previous_page_item_ids: Sequence[int] = ()
@@ -40,18 +41,18 @@ class PushshiftPaginator(Paginator[T]):
         if self.limit is not None:
             yield ('limit', (str(self.limit),))
 
-        after: Optional[int] = None if (x := self._time_range_start) is None else x - 1
-        before: Optional[int] = self._time_range_stop
-        if self._ascending:
-            yield ('sort', 'asc')
-
-            if (x := self._after_created_utc):
-                after = x - 1
-        else:
+        after: Optional[int] = self._time_initial_after
+        before: Optional[int] = self._time_initial_before
+        if self._descending:
             yield ('sort', 'desc')
 
-            if (x := self._before_created_utc):
+            if (x := self._before_created_utc) is not None:
                 before = x + 1
+        else:
+            yield ('sort', 'asc')
+
+            if (x := self._after_created_utc) is not None:
+                after = x - 1
 
         if after is not None:
             yield ('after', (str(after),))
@@ -66,9 +67,9 @@ class PushshiftPaginator(Paginator[T]):
         # https://github.com/pushshift/api/issues/26
         query_pairs = list(self.generate_doseq_params())
         query_string = urllib.parse.urlencode(query_pairs, doseq=True)
-        uri = '%s?%s' % (self.uri, query_string)
+        url = '%s?%s' % (self.url, query_string)
 
-        root = self.client.request('GET', uri)
+        root = self.client.request('GET', url)
         documents = root['data']
 
         previous_page_item_ids_set = set(self._previous_page_item_ids)
@@ -86,9 +87,9 @@ class PushshiftPaginator(Paginator[T]):
         if documents:
             first_created_utc = documents[0].get('created_utc')
             last_created_utc = documents[-1].get('created_utc')
-            new_before_created_utc: Optional[int] = last_created_utc
-            new_after_created_utc: Optional[int] = first_created_utc
-            if self._ascending:
+            new_before_created_utc: Optional[int] = first_created_utc
+            new_after_created_utc: Optional[int] = last_created_utc
+            if self._descending:
                 new_after_created_utc, new_before_created_utc = new_before_created_utc, new_after_created_utc
 
             if (
@@ -115,17 +116,19 @@ class PushshiftDocumentIDPaginator(PushshiftPaginator[int]):
     def __init__(self,
         *,
         client: Client,
-        uri: str,
+        url: str,
         limit: Optional[int] = 100,
-        time_range: tuple[Optional[int], Optional[int]] = (None, None),
-        ascending: bool = False,
+        after: Optional[int] = None,
+        before: Optional[int] = None,
+        descending: bool = False,
     ) -> None:
         super().__init__(
             client=client,
-            uri=uri,
+            url=url,
             limit=limit,
-            time_range=time_range,
-            ascending=ascending,
+            after=after,
+            before=before,
+            descending=descending,
             fields=self._FIELDS,
         )
 

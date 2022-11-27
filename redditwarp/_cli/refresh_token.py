@@ -52,9 +52,11 @@ from functools import partial
 from pprint import pp
 
 import redditwarp
-from redditwarp.http.transport.reg_SYNC import load_transport, new_session
+from redditwarp.http.transport.reg_SYNC import load_transport, new_connector
+from redditwarp.http.http_client_SYNC import HTTPClient
+from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
-from redditwarp.core.user_agent_SYNC import get_user_agent_from_session
+from redditwarp.core.user_agent_SYNC import get_user_agent
 
 def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:
@@ -103,7 +105,7 @@ params = {
     'state': state,
     'duration': 'temporary' if access_token_only else 'permanent',
 }
-url = "%s?%s" % (redditwarp.auth.const.AUTHORIZATION_URL, urllib.parse.urlencode(params))
+url = "%s?%s" % (redditwarp.core.const.AUTHORIZATION_URL, urllib.parse.urlencode(params))
 print(url)
 
 if not no_web_browser:
@@ -154,14 +156,14 @@ print('Authorization grant:')
 pp(dict(grant))
 print()
 
-session = new_session()
-user_agent = get_user_agent_from_session(session) + " redditwarp.cli.refresh_token"
+connector = new_connector()
+user_agent = get_user_agent(module_member=connector) + " redditwarp.cli.refresh_token"
+headers = {'User-Agent': user_agent}
 token_client = RedditTokenObtainmentClient(
-    session,
-    redditwarp.auth.const.TOKEN_OBTAINMENT_URL,
+    HTTPClient(ApplyDefaultHeaders(connector, headers)),
+    redditwarp.core.const.TOKEN_OBTAINMENT_URL,
     (client_id, client_secret),
     grant,
-    headers={'User-Agent': user_agent},
 )
 
 print('Obtaining token(s) from token server...\n')

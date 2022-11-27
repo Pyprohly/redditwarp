@@ -46,8 +46,8 @@
 
 
 version_major: int = 0
-version_minor: int = 6
-version_micro: int = 1
+version_minor: int = 7
+version_micro: int = 0
 version_extra: str = ''
 
 version_patch: int = version_micro

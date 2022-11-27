@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 from typing import Optional, Any, Mapping, Union, \
-        IO, Sequence, cast, MutableMapping
+        IO, Sequence, cast, MutableMapping, ClassVar
 
 import mimetypes
 import os.path as op
@@ -21,34 +21,36 @@ class Payload:
 
 
 class Content(Payload):
-    CONTENT_TYPE_HINT: str = ''
+    CONTENT_TYPE_HEADER_NAME: ClassVar[str] = 'Content-Type'
+    CONTENT_TYPE_HINT: ClassVar[str] = ''
 
     def get_content_type(self) -> str:
         return self.CONTENT_TYPE_HINT
 
-    def apply_content_type(self, headers: MutableMapping[str, str], *, field_name: str = 'Content-Type') -> None:
-        headers.setdefault(field_name, self.get_content_type())
+    def apply_content_type_header(self, headers: MutableMapping[str, str], *,
+            header_name: str = CONTENT_TYPE_HEADER_NAME) -> None:
+        headers.setdefault(header_name, self.get_content_type())
 
 class Bytes(Content):
-    CONTENT_TYPE_HINT: str = 'application/octet-stream'
+    CONTENT_TYPE_HINT: ClassVar[str] = 'application/octet-stream'
 
     def __init__(self, data: bytes):
         self.data: bytes = data
 
 class Text(Content):
-    CONTENT_TYPE_HINT: str = 'text/plain'
+    CONTENT_TYPE_HINT: ClassVar[str] = 'text/plain'
 
     def __init__(self, text: str):
         self.text: str = text
 
 class URLEncodedFormData(Content):
-    CONTENT_TYPE_HINT: str = 'application/x-www-form-urlencoded'
+    CONTENT_TYPE_HINT: ClassVar[str] = 'application/x-www-form-urlencoded'
 
     def __init__(self, data: Mapping[str, str]):
         self.data: Mapping[str, str] = data
 
 class JSON(Content):
-    CONTENT_TYPE_HINT: str = 'application/json'
+    CONTENT_TYPE_HINT: ClassVar[str] = 'application/json'
 
     def __init__(self, json: Any):
         self.json: Any = json
@@ -77,10 +79,10 @@ class MultipartFileField(MultipartFormDataField):
 
 
 class Multipart(Payload):
-    CONTENT_TYPE_HINT: str = 'multipart/*'
+    CONTENT_TYPE_HINT: ClassVar[str] = 'multipart/*'
 
 class MultipartFormData(Multipart):
-    CONTENT_TYPE_HINT: str = 'multipart/form-data'
+    CONTENT_TYPE_HINT: ClassVar[str] = 'multipart/form-data'
 
     def __init__(self, parts: Sequence[MultipartFormDataField]):
         self.parts: Sequence[MultipartFormDataField] = parts
@@ -147,9 +149,7 @@ def make_payload(
             raise TypeError("`json` and `data` are mutually exclusive parameters")
         if isinstance(data, Mapping):
             return URLEncodedFormData(data)
-        if isinstance(data, bytes):
-            return Bytes(data)
-        raise Exception
+        return Bytes(data)
 
     if json is not None:
         return JSON(json)

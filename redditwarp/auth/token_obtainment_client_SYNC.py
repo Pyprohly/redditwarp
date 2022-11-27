@@ -2,10 +2,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Any
 if TYPE_CHECKING:
-    from .types import ClientCredentials, AuthorizationGrantType as AuthorizationGrant
-    from ..http.requestor_SYNC import Requestor
+    from .types import ClientCredentials, AuthorizationGrant
+    from ..http.http_client_SYNC import HTTPClient
 
-from ..http.request import make_request
 from ..http.util.json_load import json_loads_response
 from .token import Token
 from .utils import apply_basic_auth
@@ -14,12 +13,12 @@ from .exceptions import raise_for_token_server_response_error
 class TokenObtainmentClient:
     """The token client exchanges an authorisation grant for an OAuth2 token."""
 
-    def __init__(self, requestor: Requestor, uri: str,
+    def __init__(self, http: HTTPClient, url: str,
             client_credentials: ClientCredentials,
-            grant: AuthorizationGrant):
-        self.requestor: Requestor = requestor
-        self.uri: str = uri
-        self.client_credentials: tuple[str, str] = client_credentials
+            grant: AuthorizationGrant) -> None:
+        self.http: HTTPClient = http
+        self.url: str = url
+        self.client_credentials: ClientCredentials = client_credentials
         self.grant: Mapping[str, str] = grant
 
     def fetch_data(self) -> Mapping[str, Any]:
@@ -30,9 +29,9 @@ class TokenObtainmentClient:
         :returns:
             OAuth2 token data.
         """
-        r = make_request('POST', self.uri, data=self.grant)
-        apply_basic_auth(r, *self.client_credentials)
-        resp = self.requestor.send(r)
+        headers: dict[str, str] = {}
+        apply_basic_auth(headers, *self.client_credentials)
+        resp = self.http.request('POST', self.url, data=self.grant, headers=headers)
 
         try:
             resp_json = json_loads_response(resp)

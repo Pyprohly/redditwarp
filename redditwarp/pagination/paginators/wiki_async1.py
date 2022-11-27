@@ -11,12 +11,12 @@ from ...model_loaders.wiki_ASYNC import load_wiki_page_revision
 class WikiPageRevisionsAsyncPaginator(ListingAsyncPaginator[WikiPageRevision]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
     ):
         cursor_extractor = lambda x: ('WikiRevision_' + x['id'])
-        super().__init__(client, uri, limit=limit, cursor_extractor=cursor_extractor)
+        super().__init__(client, url, limit=limit, cursor_extractor=cursor_extractor)
 
     async def fetch(self) -> Sequence[WikiPageRevision]:
         data = await self._fetch_data()

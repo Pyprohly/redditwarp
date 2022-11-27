@@ -11,13 +11,13 @@ T = TypeVar('T')
 class Time(ListingPaginator[T]):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         *,
         limit: Optional[int] = 100,
         params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
     ):
-        super().__init__(client, uri, limit=limit, params=params, cursor_extractor=cursor_extractor)
+        super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self.time: str = ''
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 import websocket  # type: ignore[import]
 
 from ..reg_SYNC import register
-from ...websocket_connection_SYNC import PulsePartiallyImplementedWebSocketConnection
+from ...websocket_SYNC import PulsePartiallyImplementedWebSocketConnection, DEFAULT_WAITTIME
 from ... import exceptions
 from ... import events
 from ...events import Frame
@@ -19,7 +19,7 @@ from ...utils import parse_close
 def _get_necessary_timeout(timeout: float = -2) -> Optional[float]:
     t: Optional[float] = timeout
     if timeout == -2:
-        t = PulsePartiallyImplementedWebSocketConnection.DEFAULT_WAITTIME
+        t = DEFAULT_WAITTIME
     elif timeout == -1:
         t = None
     elif timeout < 0:

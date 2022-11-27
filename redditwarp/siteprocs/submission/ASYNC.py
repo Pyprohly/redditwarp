@@ -65,8 +65,7 @@ class SubmissionProcedures:
 
         async def deposit_file(self, file: IO[bytes], upload_lease: MediaUploadLease, *,
                 timeout: float = 1000) -> None:
-            session = self._client.http.session
-            resp = await session.request('POST', upload_lease.endpoint, data=upload_lease.fields,
+            resp = await self._client.http.request('POST', upload_lease.endpoint, data=upload_lease.fields,
                     files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
@@ -583,11 +582,11 @@ class SubmissionProcedures:
     def search(self, sr: str, query: str, amount: Optional[int] = None, *,
         sort: str = 'relevance', time: str = 'all',
     ) -> ImpartedPaginatorChainingAsyncIterator[SubmissionSearchAsyncPaginator, Submission]:
-        uri = '/search'
+        url = '/search'
         if sr:
-            uri = f'/r/{sr}/search'
+            url = f'/r/{sr}/search'
         p = SubmissionSearchAsyncPaginator(
-                self._client, uri,
+                self._client, url,
                 params={'q': query, 'restrict_sr': '1'},
                     sort=sort, time=time)
         return ImpartedPaginatorChainingAsyncIterator(p, amount)

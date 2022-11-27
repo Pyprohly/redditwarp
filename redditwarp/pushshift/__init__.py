@@ -3,7 +3,6 @@
 This wrapper is intended for low-level calls. Using it interactively will be awkward.
 """
 
-from . import const  # noqa: F401
 from . import core  # noqa: F401
 from . import models  # noqa: F401
 from . import paginators  # noqa: F401

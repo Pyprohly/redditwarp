@@ -15,10 +15,10 @@ class UserSearchPaginator(
 ):
     def __init__(self,
         client: Client,
-        uri: str,
+        url: str,
         query: str,
     ):
-        super().__init__(client, uri)
+        super().__init__(client, url)
         self.query: str = query
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:

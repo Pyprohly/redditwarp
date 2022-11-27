@@ -1,19 +1,19 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from ..http.requestor_SYNC import Requestor
-    from ..http.request import Request
-    from ..http.response import Response
+    from ..http.handler_SYNC import Handler
+    from ..http.send_params import SendParams
+    from ..http.exchange import Exchange
 
 import time
 
-from ..http.requestor_augmenter_SYNC import RequestorAugmenter
+from ..http.delegating_handler_SYNC import DelegatingHandler
 from ..util.token_bucket import TokenBucket
 
-class RateLimited(RequestorAugmenter):
-    def __init__(self, requestor: Requestor) -> None:
-        super().__init__(requestor)
+class RateLimited(DelegatingHandler):
+    def __init__(self, handler: Handler) -> None:
+        super().__init__(handler)
         self.reset: int = 0
         self.remaining: int = 0
         self.used: int = 0
@@ -21,8 +21,7 @@ class RateLimited(RequestorAugmenter):
         self._timestamp: float = time.monotonic()
         self._burst_control = TokenBucket(5, 1/2)
 
-    def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
+    def _send(self, p: SendParams) -> Exchange:
         h = self._burst_control.hard_consume(1)
         s = 0.
         if self.remaining < 2:
@@ -34,13 +33,13 @@ class RateLimited(RequestorAugmenter):
 
         time.sleep(s)
 
-        response = self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+        xchg = super()._send(p)
 
         now = time.monotonic()
         self._delta = now - self._timestamp
         self._timestamp = now
 
-        headers = response.headers
+        headers = xchg.response.headers
         if 'x-ratelimit-reset' in headers:
             self.reset = int(headers['x-ratelimit-reset'])
             self.remaining = int(float(headers['x-ratelimit-remaining']))
@@ -55,4 +54,4 @@ class RateLimited(RequestorAugmenter):
                 self.remaining = 300
                 self.used = 0
 
-        return response
+        return xchg

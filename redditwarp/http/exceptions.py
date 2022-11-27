@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Mapping
+from typing import Mapping, ClassVar
 
 from http import HTTPStatus
 
@@ -21,7 +21,7 @@ class StatusCodeException(ArgExc):
 
     __match_args__ = ('status_code',)
 
-    STATUS_CODE: int = 0
+    STATUS_CODE: ClassVar[int] = 0
 
     def __init__(self, arg: object = None, *, status_code: int) -> None:
         super().__init__(arg)
@@ -36,41 +36,41 @@ class StatusCodeException(ArgExc):
 
 class StatusCodeExceptionTypes:
     class InformationalStatusCodeException(StatusCodeException):
-        STATUS_CODE: int = -100
+        STATUS_CODE: ClassVar[int] = -100
     class SuccessfulStatusCodeException(StatusCodeException):
-        STATUS_CODE: int = -200
+        STATUS_CODE: ClassVar[int] = -200
     class RedirectionStatusCodeException(StatusCodeException):
-        STATUS_CODE: int = -300
+        STATUS_CODE: ClassVar[int] = -300
     class ClientErrorStatusCodeException(StatusCodeException):
-        STATUS_CODE: int = -400
+        STATUS_CODE: ClassVar[int] = -400
     class ServerErrorStatusCodeException(StatusCodeException):
-        STATUS_CODE: int = -500
+        STATUS_CODE: ClassVar[int] = -500
 
     class BadRequest(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 400
+        STATUS_CODE: ClassVar[int] = 400
     class Unauthorized(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 401
+        STATUS_CODE: ClassVar[int] = 401
     class Forbidden(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 403
+        STATUS_CODE: ClassVar[int] = 403
     class NotFound(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 404
+        STATUS_CODE: ClassVar[int] = 404
     class Conflict(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 409
+        STATUS_CODE: ClassVar[int] = 409
     class PayloadTooLarge(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 413
+        STATUS_CODE: ClassVar[int] = 413
     class URITooLong(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 414
+        STATUS_CODE: ClassVar[int] = 414
     class TooManyRequests(ClientErrorStatusCodeException):
-        STATUS_CODE: int = 429
+        STATUS_CODE: ClassVar[int] = 429
 
     class InternalServerError(ServerErrorStatusCodeException):
-        STATUS_CODE: int = 500
+        STATUS_CODE: ClassVar[int] = 500
     class BadGateway(ServerErrorStatusCodeException):
-        STATUS_CODE: int = 502
+        STATUS_CODE: ClassVar[int] = 502
     class ServiceUnavailable(ServerErrorStatusCodeException):
-        STATUS_CODE: int = 503
+        STATUS_CODE: ClassVar[int] = 503
     class GatewayTimeout(ServerErrorStatusCodeException):
-        STATUS_CODE: int = 504
+        STATUS_CODE: ClassVar[int] = 504
 
 status_code_exception_class_by_status_code: Mapping[int, type[StatusCodeException]] = {
     cls.STATUS_CODE: cls

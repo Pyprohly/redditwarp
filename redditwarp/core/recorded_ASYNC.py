@@ -2,76 +2,75 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, MutableSequence
 if TYPE_CHECKING:
-    from ..http.request import Request
-    from ..http.response import Response
-    from ..http.requestor_ASYNC import Requestor
+    from ..http.handler_ASYNC import Handler
+    from ..http.send_params import SendParams
+    from ..http.exchange import Exchange
+    from ..http.requisition import Requisition
 
 from collections import deque
 
-from ..http.requestor_augmenter_ASYNC import RequestorAugmenter
+from ..http.delegating_handler_ASYNC import DelegatingHandler
 
-class Recorded(RequestorAugmenter):
-    def __init__(self, requestor: Requestor) -> None:
-        super().__init__(requestor)
-        self.last_request: Optional[Request] = None
-        self.last_response: Optional[Response] = None
-        self.last_transfer: Optional[tuple[Request, Response]] = None
-        self.last_transmit: Optional[tuple[Request, Optional[Response]]] = None
-        self.last_request_queue: MutableSequence[Request] = deque(maxlen=16)
-        self.last_response_queue: MutableSequence[Response] = deque(maxlen=16)
-        self.last_transfer_queue: MutableSequence[tuple[Request, Response]] = deque(maxlen=16)
-        self.last_transmit_queue: MutableSequence[tuple[Request, Optional[Response]]] = deque(maxlen=16)
+class Recorded(DelegatingHandler):
+    def __init__(self, handler: Handler) -> None:
+        super().__init__(handler)
+        self.last_requisition: Optional[Requisition] = None
+        self.last_exchange: Optional[Exchange] = None
+        self.last_transmit: Optional[tuple[Requisition, Optional[Exchange]]] = None
+        self.last_transfer: Optional[tuple[Requisition, Exchange]] = None
+        self.last_requisition_queue: MutableSequence[Requisition] = deque(maxlen=16)
+        self.last_exchange_queue: MutableSequence[Exchange] = deque(maxlen=16)
+        self.last_transmit_queue: MutableSequence[tuple[Requisition, Optional[Exchange]]] = deque(maxlen=16)
+        self.last_transfer_queue: MutableSequence[tuple[Requisition, Exchange]] = deque(maxlen=16)
 
-    async def send(self, request: Request, *,
-            timeout: float = -2, follow_redirects: Optional[bool] = None) -> Response:
-        resp = None
+    async def _send(self, p: SendParams) -> Exchange:
+        exchange = None
         try:
-            resp = await self.requestor.send(request, timeout=timeout, follow_redirects=follow_redirects)
+            exchange = await super()._send(p)
         finally:
-            self.last_request = request
-            self.last_transmit = (request, resp)
-            self.last_request_queue.append(self.last_request)
+            self.last_requisition = p.requisition
+            self.last_transmit = (p.requisition, exchange)
+            self.last_requisition_queue.append(self.last_requisition)
             self.last_transmit_queue.append(self.last_transmit)
-            if resp is None:
-                self.last_response = None
+            if exchange is None:
+                self.last_exchange = None
                 self.last_transfer = None
             else:
-                self.last_response = resp
-                self.last_transfer = (request, resp)
-                self.last_response_queue.append(self.last_response)
+                self.last_exchange = exchange
+                self.last_transfer = (p.requisition, exchange)
+                self.last_exchange_queue.append(self.last_exchange)
                 self.last_transfer_queue.append(self.last_transfer)
-
-        if resp is None:
+        if exchange is None:
             raise Exception
-        return resp
+        return exchange
 
 
 
 class Last:
     @property
-    def request(self) -> Optional[Request]:
-        return self.recorder.last_request
+    def requisition(self) -> Optional[Requisition]:
+        return self.recorder.last_requisition
     @property
-    def response(self) -> Optional[Response]:
-        return self.recorder.last_response
+    def exchange(self) -> Optional[Exchange]:
+        return self.recorder.last_exchange
     @property
-    def transfer(self) -> Optional[tuple[Request, Response]]:
-        return self.recorder.last_transfer
-    @property
-    def transmit(self) -> Optional[tuple[Request, Optional[Response]]]:
+    def transmit(self) -> Optional[tuple[Requisition, Optional[Exchange]]]:
         return self.recorder.last_transmit
     @property
-    def request_queue(self) -> MutableSequence[Request]:
-        return self.recorder.last_request_queue
+    def transfer(self) -> Optional[tuple[Requisition, Exchange]]:
+        return self.recorder.last_transfer
     @property
-    def response_queue(self) -> MutableSequence[Response]:
-        return self.recorder.last_response_queue
+    def requisition_queue(self) -> MutableSequence[Requisition]:
+        return self.recorder.last_requisition_queue
     @property
-    def transfer_queue(self) -> MutableSequence[tuple[Request, Response]]:
-        return self.recorder.last_transfer_queue
+    def exchange_queue(self) -> MutableSequence[Exchange]:
+        return self.recorder.last_exchange_queue
     @property
-    def transmit_queue(self) -> MutableSequence[tuple[Request, Optional[Response]]]:
+    def transmit_queue(self) -> MutableSequence[tuple[Requisition, Optional[Exchange]]]:
         return self.recorder.last_transmit_queue
+    @property
+    def transfer_queue(self) -> MutableSequence[tuple[Requisition, Exchange]]:
+        return self.recorder.last_transfer_queue
 
     def __init__(self, recorder: Recorded) -> None:
         self.recorder: Recorded = recorder
