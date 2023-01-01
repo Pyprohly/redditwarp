@@ -33,11 +33,11 @@ async def test_current_iter() -> None:
     it = A([[62, 43, 13], [12, 38]])
     uci = UnfalteringChainingAsyncIterator(it)
     assert await uci.__anext__() == 62
-    assert list(uci.current_iter) == [43, 13]
+    assert list(uci.current_iterator) == [43, 13]
     assert await uci.__anext__() == 12
-    assert list(uci.current_iter) == [38]
-    uci.current_iter = iter((77,))
-    assert list(uci.current_iter) == [77]
+    assert list(uci.current_iterator) == [38]
+    uci.current_iterator = iter((77,))
+    assert list(uci.current_iterator) == [77]
 
 @pytest.mark.asyncio
 async def test_exception_during_iteration() -> None:

@@ -9,7 +9,7 @@ from .artifact import Artifact
 class Subreddit(Artifact):
     class Me:
         class MeFlair:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 # Value `False` if object from search item.
                 self.enabled: bool = False if (x := d['user_sr_flair_enabled']) is None else x
                 self.has_had_flair: bool = d['user_flair_text'] is not None
@@ -23,7 +23,7 @@ class Subreddit(Artifact):
                 self.fg_light_or_dark: str = d['user_flair_text_color'] or ''
                 self.type: str = d['user_flair_type']
 
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.favorited: bool = d['user_has_favorited']
             self.is_banned: bool = d['user_is_banned']
             self.is_approved_user: bool = d['user_is_contributor']
@@ -34,7 +34,7 @@ class Subreddit(Artifact):
             self.flair: Subreddit.Me.MeFlair = self.MeFlair(d)
 
     class SubredditFlair:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             # Value is always `False` if object was from search.
             self.user_flairs_enabled: bool = d['user_flair_enabled_in_sr']
             self.link_flairs_enabled: bool = d['link_flair_enabled']
@@ -43,7 +43,7 @@ class Subreddit(Artifact):
             self.user_flair_position: str = d['user_flair_position']
             self.link_flair_position: str = d['link_flair_position']
 
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.id36: str = d['id']
         self.id: int = int(self.id36, 36)
@@ -90,7 +90,7 @@ class Subreddit(Artifact):
 
 
 class InaccessibleSubreddit(Artifact):
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.id36: str = d['id']
         self.id: int = int(self.id36, 36)

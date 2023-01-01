@@ -277,7 +277,7 @@ def _build_menu_bar_json(
 
 
 class WidgetProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     class _upload_image:

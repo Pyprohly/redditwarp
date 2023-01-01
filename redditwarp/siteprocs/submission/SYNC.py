@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from ...models.submission_SYNC import Submission, TextPost
     from ...models.comment_SYNC import Comment
     from ...dtos.submission import GalleryItem
+    from ...types import JSON_ro
 
 from functools import cached_property
 
@@ -50,7 +51,7 @@ class SubmissionProcedures:
         return load_comment(result, self._client)
 
     class _upload_media:
-        def __init__(self, outer: SubmissionProcedures):
+        def __init__(self, outer: SubmissionProcedures) -> None:
             self._client = outer._client
 
         def __call__(self, file: IO[bytes]) -> MediaUploadLease:
@@ -244,7 +245,7 @@ class SubmissionProcedures:
             for m in items
         ]
 
-        def g() -> Iterable[tuple[str, object]]:
+        def g() -> Iterable[tuple[str, JSON_ro]]:
             yield ('sr', sr)
             yield ('title', title)
             yield ('items', gallery_items_data)
@@ -279,7 +280,7 @@ class SubmissionProcedures:
         event_end: str = '',
         event_tz: str = '',
     ) -> int:
-        def g() -> Iterable[tuple[str, object]]:
+        def g() -> Iterable[tuple[str, JSON_ro]]:
             yield ('sr', sr)
             yield ('title', title)
             yield ('text', text)

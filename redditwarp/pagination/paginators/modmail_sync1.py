@@ -5,10 +5,10 @@ if TYPE_CHECKING:
     from ...client_SYNC import Client
 
 from ..paginator import CursorPaginator, Resettable
-from ...model_loaders.modmail_SYNC import load_conversation, load_message
-from ...models.modmail_SYNC import Conversation, Message
+from ...model_loaders.modmail_SYNC import load_conversation_info, load_message
+from ...models.modmail_SYNC import ConversationInfo, Message
 
-class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conversation, Message]]):
+class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[ConversationInfo, Message]]):
     def __init__(self,
         client: Client,
         url: str,
@@ -71,7 +71,7 @@ class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conv
 
         return data
 
-    def fetch(self) -> Sequence[Tuple[Conversation, Message]]:
+    def fetch(self) -> Sequence[Tuple[ConversationInfo, Message]]:
         data = self._fetch_data()
         conversations_mapping = data['conversations']
         messages_mapping = data['messages']
@@ -81,7 +81,7 @@ class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conv
             message_id36 = conversation_data['objIds'][0]['id']
             message_data = messages_mapping[message_id36]
             results.append((
-                load_conversation(conversation_data, self.client),
+                load_conversation_info(conversation_data, self.client),
                 load_message(message_data, self.client),
             ))
         return results

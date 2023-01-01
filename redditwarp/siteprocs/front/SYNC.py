@@ -11,7 +11,7 @@ from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingI
 from ...pagination.paginators.listing.comment_listing_paginator import LooseCommentListingPaginator
 
 class FrontProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.pull: Pull = Pull(client)
 

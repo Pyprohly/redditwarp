@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from ...models.user_relationship_item import UserRelationshipItem, FriendRelationshipItem
     from ...models.trophy import Trophy
     from ...models.karma_breakdown_entry import KarmaBreakdownEntry
+    from ...types import JSON_ro
 
 from .pull_subreddits_ASYNC import PullSubreddits
 from ...model_loaders.my_account_ASYNC import load_account
@@ -18,7 +19,7 @@ from ... import exceptions
 from ...http import exceptions as http_exceptions
 
 class AccountProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.pull_subreddits: PullSubreddits = PullSubreddits(client)
 
@@ -31,7 +32,7 @@ class AccountProcedures:
     async def get_preferences(self) -> Mapping[str, Any]:
         return await self._client.request('GET', '/api/v1/me/prefs')
 
-    async def set_preferences(self, prefs: Mapping[str, object]) -> Mapping[str, Any]:
+    async def set_preferences(self, prefs: Mapping[str, JSON_ro]) -> Mapping[str, Any]:
         return await self._client.request('PATCH', '/api/v1/me/prefs', json=prefs)
 
     async def get_karma_breakdown(self) -> Sequence[KarmaBreakdownEntry]:

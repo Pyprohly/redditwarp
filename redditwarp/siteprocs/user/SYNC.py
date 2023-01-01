@@ -18,7 +18,7 @@ from ...pagination.paginators.user.sync1 import UserSearchPaginator
 from ...exceptions import RejectedResultException
 
 class UserProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.get_user_summary: GetUserSummary = GetUserSummary(client)
         self.bulk_fetch_user_summary: BulkFetchUserSummary = BulkFetchUserSummary(client)

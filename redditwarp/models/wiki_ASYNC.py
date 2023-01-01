@@ -1,31 +1,27 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Mapping
+from typing import TYPE_CHECKING, Any, Mapping, Sequence
 if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
-from dataclasses import dataclass
-
 from .wiki import (
     WikiPageRevisionAuthorUser as BaseWikiPageRevisionAuthorUser,
-    GBaseWikiPage,
-    GBaseWikiPageRevision,
-    GBaseWikiPageSettings,
+    WikiPage as BaseWikiPage,
+    WikiPageRevision as BaseWikiPageRevision,
+    WikiPageSettings as BaseWikiPageSettings,
 )
 
 class WikiPageRevisionAuthorUser(BaseWikiPageRevisionAuthorUser):
-    def __init__(self, d: Mapping[str, Any], client: Client):
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
 
-@dataclass(repr=False, eq=False)
-class WikiPage(GBaseWikiPage[WikiPageRevisionAuthorUser]):
-    pass
 
-@dataclass(repr=False, eq=False)
-class WikiPageRevision(GBaseWikiPageRevision[WikiPageRevisionAuthorUser]):
-    pass
+class WikiPage(BaseWikiPage):
+    revision_author: WikiPageRevisionAuthorUser
 
-@dataclass(repr=False, eq=False)
-class WikiPageSettings(GBaseWikiPageSettings[WikiPageRevisionAuthorUser]):
-    pass
+class WikiPageRevision(BaseWikiPageRevision):
+    author: WikiPageRevisionAuthorUser
+
+class WikiPageSettings(BaseWikiPageSettings):
+    editors: Sequence[WikiPageRevisionAuthorUser]

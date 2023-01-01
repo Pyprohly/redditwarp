@@ -11,7 +11,7 @@ from ... import http
 from ...exceptions import RejectedResultException
 
 class Get:
-    def __init__(self, outer: CommentTreeProcedures, client: Client):
+    def __init__(self, outer: CommentTreeProcedures, client: Client) -> None:
         self._outer = outer
         self._client = client
 

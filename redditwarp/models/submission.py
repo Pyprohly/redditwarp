@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Optional, Sequence, Generic, TypeVar
+from typing import Mapping, Any, Optional, Sequence, TypeVar, Callable, final
 
 from datetime import datetime, timezone
 
@@ -8,12 +8,11 @@ from ..core.const import AUTHORIZATION_BASE_URL
 from .artifact import Artifact
 from .report import ModReport, UserReport
 from ..model_loaders.report import load_mod_report, load_user_report
-
 from dataclasses import dataclass
 
 class Submission(Artifact):
     class Me:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.saved: bool = d['saved']
             self.hidden: bool = d['hidden']
             self.reply_notifications: bool = d['send_replies']
@@ -22,7 +21,7 @@ class Submission(Artifact):
 
     class Author:
         class AuthorFlair:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.template_uuid: str = d['author_flair_template_id'] or ''
                 author_flair_text: Optional[str] = d['author_flair_text']
                 self.text: str = author_flair_text or ''
@@ -34,7 +33,7 @@ class Submission(Artifact):
                 self.has_had_css_class_when_no_flair_template: bool = author_flair_css_class is not None
                 self.css_class: str = author_flair_css_class or ''
 
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.name: str = d['author']
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
@@ -42,7 +41,7 @@ class Submission(Artifact):
             self.flair: Submission.Author.AuthorFlair = self.AuthorFlair(d)
 
     class Subreddit:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
@@ -52,25 +51,25 @@ class Submission(Artifact):
 
     class Moderator:
         class Approved:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.by: str = d['approved_by']
                 self.ut: int = d['approved_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
         class Removed:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.by: str = d['banned_by']
                 self.ut: int = d['banned_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
         class Reports:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.ignoring: bool = d['ignore_reports']
                 self.num_reports: int = d['num_reports']
                 self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
                 self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
 
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.spam: bool = d['spam']
 
             self.approved: Optional[Submission.Moderator.Approved] = None
@@ -89,7 +88,7 @@ class Submission(Artifact):
             self.removal_note: str = d['mod_note'] or ''
 
     class Event:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.start_ut: int = int(d['event_start'])
             self.start_at: datetime = datetime.fromtimestamp(self.start_ut, timezone.utc)
             self.end_ut: int = int(d['event_end'])
@@ -97,7 +96,7 @@ class Submission(Artifact):
             self.is_live: bool = d['event_is_live']
 
     class Flair:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.has_flair: bool = d['link_flair_text'] is not None
             self.bg_color: str = d['link_flair_background_color']
             link_flair_css_class_temp: Optional[str] = d['link_flair_css_class']
@@ -108,18 +107,18 @@ class Submission(Artifact):
             self.type: str = d['link_flair_type']
 
     class Reports:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.ignoring: bool = d['ignore_reports']
             self.num_reports: int = d['num_reports']
             self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
             self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
 
     class Edited:
-        def __init__(self, outer: Submission):
+        def __init__(self, outer: Submission) -> None:
             self.ut: int = outer.edited_ut
             self.at: datetime = outer.edited_at
 
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.id36: str = d['id']
         self.id: int = int(self.id36, 36)
@@ -158,7 +157,7 @@ class Submission(Artifact):
         self.is_crosspostable: bool = d['is_crosspostable']
         self.is_original_content: bool = d['is_original_content']
         self.is_robot_indexable: bool = d['is_robot_indexable']
-        self.pinned: bool = d['pinned']
+        self.is_poster_profile_pinned: bool = d['pinned']
         self.distinguished: str = d['distinguished'] or ''
 
         self.event: Optional[Submission.Event] = None
@@ -187,12 +186,12 @@ class Submission(Artifact):
 
 
 class LinkPost(Submission):
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.link: str = d['url_overridden_by_dest']
 
 class TextPost(Submission):
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.body: str = d['selftext']
         self.body_html: str = d['selftext_html']
@@ -205,7 +204,7 @@ class GalleryPost(Submission):
         caption: str
         outbound_link: str
 
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.gallery_link: str = d['url_overridden_by_dest']
 
@@ -225,20 +224,29 @@ class GalleryPost(Submission):
 class PollPost(Submission):
     pass
 
+class CrosspostSubmission(Submission):
+    @property
+    def original(self) -> Optional[Submission]:
+        return self.__original
 
-TOriginalSubmission = TypeVar('TOriginalSubmission', bound=Submission)
-
-class GBaseCrosspostSubmission(Submission, Generic[TOriginalSubmission]):
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.original_id36: str = d['crosspost_parent'][3:]
         self.original_id: int = int(self.original_id36, 36)
-        self.original: TOriginalSubmission = self._load_submission(d['crosspost_parent_list'][0])
 
-    def _load_submission(self, d: Mapping[str, Any]) -> TOriginalSubmission:
-        raise NotImplementedError
+        self.__original: Optional[Submission] = None
+        # https://github.com/python/mypy/issues/4177
+        if self.__class__.original == __class__.original:  # type: ignore[name-defined]
+            from ..model_loaders.submission import load_submission  # Avoid cyclic import
+            self.__original = self._load_original(d, load_submission)
 
-class CrosspostSubmission(GBaseCrosspostSubmission[Submission]):
-    def _load_submission(self, d: Mapping[str, Any]) -> Submission:
-        from ..model_loaders.submission import load_submission  # Avoid cyclic import
-        return load_submission(d)
+    _TSubmission = TypeVar('_TSubmission', bound=Submission)
+
+    @final
+    def _load_original(self,
+        d: Mapping[str, Any],
+        load: Callable[[Mapping[str, Any]], _TSubmission],
+    ) -> Optional[_TSubmission]:
+        if crosspost_parent_list := d['crosspost_parent_list']:
+            return load(crosspost_parent_list[0])
+        return None

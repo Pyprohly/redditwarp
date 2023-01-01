@@ -8,13 +8,12 @@ if TYPE_CHECKING:
 from functools import cached_property
 
 from ...util.base_conversion import to_base36
-from ...model_loaders.comment_tree_SYNC import load_more_children
-from ...model_loaders.comment_tree_SYNC import load_submission_tree_node
+from ...model_loaders.comment_tree_SYNC import load_submission_tree_node, load_more_comments_tree_node
 from .get_SYNC import Get
 from .fetch_SYNC import Fetch
 
 class CommentTreeProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.get: Get = Get(self, client)
         self.fetch: Fetch = Fetch(self, client)
@@ -47,7 +46,7 @@ class CommentTreeProcedures:
         return load_submission_tree_node(root, self._client, sort)
 
     class _more_children:
-        def __init__(self, outer: CommentTreeProcedures):
+        def __init__(self, outer: CommentTreeProcedures) -> None:
             self._outer = outer
             self._client = outer._client
 
@@ -85,7 +84,7 @@ class CommentTreeProcedures:
                 if exact:
                     yield ('limit_children', '1')
 
-            resp_data = self._client.request('GET', '/api/morechildren', params=dict(g()))
-            return load_more_children(resp_data, self._client, submission_id36, sort)
+            resp_data = self._client.request('POST', '/api/morechildren', data=dict(g()))
+            return load_more_comments_tree_node(resp_data, self._client, submission_id36, sort)
 
     more_children: cached_property[_more_children] = cached_property(_more_children)

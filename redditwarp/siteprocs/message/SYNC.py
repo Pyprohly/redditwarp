@@ -12,7 +12,7 @@ from ...model_loaders.message_SYNC import load_composed_message, load_composed_m
 from .pulls_SYNC import Pulls
 
 class MessageProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.pulls: Pulls = Pulls(client)
 

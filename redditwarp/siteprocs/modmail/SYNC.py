@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Sequence, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.modmail import ModmailModeratedSubreddit
+    from ...models.modmail import ModeratedSubreddit
 
-from ...model_loaders.modmail import load_modmail_moderated_subreddit
+from ...model_loaders.modmail import load_moderated_subreddit
 from .conversation_SYNC import ConversationProcedures
 from .pull_SYNC import Pull
 
@@ -18,6 +18,6 @@ class ModmailProcedures:
     def get_unread_counts(self) -> Mapping[str, int]:
         return self._client.request('GET', '/api/mod/conversations/unread/count')
 
-    def get_moderating_subreddits(self) -> Sequence[ModmailModeratedSubreddit]:
+    def get_moderated_subreddits(self) -> Sequence[ModeratedSubreddit]:
         root = self._client.request('GET', '/api/mod/conversations/subreddits')
-        return [load_modmail_moderated_subreddit(d) for d in root['subreddits'].values()]
+        return [load_moderated_subreddit(d) for d in root['subreddits'].values()]

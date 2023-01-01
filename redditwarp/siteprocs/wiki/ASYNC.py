@@ -14,11 +14,11 @@ from ...models.wiki_ASYNC import WikiPage, WikiPageRevision, WikiPageSettings
 from ...model_loaders.wiki_ASYNC import load_wiki_page, load_wiki_page_settings
 
 class WikiProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     class _page:
-        def __init__(self, outer: WikiProcedures):
+        def __init__(self, outer: WikiProcedures) -> None:
             self._outer = outer
             self._client = outer._client
 

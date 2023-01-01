@@ -1,21 +1,21 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Any
+from typing import TYPE_CHECKING, Mapping, Any, Sequence, Optional
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
 from .modmail import (
-    Conversation as BaseConversation,
+    ConversationInfo as BaseConversationInfo,
     Message as BaseMessage,
-    ModmailModAction as BaseModmailModAction,
+    ModAction as BaseModAction,
     UserDossier as BaseUserDossier,
-    GBaseConversationAggregate,
-    GBaseUserDossierConversationAggregate,
-    GBaseOptionalUserDossierConversationAggregate,
+    ConversationAggregate as BaseConversationAggregate,
+    UserDossierConversationAggregate as BaseUserDossierConversationAggregate,
+    OptionalUserDossierConversationAggregate as BaseOptionalUserDossierConversationAggregate,
 )
 
-class Conversation(BaseConversation):
-    def __init__(self, d: Mapping[str, Any], client: Client):
+class ConversationInfo(BaseConversationInfo):
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
 
@@ -30,22 +30,33 @@ class Conversation(BaseConversation):
 
 
 class Message(BaseMessage):
-    def __init__(self, d: Mapping[str, Any], client: Client):
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
 
-class ModmailModAction(BaseModmailModAction):
+class ModAction(BaseModAction):
     pass
 
 class UserDossier(BaseUserDossier):
     pass
 
 
-class ConversationAggregate(GBaseConversationAggregate[Conversation, Message, ModmailModAction]):
-    pass
+class ConversationAggregate(BaseConversationAggregate):
+    conversation: ConversationInfo
+    messages: Sequence[Message]
+    mod_actions: Sequence[ModAction]
+    history: Sequence[object]
 
-class UserDossierConversationAggregate(GBaseUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
-    pass
+class UserDossierConversationAggregate(BaseUserDossierConversationAggregate):
+    conversation: ConversationInfo
+    messages: Sequence[Message]
+    mod_actions: Sequence[ModAction]
+    history: Sequence[object]
+    user_dossier: UserDossier
 
-class OptionalUserDossierConversationAggregate(GBaseOptionalUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
-    pass
+class OptionalUserDossierConversationAggregate(BaseOptionalUserDossierConversationAggregate):
+    conversation: ConversationInfo
+    messages: Sequence[Message]
+    mod_actions: Sequence[ModAction]
+    history: Sequence[object]
+    user_dossier: Optional[UserDossier]

@@ -1,26 +1,20 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Optional, Sequence
+from typing import TYPE_CHECKING, TypeVar, Optional
 if TYPE_CHECKING:
     from .more_comments_SYNC import MoreComments
 
-from ..util.tree_node import GeneralTreeNode
+from dataclasses import dataclass
+
+from ..util.tree_node import TreeNode
 from .comment_SYNC import Comment
 from .submission_SYNC import Submission
 
-T = TypeVar('T')
+TValue_co = TypeVar('TValue_co', covariant=True)
 
-class ICommentSubtreeTreeNode:
-    pass
-
-class CommentSubtreeTreeNode(ICommentSubtreeTreeNode, GeneralTreeNode[T, 'CommentTreeNode']):
-    def __init__(self,
-        value: T,
-        children: Sequence[CommentTreeNode],
-        more: Optional[MoreComments],
-    ):
-        super().__init__(value, children)
-        self.more: Optional[MoreComments] = more
+@dataclass(repr=False, eq=False, frozen=True)
+class CommentSubtreeTreeNode(TreeNode[TValue_co, 'CommentTreeNode']):
+    more: Optional[MoreComments]
 
 class MoreCommentsTreeNode(CommentSubtreeTreeNode[None]):
     pass

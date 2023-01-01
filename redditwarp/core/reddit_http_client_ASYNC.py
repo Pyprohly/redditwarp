@@ -58,7 +58,7 @@ class RedditHTTPClient(HTTPClient):
 class PublicRedditHTTPClient(RedditHTTPClient):
     @property
     def authorizer(self) -> Authorizer:
-        return self.get_authorizer()
+        return self.fetch_authorizer()
 
     def __init__(self, handler: Handler, *,
         headers: Optional[MutableMapping[str, str]] = None,
@@ -67,12 +67,12 @@ class PublicRedditHTTPClient(RedditHTTPClient):
         super().__init__(handler, headers=headers)
         self._authorizer: Optional[Authorizer] = authorizer
 
-    def get_authorizer(self) -> Authorizer:
+    def fetch_authorizer(self) -> Authorizer:
         if self._authorizer is None:
             raise RuntimeError('value not set')
         return self._authorizer
 
-    def set_authorizer(self, value: Optional[Authorizer]) -> None:
+    def fast_set_authorizer(self, value: Optional[Authorizer]) -> None:
         self._authorizer = value
 
 

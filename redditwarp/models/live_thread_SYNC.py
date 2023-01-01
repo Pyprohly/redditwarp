@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from .live_thread import LiveThread as BaseLiveThread, LiveUpdate as BaseLiveUpdate
 
 class LiveThread(BaseLiveThread):
-    def __init__(self, d: Mapping[str, Any], client: Client):
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
 
@@ -28,6 +28,6 @@ class LiveThread(BaseLiveThread):
 
 
 class LiveUpdate(BaseLiveUpdate):
-    def __init__(self, d: Mapping[str, Any], client: Client):
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client

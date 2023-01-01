@@ -62,7 +62,7 @@ class PublicRedditHTTPClient(RedditHTTPClient):
 
     @property
     def authorizer(self) -> Authorizer:
-        return self.get_authorizer()
+        return self.fetch_authorizer()
 
     def __init__(self, handler: Handler, *,
         headers: Optional[MutableMapping[str, str]] = None,
@@ -71,12 +71,17 @@ class PublicRedditHTTPClient(RedditHTTPClient):
         super().__init__(handler, headers=headers)
         self._authorizer: Optional[Authorizer] = authorizer
 
-    def get_authorizer(self) -> Authorizer:
+    def fetch_authorizer(self) -> Authorizer:
         if self._authorizer is None:
             raise RuntimeError('value not set')
         return self._authorizer
 
-    def set_authorizer(self, value: Optional[Authorizer]) -> None:
+    def fast_set_authorizer(self, value: Optional[Authorizer]) -> None:
+        """Changes the value of `self.authorizer`.
+
+        Note, this attribute is just a holder and changing its value will not
+        change the underlying authorizer.
+        """
         self._authorizer = value
 
 
@@ -95,7 +100,8 @@ def build_public_reddit_http_client(
         grant,
     )
     authorizer = Authorizer(token_client)
-    handler: Handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    handler: Handler
+    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
     handler = DirectByOrigin(connector, {RESOURCE_BASE_URL: handler})
     http = PublicRedditHTTPClient(handler, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
@@ -108,7 +114,8 @@ def build_public_reddit_http_client_from_access_token(
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     authorizer = Authorizer(token=Token(access_token))
-    handler: Handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    handler: Handler
+    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
     handler = DirectByOrigin(connector, {RESOURCE_BASE_URL: handler})
     http = PublicRedditHTTPClient(handler, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua

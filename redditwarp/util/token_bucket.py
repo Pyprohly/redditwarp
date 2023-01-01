@@ -22,7 +22,7 @@ class TokenBucket:
     def _replenish(self) -> None:
         if self._value < self.capacity:
             accession = self.rate * self._checkpoint()
-            self._value = min(self._value + accession, self.capacity)
+            self._value = min(self.capacity, self._value + accession)
 
     def get_value(self) -> float:
         """Return the number of tokens in the bucket."""
@@ -49,7 +49,7 @@ class TokenBucket:
     def hard_consume(self, n: float) -> bool:
         """Consume up to `n` tokens."""
         u = self.get_value()
-        self._value = max(u - n, 0)
+        self._value = max(0, u - n)
         return n <= u
 
     def consume_all(self) -> None:
@@ -61,4 +61,4 @@ class TokenBucket:
         """Return the duration the client should wait before the consume
         methods return `True` again.
         """
-        return max((n - self.get_value()) / self.rate, 0)
+        return max(0, (n - self.get_value()) / self.rate)

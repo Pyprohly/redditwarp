@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.submission_collection_SYNC import SubmissionCollectionDetails, SubmissionCollection
+    from ...models.submission_collection_SYNC import SubmissionCollectionInfo, SubmissionCollection
 
 from functools import cached_property
 
-from ...model_loaders.submission_collection_SYNC import load_submission_collection_details, load_submission_collection
+from ...model_loaders.submission_collection_SYNC import load_submission_collection_info, load_submission_collection
 from ...util.base_conversion import to_base36
 from .create_SYNC import Create
 from .add_post_SYNC import AddPost
@@ -22,32 +22,32 @@ class CollectionProcedures:
         self.remove_post: RemovePost = RemovePost(client)
         self.reorder: Reorder = Reorder(client)
 
-    def get(self, uuid: str) -> Optional[SubmissionCollection]:
+    def get_full(self, uuid: str) -> Optional[SubmissionCollection]:
         params = {'collection_id': uuid}
         root = self._client.request('GET', '/api/v1/collections/collection', params=params)
         if len(root) < 3:
             return None
         return load_submission_collection(root, self._client)
 
-    def get_unfilled(self, uuid: str) -> Optional[SubmissionCollectionDetails]:
+    def get_info(self, uuid: str) -> Optional[SubmissionCollectionInfo]:
         params = {'collection_id': uuid, 'include_links': '0'}
         root = self._client.request('GET', '/api/v1/collections/collection', params=params)
         if len(root) < 3:
             return None
-        return load_submission_collection_details(root, self._client)
+        return load_submission_collection_info(root, self._client)
 
     class _get_subreddit_collections_details:
-        def __init__(self, outer: CollectionProcedures):
+        def __init__(self, outer: CollectionProcedures) -> None:
             self._client = outer._client
 
-        def __call__(self, id: int) -> Sequence[SubmissionCollectionDetails]:
+        def __call__(self, id: int) -> Sequence[SubmissionCollectionInfo]:
             id36 = to_base36(id)
             return self.by_id36(id36)
 
-        def by_id36(self, id36: str) -> Sequence[SubmissionCollectionDetails]:
+        def by_id36(self, id36: str) -> Sequence[SubmissionCollectionInfo]:
             params = {'sr_fullname': 't5_' + id36}
             root = self._client.request('GET', '/api/v1/collections/subreddit_collections', params=params)
-            return [load_submission_collection_details(d, self._client) for d in root]
+            return [load_submission_collection_info(d, self._client) for d in root]
 
     get_subreddit_collections_details: cached_property[_get_subreddit_collections_details] = \
             cached_property(_get_subreddit_collections_details)

@@ -11,7 +11,7 @@ from ...util.extract_id_from_url import extract_comment_id_from_url
 from ...exceptions import NoResultException
 
 class Fetch:
-    def __init__(self, outer: CommentProcedures, client: Client):
+    def __init__(self, outer: CommentProcedures, client: Client) -> None:
         self._outer = outer
         self._client = client
 

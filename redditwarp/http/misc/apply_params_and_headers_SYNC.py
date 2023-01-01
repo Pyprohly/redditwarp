@@ -12,7 +12,7 @@ from ..delegating_handler_SYNC import DelegatingHandler
 class ApplyParamsAndHeaders(DelegatingHandler):
     def __init__(self, handler: Handler, *,
             params: Optional[Mapping[str, str]] = None,
-            headers: Optional[Mapping[str, str]] = None):
+            headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
         self.headers: Mapping[str, str] = {} if headers is None else headers
@@ -26,7 +26,7 @@ class ApplyParamsAndHeaders(DelegatingHandler):
 class ApplyDefaultParamsAndHeaders(DelegatingHandler):
     def __init__(self, handler: Handler, *,
             params: Optional[Mapping[str, str]] = None,
-            headers: Optional[Mapping[str, str]] = None):
+            headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
         self.headers: Mapping[str, str] = {} if headers is None else headers
@@ -39,7 +39,7 @@ class ApplyDefaultParamsAndHeaders(DelegatingHandler):
 
 
 class ApplyParams(DelegatingHandler):
-    def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None):
+    def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
 
@@ -49,7 +49,7 @@ class ApplyParams(DelegatingHandler):
         return super()._send(p)
 
 class ApplyDefaultParams(DelegatingHandler):
-    def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None):
+    def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
 
@@ -60,7 +60,7 @@ class ApplyDefaultParams(DelegatingHandler):
 
 
 class ApplyHeaders(DelegatingHandler):
-    def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None):
+    def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.headers: Mapping[str, str] = {} if headers is None else headers
 
@@ -70,7 +70,7 @@ class ApplyHeaders(DelegatingHandler):
         return super()._send(p)
 
 class ApplyDefaultHeaders(DelegatingHandler):
-    def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None):
+    def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.headers: Mapping[str, str] = {} if headers is None else headers
 

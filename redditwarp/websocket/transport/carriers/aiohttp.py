@@ -18,7 +18,7 @@ from ...const import Side, ConnectionState
 class WebSocketClient(PartiallyImplementedWebSocket):
     SIDE: int = Side.CLIENT
 
-    def __init__(self, ws: aiohttp.ClientWebSocketResponse, session: aiohttp.ClientSession):
+    def __init__(self, ws: aiohttp.ClientWebSocketResponse, session: aiohttp.ClientSession) -> None:
         super().__init__()
         self.ws: aiohttp.ClientWebSocketResponse = ws
         self.session: aiohttp.ClientSession = session

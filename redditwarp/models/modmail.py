@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Optional, Sequence, Generic, Mapping, TypeVar
+from typing import Any, Optional, Sequence, Mapping
 
 from datetime import datetime
 from dataclasses import dataclass
@@ -14,7 +14,7 @@ class ConversationProgress(IntEnum):
     IN_PROGRESS = 1
     ARCHIVED = 2
 
-class ModmailModActionType(IntEnum):
+class ModActionType(IntEnum):
     HIGHLIGHT = 0
     UNHIGHLIGHT = 1
     ARCHIVE = 2
@@ -28,14 +28,14 @@ class ModmailModActionType(IntEnum):
 
 
 @dataclass(repr=False, eq=False)
-class ModmailModeratedSubreddit(IArtifact):
+class ModeratedSubreddit(IArtifact):
     d: Mapping[str, Any]
     id: int
     name: str
     subscriber_count: int
 
 
-class Conversation(IArtifact):
+class ConversationInfo(IArtifact):
     @dataclass(repr=False, eq=False)
     class LegacyMessage:
         id: int
@@ -54,7 +54,7 @@ class Conversation(IArtifact):
         self.is_repliable: bool = d['isRepliable']
         self.is_highlighted: bool = d['isHighlighted']
 
-        self.legacy_message: Optional[Conversation.LegacyMessage] = None
+        self.legacy_message: Optional[ConversationInfo.LegacyMessage] = None
         if (x := d['legacyFirstMessageId']) is not None:
             self.legacy_message = self.LegacyMessage(
                 id36=x,
@@ -62,10 +62,10 @@ class Conversation(IArtifact):
                 link="https://www.reddit.com/message/messages/" + x,
             )
 
-        self.last_user_update: Optional[datetime] = None if (x := d['lastUserUpdate']) is None else datetime.fromisoformat(x)
-        self.last_mod_update: Optional[datetime] = None if (x := d['lastModUpdate']) is None else datetime.fromisoformat(x)
+        self.last_user_update: Optional[datetime] = (x := d['lastUserUpdate']) and datetime.fromisoformat(x)
+        self.last_mod_update: Optional[datetime] = (x := d['lastModUpdate']) and datetime.fromisoformat(x)
         self.last_update: datetime = datetime.fromisoformat(d['lastUpdated'])
-        self.last_unread: Optional[datetime] = None if (x := d['lastUnread']) is None else datetime.fromisoformat(x)
+        self.last_unread: Optional[datetime] = (x := d['lastUnread']) and datetime.fromisoformat(x)
         owner = d['owner']
         self.subreddit_name: str = owner['displayName']
         self.subreddit_id: int = int(owner['id'][3:], 36)
@@ -83,7 +83,7 @@ class Message(IArtifact):
         self.datetime: datetime = datetime.fromisoformat(d['date'])
         self.is_internal: bool = d['isInternal']
 
-class ModmailModAction(IArtifact):
+class ModAction(IArtifact):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
         self.id: int = int(d['id'], 36)
@@ -134,54 +134,25 @@ class UserDossier(IArtifact):
         self.recent_convos: Sequence[UserDossier.RecentConvo] = [self.RecentConvo(m) for m in d['recentConvos']]
 
 
-TConversation = TypeVar('TConversation', bound=Conversation)
-TMessage = TypeVar('TMessage', bound=Message)
-TModmailModAction = TypeVar('TModmailModAction', bound=ModmailModAction)
+@dataclass(repr=False, eq=False, frozen=True)
+class ConversationAggregate:
+    conversation: ConversationInfo
+    messages: Sequence[Message]
+    mod_actions: Sequence[ModAction]
+    history: Sequence[object]
 
-class GBaseConversationAggregate(Generic[TConversation, TMessage, TModmailModAction]):
-    def __init__(self,
-            conversation: TConversation,
-            messages: Sequence[TMessage],
-            mod_actions: Sequence[TModmailModAction],
-            history: Sequence[object]) -> None:
-        self.conversation: TConversation = conversation
-        self.messages: Sequence[TMessage] = messages
-        self.mod_actions: Sequence[TModmailModAction] = mod_actions
-        self.history: Sequence[object] = history
+@dataclass(repr=False, eq=False, frozen=True)
+class UserDossierConversationAggregate(ConversationAggregate):
+    conversation: ConversationInfo
+    messages: Sequence[Message]
+    mod_actions: Sequence[ModAction]
+    history: Sequence[object]
+    user_dossier: UserDossier
 
-class ConversationAggregate(GBaseConversationAggregate[Conversation, Message, ModmailModAction]):
-    pass
-
-TUserDossier = TypeVar('TUserDossier', bound=UserDossier)
-
-class GBaseUserDossierConversationAggregate(
-    GBaseConversationAggregate[TConversation, TMessage, TModmailModAction],
-    Generic[TConversation, TMessage, TModmailModAction, TUserDossier],
-):
-    def __init__(self,
-            conversation: TConversation,
-            messages: Sequence[TMessage],
-            mod_actions: Sequence[TModmailModAction],
-            history: Sequence[object],
-            user_dossier: TUserDossier) -> None:
-        super().__init__(conversation, messages, mod_actions, history)
-        self.user_dossier: TUserDossier = user_dossier
-
-class UserDossierConversationAggregate(GBaseUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
-    pass
-
-class GBaseOptionalUserDossierConversationAggregate(
-    GBaseConversationAggregate[TConversation, TMessage, TModmailModAction],
-    Generic[TConversation, TMessage, TModmailModAction, TUserDossier],
-):
-    def __init__(self,
-            conversation: TConversation,
-            messages: Sequence[TMessage],
-            mod_actions: Sequence[TModmailModAction],
-            history: Sequence[object],
-            user_dossier: Optional[TUserDossier]) -> None:
-        super().__init__(conversation, messages, mod_actions, history)
-        self.user_dossier: Optional[TUserDossier] = user_dossier
-
-class OptionalUserDossierConversationAggregate(GBaseOptionalUserDossierConversationAggregate[Conversation, Message, ModmailModAction, UserDossier]):
-    pass
+@dataclass(repr=False, eq=False, frozen=True)
+class OptionalUserDossierConversationAggregate(ConversationAggregate):
+    conversation: ConversationInfo
+    messages: Sequence[Message]
+    mod_actions: Sequence[ModAction]
+    history: Sequence[object]
+    user_dossier: Optional[UserDossier]

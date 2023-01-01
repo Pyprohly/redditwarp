@@ -7,6 +7,7 @@ if TYPE_CHECKING:
     from ...models.user_relationship_item import UserRelationshipItem, FriendRelationshipItem
     from ...models.trophy import Trophy
     from ...models.karma_breakdown_entry import KarmaBreakdownEntry
+    from ...types import JSON_ro
 
 from .pull_subreddits_SYNC import PullSubreddits
 from ...model_loaders.my_account_SYNC import load_account
@@ -18,7 +19,7 @@ from ... import exceptions
 from ...http import exceptions as http_exceptions
 
 class AccountProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.pull_subreddits: PullSubreddits = PullSubreddits(client)
 
@@ -46,7 +47,7 @@ class AccountProcedures:
         """
         return self._client.request('GET', '/api/v1/me/prefs')
 
-    def set_preferences(self, prefs: Mapping[str, object]) -> Mapping[str, Any]:
+    def set_preferences(self, prefs: Mapping[str, JSON_ro]) -> Mapping[str, Any]:
         """Update the preferences of the current user.
 
         .. PARAMETERS

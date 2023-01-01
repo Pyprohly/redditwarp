@@ -1,9 +1,9 @@
 
 # RedditWarp
 
-An easy-to-learn, comprehensive, type-complete Python Reddit API wrapper.
+A comprehensive, type-complete, easy-to-learn Python Reddit API wrapper.
 
-RedditWarp is an advanced Python Reddit API library designed to handle the complexities
+RedditWarp is a Python library designed to handle the complexities
 of the Reddit API in a package that is comprehensive, highly discoverable, static-type
 conscious, and provides a large set of useful abstractions that allow for better code
 organisation and maintainability.
@@ -14,26 +14,27 @@ Look how easy it is to use:
 
 ```python
 import redditwarp.SYNC
+
 client = redditwarp.SYNC.Client()
 
-it = client.p.front.pull.hot(5)
-for subm in it:
-    print(subm.id36, '~', subm.title)
+it = client.p.front.pull.hot(6)
+l = list(it)
+for subm in l:
+    print("r/{0.subreddit.name} | {0.id36}+ ^:{0.score} | {0.title!r:.80}".format(subm))
 ```
 
 ## Features
 
-* A consistent and simple API.
+* A consistent and easy-to-learn programming interface.
 * Modern type-complete codebase.
 * Sync and asynchronous IO support.
 * Automatic rate limit handling.
 * A comprehensive and discoverable index of API procedures.
-* Rich objects that accurately wrap API models and structures.
-* Formal data structures, e.g., that facilitate: comment tree traversals, pagination.
+* Model classes that sensibly wrap API structures.
+* Formal data structures to facilitate comment tree traversals and pagination.
 * HTTP transport library agnosticism.
 * OAuth2 tooling and CLI utilities to help manage auth tokens.
 * A simple event-based listing endpoint streaming framework.
-* A built-in Pushshift Client.
 
 ## Installation
 
@@ -52,13 +53,14 @@ Install/update:
 
 ```python
 import redditwarp.SYNC
+
 client = redditwarp.SYNC.Client()
 
-# Display the first 5 submissions on the Reddit frontpage.
-it = client.p.front.pull.hot(5)
+# Display the first 6 submissions on the Reddit frontpage.
+it = client.p.front.pull.hot(6)
 l = list(it)
 for subm in l:
-    print("r/{0.subreddit.name} | {0.score} | {0.title!r:.90}".format(subm))
+    print("r/{0.subreddit.name} | {0.id36}+ ^:{0.score} | {0.title!r:.80}".format(subm))
 
 # How many subscribers does r/Python have?
 subr = client.p.subreddit.fetch_by_name('Python')
@@ -69,7 +71,7 @@ it1 = client.p.subreddit.pull.top('YouShouldKnow', amount=1, time='week')
 m = next(it1)
 print(f'''\
 {m.permalink}
-{m.id36}+ | {m.score} :: {m.title}
+{m.id36}+ ^:{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
 by u/{m.author_name} to r/{m.subreddit.name}
 ''')
@@ -78,7 +80,7 @@ by u/{m.author_name} to r/{m.subreddit.name}
 tree_node = client.p.comment_tree.fetch(int('uc8i1g', 36), sort='top', limit=1)
 c = tree_node.children[0].value
 print(f'''\
-{c.submission.id36}+{c.id36} | {c.score}
+{c.submission.id36}+{c.id36} ^:{c.score}
 u/{c.author_name} says:
 {c.body}
 ''')
@@ -105,7 +107,7 @@ client1 = redditwarp.SYNC.Client(CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN)
 
 # Who am I?
 me = client1.p.account.fetch()
-print(f"I am u/{me.name}")
+print(f"Hello u/{me.name}!")
 
 # Show my last 5 comments.
 it3 = client.p.user.pull.comments(me.name, 5)
@@ -124,14 +126,14 @@ for obj in l:
         case Submission() as m:
             print(f'''\
 {m.permalink}
-{m.id36}+ | {m.score} :: {m.title}
+{m.id36}+ ^:{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
 by u/{m.author_name} to r/{m.subreddit.name}
 ''')
         case Comment() as c:
             print(f'''\
 {c.permalink}
-{c.submission.id36}+{c.id36} | {c.score}
+{c.submission.id36}+{c.id36} ^:{c.score}
 u/{c.author_name} says:
 {c.body}
 ''')
@@ -185,7 +187,10 @@ run(submission_stream)
 
 ## Support
 
-Post your questions and queries to either r/redditdev or r/RedditWarp.
+Post any questions you have to either [r/RedditWarp] or [r/redditdev].
+
+[r/RedditWarp]: https://www.reddit.com/r/RedditWarp/
+[r/redditdev]: https://www.reddit.com/r/redditdev/
 
 Join the discussion in the Discord guild: …
 
@@ -194,7 +199,6 @@ Join the discussion in the Discord guild: …
 * [Repository](https://github.com/Pyprohly/redditwarp)
 * Documentation
 * Discord guild
-* r/RedditWarp
-* r/redditdev
-* Reddit API docs
-* Botettiqute
+* [r/RedditWarp]
+* [r/redditdev]
+* [Reddit API docs](https://www.reddit.com/dev/api/)

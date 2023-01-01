@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Mapping, Optional, cast
+from typing import Any, Mapping, Optional
 
 from functools import cached_property
 from datetime import datetime, timezone
@@ -18,7 +18,7 @@ class SubredditUserItem:
         self.id: int = int(id36, 36)
         self.name: str = d['username']
         self.account_icon: str = d['accountIcon']
-        self.icon_size: tuple[int, int] = cast("tuple[int, int]", d['iconSize'])
+        self.icon_size: tuple[int, int] = d['iconSize']
         self.added_ut: int = 0
 
 class ModeratorUserItem(SubredditUserItem):

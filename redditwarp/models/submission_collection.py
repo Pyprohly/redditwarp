@@ -1,16 +1,16 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Sequence, TypeVar, overload, Iterator, Union
+from typing import Mapping, Any, Sequence, TypeVar, overload, Iterator, Union, final, Callable
 
 from datetime import datetime, timezone
 
-from .artifact import Artifact
+from .artifact import IArtifact
 from ..model_loaders.submission import load_submission
 from .submission import Submission
 
-class SubmissionCollectionDetails(Artifact):
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
+class SubmissionCollectionInfo(IArtifact):
+    def __init__(self, d: Mapping[str, Any]) -> None:
+        self.d: Mapping[str, Any] = d
         self.uuid: str = d['collection_id']
 
         full_id36: str = d['subreddit_id']
@@ -41,34 +41,40 @@ class SubmissionCollectionDetails(Artifact):
         self.submission_id36s: Sequence[str] = [s[3:] for s in submission_full_id36s]
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
 
-TSubmission = TypeVar('TSubmission')
+class SubmissionCollection(SubmissionCollectionInfo, Sequence[Submission]):
+    @property
+    def submissions(self) -> Sequence[Submission]:
+        return self.__submissions
 
-class GBaseSubmissionCollection(SubmissionCollectionDetails, Sequence[TSubmission]):
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
-        children_data = d['sorted_links']['data']['children']
-        subms = [self._load_submission(i['data']) for i in children_data]
-        self.submissions: Sequence[TSubmission] = subms
+        self.__submissions: Sequence[Submission] = ()
+        # https://github.com/python/mypy/issues/4177
+        if self.__class__.submissions == __class__.submissions:  # type: ignore[name-defined]
+            self.__submissions = self._load_submissions(d, load_submission)
 
     def __len__(self) -> int:
-        return len(self.submissions)
+        return len(self.__submissions)
 
     def __contains__(self, item: object) -> bool:
-        return item in self.submissions
+        return item in self.__submissions
 
-    def __iter__(self) -> Iterator[TSubmission]:
-        return iter(self.submissions)
+    def __iter__(self) -> Iterator[Submission]:
+        return iter(self.__submissions)
 
     @overload
-    def __getitem__(self, index: int) -> TSubmission: ...
+    def __getitem__(self, index: int) -> Submission: ...
     @overload
-    def __getitem__(self, index: slice) -> Sequence[TSubmission]: ...
-    def __getitem__(self, index: Union[int, slice]) -> Union[TSubmission, Sequence[TSubmission]]:
-        return self.submissions[index]
+    def __getitem__(self, index: slice) -> Sequence[Submission]: ...
+    def __getitem__(self, index: Union[int, slice]) -> Union[Submission, Sequence[Submission]]:
+        return self.__submissions[index]
 
-    def _load_submission(self, m: Mapping[str, Any]) -> TSubmission:
-        raise NotImplementedError
+    _TSubmission = TypeVar('_TSubmission', bound=Submission)
 
-class SubmissionCollection(GBaseSubmissionCollection[Submission]):
-    def _load_submission(self, m: Mapping[str, Any]) -> Submission:
-        return load_submission(m)
+    @final
+    def _load_submissions(self,
+        d: Mapping[str, Any],
+        load: Callable[[Mapping[str, Any]], _TSubmission],
+    ) -> Sequence[_TSubmission]:
+        children_data = d['sorted_links']['data']['children']
+        return [load(i['data']) for i in children_data]

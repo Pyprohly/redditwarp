@@ -67,7 +67,7 @@ class except_without_context(ContextManager[bool]):
     Just right.
     """
 
-    def __init__(self, *exceptions: type[BaseException]):
+    def __init__(self, *exceptions: type[BaseException]) -> None:
         self.exceptions: tuple[type[BaseException], ...] = exceptions
         self.yes: bool = False
 

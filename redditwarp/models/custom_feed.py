@@ -8,7 +8,7 @@ from functools import cached_property
 from ..core.const import AUTHORIZATION_BASE_URL
 
 class CustomFeed:
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
         self.title: str = d['display_name']
         self.name: str = d['name']
@@ -32,7 +32,7 @@ class CustomFeed:
         self.owner_id: int = int(id36, 36)
 
     class _me:
-        def __init__(self, outer: CustomFeed):
+        def __init__(self, outer: CustomFeed) -> None:
             d = outer.d
             self.can_edit: bool = d['can_edit']
             self.favorited: bool = d['is_favorited']

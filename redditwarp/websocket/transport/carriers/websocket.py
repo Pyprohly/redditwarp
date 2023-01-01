@@ -30,7 +30,7 @@ def _get_necessary_timeout(timeout: float = -2) -> Optional[float]:
 class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
     SIDE: int = Side.CLIENT
 
-    def __init__(self, ws: websocket.WebSocket):
+    def __init__(self, ws: websocket.WebSocket) -> None:
         super().__init__()
         self.ws: websocket.WebSocket = ws
 

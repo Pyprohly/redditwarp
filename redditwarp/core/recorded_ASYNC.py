@@ -23,6 +23,16 @@ class Recorded(DelegatingHandler):
         self.last_transmit_queue: MutableSequence[tuple[Requisition, Optional[Exchange]]] = deque(maxlen=16)
         self.last_transfer_queue: MutableSequence[tuple[Requisition, Exchange]] = deque(maxlen=16)
 
+    def reset(self) -> None:
+        self.last_requisition = None
+        self.last_exchange = None
+        self.last_transmit = None
+        self.last_transfer = None
+        self.last_requisition_queue.clear()
+        self.last_exchange_queue.clear()
+        self.last_transmit_queue.clear()
+        self.last_transfer_queue.clear()
+
     async def _send(self, p: SendParams) -> Exchange:
         exchange = None
         try:
@@ -71,6 +81,9 @@ class Last:
     @property
     def transfer_queue(self) -> MutableSequence[tuple[Requisition, Exchange]]:
         return self.recorder.last_transfer_queue
+
+    def reset(self) -> None:
+        self.recorder.reset()
 
     def __init__(self, recorder: Recorded) -> None:
         self.recorder: Recorded = recorder

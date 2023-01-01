@@ -8,7 +8,7 @@ from ...model_loaders.subreddit_SYNC import load_potentially_inaccessible_subred
 from ...util.base_conversion import to_base36
 
 class Get:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def __call__(self, id: int) -> Optional[object]:

@@ -28,7 +28,7 @@ from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorCha
 from ...pagination.paginators.moderation.async1 import ModerationActionLogAsyncPaginator
 
 class ModerationProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.legacy: Legacy = Legacy(client)
         self.pull_users: PullUsers = PullUsers(client)

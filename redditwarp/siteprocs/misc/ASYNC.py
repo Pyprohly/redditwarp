@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 import json
 
 class MiscProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     async def convert_rtjson_to_markdown(self, rtjson: Mapping[str, Any]) -> str:

@@ -22,7 +22,7 @@ from ...const import Side, ConnectionState
 class WebSocketClient(PartiallyImplementedWebSocket):
     SIDE: int = Side.CLIENT
 
-    def __init__(self, ws: websockets.legacy.client.WebSocketClientProtocol):
+    def __init__(self, ws: websockets.legacy.client.WebSocketClientProtocol) -> None:
         super().__init__()
         self.ws: websockets.legacy.client.WebSocketClientProtocol = ws
 

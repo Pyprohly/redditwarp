@@ -9,8 +9,8 @@ class AsyncPaginator(Generic[T]):
         self.limit: Optional[int] = limit
 
     async def __aiter__(self) -> AsyncIterator[Sequence[T]]:
-        while x := await self.fetch():
-            yield x
+        while page := await self.fetch():
+            yield page
 
     async def fetch(self) -> Sequence[T]:
         raise NotImplementedError
@@ -30,10 +30,10 @@ class CursorAsyncPaginator(AsyncPaginator[T]):
 
 class MoreAvailableAsyncPaginator(AsyncPaginator[T]):
     async def __aiter__(self) -> AsyncIterator[Sequence[T]]:
-        if x := await self.fetch():
-            yield x
-        while self.has_more_available() and (x := await self.fetch()):
-            yield x
+        if page := await self.fetch():
+            yield page
+            while self.has_more_available() and (page := await self.fetch()):
+                yield page
 
     def has_more_available(self) -> bool:
         raise NotImplementedError

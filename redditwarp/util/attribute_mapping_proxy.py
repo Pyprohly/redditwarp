@@ -111,7 +111,7 @@ class DictRecursiveAttributeMappingProxy(AttributeMappingProxy[V]):
 
 
 class ListProxy(Sequence[Any]):
-    def __init__(self, data: Sequence[Any]):
+    def __init__(self, data: Sequence[Any]) -> None:
         self._elements: Sequence[Any] = data
 
     def __repr__(self) -> str:

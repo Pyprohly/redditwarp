@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from ...util.base_conversion import to_base36
 
 class Reorder:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def __call__(self, uuid: str, submission_ids: Sequence[int]) -> None:

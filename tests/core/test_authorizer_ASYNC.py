@@ -52,7 +52,7 @@ class TestAuthorizer:
         o.renewal_time = 9999
         o.expires_in_fallback = None
         await o.renew_token()
-        assert o.get_token() is my_token
+        assert o.fetch_token() is my_token
         assert o.renewal_time is None
 
         o.renewal_time = 9999

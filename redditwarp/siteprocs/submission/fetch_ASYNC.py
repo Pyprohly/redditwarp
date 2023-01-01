@@ -14,7 +14,7 @@ from ...exceptions import NoResultException, RejectedResultException
 T = TypeVar('T')
 
 class _Common(Generic[T]):
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     async def __call__(self, id: int) -> T:
@@ -49,7 +49,7 @@ class Fetch(_Common[Submission]):
                 return post
             raise RejectedResultException('the submission is not a link post')
 
-    def __init__(self, outer: SubmissionProcedures, client: Client):
+    def __init__(self, outer: SubmissionProcedures, client: Client) -> None:
         super().__init__(client)
         self.as_textpost: Fetch._AsTextPost = self._AsTextPost(client)
         self.as_linkpost: Fetch._AsLinkPost = self._AsLinkPost(client)

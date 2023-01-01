@@ -15,7 +15,7 @@ from ...iterators.call_chunk_calling_async_iterator import CallChunkCallingAsync
 from ...iterators.async_call_chunk import AsyncCallChunk
 
 class CustomFeedProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self._json_encoder = encoder = json.JSONEncoder()
         self._json_encode = encoder.encode

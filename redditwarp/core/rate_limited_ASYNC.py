@@ -35,7 +35,7 @@ class RateLimited(DelegatingHandler):
         tb = self._tb
         async with self._lock:
             s = 0.
-            if self.remaining < 2:
+            if self.remaining <= 1:
                 s = self.reset
             elif (w := self.reset / self.remaining) >= 2:
                 # If the API wants us to wait for longer than two seconds then oblige.
@@ -69,7 +69,7 @@ class RateLimited(DelegatingHandler):
                 self.used = int(headers['x-ratelimit-used'])
             else:
                 if self.reset > 0:
-                    self.reset = max(self.reset - int(self._delta), 0)
+                    self.reset = max(0, self.reset - int(self._delta))
                     self.remaining -= 1
                     self.used += 1
                 else:

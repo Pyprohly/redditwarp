@@ -23,7 +23,7 @@ from ...pagination.paginators.user.async1 import (
 )
 
 class Pull:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def overview(self, name: str, amount: Optional[int] = None, *,

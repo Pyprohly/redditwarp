@@ -5,7 +5,7 @@ from typing import Mapping, Any, Sequence, Iterator, Union, overload
 from datetime import datetime, timezone
 
 class LiveThread:
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
         self.idt: str = d['id']
         self.title: str = d['title']
@@ -21,7 +21,7 @@ class LiveThread:
         self.viewer_count: int = d['viewer_count']
 
 class LiveUpdate:
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
         self.uuid: str = d['id']
         self.author_name: str = d['author']
@@ -32,7 +32,7 @@ class LiveUpdate:
         self.stricken: bool = d['stricken']
 
 class Contributor:
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
         self.name: str = d['name']
         full_id36: str = d['id']
@@ -44,7 +44,7 @@ class Contributor:
 class ContributorList(Sequence[Contributor]):
     def __init__(self,
             contributors: Sequence[Contributor],
-            invitations: Sequence[Contributor]):
+            invitations: Sequence[Contributor]) -> None:
         self.contributors: Sequence[Contributor] = contributors
         self.invitations: Sequence[Contributor] = invitations
 

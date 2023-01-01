@@ -1,22 +1,43 @@
 
 from __future__ import annotations
-from typing import Iterable, Iterator, Sequence, TypeVar, Callable
+from typing import TYPE_CHECKING, TypeVar, Generic, Optional
+if TYPE_CHECKING:
+    from typing import Iterable, Iterator, Callable, Sequence
 
 from .stubborn_caller_iterator import StubbornCallerIterator
 from .unfaltering_chaining_iterator import UnfalteringChainingIterator
 
 T = TypeVar('T')
 
-class CallChunkChainingIterator(UnfalteringChainingIterator[T]):
+class CallChunkChainingIterator(Generic[T]):
     """Evaluate call chunks and chain them together."""
 
+    @property
+    def current_callable(self) -> Optional[Callable[[], Sequence[T]]]:
+        return self.__calling_itr.current
+
+    @current_callable.setter
+    def current_callable(self, value: Optional[Callable[[], Sequence[T]]]) -> None:
+        self.__calling_itr.current = value
+
+    @property
+    def current_iterator(self) -> Iterator[T]:
+        return self.__chaining_itr.current_iterator
+
+    @current_iterator.setter
+    def current_iterator(self, value: Iterator[T]) -> None:
+        self.__chaining_itr.current_iterator = value
+
     def __init__(self, chunks: Iterable[Callable[[], Sequence[T]]]) -> None:
-        self.__chunk_iter: Iterator[Callable[[], Sequence[T]]] = iter(chunks)
-        self.__caller_iter: Iterator[Sequence[T]] = StubbornCallerIterator(self.__chunk_iter)
-        super().__init__(self.__caller_iter)
+        self.__chunking_itr: Iterator[Callable[[], Sequence[T]]] = iter(chunks)
+        self.__calling_itr: StubbornCallerIterator[Sequence[T]] = StubbornCallerIterator(self.__chunking_itr)
+        self.__chaining_itr: UnfalteringChainingIterator[T] = UnfalteringChainingIterator(self.__calling_itr)
 
-    def get_chunk_iter(self) -> Iterator[Callable[[], Sequence[T]]]:
-        return self.__chunk_iter
+    def __iter__(self) -> Iterator[T]:
+        return self
 
-    def get_caller_iter(self) -> Iterator[Sequence[T]]:
-        return self.__caller_iter
+    def __next__(self) -> T:
+        return next(self.__chaining_itr)
+
+    def get_chunking_iterator(self) -> Iterator[Callable[[], Sequence[T]]]:
+        return self.__chunking_itr

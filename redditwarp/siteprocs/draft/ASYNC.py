@@ -11,7 +11,7 @@ from ...model_loaders.submission_draft_ASYNC import load_draft_list
 from ...util.base_conversion import to_base36
 
 class DraftProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     async def create_markdown_draft(self,

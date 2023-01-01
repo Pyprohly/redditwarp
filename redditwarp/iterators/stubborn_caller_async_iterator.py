@@ -6,7 +6,7 @@ T = TypeVar('T')
 
 class StubbornCallerAsyncIterator(AsyncIterator[T]):
     def __init__(self, iterable: Iterable[Callable[[], Awaitable[T]]]) -> None:
-        self._itr = iter(iterable)
+        self.__itr = iter(iterable)
         self.current: Optional[Callable[[], Awaitable[T]]] = None
 
     def __aiter__(self) -> AsyncIterator[T]:
@@ -15,9 +15,9 @@ class StubbornCallerAsyncIterator(AsyncIterator[T]):
     async def __anext__(self) -> T:
         if self.current is None:
             try:
-                self.current = next(self._itr)
+                self.current = next(self.__itr)
             except StopIteration:
                 raise StopAsyncIteration
-        result = await self.current()
+        ret = await self.current()
         self.current = None
-        return result
+        return ret

@@ -11,7 +11,7 @@ from ...exceptions import (
 
 
 class Procedures:
-    def __init__(self, http: RedditHTTPClient):
+    def __init__(self, http: RedditHTTPClient) -> None:
         self._http = http
 
     async def do_legacy_reddit_web_login(self, username: str, password: str, otp: str = '') -> tuple[str, str]:

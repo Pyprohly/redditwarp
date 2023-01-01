@@ -4,7 +4,7 @@ from typing import Optional, ClassVar
 
 from dataclasses import dataclass
 
-from ...auth.grants import AuthorizationGrant
+from ..auth.grants import AuthorizationGrant
 
 @dataclass(frozen=True)
 class InstalledClientGrant(AuthorizationGrant):

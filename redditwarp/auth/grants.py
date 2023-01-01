@@ -1,8 +1,8 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Optional, ClassVar
+from typing import TYPE_CHECKING, Mapping, ClassVar
 if TYPE_CHECKING:
-    from typing import Iterator
+    from typing import Iterator, Optional
 
 from dataclasses import dataclass, field
 

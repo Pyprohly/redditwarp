@@ -11,7 +11,7 @@ from ...model_loaders.flair_emoji import load_flair_emoji_upload_lease, load_fla
 from ...http.payload import guess_mimetype_from_filename
 
 class FlairEmojiProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def get_subreddit_emojis(self, sr: str) -> SubredditFlairEmojis:

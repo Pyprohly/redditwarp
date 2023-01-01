@@ -26,7 +26,7 @@ class UnknownTokenType(ArgExc):
     .. _`section 7.1`: https://datatracker.ietf.org/doc/html/rfc6749#section-7.1
     """
 
-    def __init__(self, arg: object = None, *, token: Token):
+    def __init__(self, arg: object = None, *, token: Token) -> None:
         super().__init__(arg)
         self.token: Token = token
 

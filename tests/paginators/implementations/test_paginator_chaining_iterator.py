@@ -22,7 +22,7 @@ def test_simple_iteration() -> None:
     pci: PaginatorChainingIterator[int] = PaginatorChainingIterator(p)
     assert list(pci) == [1,2,3,4,5,6]
 
-def test_current_iter() -> None:
+def test_current_iterator() -> None:
     p = MyPaginator([
         [0, 1, 2],
         [3, 4],
@@ -30,11 +30,11 @@ def test_current_iter() -> None:
     pci: PaginatorChainingIterator[int] = PaginatorChainingIterator(p)
 
     assert next(pci) == 0
-    assert list(pci.current_iter) == [1, 2]
+    assert list(pci.current_iterator) == [1, 2]
     assert next(pci) == 3
     assert next(pci) == 4
 
-    pci.current_iter = iter((8, 9))
+    pci.current_iterator = iter((8, 9))
     assert next(pci) == 8
     assert next(pci) == 9
 

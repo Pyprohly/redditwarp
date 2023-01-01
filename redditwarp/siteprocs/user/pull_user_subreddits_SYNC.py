@@ -9,7 +9,7 @@ from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingI
 from ...pagination.paginators.user.sync1 import UserSubredditListingPaginator
 
 class PullUserSubreddits:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def popular(self, amount: Optional[int] = None

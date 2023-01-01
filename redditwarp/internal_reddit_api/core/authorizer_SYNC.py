@@ -26,8 +26,8 @@ class Authorizer:
     ):
         self._token_client: Optional[InternalRedditAPITokenObtainmentClient] = token_client
         self._token: Optional[Token] = token
-        self.renewal_time: Optional[int] = None
-        self.renewal_skew: int = 30
+        self.renewal_time: Optional[float] = None
+        self.renewal_skew: float = 30
         self.expires_in_fallback: Optional[int] = None
         self.time_func: Callable[[], float] = time.monotonic
         self.authorization_header_name: str = 'Authorization'
@@ -35,7 +35,7 @@ class Authorizer:
     def has_token_client(self) -> bool:
         return self._token_client is not None
 
-    def get_token_client(self) -> InternalRedditAPITokenObtainmentClient:
+    def fetch_token_client(self) -> InternalRedditAPITokenObtainmentClient:
         v = self._token_client
         if v is None:
             raise RuntimeError('token client not set')
@@ -47,7 +47,7 @@ class Authorizer:
     def has_token(self) -> bool:
         return self._token is not None
 
-    def get_token(self) -> Token:
+    def fetch_token(self) -> Token:
         v = self._token
         if v is None:
             raise RuntimeError('token not set')
@@ -57,18 +57,18 @@ class Authorizer:
         self._token = value
 
     def renew_token(self) -> None:
-        tc = self.get_token_client()
-
+        tc = self.fetch_token_client()
         tk = tc.fetch_token()
+
         self.set_token(tk)
 
-        expires_in: Optional[int] = tk.expires_in
+        expires_in = tk.expires_in
         if expires_in is None:
             expires_in = self.expires_in_fallback
         if expires_in is None:
             self.renewal_time = None
         else:
-            self.renewal_time = int(self.time()) + expires_in - self.renewal_skew
+            self.renewal_time = self.time() + expires_in - self.renewal_skew
 
     def time(self) -> float:
         return self.time_func()
@@ -84,7 +84,7 @@ class Authorizer:
         return self.has_token_client()
 
     def prepare_requisition(self, requisition: Requisition) -> None:
-        prepare_requisition(requisition, self.get_token(), authorization_header_name=self.authorization_header_name)
+        prepare_requisition(requisition, self.fetch_token(), authorization_header_name=self.authorization_header_name)
 
 
 class Authorized(DelegatingHandler):

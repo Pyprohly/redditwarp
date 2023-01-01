@@ -26,7 +26,7 @@ async def test_simple_iteration() -> None:
     assert [i async for i in pci] == [1,2,3,4,5,6]
 
 @pytest.mark.asyncio
-async def test_current_iter() -> None:
+async def test_current_iterator() -> None:
     p = MyAsyncPaginator([
         [0, 1, 2],
         [3, 4],
@@ -34,11 +34,11 @@ async def test_current_iter() -> None:
     pci: PaginatorChainingAsyncIterator[int] = PaginatorChainingAsyncIterator(p)
 
     assert await pci.__anext__() == 0
-    assert list(pci.current_iter) == [1, 2]
+    assert list(pci.current_iterator) == [1, 2]
     assert await pci.__anext__() == 3
     assert await pci.__anext__() == 4
 
-    pci.current_iter = iter((8, 9))
+    pci.current_iterator = iter((8, 9))
     assert await pci.__anext__() == 8
     assert await pci.__anext__() == 9
 

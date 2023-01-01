@@ -5,10 +5,10 @@ from redditwarp.iterators.call_chunk_calling_iterator import CallChunkCallingIte
 from redditwarp.iterators.call_chunk import CallChunk
 
 class TestCallChunkChainingIterator:
-    def test_chunks_attribute(self) -> None:
+    def test_current_iterator(self) -> None:
         it = [CallChunk(lambda x: x, 1)]
         ccci = CallChunkCallingIterator(it)
-        assert list(ccci.get_chunk_iter()) == it
+        assert list(ccci.get_chunking_iterator()) == it
 
     def test_simple_iteration(self) -> None:
         it = [
@@ -36,22 +36,22 @@ class TestCallChunkChainingIterator:
             CallChunk(lambda x: x, 3),
         ]
         ccci = CallChunkCallingIterator(it)
-        assert ccci.current is None
+        assert ccci.current_callable is None
         assert next(ccci) == 1
-        assert ccci.current is None
+        assert ccci.current_callable is None
         try:
             next(ccci)
         except RuntimeError:
             pass
-        assert ccci.current is j
+        assert ccci.current_callable is j
         assert next(ccci) == 2
-        assert ccci.current is None
+        assert ccci.current_callable is None
         assert next(ccci) == 3
-        assert ccci.current is None
+        assert ccci.current_callable is None
 
     def test_current_is_setable(self) -> None:
         it: Iterable[CallChunk[int, int]] = ()
         ccci = CallChunkCallingIterator(it)
         assert list(ccci) == []
-        ccci.current = CallChunk(lambda x: x, 8)
+        ccci.current_callable = CallChunk(lambda x: x, 8)
         assert list(ccci) == [8]

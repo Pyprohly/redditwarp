@@ -8,7 +8,7 @@ from .artifact import Artifact
 
 class MyAccount(Artifact):
     class Subreddit:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.name: str = d['display_name']
             self.openness: str = d['subreddit_type']
             self.subscriber_count: int = d['subscribers']
@@ -16,7 +16,7 @@ class MyAccount(Artifact):
             self.public_description: str = d['public_description']
             self.nsfw: bool = d['over_18']
 
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.id36: str = d['id']
         self.id: int = int(self.id36, 36)

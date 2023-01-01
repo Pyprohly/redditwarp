@@ -5,23 +5,23 @@ if TYPE_CHECKING:
     from ..client_SYNC import Client
 
 from ..models.modmail_SYNC import (
-    Conversation,
+    ConversationInfo,
     Message,
-    ModmailModAction,
+    ModAction,
     UserDossier,
     ConversationAggregate,
     UserDossierConversationAggregate,
     OptionalUserDossierConversationAggregate,
 )
 
-def load_conversation(d: Mapping[str, Any], client: Client) -> Conversation:
-    return Conversation(d, client)
+def load_conversation_info(d: Mapping[str, Any], client: Client) -> ConversationInfo:
+    return ConversationInfo(d, client)
 
 def load_message(d: Mapping[str, Any], client: Client) -> Message:
     return Message(d, client)
 
-def load_modmail_mod_action(d: Mapping[str, Any]) -> ModmailModAction:
-    return ModmailModAction(d)
+def load_modmail_mod_action(d: Mapping[str, Any]) -> ModAction:
+    return ModAction(d)
 
 def load_user_dossier(d: Mapping[str, Any]) -> UserDossier:
     return UserDossier(d)
@@ -34,10 +34,10 @@ def load_conversation_aggregate(
     *,
     client: Client,
 ) -> ConversationAggregate:
-    conversation = load_conversation(conversation_data, client)
+    conversation = load_conversation_info(conversation_data, client)
 
     messages: MutableSequence[Message] = []
-    mod_actions: MutableSequence[ModmailModAction] = []
+    mod_actions: MutableSequence[ModAction] = []
     history: MutableSequence[object] = []
 
     convo_references = conversation_data['objIds']
@@ -69,11 +69,11 @@ def load_user_dossier_conversation_aggregate(
     *,
     client: Client,
 ) -> UserDossierConversationAggregate:
-    conversation = load_conversation(conversation_data, client)
+    conversation = load_conversation_info(conversation_data, client)
     user_dossier = load_user_dossier(user_dossier_data)
 
     messages: MutableSequence[Message] = []
-    mod_actions: MutableSequence[ModmailModAction] = []
+    mod_actions: MutableSequence[ModAction] = []
     history: MutableSequence[object] = []
 
     convo_references = conversation_data['objIds']
@@ -105,13 +105,13 @@ def load_optional_user_dossier_conversation_aggregate(
     *,
     client: Client,
 ) -> OptionalUserDossierConversationAggregate:
-    conversation = load_conversation(conversation_data, client)
+    conversation = load_conversation_info(conversation_data, client)
     user_dossier = None
     if optional_user_dossier_data is not None:
         user_dossier = load_user_dossier(optional_user_dossier_data)
 
     messages: MutableSequence[Message] = []
-    mod_actions: MutableSequence[ModmailModAction] = []
+    mod_actions: MutableSequence[ModAction] = []
     history: MutableSequence[object] = []
 
     convo_references = conversation_data['objIds']

@@ -6,12 +6,13 @@ if TYPE_CHECKING:
     from .auth.types import AuthorizationGrant
     from .http.payload import RequestFiles
     from .core.reddit_http_client_ASYNC import RedditHTTPClient
+    from .types import JSON_ro
 
 from configparser import ConfigParser
 
 from .auth import Token
 from .auth import grants
-from .core.auth import grants as core_grants
+from .core import grants as core_grants
 from .core.reddit_http_client_ASYNC import (
     PublicRedditHTTPClient,
     build_public_reddit_http_client,
@@ -129,11 +130,11 @@ class Client:
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], bytes]] = None,
-        json: Any = None,
+        json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
-        snub: Optional[Callable[[Any], None]] = raise_for_reddit_error,
+        snub: Optional[Callable[[JSON_ro], None]] = raise_for_reddit_error,
     ) -> Any:
         json_data = None
         try:
@@ -170,6 +171,6 @@ class Client:
             ua = f"{ua} Bot !-- {s}"
         self.http.set_user_agent(ua)
 
-RedditClient: type[Client] = Client
-Reddit: type[Client] = Client
-RedditWarp: type[Client] = Client
+RedditClient = Client
+Reddit = Client
+RedditWarp = Client

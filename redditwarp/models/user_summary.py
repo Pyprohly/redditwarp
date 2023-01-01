@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Mapping, Any
 
 class UserSummary:
-    def __init__(self, d: Mapping[str, Any], id36: str):
+    def __init__(self, d: Mapping[str, Any], id36: str) -> None:
         self.d: Mapping[str, Any] = d
         self.id36: str = id36
         self.id: int = int(id36, 36)

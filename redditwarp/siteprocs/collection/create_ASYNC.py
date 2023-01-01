@@ -9,7 +9,7 @@ from ...model_loaders.submission_collection_ASYNC import load_submission_collect
 from ...util.base_conversion import to_base36
 
 class Create:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     async def __call__(self,

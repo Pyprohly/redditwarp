@@ -20,7 +20,7 @@ class Rule:
 
 
 class SubredditRules(Sequence[Rule]):
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
         self._rules = [Rule(o) for o in d['rules']]
 

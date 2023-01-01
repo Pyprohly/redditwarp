@@ -4,7 +4,7 @@ The data members of an object are defined as any objects that do not implement '
 """
 
 from __future__ import annotations
-from typing import Any, Collection, Iterator, Iterable, Tuple, Mapping, IO, cast, Callable
+from typing import Any, Collection, Iterator, Iterable, Tuple, Mapping, IO, Callable
 
 import inspect
 from ast import literal_eval
@@ -43,7 +43,7 @@ def pretty_format(obj: object) -> str:
 
 
 class DataMembersNamespace(Collection[str]):
-    def __init__(self, instance: object):
+    def __init__(self, instance: object) -> None:
         self._instance = instance
 
     def __repr__(self) -> str:
@@ -59,8 +59,10 @@ class DataMembersNamespace(Collection[str]):
         return sum(1 for _ in self._data_members())
 
     def __contains__(self, item: object) -> bool:
+        if not isinstance(item, str):
+            return False
         try:
-            value = getattr(self._instance, cast(str, item))
+            value = getattr(self._instance, item)
         except AttributeError:
             return False
         return self._data_member(value)

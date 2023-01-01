@@ -9,9 +9,9 @@ E = TypeVar('E')
 class PaginatorChainingAsyncIterator(AsyncIterator[E]):
     def __init__(self, paginator: AsyncPaginator[E], amount: Optional[int] = None) -> None:
         self._paginator: AsyncPaginator[E] = paginator
+        self._paginator_iterator: AsyncIterator[Sequence[E]] = paginator.__aiter__()
         self.remaining: Optional[int] = amount
-        self.current_iter: Iterator[E] = iter(())
-        self._pagination_iterator: AsyncIterator[Sequence[E]] = paginator.__aiter__()
+        self.current_iterator: Iterator[E] = iter(())
 
     def __aiter__(self) -> AsyncIterator[E]:
         return self
@@ -21,7 +21,7 @@ class PaginatorChainingAsyncIterator(AsyncIterator[E]):
         remaining = self.remaining
         if remaining is None or remaining > 0:
             while True:
-                for elem in self.current_iter:
+                for elem in self.current_iterator:
                     if self.remaining is not None:
                         self.remaining -= 1
                     return elem
@@ -29,8 +29,8 @@ class PaginatorChainingAsyncIterator(AsyncIterator[E]):
                 if (limit is not None and remaining is not None) and limit > remaining:
                     self._paginator.limit = remaining
 
-                it = await self._pagination_iterator.__anext__()
-                self.current_iter = iter(it)
+                it = await self._paginator_iterator.__anext__()
+                self.current_iterator = iter(it)
 
         raise StopAsyncIteration
 

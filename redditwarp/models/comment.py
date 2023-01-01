@@ -11,14 +11,14 @@ from ..model_loaders.report import load_mod_report, load_user_report
 
 class Comment(Artifact):
     class Me:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.saved: bool = d['saved']
             self.reply_notifications: bool = d['send_replies']
             self.voted: int = {False: -1, None: 0, True: 1}[d['likes']]
 
     class Author:
         class AuthorFlair:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.template_uuid: str = d['author_flair_template_id'] or ''
                 author_flair_text: Optional[str] = d['author_flair_text']
                 self.text: str = author_flair_text or ''
@@ -30,7 +30,7 @@ class Comment(Artifact):
                 self.has_had_css_class_when_no_flair_template: bool = author_flair_css_class is not None
                 self.css_class: str = author_flair_css_class or ''
 
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.name: str = d['author']
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
@@ -38,12 +38,12 @@ class Comment(Artifact):
             self.flair: Comment.Author.AuthorFlair = self.AuthorFlair(d)
 
     class Submission:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['link_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
 
     class Subreddit:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             self.id: int = int(self.id36, 36)
             self.name: str = d['subreddit']
@@ -51,25 +51,25 @@ class Comment(Artifact):
 
     class Moderator:
         class Approved:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.by: str = d['approved_by']
                 self.ut: int = d['approved_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
         class Removed:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.by: str = d['banned_by']
                 self.ut: int = d['banned_at_utc']
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
 
         class Reports:
-            def __init__(self, d: Mapping[str, Any]):
+            def __init__(self, d: Mapping[str, Any]) -> None:
                 self.ignoring: bool = d['ignore_reports']
                 self.num_reports: int = d['num_reports']
                 self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
                 self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
 
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             self.spam: bool = d['spam']
 
             self.approved: Optional[Comment.Moderator.Approved] = None
@@ -88,11 +88,11 @@ class Comment(Artifact):
             self.removal_note: str = d['mod_note'] or ''
 
     class Edited:
-        def __init__(self, outer: Comment):
+        def __init__(self, outer: Comment) -> None:
             self.ut: int = outer.edited_ut
             self.at: datetime = outer.edited_at
 
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.id36: str = d['id']
         self.id: int = int(self.id36, 36)
@@ -157,7 +157,7 @@ class LooseComment(Comment):
     # * `GET /user/{username}/overview` (and variants)
 
     class Submission2(Comment.Submission):
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             super().__init__(d)
             self.title: str = d['link_title']
             self.author_name: str = d['link_author']
@@ -166,11 +166,11 @@ class LooseComment(Comment):
             self.nsfw: bool = d['over_18']
 
     class Subreddit2(Comment.Subreddit):
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
 
-    def __init__(self, d: Mapping[str, Any]):
+    def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.submission2: LooseComment.Submission2 = self.Submission2(d)
         self.subreddit2: LooseComment.Subreddit2 = self.Subreddit2(d)

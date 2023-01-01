@@ -14,7 +14,7 @@ from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 
 class CommentProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.fetch: Fetch = Fetch(self, client)
         self.get: Get = Get(client)

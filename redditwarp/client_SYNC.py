@@ -6,12 +6,13 @@ if TYPE_CHECKING:
     from .auth.types import AuthorizationGrant
     from .http.payload import RequestFiles
     from .core.reddit_http_client_SYNC import RedditHTTPClient
+    from .types import JSON_ro
 
 from configparser import ConfigParser
 
 from .auth import Token
 from .auth import grants
-from .core.auth import grants as core_grants
+from .core import grants as core_grants
 from .core.reddit_http_client_SYNC import (
     PublicRedditHTTPClient,
     build_public_reddit_http_client,
@@ -54,9 +55,9 @@ class Client:
     def from_praw_config(cls: type[_TSelf], section_name: str, *, filename: Optional[str] = None) -> _TSelf:
         """Initialize a `Client` instance from a praw.ini file.
 
-        This method aims to replicate the single-argument form of PRAW's `Reddit`
-        class constructor. If no `filename` is given, this method will look for
-        praw.ini configuration values in mutliple locations, like PRAW does.
+        This method aims to replicate the single-argument form of PRAW's `Reddit` class
+        constructor. If no `filename` is given, this method will look for `praw.ini`
+        configuration files in various locations: the same locations PRAW does.
 
         Only a subset of PRAW's configuration keys are read:
 
@@ -67,8 +68,8 @@ class Client:
         * `password`
         * `user_agent`
 
-        The credential values are given to the `Client` constructor,
-        then the `user_agent` field (if present) is passed to :meth:`.set_user_agent`.
+        The credential values are given directly to the `Client` constructor,
+        then the `user_agent` value (if present) is passed to :meth:`.set_user_agent`.
 
         .. PARAMETERS
 
@@ -76,9 +77,12 @@ class Client:
             The section name of the ini file in which to read values from.
             Pass an empty string to use the default section name "`DEFAULT`".
         :param filename:
-            The location of the praw.ini file to read. If not specified (`None`), the locations
-            returned by :func:`redditwarp.util.praw_config.get_praw_ini_potential_file_locations`
-            are all read and combined.
+            The location of the `praw.ini` file to read.
+
+            If not specified, the locations returned by
+            :func:`redditwarp.util.praw_config.get_praw_ini_potential_file_locations`
+            are searched and any files found are read and combined into a single
+            configuration.
         """
         config = ConfigParser()
         config.read(get_praw_ini_potential_file_locations() if filename is None else filename)
@@ -188,11 +192,11 @@ class Client:
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], bytes]] = None,
-        json: Any = None,
+        json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
-        snub: Optional[Callable[[Any], None]] = raise_for_reddit_error,
+        snub: Optional[Callable[[JSON_ro], None]] = raise_for_reddit_error,
     ) -> Any:
         """Make an API request and return JSON data.
 
@@ -253,6 +257,6 @@ class Client:
             ua = f"{ua} Bot !-- {s}"
         self.http.set_user_agent(ua)
 
-RedditClient: type[Client] = Client
-Reddit: type[Client] = Client
-RedditWarp: type[Client] = Client
+RedditClient = Client
+Reddit = Client
+RedditWarp = Client

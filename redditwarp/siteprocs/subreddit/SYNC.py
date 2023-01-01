@@ -24,7 +24,7 @@ from .pull_SYNC import Pull
 from .pulls_SYNC import Pulls
 
 class SubredditProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.get: Get = Get(client)
         self.fetch: Fetch = Fetch(self, client)

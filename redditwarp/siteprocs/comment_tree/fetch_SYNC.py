@@ -11,7 +11,7 @@ from ...model_loaders.comment_tree_SYNC import load_submission_tree_node
 from ...exceptions import RejectedResultException
 
 class Fetch:
-    def __init__(self, outer: CommentTreeProcedures, client: Client):
+    def __init__(self, outer: CommentTreeProcedures, client: Client) -> None:
         self._outer = outer
         self._client = client
 

@@ -9,8 +9,8 @@ class Paginator(Generic[T]):
         self.limit: Optional[int] = limit
 
     def __iter__(self) -> Iterator[Sequence[T]]:
-        while x := self.fetch():
-            yield x
+        while page := self.fetch():
+            yield page
 
     def fetch(self) -> Sequence[T]:
         raise NotImplementedError
@@ -30,10 +30,10 @@ class CursorPaginator(Paginator[T]):
 
 class MoreAvailablePaginator(Paginator[T]):
     def __iter__(self) -> Iterator[Sequence[T]]:
-        if x := self.fetch():
-            yield x
-        while self.has_more_available() and (x := self.fetch()):
-            yield x
+        if page := self.fetch():
+            yield page
+            while self.has_more_available() and (page := self.fetch()):
+                yield page
 
     def has_more_available(self) -> bool:
         raise NotImplementedError

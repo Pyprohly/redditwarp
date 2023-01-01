@@ -5,7 +5,6 @@ import pytest
 
 from redditwarp.iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from redditwarp.iterators.async_call_chunk import AsyncCallChunk, TInput, TOutput
-from redditwarp.iterators.stubborn_caller_async_iterator import StubbornCallerAsyncIterator
 
 def new_call_chunk_of_sequences(
     operation: Callable[[Sequence[TInput]], Awaitable[Sequence[TOutput]]],
@@ -18,10 +17,10 @@ async def _f(x: Sequence[int]) -> Sequence[int]:
 
 class TestCallChunkChainingAsyncIterator:
     @pytest.mark.asyncio
-    async def test_chunks_attribute(self) -> None:
+    async def test_get_chunking_iterator(self) -> None:
         it = [new_call_chunk_of_sequences(_f, [1])]
         ccci = CallChunkChainingAsyncIterator(it)
-        assert list(ccci.get_chunk_iter()) == it
+        assert list(ccci.get_chunking_iterator()) == it
 
     @pytest.mark.asyncio
     async def test_simple_iteration(self) -> None:
@@ -34,16 +33,16 @@ class TestCallChunkChainingAsyncIterator:
         assert [i async for i in ccci] == [1,2,3,4,5,6]
 
     @pytest.mark.asyncio
-    async def test_current_iter(self) -> None:
+    async def test_get_current_iterator(self) -> None:
         it = [new_call_chunk_of_sequences(_f, [0, 1, 2]), new_call_chunk_of_sequences(_f, [3, 4])]
         ccci = CallChunkChainingAsyncIterator(it)
 
         assert await ccci.__anext__() == 0
-        assert list(ccci.current_iter) == [1, 2]
+        assert list(ccci.current_iterator) == [1, 2]
         assert await ccci.__anext__() == 3
         assert await ccci.__anext__() == 4
 
-        ccci.current_iter = iter((8, 9))
+        ccci.current_iterator = iter((8, 9))
         assert await ccci.__anext__() == 8
         assert await ccci.__anext__() == 9
 
@@ -65,27 +64,23 @@ class TestCallChunkChainingAsyncIterator:
             new_call_chunk_of_sequences(_f, [3]),
         ]
         ccci = CallChunkChainingAsyncIterator(it)
-        sci = ccci.get_caller_iter()
-        assert isinstance(sci, StubbornCallerAsyncIterator)
-        assert sci.current is None
+        assert ccci.current_callable is None
         assert await ccci.__anext__() == 1
-        assert sci.current is None
+        assert ccci.current_callable is None
         try:
             await ccci.__anext__()
         except RuntimeError:
             pass
-        assert sci.current is j
+        assert ccci.current_callable is j
         assert await ccci.__anext__() == 2
-        assert sci.current is None
+        assert ccci.current_callable is None
         assert await ccci.__anext__() == 3
-        assert sci.current is None
+        assert ccci.current_callable is None
 
     @pytest.mark.asyncio
-    async def test_current_is_setable(self) -> None:
+    async def test_current_callable_is_setable(self) -> None:
         it: Iterable[AsyncCallChunk[Sequence[int], Sequence[int]]] = []
         ccci = CallChunkChainingAsyncIterator(it)
-        sci = ccci.get_caller_iter()
-        assert isinstance(sci, StubbornCallerAsyncIterator)
         assert [i async for i in ccci] == []
-        sci.current = new_call_chunk_of_sequences(_f, [1, 2, 3])
+        ccci.current_callable = new_call_chunk_of_sequences(_f, [1, 2, 3])
         assert [i async for i in ccci] == [1, 2, 3]

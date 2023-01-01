@@ -22,10 +22,11 @@ from ...model_loaders.flair import (
 )
 
 class FlairProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def assign_user_flair(self, sr_name: str, name: str, text: Optional[str], css_class: Optional[str]) -> None:
+    async def assign_user_flair(self, sr_name: str, name: str,
+            text: Optional[str] = None, css_class: Optional[str] = None) -> None:
         d = {'name': name}
         if text is not None:
             d['text'] = text
@@ -33,7 +34,8 @@ class FlairProcedures:
             d['css_class'] = css_class
         await self._client.request('POST', f'/r/{sr_name}/api/flair', data=d)
 
-    async def assign_post_flair(self, sr_name: str, submission_id: int, text: Optional[str], css_class: Optional[str]) -> None:
+    async def assign_post_flair(self, sr_name: str, submission_id: int,
+            text: Optional[str] = None, css_class: Optional[str] = None) -> None:
         full_id36 = 't3_' + to_base36(submission_id)
         d = {'link': full_id36}
         if text is not None:

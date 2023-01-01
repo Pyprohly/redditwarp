@@ -12,7 +12,7 @@ from ...util.extract_id_from_url import extract_submission_id_from_url
 T = TypeVar('T')
 
 class _Common(Generic[T]):
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def __call__(self, id: int) -> Optional[T]:
@@ -47,7 +47,7 @@ class Get(_Common[Submission]):
                 return post
             return None
 
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         super().__init__(client)
         self.as_textpost: Get._AsTextPost = self._AsTextPost(client)
         self.as_linkpost: Get._AsLinkPost = self._AsLinkPost(client)

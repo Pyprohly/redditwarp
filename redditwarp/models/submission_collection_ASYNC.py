@@ -5,14 +5,14 @@ if TYPE_CHECKING:
     from ..client_ASYNC import Client
 
 from .submission_collection import (
-    SubmissionCollectionDetails as BaseSubmissionCollectionDetails,
-    GBaseSubmissionCollection,
+    SubmissionCollectionInfo as BaseSubmissionCollectionInfo,
+    SubmissionCollection as BaseSubmissionCollection,
 )
 from .submission_ASYNC import Submission
 from ..model_loaders.submission_ASYNC import load_submission
 
-class SubmissionCollectionDetails(BaseSubmissionCollectionDetails):
-    def __init__(self, d: Mapping[str, Any], client: Client):
+class SubmissionCollectionInfo(BaseSubmissionCollectionInfo):
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
 
@@ -34,10 +34,11 @@ class SubmissionCollectionDetails(BaseSubmissionCollectionDetails):
     async def set_description(self, desc: str) -> None:
         await self.client.p.collection.set_description(self.uuid, desc)
 
+class SubmissionCollection(SubmissionCollectionInfo, BaseSubmissionCollection):
+    @property
+    def submissions(self) -> Sequence[Submission]:
+        return self.__submissions
 
-class SubmissionCollection(
-    SubmissionCollectionDetails,
-    GBaseSubmissionCollection[Submission],
-):
-    def _load_submission(self, m: Mapping[str, Any]) -> Submission:
-        return load_submission(m, self.client)
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
+        load = lambda d: load_submission(d, client)
+        self.__submissions: Sequence[Submission] = self._load_submissions(d, load)

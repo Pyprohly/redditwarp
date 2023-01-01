@@ -3,7 +3,6 @@ from typing import Iterable, Sequence, Callable
 
 from redditwarp.iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
 from redditwarp.iterators.call_chunk import CallChunk, TInput, TOutput
-from redditwarp.iterators.stubborn_caller_iterator import StubbornCallerIterator
 
 def new_call_chunk_of_sequences(
     operation: Callable[[Sequence[TInput]], Sequence[TOutput]],
@@ -12,10 +11,10 @@ def new_call_chunk_of_sequences(
     return CallChunk(operation, data)
 
 class TestCallChunkChainingIterator:
-    def test_chunks_attribute(self) -> None:
+    def test_get_chunking_iterator(self) -> None:
         it = [new_call_chunk_of_sequences(lambda x: x, [1])]
         ccci = CallChunkChainingIterator(it)
-        assert list(ccci.get_chunk_iter()) == it
+        assert list(ccci.get_chunking_iterator()) == it
 
     def test_simple_iteration(self) -> None:
         it = [
@@ -26,7 +25,7 @@ class TestCallChunkChainingIterator:
         ccci = CallChunkChainingIterator(it)
         assert list(ccci) == [1,2,3,4,5,6]
 
-    def test_current_iter(self) -> None:
+    def test_get_current_iterator(self) -> None:
         it = [
             new_call_chunk_of_sequences(lambda x: x, [0, 1, 2]),
             new_call_chunk_of_sequences(lambda x: x, [3, 4]),
@@ -34,11 +33,11 @@ class TestCallChunkChainingIterator:
         ccci = CallChunkChainingIterator(it)
 
         assert next(ccci) == 0
-        assert list(ccci.current_iter) == [1, 2]
+        assert list(ccci.current_iterator) == [1, 2]
         assert next(ccci) == 3
         assert next(ccci) == 4
 
-        ccci.current_iter = iter((8, 9))
+        ccci.current_iterator = iter((8, 9))
         assert next(ccci) == 8
         assert next(ccci) == 9
 
@@ -59,26 +58,22 @@ class TestCallChunkChainingIterator:
             new_call_chunk_of_sequences(lambda x: x, [3]),
         ]
         ccci = CallChunkChainingIterator(it)
-        sci = ccci.get_caller_iter()
-        assert isinstance(sci, StubbornCallerIterator)
-        assert sci.current is None
+        assert ccci.current_callable is None
         assert next(ccci) == 1
-        assert sci.current is None
+        assert ccci.current_callable is None
         try:
             next(ccci)
         except RuntimeError:
             pass
-        assert sci.current is j
+        assert ccci.current_callable is j
         assert next(ccci) == 2
-        assert sci.current is None
+        assert ccci.current_callable is None
         assert next(ccci) == 3
-        assert sci.current is None
+        assert ccci.current_callable is None
 
-    def test_current_is_setable(self) -> None:
+    def test_current_callable_is_setable(self) -> None:
         it: Iterable[CallChunk[Sequence[int], Sequence[int]]] = ()
         ccci = CallChunkChainingIterator(it)
-        sci = ccci.get_caller_iter()
-        assert isinstance(sci, StubbornCallerIterator)
         assert list(ccci) == []
-        sci.current = new_call_chunk_of_sequences(lambda x: x, [1, 2, 3])
+        ccci.current_callable = new_call_chunk_of_sequences(lambda x: x, [1, 2, 3])
         assert list(ccci) == [1, 2, 3]

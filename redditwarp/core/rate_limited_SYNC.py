@@ -24,12 +24,16 @@ class RateLimited(DelegatingHandler):
     def _send(self, p: SendParams) -> Exchange:
         h = self._burst_control.hard_consume(1)
         s = 0.
-        if self.remaining < 2:
+        if self.remaining <= 1:
             s = self.reset
-        elif h and (w := self.reset / self.remaining) < 2:
-            # Use 2 because at worst the user is allocated a 2/s
-            # rate limit when a client credentials grant is used.
-            s = w
+        else:
+            w = self.reset / self.remaining
+            if not h or w >= 2:
+                # Burst this request, but only if the API didn't
+                # want us to wait for more than two seconds.
+                # Use 2 because at worst the user is allocated a 2/s (600/300)
+                # rate limit when a client credentials grant is used.
+                s = w
 
         time.sleep(s)
 
@@ -46,7 +50,7 @@ class RateLimited(DelegatingHandler):
             self.used = int(headers['x-ratelimit-used'])
         else:
             if self.reset > 0:
-                self.reset = max(self.reset - int(self._delta), 0)
+                self.reset = max(0, self.reset - int(self._delta))
                 self.remaining -= 1
                 self.used += 1
             else:

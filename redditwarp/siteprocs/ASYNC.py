@@ -27,7 +27,7 @@ from .legacy_reddit_subreddit_style.ASYNC import LegacyRedditSubredditStyleProce
 from .redesign_reddit_subreddit_style.ASYNC import RedesignRedditSubredditStyleProcedures
 
 class SiteProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self.submission: SubmissionProcedures = SubmissionProcedures(client)
         self.comment: CommentProcedures = CommentProcedures(client)

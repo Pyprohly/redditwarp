@@ -11,13 +11,13 @@ from .submission import (
     TextPost as BaseTextPost,
     GalleryPost as BaseGalleryPost,
     PollPost as BasePollPost,
-    GBaseCrosspostSubmission,
+    CrosspostSubmission as BaseCrosspostSubmission,
 )
 
 class Submission(BaseSubmission):
-    def __init__(self, d: Mapping[str, Any], client: Client):
-        self.client: Client = client  # Must assign client before super call
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
+        self.client: Client = client
 
     def reply(self, text: str) -> Comment:
         return self.client.p.submission.reply(self.id, text)
@@ -80,7 +80,13 @@ class GalleryPost(Submission, BaseGalleryPost):
 class PollPost(Submission, BasePollPost):
     pass
 
-class CrosspostSubmission(Submission, GBaseCrosspostSubmission[Submission]):
-    def _load_submission(self, d: Mapping[str, Any]) -> Submission:
+class CrosspostSubmission(Submission, BaseCrosspostSubmission):
+    @property
+    def original(self) -> Optional[Submission]:
+        return self.__original
+
+    def __init__(self, d: Mapping[str, Any], client: Client) -> None:
+        super().__init__(d, client)
         from ..model_loaders.submission_SYNC import load_submission  # Avoid cyclic import
-        return load_submission(d, self.client)
+        load = lambda d: load_submission(d, client)
+        self.__original: Optional[Submission] = self._load_original(d, load)

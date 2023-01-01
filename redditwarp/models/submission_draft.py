@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Sequence, TypeVar, overload, Iterator, Union, Generic, Mapping, Any, Optional
+from typing import Sequence, overload, Iterator, Union, Mapping, Any, Optional
 
 from datetime import datetime
 from dataclasses import dataclass
@@ -40,9 +40,17 @@ class RichTextDraft(Draft):
     pass
 
 
-class BaseDraftList(Sequence[Draft]):
-    def __init__(self, drafts: Sequence[Draft]):
+class DraftList(Sequence[Draft]):
+    @property
+    def subreddits(self) -> Sequence[Subreddit]:
+        return self.__subreddits
+
+    def __init__(self,
+        drafts: Sequence[Draft],
+        subreddits: Sequence[Subreddit],
+    ) -> None:
         self.drafts: Sequence[Draft] = drafts
+        self.__subreddits: Sequence[Subreddit] = subreddits
 
     def __len__(self) -> int:
         return len(self.drafts)
@@ -59,15 +67,3 @@ class BaseDraftList(Sequence[Draft]):
     def __getitem__(self, index: slice) -> Sequence[Draft]: ...
     def __getitem__(self, index: Union[int, slice]) -> Union[Draft, Sequence[Draft]]:
         return self.drafts[index]
-
-TSubreddit = TypeVar('TSubreddit', bound=Subreddit)
-
-class GBaseDraftList(BaseDraftList, Generic[TSubreddit]):
-    def __init__(self,
-            drafts: Sequence[Draft],
-            subreddits: Sequence[TSubreddit]):
-        super().__init__(drafts)
-        self.subreddits: Sequence[TSubreddit] = subreddits
-
-class DraftList(GBaseDraftList[Subreddit]):
-    pass

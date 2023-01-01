@@ -9,7 +9,7 @@ from ...util.base_conversion import to_base36
 from ...exceptions import NoResultException
 
 class Fetch:
-    def __init__(self, outer: SubredditProcedures, client: Client):
+    def __init__(self, outer: SubredditProcedures, client: Client) -> None:
         self._outer = outer
         self._client = client
 

@@ -21,6 +21,7 @@ def load_wiki_page_revision_author_user(d: Mapping[str, Any], client: Client) ->
     return WikiPageRevisionAuthorUser(d, client)
 
 
+
 def load_wiki_page(d: Mapping[str, Any], client: Client) -> WikiPage:
     up = load_base_wiki_page(d)
     return WikiPage(
@@ -44,7 +45,6 @@ def load_wiki_page_revision(d: Mapping[str, Any], client: Client) -> WikiPageRev
         message=up.message,
         hidden=up.hidden,
     )
-
 
 def load_wiki_page_settings(d: Mapping[str, Any], client: Client) -> WikiPageSettings:
     up = load_base_wiki_page_settings(d)

@@ -16,7 +16,7 @@ from ...pagination.paginators.live_thread_async1 import LiveUpdateListingAsyncPa
 from ... import http
 
 class LiveThreadProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     async def get(self, idt: str) -> Optional[LiveThread]:

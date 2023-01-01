@@ -9,9 +9,9 @@ E = TypeVar('E')
 class PaginatorChainingIterator(Iterator[E]):
     def __init__(self, paginator: Paginator[E], amount: Optional[int] = None) -> None:
         self._paginator: Paginator[E] = paginator
+        self._paginator_iterator: Iterator[Sequence[E]] = iter(paginator)
         self.remaining: Optional[int] = amount
-        self.current_iter: Iterator[E] = iter(())
-        self._pagination_iterator: Iterator[Sequence[E]] = iter(paginator)
+        self.current_iterator: Iterator[E] = iter(())
 
     def __iter__(self) -> Iterator[E]:
         return self
@@ -21,7 +21,7 @@ class PaginatorChainingIterator(Iterator[E]):
         remaining = self.remaining
         if remaining is None or remaining > 0:
             while True:
-                for elem in self.current_iter:
+                for elem in self.current_iterator:
                     if self.remaining is not None:
                         self.remaining -= 1
                     return elem
@@ -29,8 +29,8 @@ class PaginatorChainingIterator(Iterator[E]):
                 if (limit is not None and remaining is not None) and limit > remaining:
                     self._paginator.limit = remaining
 
-                it = next(self._pagination_iterator)
-                self.current_iter = iter(it)
+                it = next(self._paginator_iterator)
+                self.current_iterator = iter(it)
 
         raise StopIteration
 

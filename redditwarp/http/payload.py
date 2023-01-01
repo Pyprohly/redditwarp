@@ -34,35 +34,35 @@ class Content(Payload):
 class Bytes(Content):
     CONTENT_TYPE_HINT: ClassVar[str] = 'application/octet-stream'
 
-    def __init__(self, data: bytes):
+    def __init__(self, data: bytes) -> None:
         self.data: bytes = data
 
 class Text(Content):
     CONTENT_TYPE_HINT: ClassVar[str] = 'text/plain'
 
-    def __init__(self, text: str):
+    def __init__(self, text: str) -> None:
         self.text: str = text
 
 class URLEncodedFormData(Content):
     CONTENT_TYPE_HINT: ClassVar[str] = 'application/x-www-form-urlencoded'
 
-    def __init__(self, data: Mapping[str, str]):
+    def __init__(self, data: Mapping[str, str]) -> None:
         self.data: Mapping[str, str] = data
 
 class JSON(Content):
     CONTENT_TYPE_HINT: ClassVar[str] = 'application/json'
 
-    def __init__(self, json: Any):
+    def __init__(self, json: Any) -> None:
         self.json: Any = json
 
 
 
 class MultipartFormDataField:
-    def __init__(self, name: str):
+    def __init__(self, name: str) -> None:
         self.name: str = name
 
 class MultipartTextField(MultipartFormDataField):
-    def __init__(self, name: str, value: str):
+    def __init__(self, name: str, value: str) -> None:
         super().__init__(name)
         self.value: str = value
 
@@ -71,7 +71,7 @@ class MultipartFileField(MultipartFormDataField):
             name: str,
             file: IO[bytes],
             filename: str,
-            content_type: str):
+            content_type: str) -> None:
         super().__init__(name)
         self.file: IO[bytes] = file
         self.filename: str = filename
@@ -84,7 +84,7 @@ class Multipart(Payload):
 class MultipartFormData(Multipart):
     CONTENT_TYPE_HINT: ClassVar[str] = 'multipart/form-data'
 
-    def __init__(self, parts: Sequence[MultipartFormDataField]):
+    def __init__(self, parts: Sequence[MultipartFormDataField]) -> None:
         self.parts: Sequence[MultipartFormDataField] = parts
 
 

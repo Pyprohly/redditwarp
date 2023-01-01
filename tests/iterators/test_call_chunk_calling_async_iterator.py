@@ -11,10 +11,10 @@ async def _f(x: int) -> int:
 
 class TestCallChunkChainingIterator:
     @pytest.mark.asyncio
-    async def test_chunks_attribute(self) -> None:
+    async def test_current_iterator(self) -> None:
         it = [AsyncCallChunk(_f, 1)]
         ccci = CallChunkCallingAsyncIterator(it)
-        assert list(ccci.get_chunk_iter()) == it
+        assert list(ccci.get_chunking_iterator()) == it
 
     @pytest.mark.asyncio
     async def test_simple_iteration(self) -> None:
@@ -44,23 +44,23 @@ class TestCallChunkChainingIterator:
             AsyncCallChunk(_f, 3),
         ]
         ccci = CallChunkCallingAsyncIterator(it)
-        assert ccci.current is None
+        assert ccci.current_callable is None
         assert await ccci.__anext__() == 1
-        assert ccci.current is None
+        assert ccci.current_callable is None
         try:
             await ccci.__anext__()
         except RuntimeError:
             pass
-        assert ccci.current is j
+        assert ccci.current_callable is j
         assert await ccci.__anext__() == 2
-        assert ccci.current is None
+        assert ccci.current_callable is None
         assert await ccci.__anext__() == 3
-        assert ccci.current is None
+        assert ccci.current_callable is None
 
     @pytest.mark.asyncio
     async def test_current_is_setable(self) -> None:
         it: Iterable[AsyncCallChunk[int, int]] = ()
         ccci = CallChunkCallingAsyncIterator(it)
         assert [i async for i in ccci] == []
-        ccci.current = AsyncCallChunk(_f, 8)
+        ccci.current_callable = AsyncCallChunk(_f, 8)
         assert [i async for i in ccci] == [8]

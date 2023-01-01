@@ -10,7 +10,7 @@ from ...util.base_conversion import to_base36
 from ...util.extract_id_from_url import extract_comment_id_from_url
 
 class Get:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     async def __call__(self, id: int) -> Optional[Comment]:

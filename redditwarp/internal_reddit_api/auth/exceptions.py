@@ -11,7 +11,7 @@ class ArgExc(ArgExcMixin):
 
 
 class UnknownTokenType(ArgExc):
-    def __init__(self, arg: object = None, *, token: Token):
+    def __init__(self, arg: object = None, *, token: Token) -> None:
         super().__init__(arg)
         self.token: Token = token
 

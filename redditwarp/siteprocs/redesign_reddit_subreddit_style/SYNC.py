@@ -11,7 +11,7 @@ from ...model_loaders.subreddit_style_asset_upload_lease import load_subreddit_s
 from ...http.payload import guess_mimetype_from_filename
 
 class RedesignRedditSubredditStyleProcedures:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     class _upload_banner:

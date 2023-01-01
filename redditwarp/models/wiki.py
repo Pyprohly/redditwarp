@@ -1,20 +1,20 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Sequence, TypeVar, Generic
+from typing import Mapping, Any, Sequence
 
 from dataclasses import dataclass
-from functools import cached_property
 from datetime import datetime, timezone
 
-from .artifact import IArtifact, Artifact
+from .artifact import IArtifact
 
 
 # WikiPageRevisionAuthorUser is pretty much the same as User except the
 # `awardee_karma`, `awarder_karma`, `total_karma` fields are missing.
 
-class WikiPageRevisionAuthorUser(Artifact):
+class WikiPageRevisionAuthorUser(IArtifact):
     class Subreddit:
-        def __init__(self, d: Mapping[str, Any]):
+        def __init__(self, d: Mapping[str, Any]) -> None:
+            d = d['subreddit']
             self.name: str = d['display_name']
             self.openness: str = d['subreddit_type']
             self.subscriber_count: int = d['subscribers']
@@ -22,8 +22,13 @@ class WikiPageRevisionAuthorUser(Artifact):
             self.public_description: str = d['public_description']
             self.nsfw: bool = d['over_18']
 
-    def __init__(self, d: Mapping[str, Any]):
-        super().__init__(d)
+    class Me:
+        def __init__(self, d: Mapping[str, Any]) -> None:
+            self.is_friend: bool = d['is_friend']
+            self.is_blocked: bool = d['is_blocked']
+
+    def __init__(self, d: Mapping[str, Any]) -> None:
+        self.d: Mapping[str, Any] = d
         self.id36: str = d['id']
         self.id: int = int(self.id36, 36)
         self.created_ut: int = int(d['created_utc'])
@@ -34,59 +39,39 @@ class WikiPageRevisionAuthorUser(Artifact):
         self.comment_karma: int = d['comment_karma']
 
         self.has_premium: bool = d['is_gold']
+        self.has_verified_email: bool = d['has_verified_email']
 
         self.is_admin: bool = d['is_employee']
-        self.is_friend: bool = d['is_friend']
         self.is_a_subreddit_moderator: bool = d['is_mod']
 
         self.icon_img: str = d['icon_img']
 
-        self.subreddit: WikiPageRevisionAuthorUser.Subreddit = self.Subreddit(d['subreddit'])
+        self.subreddit: WikiPageRevisionAuthorUser.Subreddit = self.Subreddit(d)
+        self.me: WikiPageRevisionAuthorUser.Me = self.Me(d)
 
 
-
-TWikiPageRevisionAuthorUser = TypeVar('TWikiPageRevisionAuthorUser', bound=WikiPageRevisionAuthorUser)
-
-@dataclass(repr=False, eq=False)
-class GBaseWikiPage(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
+@dataclass(repr=False, eq=False, frozen=True)
+class WikiPage(IArtifact):
     d: Mapping[str, Any]
     body: str
     body_html: str
     can_revise: bool
     revision_uuid: str
     revision_unixtime: int
-    revision_author: TWikiPageRevisionAuthorUser
+    revision_author: WikiPageRevisionAuthorUser
     revision_message: str
 
-    @cached_property
-    def revision_datetime(self) -> datetime:
-        return datetime.fromtimestamp(self.revision_unixtime, timezone.utc)
-
-@dataclass(repr=False, eq=False)
-class WikiPage(GBaseWikiPage[WikiPageRevisionAuthorUser]):
-    pass
-
-
-@dataclass(repr=False, eq=False)
-class GBaseWikiPageRevision(IArtifact, Generic[TWikiPageRevisionAuthorUser]):
+@dataclass(repr=False, eq=False, frozen=True)
+class WikiPageRevision(IArtifact):
     d: Mapping[str, Any]
     uuid: str
     unixtime: int
-    author: TWikiPageRevisionAuthorUser
+    author: WikiPageRevisionAuthorUser
     message: str
     hidden: bool
 
-@dataclass(repr=False, eq=False)
-class WikiPageRevision(GBaseWikiPageRevision[WikiPageRevisionAuthorUser]):
-    pass
-
-
-@dataclass(repr=False, eq=False)
-class GBaseWikiPageSettings(Generic[TWikiPageRevisionAuthorUser]):
+@dataclass(repr=False, eq=False, frozen=True)
+class WikiPageSettings:
     permlevel: int
-    editors: Sequence[TWikiPageRevisionAuthorUser]
+    editors: Sequence[WikiPageRevisionAuthorUser]
     unlisted: bool
-
-@dataclass(repr=False, eq=False)
-class WikiPageSettings(GBaseWikiPageSettings[WikiPageRevisionAuthorUser]):
-    pass

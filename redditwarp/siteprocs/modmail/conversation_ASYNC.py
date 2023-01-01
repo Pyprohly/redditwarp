@@ -10,14 +10,14 @@ from ...iterators.call_chunk_calling_async_iterator import CallChunkCallingAsync
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.async_call_chunk import AsyncCallChunk
 from ...models.modmail_ASYNC import (
-    Conversation,
+    ConversationInfo,
     Message,
     ConversationAggregate,
     UserDossierConversationAggregate,
     OptionalUserDossierConversationAggregate,
 )
 from ...model_loaders.modmail_ASYNC import (
-    load_conversation,
+    load_conversation_info,
     load_message,
     load_conversation_aggregate,
     load_user_dossier_conversation_aggregate,
@@ -39,11 +39,11 @@ class ConversationProcedures:
             client=self._client,
         )
 
-    async def create(self, sr: str, to: str, subject: str, body: str, *, hidden: bool = False) -> tuple[Conversation, Message]:
+    async def create(self, sr: str, to: str, subject: str, body: str, *, hidden: bool = False) -> tuple[ConversationInfo, Message]:
         data = {'srName': sr, 'to': to, 'subject': subject, 'body': body, 'isAuthorHidden': '01'[hidden]}
         root = await self._client.request('POST', '/api/mod/conversations', data=data)
         conversation_data = root['conversation']
-        conversation = load_conversation(conversation_data, self._client)
+        conversation = load_conversation_info(conversation_data, self._client)
         message_id36 = conversation_data['objIds'][0]['id']
         message = load_message(root['messages'][message_id36], self._client)
         return (conversation, message)

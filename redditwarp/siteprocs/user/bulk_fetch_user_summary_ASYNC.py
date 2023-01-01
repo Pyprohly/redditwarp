@@ -13,7 +13,7 @@ from ...iterators.async_call_chunk import AsyncCallChunk
 from ... import http
 
 class BulkFetchUserSummary:
-    def __init__(self, client: Client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
     def __call__(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[UserSummary]:
