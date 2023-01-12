@@ -14,7 +14,7 @@ class WikiPageRevisionsAsyncPaginator(ListingAsyncPaginator[WikiPageRevision]):
         url: str,
         *,
         limit: Optional[int] = 100,
-    ):
+    ) -> None:
         cursor_extractor = lambda x: ('WikiRevision_' + x['id'])
         super().__init__(client, url, limit=limit, cursor_extractor=cursor_extractor)
 

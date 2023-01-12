@@ -18,7 +18,7 @@ class LegacyModerationUsersPaginator(ListingPaginator[T]):
         url: str,
         *,
         limit: Optional[int] = 100,
-    ):
+    ) -> None:
         super().__init__(client, url, limit=limit, cursor_extractor=itemgetter('rel_id'))
 
 

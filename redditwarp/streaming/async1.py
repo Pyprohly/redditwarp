@@ -1,4 +1,4 @@
 
 from .runners_ASYNC import (  # noqa: F401
-    run_parallel as run_parallel,
+    flow_parallel as flow_parallel,
 )

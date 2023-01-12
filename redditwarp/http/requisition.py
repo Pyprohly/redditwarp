@@ -1,8 +1,10 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Union, Any
+from typing import TYPE_CHECKING, Optional, Mapping, MutableMapping, Union
 if TYPE_CHECKING:
-    from .payload import Payload, RequestFiles
+    from .payload import Payload
+    from .types import RequestFiles
+    from ..types import JSON_ro
 
 from dataclasses import dataclass
 
@@ -27,7 +29,7 @@ def make_requisition(
     params: Optional[Mapping[str, str]] = None,
     headers: Optional[Mapping[str, str]] = None,
     data: Optional[Union[Mapping[str, str], bytes]] = None,
-    json: Any = None,
+    json: JSON_ro = None,
     files: Optional[RequestFiles] = None,
 ) -> Requisition:
     params = dict(params or {})

@@ -30,7 +30,7 @@ class SubredditFlairEmojis(Sequence[FlairEmoji]):
     def __init__(self,
             subreddit_emojis: Sequence[FlairEmoji],
             reddit_emojis: Sequence[FlairEmoji],
-            subreddit_id36: str):
+            subreddit_id36: str) -> None:
         self.subreddit_emojis: Sequence[FlairEmoji] = subreddit_emojis
         self.reddit_emojis: Sequence[FlairEmoji] = reddit_emojis
         #self.all_emojis: Sequence[FlairEmoji] = list(self.subreddit_emojis) + list(self.reddit_emojis)

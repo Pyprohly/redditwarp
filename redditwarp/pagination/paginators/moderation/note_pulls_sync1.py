@@ -19,7 +19,7 @@ class ModerationNotePaginator(MoreAvailablePaginator[ModerationNote], CursorPagi
         subreddit: str,
         user: str,
         type: Optional[str] = None,
-    ):
+    ) -> None:
         super().__init__(limit=limit)
         self.client: Client = client
         self.url: str = url

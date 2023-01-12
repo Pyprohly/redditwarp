@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Sequence, Mapping
+from typing import TYPE_CHECKING, Any, Mapping
 if TYPE_CHECKING:
     from .http.response import Response
 
@@ -119,8 +119,8 @@ class RedditError(APIError):
         if la:
             if xp:
                 if fd:
-                    return f'{la}: {xp} -> {fd}'
-                return f'{la}: {xp}'
+                    return f'{la}: {xp!r} -> {fd}'
+                return f'{la}: {xp!r}'
             if fd:
                 return f'{la} -> {fd}'
             return la
@@ -137,54 +137,57 @@ def raise_for_reddit_error(json_data: Any) -> None:
     if not isinstance(json_data, Mapping):
         return
 
-    error_record: Sequence[Any]
-    if (
-        isinstance(label := json_data.get('reason'), str)
-        and isinstance(explanation := json_data.get('explanation'), str)
-        and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
-    ):
-        raise RedditError(label=label, explanation=explanation, field=field)
-    elif (
-        isinstance(label := json_data.get('reason'), str)
-        and json_data.get('explanation') is None
-        and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
-    ):
-        raise RedditError(label=label, explanation='', field=field)
-    elif (
-        isinstance(reason := json_data.get('reason'), str)
-        and json_data.get('explanation') is None
-        and list(json_data.get('fields', [])) == [None]
-    ):
-        raise RedditError(label=reason, explanation='', field='')
-    elif (
-        isinstance(label := json_data.get('reason'), str)
-        and isinstance(explanation := json_data.get('explanation'), str)
-    ):
-        raise RedditError(label=label, explanation=explanation, field='')
-    elif json_data.keys() >= {'error', 'message'} and isinstance(reason := json_data.get('reason'), str):
-        raise RedditError(label=reason, explanation='', field='')
-    elif json_data.keys() >= {'error', 'message'}:
-        return  # No useful information. Treat this as a StatusCodeException.
-    elif json_data.keys() >= {'message'} and isinstance(reason := json_data.get('reason'), str):
-        raise RedditError(label=reason, explanation='', field='')
-    elif (
-        (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
-        and isinstance(label := error_record[0], str)
-        and isinstance(explanation := error_record[1], str)
-        and isinstance(field := error_record[2], str)
-    ):
-        raise RedditError(label=label, explanation=explanation, field=field)
-    elif (
-        (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
-        and isinstance(label := error_record[0], str)
-        and isinstance(explanation := error_record[1], str)
-    ):
-        raise RedditError(label=label, explanation=explanation, field='')
-    elif (
-        isinstance(label := next(iter(json_data.get('errors', [])), None), str)
-        and isinstance(explanation := next(iter(json_data.get('errors_values', [])), None), str)
-    ):
-        raise RedditError(label=label, explanation=explanation, field='')
+    try:
+        if (
+            isinstance(label := json_data.get('reason'), str)
+            and isinstance(explanation := json_data.get('explanation'), str)
+            and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
+        ):
+            raise RedditError(label=label, explanation=explanation, field=field)
+        elif (
+            isinstance(label := json_data.get('reason'), str)
+            and json_data.get('explanation') is None
+            and isinstance(field := next(iter(json_data.get('fields', [])), None), str)
+        ):
+            raise RedditError(label=label, explanation='', field=field)
+        elif (
+            isinstance(reason := json_data.get('reason'), str)
+            and json_data.get('explanation') is None
+            and list(json_data.get('fields', [])) == [None]
+        ):
+            raise RedditError(label=reason, explanation='', field='')
+        elif (
+            isinstance(label := json_data.get('reason'), str)
+            and isinstance(explanation := json_data.get('explanation'), str)
+        ):
+            raise RedditError(label=label, explanation=explanation, field='')
+        elif json_data.keys() >= {'error', 'message'} and isinstance(reason := json_data.get('reason'), str):
+            raise RedditError(label=reason, explanation='', field='')
+        elif json_data.keys() >= {'error', 'message'}:
+            # No useful information. This will be treated as a StatusCodeException.
+            return
+        elif json_data.keys() >= {'message'} and isinstance(reason := json_data.get('reason'), str):
+            raise RedditError(label=reason, explanation='', field='')
+        elif (
+            (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
+            and isinstance(label := error_record[0], str)
+            and isinstance(explanation := error_record[1], str)
+            and isinstance(field := error_record[2], str)
+        ):
+            raise RedditError(label=label, explanation=explanation, field=field)
+        elif (
+            (error_record := next(iter(json_data.get('json', {}).get('errors', [])), [None, None, None]))
+            and isinstance(label := error_record[0], str)
+            and isinstance(explanation := error_record[1], str)
+        ):
+            raise RedditError(label=label, explanation=explanation, field='')
+        elif (
+            isinstance(label := next(iter(json_data.get('errors', [])), None), str)
+            and isinstance(explanation := next(iter(json_data.get('errors_values', [])), None), str)
+        ):
+            raise RedditError(label=label, explanation=explanation, field='')
+    except AttributeError:
+        pass
 
 
 from . import http  # Avoid cyclic import

@@ -1,56 +1,39 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, AsyncIterator, Optional
-if TYPE_CHECKING:
-    from ..client_ASYNC import Client
+from typing import AsyncIterator
 
 import asyncio
 from asyncio.queues import Queue
 
 
-def run(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
-    run_parallel(*streams, client=client)
+async def flow(*streams: AsyncIterator[float]) -> None:
+    await flow_parallel(*streams)
 
-def run_series(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
-    async def main() -> None:
+async def flow_series(*streams: AsyncIterator[float]) -> None:
+    loop = asyncio.get_running_loop()
+
+    aq: Queue[AsyncIterator[float]] = Queue()
+    count = 0
+    for aitr in streams:
+        aq.put_nowait(aitr)
+        count += 1
+
+    while count > 0:
+        aitr = await aq.get()
+
         try:
-            loop = asyncio.get_running_loop()
+            t = await aitr.__anext__()
+        except StopAsyncIteration:
+            count -= 1
+        else:
+            loop.call_later(t, (lambda: aq.put_nowait(aitr)))
 
-            aq: Queue[AsyncIterator[float]] = Queue()
-            count = 0
-            for aitr in streams:
-                aq.put_nowait(aitr)
-                count += 1
+        aq.task_done()
 
-            while count > 0:
-                aitr = await aq.get()
+async def flow_parallel(*streams: AsyncIterator[float]) -> None:
+    async def _coro_func(aitr: AsyncIterator[float]) -> None:
+        async for t in aitr:
+            await asyncio.sleep(t)
 
-                try:
-                    t = await aitr.__anext__()
-                except StopAsyncIteration:
-                    count -= 1
-                else:
-                    loop.call_later(t, (lambda: aq.put_nowait(aitr)))
-
-                aq.task_done()
-
-        finally:
-            if client is not None:
-                await client.close()
-
-    asyncio.run(main())
-
-def run_parallel(*streams: AsyncIterator[float], client: Optional[Client] = None) -> None:
-    async def main() -> None:
-        async def _coro_func(aitr: AsyncIterator[float]) -> None:
-            async for t in aitr:
-                await asyncio.sleep(t)
-
-        awbls = (_coro_func(m) for m in streams)
-        try:
-            await asyncio.gather(*awbls)
-        finally:
-            if client is not None:
-                await client.close()
-
-    asyncio.run(main())
+    awbls = (_coro_func(m) for m in streams)
+    await asyncio.gather(*awbls)

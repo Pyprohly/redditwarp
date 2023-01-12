@@ -1,9 +1,8 @@
 """An ordered set implementation."""
 
 from __future__ import annotations
-from typing import TypeVar, Iterator, Iterable
+from typing import TypeVar, Iterator, Iterable, MutableSet
 
-from collections.abc import MutableSet
 from itertools import islice
 
 T = TypeVar('T')

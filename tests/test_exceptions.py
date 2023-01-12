@@ -9,6 +9,9 @@ def test_raise_for_reddit_error() -> None:
     json_data = {"message": "Not Found", "error": 404}
     raise_for_reddit_error(json_data)
 
+    json_data = {"json": null}
+    raise_for_reddit_error(json_data)
+
     json_data = {"reason": "private", "message": "Forbidden", "error": 403}
     with pytest.raises(RedditError) as exc_info:
         raise_for_reddit_error(json_data)

@@ -23,7 +23,7 @@ class Recorded(DelegatingHandler):
         self.last_transmit_queue: MutableSequence[tuple[Requisition, Optional[Exchange]]] = deque(maxlen=16)
         self.last_transfer_queue: MutableSequence[tuple[Requisition, Exchange]] = deque(maxlen=16)
 
-    def reset(self) -> None:
+    def clear(self) -> None:
         self.last_requisition = None
         self.last_exchange = None
         self.last_transmit = None
@@ -82,8 +82,8 @@ class Last:
     def transfer_queue(self) -> MutableSequence[tuple[Requisition, Exchange]]:
         return self.recorder.last_transfer_queue
 
-    def reset(self) -> None:
-        self.recorder.reset()
+    def clear(self) -> None:
+        self.recorder.clear()
 
     def __init__(self, recorder: Recorded) -> None:
         self.recorder: Recorded = recorder

@@ -21,9 +21,9 @@ class Note:
             label: str = '',
             anchor_submission_id: Optional[int] = None,
             anchor_comment_id: Optional[int] = None) -> ModerationUserNote:
-        mep = (anchor_submission_id, anchor_comment_id)
-        if len(mep) - mep.count(None) > 1:
-            raise TypeError('mutually exclusive parameters: `anchor_submission_id`, `anchor_comment_id)`.')
+        mxp = (anchor_submission_id, anchor_comment_id)
+        if len(mxp) - mxp.count(None) > 1:
+            raise TypeError("mutually exclusive parameters: `anchor_submission_id`, `anchor_comment_id`.")
 
         params = {'subreddit': subreddit, 'user': user, 'label': label}
         root = await self._client.request('POST', '/api/mod/notes', params=params)

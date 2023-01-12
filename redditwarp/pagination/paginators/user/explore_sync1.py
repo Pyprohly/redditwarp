@@ -17,7 +17,7 @@ class UserSearchPaginator(
         client: Client,
         url: str,
         query: str,
-    ):
+    ) -> None:
         super().__init__(client, url)
         self.query: str = query
 

@@ -7,7 +7,7 @@ import pytest
 from redditwarp import exceptions
 from redditwarp.http import exceptions as http_exceptions
 from redditwarp.client_SYNC import Client
-from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
+from redditwarp.core.http_client_SYNC import HTTPClient
 from redditwarp.http.handler_SYNC import Handler
 from redditwarp.http.send_params import SendParams
 from redditwarp.http.exchange import Exchange
@@ -16,7 +16,7 @@ from redditwarp.http.request import Request
 from redditwarp.http.response import Response
 
 
-class MyHTTPClient(RedditHTTPClient):
+class MyHTTPClient(HTTPClient):
     DUMMY_REQUISITION = Requisition('', '', {}, {}, None)
     DUMMY_REQUEST = Request('', '', {})
 
@@ -30,7 +30,7 @@ class MyHTTPClient(RedditHTTPClient):
         self.response_headers = response_headers
         self.response_data = response_data
 
-    def send(self, p: SendParams) -> Exchange:
+    def _send(self, p: SendParams) -> Exchange:
         resp = Response(self.response_status, self.response_headers, self.response_data)
         return Exchange(
             requisition=self.DUMMY_REQUISITION,

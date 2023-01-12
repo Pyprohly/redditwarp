@@ -23,7 +23,7 @@ class Authorizer:
     def __init__(self,
         token_client: Optional[InternalRedditAPITokenObtainmentClient] = None,
         token: Optional[Token] = None,
-    ):
+    ) -> None:
         self._token_client: Optional[InternalRedditAPITokenObtainmentClient] = token_client
         self._token: Optional[Token] = token
         self.renewal_time: Optional[float] = None

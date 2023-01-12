@@ -31,11 +31,13 @@ if TYPE_CHECKING:
         LinkTab,
         SubmenuTab,
     )
+    from ...types import JSON_ro
 
+import os.path as op
 from functools import cached_property
 
-from ...http.payload import guess_mimetype_from_filename
-from ...models.widget import WidgetImageUploadLease
+from ...http.payload import guess_filename_mimetype
+from ...models.widget.widget_image_upload_lease import WidgetImageUploadLease
 from ...models.widget.ASYNC import WidgetList
 from ...model_loaders.widget import load_widget_image_upload_lease
 from ...model_loaders.widget_ASYNC import (
@@ -60,7 +62,7 @@ def _build_text_area_widget_json(
     background_color: str,
     title: str,
     text: str,
-) -> Any:
+) -> JSON_ro:
     return {
         'kind': 'textarea',
         'styles': {'headerColor': header_color, 'backgroundColor': background_color},
@@ -75,10 +77,10 @@ def _build_button_widget_json(
     title: str,
     description: str,
     buttons: Sequence[Button],
-) -> Any:
-    buttons_json: list[dict[str, Any]] = []
+) -> JSON_ro:
+    buttons_json: list[dict[str, JSON_ro]] = []
     for button in buttons:
-        button_json: Optional[dict[str, Any]] = None
+        button_json: Optional[dict[str, JSON_ro]] = None
         if isinstance(button, TextButton):
             button_json = {
                 'kind': 'text',
@@ -140,7 +142,7 @@ def _build_image_widget_json(
     background_color: str,
     title: str,
     items: Sequence[ImageWidgetImageInfo],
-) -> Any:
+) -> JSON_ro:
     return {
         'kind': 'image',
         'styles': {'headerColor': header_color, 'backgroundColor': background_color},
@@ -162,7 +164,7 @@ def _build_community_list_widget_json(
     background_color: str,
     title: str,
     items: Sequence[str],
-) -> Any:
+) -> JSON_ro:
     return {
         'kind': 'community-list',
         'styles': {'headerColor': header_color, 'backgroundColor': background_color},
@@ -183,7 +185,7 @@ def _build_calendar_widget_json(
     show_location: bool,
     show_date: bool,
     show_time: bool,
-) -> Any:
+) -> JSON_ro:
     return {
         'kind': 'calendar',
         'styles': {'headerColor': header_color, 'backgroundColor': background_color},
@@ -207,7 +209,7 @@ def _build_post_flair_widget_json(
     title: str,
     display: str,
     order: Sequence[str],
-) -> Any:
+) -> JSON_ro:
     return {
         'kind': 'post-flair',
         'styles': {'headerColor': header_color, 'backgroundColor': background_color},
@@ -225,7 +227,7 @@ def _build_custom_css_widget_json(
     css: str,
     height: Optional[int],
     image_data: Sequence[CustomCSSWidgetImageInfo],
-) -> Any:
+) -> JSON_ro:
     return {
         'kind': 'custom',
         'styles': {'headerColor': header_color, 'backgroundColor': background_color},
@@ -248,10 +250,10 @@ def _build_menu_bar_json(
     *,
     show_wiki: bool,
     tabs: Sequence[Tab],
-) -> Any:
-    tabs_json: list[dict[str, Any]] = []
+) -> JSON_ro:
+    tabs_json: list[dict[str, JSON_ro]] = []
     for tab in tabs:
-        tab_json: Optional[dict[str, Any]] = None
+        tab_json: Optional[dict[str, JSON_ro]] = None
         if isinstance(tab, LinkTab):
             tab_json = {'text': tab.label, 'url': tab.link}
         elif isinstance(tab, SubmenuTab):
@@ -280,38 +282,63 @@ class WidgetProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    class _upload_image:
+    class __ImageUploading:
         def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
-        async def __call__(self, file: IO[bytes], *, sr: str) -> WidgetImageUploadLease:
-            return await self.upload(file, sr=sr)
+        async def __call__(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> WidgetImageUploadLease:
+            return await self.upload(file, sr=sr, filepath=filepath, timeout=timeout)
 
-        async def obtain_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> WidgetImageUploadLease:
+        async def obtain_upload_lease(self,
+            *,
+            sr: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> WidgetImageUploadLease:
             if mimetype is None:
-                mimetype = guess_mimetype_from_filename(filename)
+                mimetype = guess_filename_mimetype(filepath)
             result = await self._client.request('POST', f'/api/v1/{sr}/emoji_asset_upload_s3',
-                    data={'filepath': filename, 'mimetype': mimetype})
+                    data={'filepath': filepath, 'mimetype': mimetype})
             return load_widget_image_upload_lease(result)
 
-        async def deposit_file(self, file: IO[bytes], upload_lease: WidgetImageUploadLease, *,
-                timeout: float = 1000) -> None:
-            resp = await self._client.http.request('POST', upload_lease.endpoint, data=upload_lease.fields,
-                    files={'file': file}, timeout=timeout)
+        async def deposit_file(self,
+            file: IO[bytes],
+            upload_lease: WidgetImageUploadLease,
+            *,
+            timeout: float = 1000,
+        ) -> None:
+            resp = await self._client.http.request('POST', upload_lease.endpoint,
+                    data=upload_lease.fields, files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
-        async def upload(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> WidgetImageUploadLease:
-            upload_lease = await self.obtain_upload_lease(filename=file.name, sr=sr)
+        async def upload(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> WidgetImageUploadLease:
+            if filepath is None:
+                filepath = op.basename(getattr(file, 'name', ''))
+                if not filepath:
+                    raise ValueError("the `filepath` parameter must be explicitly specified if the file object has no `name` attribute.")
+            upload_lease = await self.obtain_upload_lease(sr=sr, filepath=filepath)
             await self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-    upload_image: cached_property[_upload_image] = cached_property(_upload_image)
+    image_uploading: cached_property[__ImageUploading] = cached_property(__ImageUploading)
 
     class _create:
         def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
-        async def _invoke(self, sr: str, json: Any) -> Any:
+        async def _invoke(self, sr: str, json: JSON_ro) -> Any:
             return await self._client.request('POST', f'/r/{sr}/api/widget', json=json)
 
         async def text_area(self,
@@ -463,7 +490,7 @@ class WidgetProcedures:
         def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
-        async def _invoke(self, sr: str, idt: str, json: Any) -> Any:
+        async def _invoke(self, sr: str, idt: str, json: JSON_ro) -> Any:
             return await self._client.request('PUT', f'/r/{sr}/api/widget/{idt}', json=json)
 
         async def text_area(self,
@@ -626,7 +653,7 @@ class WidgetProcedures:
             subscriber_text: str,
             viewing_text: str,
         ) -> CommunityDetailsWidget:
-            json = {
+            json: JSON_ro = {
                 'kind': 'post-flair',
                 'styles': {'headerColor': header_color, 'backgroundColor': background_color},
                 'shortName': title,
@@ -643,7 +670,7 @@ class WidgetProcedures:
             header_color: str,
             background_color: str,
         ) -> ModeratorListWidget:
-            json = {
+            json: JSON_ro = {
                 'kind': 'moderators',
                 'styles': {'headerColor': header_color, 'backgroundColor': background_color},
             }
@@ -659,7 +686,7 @@ class WidgetProcedures:
             title: str,
             display: str,
         ) -> RulesWidget:
-            json = {
+            json: JSON_ro = {
                 'kind': 'post-flair',
                 'styles': {'headerColor': header_color, 'backgroundColor': background_color},
                 'shortName': title,

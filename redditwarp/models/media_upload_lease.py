@@ -13,5 +13,5 @@ class MediaUploadLease(IArtifact):
     s3_object_key: str
     location: str
     media_id: str
-    declared_filename: str
+    declared_filepath: str
     websocket_url: str

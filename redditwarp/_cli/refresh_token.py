@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Step through the OAuth2 Authorization Code Flow to obtain OAuth2 tokens.
 

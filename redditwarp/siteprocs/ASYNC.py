@@ -50,3 +50,6 @@ class SiteProcedures:
         self.wiki: WikiProcedures = WikiProcedures(client)
         self.legacy_reddit_subreddit_style: LegacyRedditSubredditStyleProcedures = LegacyRedditSubredditStyleProcedures(client)
         self.redesign_reddit_subreddit_style: RedesignRedditSubredditStyleProcedures = RedesignRedditSubredditStyleProcedures(client)
+
+    async def ping(self) -> None:
+        await self._client.request('GET', '/api/v1/scopes', params={'scopes': 'read'})

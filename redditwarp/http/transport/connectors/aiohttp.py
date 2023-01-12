@@ -55,7 +55,7 @@ class AiohttpConnector(Connector):
 
         follow_redirects = _get_effective_follow_redirects(p.follow_redirects)
 
-        extra_headers: dict[str, str] = {}
+        headers: dict[str, str] = dict(r.headers)
         data: object = None
         json: object = None
 
@@ -64,44 +64,29 @@ class AiohttpConnector(Connector):
             pass
 
         elif isinstance(pld, payload.Bytes):
-            pld.apply_content_type_header(extra_headers)
+            headers['Content-Type'] = pld.get_media_type()
             data = pld.data
 
         elif isinstance(pld, payload.Text):
-            pld.apply_content_type_header(extra_headers)
+            headers['Content-Type'] = pld.get_media_type()
             data = pld.text.encode()
 
         elif isinstance(pld, payload.JSON):
             json = pld.json
 
         elif isinstance(pld, payload.URLEncodedFormData):
-            data = pld.data
+            data = dict(pld.data)
 
         elif isinstance(pld, payload.MultipartFormData):
-            text_plds: list[payload.MultipartTextField] = []
-            file_plds: list[payload.MultipartFileField] = []
-            for part in pld.parts:
-                if isinstance(part, payload.MultipartTextField):
-                    text_plds.append(part)
-                elif isinstance(part, payload.MultipartFileField):
-                    file_plds.append(part)
-
-            if not file_plds:
-                # Aiohttp won't let us send a multipart if no files :(
-                raise Exception('multipart without file fields not supported')
-
-            formdata = aiohttp.FormData()
-            for ty in text_plds:
-                formdata.add_field(ty.name, ty.value)
-            for fy in file_plds:
-                formdata.add_field(fy.name, fy.file, filename=fy.filename, content_type=fy.content_type)
-
-            data = formdata
+            data = aiohttp.FormData()
+            for pt in pld.parts:
+                if isinstance(pt, payload.MultipartFormData.TextField):
+                    data.add_field(pt.name, pt.text)
+                elif isinstance(pt, payload.MultipartFormData.FileField):
+                    data.add_field(pt.name, pt.file, filename=pt.filename, content_type=pt.content_type)
 
         else:
-            raise Exception(f'unsupported payload type: {pld.__class__.__name__!r}')
-
-        headers = {**r.headers, **extra_headers}
+            raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")
 
         try:
             async with self.session.request(

@@ -3,7 +3,7 @@ import pytest
 
 from typing import Sequence, Any, MutableMapping, Callable
 from redditwarp.client_ASYNC import Client
-from redditwarp.core.reddit_http_client_ASYNC import RedditHTTPClient
+from redditwarp.core.http_client_ASYNC import HTTPClient
 from redditwarp.http.handler_ASYNC import Handler
 from redditwarp.http.send_params import SendParams
 from redditwarp.http.exchange import Exchange
@@ -41,7 +41,7 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
     def __init__(self,
         client: Client,
         url: str,
-    ):
+    ) -> None:
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
         super().__init__(client, url, cursor_extractor=cursor_extractor)
 
@@ -51,7 +51,7 @@ class MyListingAsyncPaginator(ListingAsyncPaginator[str]):
 
 
 handler = MyHandler(200, {'Content-Type': 'application/json'}, b'')
-http = RedditHTTPClient(handler)
+http = HTTPClient(handler)
 client = Client.from_http(http)
 
 @pytest.mark.asyncio

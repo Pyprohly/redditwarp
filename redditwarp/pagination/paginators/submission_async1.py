@@ -23,7 +23,7 @@ class SubmissionSearchAsyncPaginator(
         params: Optional[Mapping[str, str]] = None,
         sort: str = 'relevance',
         time: str = 'all',
-    ):
+    ) -> None:
         super().__init__(client, url, params=params)
         self.sort: str = sort
         self.time: str = time
@@ -57,7 +57,7 @@ class SubmissionDuplicatesAsyncPaginator(ListingAsyncPaginator[Submission]):
         *,
         sort: str = 'num_comments',
         crossposts_only: bool = False,
-    ):
+    ) -> None:
         super().__init__(client, url)
         self.sort: str = sort
         self.crossposts_only: bool = crossposts_only

@@ -15,7 +15,7 @@ class UserFlairAssociationAsyncPaginator(
         url: str,
         *,
         limit: Optional[int] = 1000,
-    ):
+    ) -> None:
         super().__init__()
         self.limit: Optional[int] = limit
         self.direction: bool = True

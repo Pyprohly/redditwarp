@@ -5,6 +5,7 @@ from typing import TypeVar, Generic, Sequence
 
 from dataclasses import dataclass
 
+
 TValue_co = TypeVar('TValue_co', covariant=True)
 TChild_co = TypeVar('TChild_co', covariant=True)
 
@@ -12,3 +13,5 @@ TChild_co = TypeVar('TChild_co', covariant=True)
 class TreeNode(Generic[TValue_co, TChild_co]):
     value: TValue_co
     children: Sequence[TChild_co]
+
+RecursiveTreeNode = TreeNode[TValue_co, 'RecursiveTreeNode[TValue_co]']

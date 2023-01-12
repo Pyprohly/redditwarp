@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callab
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.types import AuthorizationGrant
-    from .http.payload import RequestFiles
-    from .core.reddit_http_client_ASYNC import RedditHTTPClient
+    from .http.types import RequestFiles
+    from .core.http_client_ASYNC import HTTPClient
     from .types import JSON_ro
 
 from configparser import ConfigParser
@@ -13,10 +13,10 @@ from configparser import ConfigParser
 from .auth import Token
 from .auth import grants
 from .core import grants as core_grants
-from .core.reddit_http_client_ASYNC import (
-    PublicRedditHTTPClient,
-    build_public_reddit_http_client,
-    build_public_reddit_http_client_from_access_token,
+from .core.http_client_ASYNC import (
+    RedditHTTPClient,
+    build_reddit_http_client,
+    build_reddit_http_client_from_access_token,
 )
 from .util.praw_config import get_praw_ini_potential_file_locations
 from .exceptions import raise_for_reddit_error, raise_for_non_json_response
@@ -28,14 +28,14 @@ class Client:
     _TSelf = TypeVar('_TSelf', bound='Client')
 
     @classmethod
-    def from_http(cls: type[_TSelf], http: RedditHTTPClient) -> _TSelf:
+    def from_http(cls: type[_TSelf], http: HTTPClient) -> _TSelf:
         self = cls.__new__(cls)
         self._init(http)
         return self
 
     @classmethod
     def from_access_token(cls: type[_TSelf], access_token: str) -> _TSelf:
-        http = build_public_reddit_http_client_from_access_token(access_token)
+        http = build_reddit_http_client_from_access_token(access_token)
         return cls.from_http(http)
 
     @classmethod
@@ -97,11 +97,11 @@ class Client:
         else:
             raise TypeError
 
-        http = build_public_reddit_http_client(client_id, client_secret, grant)
+        http = build_reddit_http_client(client_id, client_secret, grant)
         self._init(http)
 
-    def _init(self, http: RedditHTTPClient) -> None:
-        self.http: RedditHTTPClient = http
+    def _init(self, http: HTTPClient) -> None:
+        self.http: HTTPClient = http
         self.last_value: Any = None
 
         # Delay heavy import till client instantiation
@@ -161,8 +161,8 @@ class Client:
 
     def set_access_token(self, access_token: str) -> None:
         http = self.http
-        if not isinstance(http, PublicRedditHTTPClient):
-            raise RuntimeError(f'self.http must be {PublicRedditHTTPClient.__name__}')
+        if not isinstance(http, RedditHTTPClient):
+            raise RuntimeError(f"self.http must be {RedditHTTPClient.__name__}")
         http.authorizer.set_token(Token(access_token))
 
     def set_user_agent(self, s: Optional[str]) -> None:

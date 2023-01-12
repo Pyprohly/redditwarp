@@ -22,7 +22,7 @@ class OnlyFilter(ListingPaginator[T]):
         limit: Optional[int] = 100,
         params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
-    ):
+    ) -> None:
         super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self._only = ''
 
@@ -39,7 +39,7 @@ class SubmissionOnlyFilter(OnlyFilter[Submission]):
         limit: Optional[int] = 100,
         params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
-    ):
+    ) -> None:
         super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self._only = 'links'
 
@@ -51,7 +51,7 @@ class CommentOnlyFilter(OnlyFilter[LooseComment]):
         limit: Optional[int] = 100,
         params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
-    ):
+    ) -> None:
         super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self._only = 'comments'
 

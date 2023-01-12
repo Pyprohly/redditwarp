@@ -16,7 +16,7 @@ class ListingAsyncPaginator(Resettable, MoreAvailableAsyncPaginator[T], Bidirect
         limit: Optional[int] = 100,
         params: Optional[Mapping[str, str]] = None,
         cursor_extractor: Callable[[Any], str] = lambda x: x['data']['name'],
-    ):
+    ) -> None:
         super().__init__(limit=limit)
         self.client: Client = client
         self.url: str = url

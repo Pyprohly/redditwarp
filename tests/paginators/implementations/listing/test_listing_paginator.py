@@ -1,7 +1,7 @@
 
 from typing import Sequence, Any, MutableMapping, Callable
 from redditwarp.client_SYNC import Client
-from redditwarp.core.reddit_http_client_SYNC import RedditHTTPClient
+from redditwarp.core.http_client_SYNC import HTTPClient
 from redditwarp.http.handler_SYNC import Handler
 from redditwarp.http.send_params import SendParams
 from redditwarp.http.exchange import Exchange
@@ -39,7 +39,7 @@ class MyListingPaginator(ListingPaginator[str]):
     def __init__(self,
         client: Client,
         url: str,
-    ):
+    ) -> None:
         cursor_extractor: Callable[[Any], str] = lambda x: x['name']
         super().__init__(client, url, cursor_extractor=cursor_extractor)
 
@@ -49,7 +49,7 @@ class MyListingPaginator(ListingPaginator[str]):
 
 
 handler = MyHandler(200, {'Content-Type': 'application/json'}, b'')
-http = RedditHTTPClient(handler)
+http = HTTPClient(handler)
 client = Client.from_http(http)
 
 def test_none_limit() -> None:

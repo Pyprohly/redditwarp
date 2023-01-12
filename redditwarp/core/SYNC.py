@@ -1,6 +1,6 @@
 
-from . import reddit_http_client_SYNC  # noqa: F401
-from .reddit_http_client_SYNC import RedditHTTPClient as RedditHTTPClient  # noqa: F401
+from . import http_client_SYNC  # noqa: F401
+from .http_client_SYNC import HTTPClient as HTTPClient  # noqa: F401
 from . import reddit_token_obtainment_client_SYNC  # noqa: F401
 from .reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient as RedditTokenObtainmentClient  # noqa: F401
 from . import authorizer_SYNC  # noqa: F401

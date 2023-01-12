@@ -17,7 +17,7 @@ class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conv
         sort: str,
         *,
         limit: Optional[int] = 100,
-    ):
+    ) -> None:
         super().__init__()
         self.limit: Optional[int] = limit
         self.client: Client = client

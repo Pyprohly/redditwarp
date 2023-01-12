@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Mapping, Any
 
-from ..models.widget import WidgetImageUploadLease
+from ..models.widget.widget_image_upload_lease import WidgetImageUploadLease
 
 def load_widget_image_upload_lease(d: Mapping[str, Any]) -> WidgetImageUploadLease:
     lease_data = d['s3UploadLease']

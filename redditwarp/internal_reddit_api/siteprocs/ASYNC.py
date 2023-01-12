@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 
-from ...core.reddit_http_client_ASYNC import RedditHTTPClient
+from ...core.http_client_ASYNC import HTTPClient
 from ...http.util.json_load import json_loads_response
 from ...exceptions import (
     OperationException,
@@ -11,7 +11,7 @@ from ...exceptions import (
 
 
 class Procedures:
-    def __init__(self, http: RedditHTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
     async def do_legacy_reddit_web_login(self, username: str, password: str, otp: str = '') -> tuple[str, str]:

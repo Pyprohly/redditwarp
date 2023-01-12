@@ -8,12 +8,14 @@ if TYPE_CHECKING:
     from ...dtos.submission import GalleryItem
     from ...types import JSON_ro
 
+import os.path as op
 from functools import cached_property
+import json
 
 from ...model_loaders.submission_SYNC import load_submission, load_text_post
 from ...models.media_upload_lease import MediaUploadLease
 from ...model_loaders.media_upload_lease import load_media_upload_lease
-from ...http.payload import guess_mimetype_from_filename
+from ...http.payload import guess_filename_mimetype
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
@@ -50,34 +52,56 @@ class SubmissionProcedures:
         result = self._client.request('POST', '/api/comment', data=data)
         return load_comment(result, self._client)
 
-    class _upload_media:
+    class __MediaUploading:
         def __init__(self, outer: SubmissionProcedures) -> None:
             self._client = outer._client
 
-        def __call__(self, file: IO[bytes]) -> MediaUploadLease:
-            return self.upload(file)
+        def __call__(self,
+            file: IO[bytes],
+            *,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> MediaUploadLease:
+            return self.upload(file, filepath=filepath, timeout=timeout)
 
-        def obtain_upload_lease(self, *, filename: str, mimetype: Optional[str] = None) -> MediaUploadLease:
+        def obtain_upload_lease(self,
+            *,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> MediaUploadLease:
             if mimetype is None:
-                mimetype = guess_mimetype_from_filename(filename)
+                mimetype = guess_filename_mimetype(filepath)
             result = self._client.request('POST', '/api/media/asset',
-                    data={'filepath': filename, 'mimetype': mimetype})
+                    data={'filepath': filepath, 'mimetype': mimetype})
             return load_media_upload_lease(result)
 
-        def deposit_file(self, file: IO[bytes], upload_lease: MediaUploadLease, *,
-                timeout: float = 1000) -> None:
-            resp = self._client.http.request('POST', upload_lease.endpoint, data=upload_lease.fields,
-                    files={'file': file}, timeout=timeout)
+        def deposit_file(self,
+            file: IO[bytes],
+            upload_lease: MediaUploadLease,
+            *,
+            timeout: float = 1000,
+        ) -> None:
+            resp = self._client.http.request('POST', upload_lease.endpoint,
+                    data=upload_lease.fields, files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
-        def upload(self, file: IO[bytes], *, timeout: float = 1000) -> MediaUploadLease:
-            upload_lease = self.obtain_upload_lease(filename=file.name)
+        def upload(self,
+            file: IO[bytes],
+            *,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> MediaUploadLease:
+            if filepath is None:
+                filepath = op.basename(getattr(file, 'name', ''))
+                if not filepath:
+                    raise ValueError("the `filepath` parameter must be explicitly specified if the file object has no `name` attribute.")
+            upload_lease = self.obtain_upload_lease(filepath=filepath)
             self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-    upload_media: cached_property[_upload_media] = cached_property(_upload_media)
+    media_uploading: cached_property[__MediaUploading] = cached_property(__MediaUploading)
 
-    def create_text_post(self,
+    def create_markdown_text_post(self,
         sr: str,
         title: str,
         text: str,
@@ -109,7 +133,42 @@ class SubmissionProcedures:
             if event_end: yield ('event_end', event_end)
             if event_tz: yield ('event_tz', event_tz)
 
-        root = self._client.request('POST', '/api/submit', data=dict(g()))
+        root = self._client.request('POST', '/api/submit', files=dict(g()))
+        return int(root['json']['data']['id'], 36)
+
+    def create_richtext_text_post(self,
+        sr: str,
+        title: str,
+        rtjson: Mapping[str, JSON_ro],
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        original_content: bool = False,
+        collection_uuid: str = '',
+        flair_uuid: str = '',
+        flair_text: str = '',
+        event_start: str = '',
+        event_end: str = '',
+        event_tz: str = '',
+    ) -> int:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('kind', 'self')
+            yield ('sr', sr)
+            yield ('title', title)
+            yield ('richtext_json', json.dumps(rtjson))
+            yield ('sendreplies', '01'[reply_notifications])
+            if spoiler: yield ('spoiler', '1')
+            if nsfw: yield ('nsfw', '1')
+            if original_content: yield ('original_content', '1')
+            if collection_uuid: yield ('collection_id', collection_uuid)
+            if flair_uuid: yield ('flair_id', flair_uuid)
+            if flair_text: yield ('flair_text', flair_text)
+            if event_start: yield ('event_start', event_start)
+            if event_end: yield ('event_end', event_end)
+            if event_tz: yield ('event_tz', event_tz)
+
+        root = self._client.request('POST', '/api/submit', files=dict(g()))
         return int(root['json']['data']['id'], 36)
 
     def create_link_post(self,

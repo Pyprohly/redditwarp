@@ -32,7 +32,7 @@ class MyHTTPClient(HTTPClient):
         self.response_headers = response_headers
         self.response_data = response_data
 
-    async def send(self, p: SendParams) -> Exchange:
+    async def _send(self, p: SendParams) -> Exchange:
         resp = Response(self.response_status, self.response_headers, self.response_data)
         return Exchange(
             requisition=self.DUMMY_REQUISITION,
@@ -50,9 +50,9 @@ class RecordingHTTPClient(MyHTTPClient):
         super().__init__(response_status, response_headers, response_data)
         self.history: list[Requisition] = []
 
-    async def send(self, p: SendParams) -> Exchange:
+    async def _send(self, p: SendParams) -> Exchange:
         self.history.append(p.requisition)
-        return await super().send(p)
+        return await super()._send(p)
 
 
 @pytest.mark.asyncio

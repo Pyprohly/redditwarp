@@ -17,7 +17,7 @@ class SubredditSearchAsyncPaginator(
         url: str,
         query: str,
         show_users: bool = False,
-    ):
+    ) -> None:
         super().__init__(client, url)
         self.query: str = query
         self.show_users: bool = show_users

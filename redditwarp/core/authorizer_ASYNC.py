@@ -34,7 +34,7 @@ class Authorizer:
     def __init__(self,
         token_client: Optional[TokenObtainmentClient] = None,
         token: Optional[Token] = None,
-    ):
+    ) -> None:
         self.token_client: Optional[TokenObtainmentClient] = token_client
         self.token: Optional[Token] = token
         self.renewal_time: Optional[float] = None

@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from .authorizer_SYNC import Authorizer
     from ...http.handler_SYNC import Handler
 
-from ...core.reddit_http_client_SYNC import RedditHTTPClient
+from ...core.http_client_SYNC import HTTPClient
 from ...core.rate_limited_SYNC import RateLimited
 from ...core.reddit_please_send_json_SYNC import RedditPleaseSendJSON
 from ...http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
@@ -14,10 +14,10 @@ from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..auth.internal_reddit_api_token_obtainment_client_SYNC import new_internal_reddit_api_token_obtainment_client
 from .authorizer_SYNC import Authorized
 from ...core.user_agent_SYNC import get_user_agent
-from ...http.http_client_SYNC import HTTPClient
+from ...http.http_client_SYNC import HTTPClient as BaseHTTPClient
 
 
-class InternalRedditHTTPClient(RedditHTTPClient):
+class InternalRedditHTTPClient(HTTPClient):
     @property
     def authorizer(self) -> Authorizer:
         return self.fetch_authorizer()
@@ -42,7 +42,7 @@ def build_internal_reddit_http_client() -> InternalRedditHTTPClient:
     connector = new_connector()
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
-    http = HTTPClient(ApplyDefaultHeaders(connector, headers))
+    http = BaseHTTPClient(ApplyDefaultHeaders(connector, headers))
     token_client = new_internal_reddit_api_token_obtainment_client(http)
     authorizer = Authorizer(token_client)
     handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))

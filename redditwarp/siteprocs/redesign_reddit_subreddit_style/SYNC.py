@@ -1,69 +1,140 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, IO, Optional, Literal, Iterable
+from typing import TYPE_CHECKING, IO, Optional, Literal, Iterable, Protocol
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_style_asset_upload_lease import SubredditStyleAssetUploadLease
 
+import os.path as op
 from functools import cached_property
 
 from ...model_loaders.subreddit_style_asset_upload_lease import load_subreddit_style_asset_upload_lease
-from ...http.payload import guess_mimetype_from_filename
+from ...http.payload import guess_filename_mimetype
 
 class RedesignRedditSubredditStyleProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    class _upload_banner:
+    class __BannerUploading:
         def __init__(self, outer: RedesignRedditSubredditStyleProcedures) -> None:
             self._client = outer._client
 
-        def _obtain_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None, imagetype: str) -> SubredditStyleAssetUploadLease:
+        def __obtain_upload_lease(self,
+            *,
+            sr: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+            imagetype: str,
+        ) -> SubredditStyleAssetUploadLease:
             if mimetype is None:
-                mimetype = guess_mimetype_from_filename(filename)
+                mimetype = guess_filename_mimetype(filepath)
             result = self._client.request('POST', f'/api/v1/style_asset_upload_s3/{sr}',
-                    data={'filepath': filename, 'mimetype': mimetype, 'imagetype': imagetype})
+                    data={'filepath': filepath, 'mimetype': mimetype, 'imagetype': imagetype})
             return load_subreddit_style_asset_upload_lease(result)
 
-        def obtain_banner_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> SubredditStyleAssetUploadLease:
-            return self._obtain_upload_lease(sr=sr, filename=filename, mimetype=mimetype, imagetype='bannerBackgroundImage')
+        def obtain_banner_upload_lease(self,
+            *,
+            sr: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='bannerBackgroundImage')
 
-        def obtain_banner_overlay_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> SubredditStyleAssetUploadLease:
-            return self._obtain_upload_lease(sr=sr, filename=filename, mimetype=mimetype, imagetype='bannerPositionedImage')
+        def obtain_banner_overlay_upload_lease(self,
+            *,
+            sr: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='bannerPositionedImage')
 
-        def obtain_banner_overlay_hover_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> SubredditStyleAssetUploadLease:
-            return self._obtain_upload_lease(sr=sr, filename=filename, mimetype=mimetype, imagetype='secondaryBannerPositionedImage')
+        def obtain_banner_overlay_hover_upload_lease(self,
+            *,
+            sr: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='secondaryBannerPositionedImage')
 
-        def obtain_mobile_banner_upload_lease(self, *, sr: str, filename: str, mimetype: Optional[str] = None) -> SubredditStyleAssetUploadLease:
-            return self._obtain_upload_lease(sr=sr, filename=filename, mimetype=mimetype, imagetype='mobileBannerImage')
+        def obtain_mobile_banner_upload_lease(self,
+            *,
+            sr: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='mobileBannerImage')
 
-        def deposit_file(self, file: IO[bytes], upload_lease: SubredditStyleAssetUploadLease, *,
-                timeout: float = 1000) -> None:
-            resp = self._client.http.request('POST', upload_lease.endpoint, data=upload_lease.fields,
-                    files={'file': file}, timeout=timeout)
+        def deposit_file(self,
+            file: IO[bytes],
+            upload_lease: SubredditStyleAssetUploadLease,
+            *,
+            timeout: float = 1000,
+        ) -> None:
+            resp = self._client.http.request('POST', upload_lease.endpoint,
+                    data=upload_lease.fields, files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
-        def upload_banner(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
-            upload_lease = self.obtain_banner_upload_lease(filename=file.name, sr=sr)
+        class __ObtainUploadLeaseFunction(Protocol):
+            def __call__(self,
+                *,
+                sr: str,
+                filepath: str,
+                mimetype: Optional[str] = None,
+            ) -> SubredditStyleAssetUploadLease: ...
+
+        def __upload(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+            obtain_upload_lease: __ObtainUploadLeaseFunction,
+        ) -> SubredditStyleAssetUploadLease:
+            if filepath is None:
+                filepath = op.basename(getattr(file, 'name', ''))
+                if not filepath:
+                    raise ValueError("the `filepath` parameter must be explicitly specified if the file object has no `name` attribute.")
+            upload_lease = obtain_upload_lease(sr=sr, filepath=filepath)
             self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-        def upload_banner_overlay(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
-            upload_lease = self.obtain_banner_overlay_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease, timeout=timeout)
-            return upload_lease
+        def upload_banner(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_upload_lease)
 
-        def upload_banner_overlay_hover(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
-            upload_lease = self.obtain_banner_overlay_hover_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease, timeout=timeout)
-            return upload_lease
+        def upload_banner_overlay(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_overlay_upload_lease)
 
-        def upload_mobile_banner(self, file: IO[bytes], *, sr: str, timeout: float = 1000) -> SubredditStyleAssetUploadLease:
-            upload_lease = self.obtain_mobile_banner_upload_lease(filename=file.name, sr=sr)
-            self.deposit_file(file, upload_lease, timeout=timeout)
-            return upload_lease
+        def upload_banner_overlay_hover(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_overlay_hover_upload_lease)
 
-    upload_banner: cached_property[_upload_banner] = cached_property(_upload_banner)
+        def upload_mobile_banner(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> SubredditStyleAssetUploadLease:
+            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_mobile_banner_upload_lease)
+
+    banner_uploading: cached_property[__BannerUploading] = cached_property(__BannerUploading)
 
     def configure_banner_settings(self,
         sr: str,

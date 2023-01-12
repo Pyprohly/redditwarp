@@ -60,7 +60,7 @@ class Urllib3Connector(Connector):
                 )
 
             elif isinstance(pld, payload.Bytes):
-                pld.apply_content_type_header(headers)
+                headers['Content-Type'] = pld.get_media_type()
                 resp = self.http.urlopen(
                     r.verb,
                     url,
@@ -71,7 +71,7 @@ class Urllib3Connector(Connector):
                 )
 
             elif isinstance(pld, payload.Text):
-                pld.apply_content_type_header(headers)
+                headers['Content-Type'] = pld.get_media_type()
                 resp = self.http.urlopen(
                     r.verb,
                     url,
@@ -82,7 +82,7 @@ class Urllib3Connector(Connector):
                 )
 
             elif isinstance(pld, payload.JSON):
-                pld.apply_content_type_header(headers)
+                headers['Content-Type'] = pld.get_media_type()
                 resp = self.http.urlopen(
                     r.verb,
                     url,
@@ -105,12 +105,12 @@ class Urllib3Connector(Connector):
                 )
 
             elif isinstance(pld, payload.MultipartFormData):
-                fields: dict[str, Union[str, tuple[str, Union[str, bytes], str]]] = {}
-                for part in pld.parts:
-                    if isinstance(part, payload.MultipartTextField):
-                        fields[part.name] = part.value
-                    elif isinstance(part, payload.MultipartFileField):
-                        fields[part.name] = (part.filename, part.file.read(), part.content_type)
+                fields: dict[str, Union[str, tuple[Optional[str], Union[str, bytes], Optional[str]]]] = {}
+                for pt in pld.parts:
+                    if isinstance(pt, payload.MultipartFormData.TextField):
+                        fields[pt.name] = pt.text
+                    elif isinstance(pt, payload.MultipartFormData.FileField):
+                        fields[pt.name] = (pt.filename, pt.file.read(), pt.content_type)
 
                 resp = self.http.request_encode_body(
                     r.verb,
@@ -122,7 +122,7 @@ class Urllib3Connector(Connector):
                 )
 
             else:
-                raise Exception('unsupported payload type')
+                raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")
 
         except urllib3_exceptions.ReadTimeoutError as cause:
             raise exceptions.TimeoutException from cause

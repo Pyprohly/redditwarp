@@ -44,6 +44,8 @@
 #
 #############################################################################
 
+from __future__ import annotations
+
 
 version_major: int = 0
 version_minor: int = 7

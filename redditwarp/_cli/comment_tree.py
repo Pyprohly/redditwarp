@@ -2,10 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, MutableSequence, Iterator, Callable
 if TYPE_CHECKING:
-    from redditwarp.models.comment_tree_SYNC import (
-        CommentSubtreeTreeNode,
-        MoreCommentsTreeNode,
-    )
+    from redditwarp.models.comment_tree_SYNC import CommentSubtreeTreeNode, MoreCommentsTreeNode
 
 ###
 ALGORITHM_CHOICES = (
@@ -29,7 +26,7 @@ add('--access-token', metavar='ACCESS_TOKEN', dest='access_token_opt')
 add('--target', metavar='TARGET', dest='target_opt', help=argparse.SUPPRESS)
 add('--base', metavar='N', dest='base_opt', type=int, default=36)
 add('--algo', '--algorithm', choices=ALGORITHM_CHOICES, default='dfs', dest='algo', metavar='')
-add('--sort', dest='sort', choices=COMMENT_SORT_CHOICES)
+add('--sort', dest='sort', choices=COMMENT_SORT_CHOICES, default='confidence')
 args = parser.parse_args()
 ###;
 
@@ -48,9 +45,9 @@ sort: str = args.sort
 base: int = args.base_opt
 
 
-# A recursive DFS traversal. The algorithm looks clean and it performs well, except that
-# Python limits the maximum function recursion depth to 1000 so if you have a very deep
-# comment tree you'll have to use an iterative approach.
+# A recursive DFS. The algorithm looks clean and performs well, except that Python
+# limits the maximum function recursion depth to 1000, so if you have a very deep
+# comment tree you’ll have to use an iterative approach.
 def depth_first_recursive(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     def traverse(root: CommentSubtreeTreeNode[object], level: int = 0) -> Iterator[tuple[int, Comment]]:
         value = root.value
@@ -65,11 +62,10 @@ def depth_first_recursive(node: CommentSubtreeTreeNode[object]) -> Iterator[tupl
 
     return traverse(node)
 
-# An iterative version that is functionally the same as the recursive version but is
-# slightly inaccurate because the more object get evaluated before processing the
-# children. Ideally we'd want to process all the children we have before making any
-# calls to fetch more. It's especially undesirable because you'll notice it has the
-# effect of feeling a lot slower (particularly at the start) and being more jittery.
+# An iterative DFS that is functionally equivalent to the recursive version but is
+# slightly inaccurate because the `MoreComments` callables are evaluated before the
+# child nodes are processed. It’s undesirable because for a display script it has the
+# effect of feeling slower and looking more jittery.
 def depth_first_iterative_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     stack: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
     levels = deque([0])
@@ -89,7 +85,7 @@ def depth_first_iterative_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tu
         levels.extend([level + 1] * len(node.children))
 
 # This version is more algorithmically accurate to the recursive one but at the cost of
-# being uglier. So pick your poison.
+# looking messier.
 def depth_first_iterative_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     stack: MutableSequence[bool] = deque([True])
     node_stack: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
@@ -100,7 +96,6 @@ def depth_first_iterative_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tu
             node = node_stack.pop()
         else:
             node = more_stack.pop()()
-
         level = levels.pop()
 
         value = node.value
@@ -116,8 +111,8 @@ def depth_first_iterative_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tu
         node_stack.extend(reversed(node.children))
         levels.extend([level + 1] * len(node.children))
 
-# This BFS traversal evaluates the more object before processing the children which
-# we've established is undesirable because it feels slow.
+# This BFS traversal evaluates the `MoreComments` callables before processing the
+# children which, we’ve established is undesirable because it feels slow.
 def breadth_first_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     level = 0
     queue: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
@@ -142,8 +137,8 @@ def breadth_first_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int,
 
         level += 1
 
-# A BFS that processes all children before evaluating more objects. Algorithmically
-# better but programically uglier.
+# A BFS that processes all children before evaluating `MoreComments` callables.
+# Algorithmically better but programmatically uglier.
 def breadth_first_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     level = 0
     queue: MutableSequence[bool] = deque([True])
@@ -184,7 +179,7 @@ def breadth_first_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int,
 
 
 traversal = {
-    'dfs': depth_first_recursive,
+    'dfs': depth_first_iterative_2,
     'dfs0': depth_first_recursive,
     'dfs1': depth_first_iterative_1,
     'dfs2': depth_first_iterative_2,

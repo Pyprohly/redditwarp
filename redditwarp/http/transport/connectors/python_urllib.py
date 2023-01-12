@@ -44,7 +44,7 @@ class PythonUrllibConnector(Connector):
 
         url = merge_query_params(r.url, r.params)
 
-        extra_headers: dict[str, str] = {}
+        headers: dict[str, str] = dict(r.headers)
         data: Any = None
 
         pld = r.payload
@@ -52,15 +52,15 @@ class PythonUrllibConnector(Connector):
             pass
 
         elif isinstance(pld, payload.Bytes):
-            pld.apply_content_type_header(extra_headers)
+            headers['Content-Type'] = pld.get_media_type()
             data = pld.data
 
         elif isinstance(pld, payload.Text):
-            pld.apply_content_type_header(extra_headers)
+            headers['Content-Type'] = pld.get_media_type()
             data = pld.text.encode()
 
         elif isinstance(pld, payload.JSON):
-            pld.apply_content_type_header(extra_headers)
+            headers['Content-Type'] = pld.get_media_type()
             data = json.dumps(pld.json).encode()
 
         elif isinstance(pld, payload.URLEncodedFormData):
@@ -70,9 +70,7 @@ class PythonUrllibConnector(Connector):
             raise Exception('multipart payload not supported by python urllib')
 
         else:
-            raise Exception('unsupported payload type')
-
-        headers = {**r.headers, **extra_headers}
+            raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")
 
         req = urllib.request.Request(
             method=r.verb,

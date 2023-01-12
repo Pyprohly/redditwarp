@@ -26,7 +26,7 @@ class ModerationUsersAsyncPaginator(MoreAvailableAsyncPaginator[T], Bidirectiona
         url: str,
         *,
         limit: Optional[int] = 100,
-    ):
+    ) -> None:
         super().__init__(limit=limit)
         self.direction: bool = True
         self.client: Client = client

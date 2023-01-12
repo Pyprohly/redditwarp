@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Optional, Mapping, Any, Union
 if TYPE_CHECKING:
     from ..http.http_client_SYNC import HTTPClient
-    from ..http.payload import RequestFiles
+    from ..http.types import RequestFiles
+    from ..types import JSON_ro
 
 from .core.http_client_SYNC import build_http_client
 from ..http.util.json_load import json_loads_response
@@ -34,7 +35,7 @@ class Client:
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], bytes]] = None,
-        json: Any = None,
+        json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,

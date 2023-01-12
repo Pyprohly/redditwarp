@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Exchange an authorization code for an access/refresh token.
 """

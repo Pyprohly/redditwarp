@@ -42,8 +42,9 @@ class HttpxConnector(Connector):
 
         follow_redirects = _get_effective_follow_redirects(p.follow_redirects)
 
-        extra_headers: dict[str, str] = {}
+        headers: dict[str, str] = dict(r.headers)
         data: Any = None
+        content: Optional[bytes] = None
         json: Any = None
         files: Any = None
 
@@ -52,11 +53,11 @@ class HttpxConnector(Connector):
             pass
 
         elif isinstance(pld, payload.Bytes):
-            pld.apply_content_type_header(extra_headers)
-            data = pld.data
+            headers['Content-Type'] = pld.get_media_type()
+            content = pld.data
 
         elif isinstance(pld, payload.Text):
-            pld.apply_content_type_header(extra_headers)
+            headers['Content-Type'] = pld.get_media_type()
             data = pld.text.encode()
 
         elif isinstance(pld, payload.JSON):
@@ -66,28 +67,15 @@ class HttpxConnector(Connector):
             data = dict(pld.data)
 
         elif isinstance(pld, payload.MultipartFormData):
-            text_plds: list[payload.MultipartTextField] = []
-            file_plds: list[payload.MultipartFileField] = []
-            for part in pld.parts:
-                if isinstance(part, payload.MultipartTextField):
-                    text_plds.append(part)
-                elif isinstance(part, payload.MultipartFileField):
-                    file_plds.append(part)
-
-            if not file_plds:
-                # Httpx won't let us send a multipart if no files :(
-                raise Exception('multipart without file fields not supported')
-
-            data = {ty.name: ty.value for ty in text_plds}
-            files = {
-                fy.name: (fy.filename, fy.file, fy.content_type)
-                for fy in file_plds
-            }
+            files = {}
+            for pt in pld.parts:
+                if isinstance(pt, payload.MultipartFormData.TextField):
+                    files[pt.name] = (None, pt.text.encode(), None)
+                elif isinstance(pt, payload.MultipartFormData.FileField):
+                    files[pt.name] = (pt.filename, pt.file, pt.content_type)
 
         else:
-            raise Exception('unsupported payload type')
-
-        headers = {**r.headers, **extra_headers}
+            raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")
 
         try:
             resp = self.client.request(
@@ -98,6 +86,7 @@ class HttpxConnector(Connector):
                 timeout=timeout_obj,
                 follow_redirects=follow_redirects,
                 data=data,
+                content=content,
                 json=json,
                 files=files,
             )

@@ -1,14 +1,15 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, final
 if TYPE_CHECKING:
-    from typing import Any, Optional, Mapping, Union
+    from typing import Optional, Mapping, Union
     from types import TracebackType
     from .requisition import Requisition
     from .response import Response
-    from .payload import RequestFiles
+    from .types import RequestFiles
     from .handler_ASYNC import Handler
     from .exchange import Exchange
+    from ..types import JSON_ro
 
 from urllib.parse import urljoin
 
@@ -31,7 +32,7 @@ class HTTPClient:
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], bytes]] = None,
-        json: Any = None,
+        json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
     ) -> Requisition:
         return make_requisition(
@@ -61,6 +62,7 @@ class HTTPClient:
         await self.close()
         return None
 
+    @final
     async def request(self,
         verb: str,
         url: str,
@@ -68,7 +70,7 @@ class HTTPClient:
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], bytes]] = None,
-        json: Any = None,
+        json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
@@ -78,6 +80,7 @@ class HTTPClient:
                 timeout=timeout, follow_redirects=follow_redirects)
         return xchg.response
 
+    @final
     async def inquire(self,
         verb: str,
         url: str,
@@ -85,7 +88,7 @@ class HTTPClient:
         params: Optional[Mapping[str, str]] = None,
         headers: Optional[Mapping[str, str]] = None,
         data: Optional[Union[Mapping[str, str], bytes]] = None,
-        json: Any = None,
+        json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
@@ -94,6 +97,7 @@ class HTTPClient:
                 data=data, json=json, files=files)
         return await self.submit(reqi, timeout=timeout, follow_redirects=follow_redirects)
 
+    @final
     async def submit(self,
         reqi: Requisition,
         *,
@@ -105,9 +109,9 @@ class HTTPClient:
             timeout=timeout,
             follow_redirects=follow_redirects,
         )
-        return await self.send(p)
+        return await self._send(p)
 
-    async def send(self, p: SendParams) -> Exchange:
+    async def _send(self, p: SendParams) -> Exchange:
         reqi = p.requisition
         reqi.url = urljoin(self.base_url, reqi.url)
         if p.timeout == -2:

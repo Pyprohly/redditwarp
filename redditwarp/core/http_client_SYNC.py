@@ -2,32 +2,34 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
-    from ..http.handler_ASYNC import Handler
+    from ..http.handler_SYNC import Handler
 
 from .const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL
-from ..http.http_client_ASYNC import HTTPClient
+from ..http.http_client_SYNC import HTTPClient as BaseHTTPClient
 from ..auth.types import AuthorizationGrant
-from .authorizer_ASYNC import Authorized
-from .rate_limited_ASYNC import RateLimited
-from .recorded_ASYNC import Recorded
-from .reddit_please_send_json_ASYNC import RedditPleaseSendJSON
-from .reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
-from ..http.transport.reg_ASYNC import new_connector
+from .authorizer_SYNC import Authorized
+from .rate_limited_SYNC import RateLimited
+from .recorded_SYNC import Recorded
+from .reddit_please_send_json_SYNC import RedditPleaseSendJSON
+from .reddit_token_obtainment_client_SYNC import RedditTokenObtainmentClient
+from ..http.transport.reg_SYNC import new_connector
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
-from ..http.misc.apply_params_and_headers_ASYNC import ApplyDefaultHeaders
-from .user_agent_ASYNC import get_user_agent
+from ..http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
+from .user_agent_SYNC import get_user_agent
 from ..auth.token import Token
-from .recorded_ASYNC import Last
-from .authorizer_ASYNC import Authorizer
+from .recorded_SYNC import Last
+from .authorizer_SYNC import Authorizer
 from ..http.send_params import SendParams
 from ..http.exchange import Exchange
-from .direct_by_origin_ASYNC import DirectByOrigin
+from .direct_by_origin_SYNC import DirectByOrigin
 
 
 DEFAULT_TIMEOUT: float = 8
 
 
-class RedditHTTPClient(HTTPClient):
+class HTTPClient(BaseHTTPClient):
+    """An HTTP client specialised for the purposes of this library."""
+
     @property
     def last(self) -> Last:
         return self._last
@@ -43,19 +45,23 @@ class RedditHTTPClient(HTTPClient):
         self.headers: MutableMapping[str, str] = CaseInsensitiveDict() if headers is None else headers
         self._last: Last = Last(recorder)
 
-    async def send(self, p: SendParams) -> Exchange:
+    def _send(self, p: SendParams) -> Exchange:
         (_d := p.requisition.headers).update({**self.headers, **_d})
-        return await super().send(p)
+        return super()._send(p)
 
     def get_user_agent(self) -> str:
         return self.headers.get('User-Agent', '')
 
     def set_user_agent(self, value: Optional[str]) -> None:
-        if value is not None:
+        if value is None:
+            self.headers.pop('User-Agent', None)
+        else:
             self.headers['User-Agent'] = value
 
 
-class PublicRedditHTTPClient(RedditHTTPClient):
+class RedditHTTPClient(HTTPClient):
+    """An HTTP client for making requests to the public Reddit REST API."""
+
     @property
     def authorizer(self) -> Authorizer:
         return self.fetch_authorizer()
@@ -73,14 +79,19 @@ class PublicRedditHTTPClient(RedditHTTPClient):
         return self._authorizer
 
     def fast_set_authorizer(self, value: Optional[Authorizer]) -> None:
+        """Changes the value of `self.authorizer`.
+
+        Note, this attribute is just a holder and changing its value will not
+        change the underlying authorizer.
+        """
         self._authorizer = value
 
 
-def build_public_reddit_http_client(
+def build_reddit_http_client(
     client_id: str,
     client_secret: str,
     grant: AuthorizationGrant,
-) -> PublicRedditHTTPClient:
+) -> RedditHTTPClient:
     connector = new_connector()
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
@@ -91,21 +102,23 @@ def build_public_reddit_http_client(
         grant,
     )
     authorizer = Authorizer(token_client)
-    handler: Handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    handler: Handler
+    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
     handler = DirectByOrigin(connector, {RESOURCE_BASE_URL: handler})
-    http = PublicRedditHTTPClient(handler, headers=headers, authorizer=authorizer)
+    http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
     return http
 
-def build_public_reddit_http_client_from_access_token(
+def build_reddit_http_client_from_access_token(
     access_token: str,
-) -> PublicRedditHTTPClient:
+) -> RedditHTTPClient:
     connector = new_connector()
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     authorizer = Authorizer(token=Token(access_token))
-    handler: Handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    handler: Handler
+    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
     handler = DirectByOrigin(connector, {RESOURCE_BASE_URL: handler})
-    http = PublicRedditHTTPClient(handler, headers=headers, authorizer=authorizer)
+    http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
     return http

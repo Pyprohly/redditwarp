@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Run `.refresh_token` with the `--access-token-only` flag.
 """
