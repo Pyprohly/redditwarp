@@ -29,7 +29,7 @@ class Pull:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    class _modqueue:
+    class ModQueue:
         def __init__(self, outer: Pull) -> None:
             self._outer = outer
             self._client = outer._client
@@ -49,9 +49,9 @@ class Pull:
             p = ModQueueCommentListingAsyncPaginator(self._client, f'/r/{sr}/about/modqueue')
             return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    modqueue: cached_property[_modqueue] = cached_property(_modqueue)
+    modqueue: cached_property[ModQueue] = cached_property(ModQueue)
 
-    class _reported:
+    class Reported:
         def __init__(self, outer: Pull) -> None:
             self._outer = outer
             self._client = outer._client
@@ -71,9 +71,9 @@ class Pull:
             p = ReportsCommentListingAsyncPaginator(self._client, f'/r/{sr}/about/reports')
             return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    reported: cached_property[_reported] = cached_property(_reported)
+    reported: cached_property[Reported] = cached_property(Reported)
 
-    class _spam:
+    class Spam:
         def __init__(self, outer: Pull) -> None:
             self._outer = outer
             self._client = outer._client
@@ -93,9 +93,9 @@ class Pull:
             p = SpamCommentListingAsyncPaginator(self._client, f'/r/{sr}/about/spam')
             return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    spam: cached_property[_spam] = cached_property(_spam)
+    spam: cached_property[Spam] = cached_property(Spam)
 
-    class _edited:
+    class Edited:
         def __init__(self, outer: Pull) -> None:
             self._outer = outer
             self._client = outer._client
@@ -115,7 +115,7 @@ class Pull:
             p = EditedCommentListingAsyncPaginator(self._client, f'/r/{sr}/about/edited')
             return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    edited: cached_property[_edited] = cached_property(_edited)
+    edited: cached_property[Edited] = cached_property(Edited)
 
     def unmoderated(self, sr: str, amount: Optional[int] = None,
             ) -> ImpartedPaginatorChainingAsyncIterator[UnmoderatedSubmissionListingAsyncPaginator, Submission]:

@@ -26,7 +26,7 @@ class AccountProcedures:
     def fetch(self) -> MyAccount:
         """Fetch information about the currently logged in user.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.OperationException:
             There is no user context.
@@ -39,33 +39,33 @@ class AccountProcedures:
     def get_preferences(self) -> Mapping[str, Any]:
         """Retrieve the preferences of the current user.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
         """
         return self._client.request('GET', '/api/v1/me/prefs')
 
     def set_preferences(self, prefs: Mapping[str, JSON_ro]) -> Mapping[str, Any]:
         """Update the preferences of the current user.
 
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param prefs:
             See the API docs for available preference settings:
             `https://www.reddit.com/dev/api/#PATCH_api_v1_me_prefs`_.
 
-        .. RETURNS
+        .. .RETURNS
 
         :returns:
             The updated preferences, as you would get from :meth:`.get_preferences`.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
         """
         return self._client.request('PATCH', '/api/v1/me/prefs', json=prefs)
 
@@ -75,11 +75,11 @@ class AccountProcedures:
         The entries are sorted in descending order by comment karma plus
         submission karma.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
         """
         root = self._client.request('GET', '/api/v1/me/karma')
         entries = root['data']
@@ -91,8 +91,8 @@ class AccountProcedures:
         ..RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
         """
         root = self._client.request('GET', '/api/v1/me/trophies')
         kind_data = root['data']['trophies']
@@ -101,20 +101,20 @@ class AccountProcedures:
     def get_friend(self, name: str) -> UserRelationshipItem:
         """Get information about a specific 'friend'.
 
-        ..PARAMETERS
+        .. .PARAMETERS
 
         :param name:
             The name of a user.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
-            | ``case RedditError('NOT_FRIEND')``:
-            |     You are not friends with the specified user.
-            | ``case RedditError('USER_DOESNT_EXIST')``:
-            |     The specified user does not exist.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
+            * ``case RedditError('NOT_FRIEND')``:
+                You are not friends with the specified user.
+            * ``case RedditError('USER_DOESNT_EXIST')``:
+                The specified user does not exist.
         """
         root = self._client.request('GET', f'/api/v1/me/friends/{name}')
         return load_user_relationship_item(root)
@@ -122,7 +122,7 @@ class AccountProcedures:
     def friends(self) -> Sequence[UserRelationshipItem]:
         """Get a list of friends.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.OperationException:
             There is no user context.
@@ -146,7 +146,7 @@ class AccountProcedures:
         Also use this function to add or update a note.
         Note: making a note requires Reddit Premium.
 
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param name:
             The name of a user.
@@ -156,22 +156,22 @@ class AccountProcedures:
             Using this parameter requires Reddit Premium, otherwise a
             ``case RedditError('GOLD_REQUIRED')`` error will occur.
 
-        .. RETURNS
+        .. .RETURNS
 
         :returns:
             The updated user object on success.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
-            | ``case RedditError('USER_DOESNT_EXIST')``:
-            |     The specified user does not exist.
-            | ``case RedditError('GOLD_REQUIRED')``:
-            |     You tried to add a note but you don’t have Reddit Premium.
-            | ``case RedditError('NO_TEXT')``:
-            |     An empty string was specified for `note`.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
+            * ``case RedditError('USER_DOESNT_EXIST')``:
+                The specified user does not exist.
+            * ``case RedditError('GOLD_REQUIRED')``:
+                You tried to add a note but you don’t have Reddit Premium.
+            * ``case RedditError('NO_TEXT')``:
+                An empty string was specified for `note`.
         """
         json_data = {} if note is None else {'note': note}
         root = self._client.request('PUT', f'/api/v1/me/friends/{name}', json=json_data)
@@ -180,23 +180,23 @@ class AccountProcedures:
     def remove_friend(self, name: str) -> None:
         """Remove a friend.
 
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param name:
             The name of a user.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('NOT_FRIEND')``:
-            |     The user specified is not a friend.
+            * ``case RedditError('NOT_FRIEND')``:
+                The user specified is not a friend.
         """
         self._client.request('DELETE', f'/api/v1/me/friends/{name}')
 
     def blocked(self) -> Sequence[UserRelationshipItem]:
         """Get a list of blocked users.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.OperationException:
             There is no user context.
@@ -217,27 +217,27 @@ class AccountProcedures:
     def block_user_by_id(self, idn: int) -> None:
         """Block a user by ID.
 
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param idn:
             The ID of the user to block.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
         :raises redditwarp.http.exceptions.StatusCodeException:
-            | ``case StatusCodeException(400)``:
-            |     * The username or user ID given doesn't exist.
-            |     * You tried to block yourself.
+            * ``case StatusCodeException(400)``:
+                * The username or user ID given doesn't exist.
+                * You tried to block yourself.
         """
         self._client.request('POST', '/api/block_user', data={'account_id': to_base36(idn)})
 
     def block_user_by_name(self, name: str) -> None:
         """Block a user by name.
 
-        .. RAISES
+        .. .RAISES
 
         :raises:
             (Same as in :meth:`.block_user_by_id`.)
@@ -247,7 +247,7 @@ class AccountProcedures:
     def unblock_user_by_target_id(self, target_id: int, agent_id: int) -> None:
         """Unblock a user by ID.
 
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param target_id:
             The user ID in which to unblock.
@@ -255,14 +255,14 @@ class AccountProcedures:
             Your user account's ID.
             The endpoint needs this for some dumb reason.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
         :raises redditwarp.http.exceptions.StatusCodeException:
-            | ``case StatusCodeException(400)``:
-            |     The target username or target user ID doesn't exist.
+            * ``case StatusCodeException(400)``:
+                The target username or target user ID doesn't exist.
         """
         data = {
             'type': 'enemy',
@@ -304,38 +304,38 @@ class AccountProcedures:
     def add_trusted_user(self, name: str) -> None:
         """Add a user to your trusted users list.
 
-        RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
-            | ``case RedditError('CANT_WHITELIST_AN_ENEMY')``:
-            |     The specified user is on your blocked list.
-            | ``case RedditError('USER_DOESNT_EXIST')``:
-            |     The specified user does not exist.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
+            * ``case RedditError('CANT_WHITELIST_AN_ENEMY')``:
+                The specified user is on your blocked list.
+            * ``case RedditError('USER_DOESNT_EXIST')``:
+                The specified user does not exist.
         """
         self._client.request('POST', '/api/add_whitelisted', params={'name': name})
 
     def remove_trusted_user(self, name: str) -> None:
         """Remove a user from your trusted users list.
 
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param name:
             The target user name.
 
-        .. RAISES
+        .. .RAISES
 
         :raises redditwarp.exceptions.RedditError:
-            | ``case RedditError('USER_REQUIRED')``:
-            |     There is no user context.
+            * ``case RedditError('USER_REQUIRED')``:
+                There is no user context.
         """
         self._client.request('POST', '/api/remove_whitelisted', params={'name': name})
 
     def messaging(self) -> tuple[Sequence[UserRelationshipItem], Sequence[UserRelationshipItem]]:
         """Return the blocked and trusted user lists in one call.
 
-        .. RETURNS
+        .. .RETURNS
 
         :returns:
             A tuple of two lists:

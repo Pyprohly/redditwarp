@@ -30,7 +30,7 @@ class User(IArtifact):
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['name']
 
-        self.submission_karma: int = d['link_karma']
+        self.post_karma: int = d['link_karma']
         self.comment_karma: int = d['comment_karma']
         # The user objects from wiki related data don't have these fields
         # but it uses a different user class type for now.

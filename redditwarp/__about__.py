@@ -6,7 +6,7 @@
 #   | |___) | _____   __| |  __| | _  _| |__| || || | _____   _____ ____
 #   |  __  _/| ___ |/  _  |/  _  || |/_   _/| || || | \___ | / ___/|  _  \
 #   | |  \ \ | ____|| (_| || (_| || |  | |__| || || |/ ___ || |    | |_) |
-#   |_|   \_\|____/ \_____/\_____/|_|   \__/ \_____/ \_____/|_|    |  ___/
+#   |_|   \_\|____/ \_____|\_____||_|   \__/ \_____/ \_____||_|    |  ___/
 #                                                                  |_|
 #                                                                 Library
 #
@@ -62,7 +62,7 @@ __title__: str = 'RedditWarp'
 __summary__: str = "The unofficial Reddit API library for Python"
 __uri__: str = "https://github.com/Pyprohly/redditwarp"
 __url__: str = __uri__
-__author__: str = 'Pyprohly'  # u/Pyprohly
+__author__: str = 'Pyprohly'
 __email__: str = 'pyprohly@gmail.com'
 __license__: str = 'MIT'
-__copyright__: str = 'Copyright 2022 Pyprohly'
+__copyright__: str = 'Copyright 2023 Pyprohly'

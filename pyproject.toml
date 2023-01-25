@@ -1,13 +1,13 @@
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.poetry]
 name = 'redditwarp'
 version = '0.7.0'
-description = "The unofficial, type-complete Reddit API library for Python"
+description = "A library for interacting with the Reddit API"
 authors = ["Pyprohly <pyprohly@gmail.com>"]
+readme = "README.md"
 license = 'MIT'
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -33,4 +33,11 @@ python = "^3.8.1"
 [tool.poetry.group.dev.dependencies]
 mypy = "^0.991"
 pytest = "^7.2.0"
-flake8 = "^6.0.0"
+ruff = "^0.0.226"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+select = ["F"]

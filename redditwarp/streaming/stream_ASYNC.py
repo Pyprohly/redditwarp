@@ -34,19 +34,22 @@ class IStandardStreamEventSubject(Awaitable[None], AsyncIterator[float], Generic
     error: StreamEventDispatcher[Exception]
 
     def __aiter__(self) -> AsyncIterator[float]:
-        raise NotImplementedError
+        return self
 
     async def __anext__(self) -> float:
         raise NotImplementedError
 
     def __await__(self) -> Generator[Optional[Future[None]], None, None]:
-        raise NotImplementedError
+        async def coro_func() -> None:
+            async for s in self:
+                await asyncio.sleep(s)
+        return coro_func().__await__()
 
 
 
 class Stream(IStandardStreamEventSubject[TOutput]):
     _BASE_POLL_INTERVAL: float = 5.0
-    _MAX_POLL_INTERVAL: float = 42.0
+    _MAX_POLL_INTERVAL: float = 50.0
     _BACKOFF_FACTOR: float =  2.0
     _JITTER_FACTOR: float = 0.4
 
@@ -73,17 +76,8 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         self.output: StreamEventDispatcher[TOutput] = StreamEventDispatcher()
         self.error: StreamEventDispatcher[Exception] = StreamEventDispatcher()
 
-    def __aiter__(self) -> AsyncIterator[float]:
-        return self
-
     async def __anext__(self) -> float:
         return await self._agen.__anext__()
-
-    def __await__(self) -> Generator[Optional[Future[None]], None, None]:
-        async def _coro_func() -> None:
-            async for t in self:
-                await asyncio.sleep(t)
-        return _coro_func().__await__()
 
     @staticmethod
     def _intermit(duration: float) -> Iterator[float]:
@@ -104,28 +98,30 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         paginator.limit = max_limit
 
         retrieved: Sequence[TOutput] = ()
-        while True:
-            try:
-                retrieved = await paginator.fetch()
-            except Exception as error:
-                await self.emit_error(error)
-                if delay < self._MAX_POLL_INTERVAL:
-                    delay = min(self._BACKOFF_FACTOR * delay, self._MAX_POLL_INTERVAL)
-                for v in self._intermit(random.uniform(
-                        delay * (1 - self._JITTER_FACTOR),
-                        delay * (1 + self._JITTER_FACTOR))):
-                    yield v
-                continue
-            break
 
-        delay = self._BASE_POLL_INTERVAL
+        if not paginator.get_cursor():
+            while True:
+                try:
+                    retrieved = await paginator.fetch()
+                except Exception as error:
+                    await self.emit_error(error)
+                    if delay < self._MAX_POLL_INTERVAL:
+                        delay = min(self._BACKOFF_FACTOR * delay, self._MAX_POLL_INTERVAL)
+                    for v in self._intermit(random.uniform(
+                            delay * (1 - self._JITTER_FACTOR),
+                            delay * (1 + self._JITTER_FACTOR))):
+                        yield v
+                    continue
+                break
 
-        paginator__resettable.reset()
+            delay = self._BASE_POLL_INTERVAL
 
-        for obj in retrieved:
-            seen.add(extractor(obj))
+            paginator__resettable.reset()
 
-        yield 0
+            for obj in retrieved:
+                seen.add(extractor(obj))
+
+            yield 0
 
         tuna_limit: float = max_limit
         backtrack_count: int = 0

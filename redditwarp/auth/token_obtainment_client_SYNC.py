@@ -14,12 +14,12 @@ class TokenObtainmentClient:
     """The token client exchanges an authorisation grant for an OAuth2 token."""
 
     def __init__(self, http: HTTPClient, url: str,
-            client_credentials: ClientCredentials,
+            client_creds: ClientCredentials,
             grant: AuthorizationGrant) -> None:
         self.http: HTTPClient = http
         self.url: str = url
-        self.client_credentials: ClientCredentials = client_credentials
-        self.grant: Mapping[str, str] = grant
+        self.client_creds: ClientCredentials = client_creds
+        self.grant: AuthorizationGrant = grant
 
     def fetch_data(self) -> Mapping[str, Any]:
         """Exchange an authorisation grant for an OAuth2 token.
@@ -30,7 +30,7 @@ class TokenObtainmentClient:
             OAuth2 token data.
         """
         headers: dict[str, str] = {}
-        apply_basic_auth(headers, *self.client_credentials)
+        apply_basic_auth(headers, *self.client_creds)
         resp = self.http.request('POST', self.url, data=self.grant, headers=headers)
 
         try:

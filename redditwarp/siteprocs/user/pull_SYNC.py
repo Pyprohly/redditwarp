@@ -72,7 +72,7 @@ class Pull:
         p = HiddenListingPaginator(self._client, f'/user/{name}/hidden')
         return ImpartedPaginatorChainingIterator(p, amount)
 
-    class _saved:
+    class Saved:
         def __init__(self, outer: Pull) -> None:
             self._client = outer._client
 
@@ -91,4 +91,4 @@ class Pull:
             p = SavedCommentsListingPaginator(self._client, f'/user/{name}/saved')
             return ImpartedPaginatorChainingIterator(p, amount)
 
-    saved: cached_property[_saved] = cached_property(_saved)
+    saved: cached_property[Saved] = cached_property(Saved)

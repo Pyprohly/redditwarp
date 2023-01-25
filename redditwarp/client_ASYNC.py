@@ -39,9 +39,9 @@ class Client:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_config(cls: type[_TSelf], section_name: str, *, filename: Optional[str] = None) -> _TSelf:
+    def from_praw_config(cls: type[_TSelf], section_name: str, *, filepath: Optional[str] = None) -> _TSelf:
         config = ConfigParser()
-        config.read(get_praw_ini_potential_file_locations() if filename is None else filename)
+        config.read(get_praw_ini_potential_file_locations() if filepath is None else filepath)
         section_name = section_name or config.default_section
         try:
             section = config[section_name]

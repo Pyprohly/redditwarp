@@ -31,11 +31,11 @@ class CustomFeed:
         self.owner_id36: str = id36
         self.owner_id: int = int(id36, 36)
 
-    class _me:
+    class Me:
         def __init__(self, outer: CustomFeed) -> None:
             d = outer.d
             self.can_edit: bool = d['can_edit']
             self.favorited: bool = d['is_favorited']
             self.is_subscribed: bool = d['is_subscriber']
 
-    me: cached_property[_me] = cached_property(_me)
+    me: cached_property[Me] = cached_property(Me)

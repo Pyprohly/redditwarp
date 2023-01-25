@@ -9,7 +9,7 @@ class UserSummary:
         self.id: int = int(id36, 36)
         self.name: str = d['name']
         self.created_ut: int = int(d['created_utc'])
-        self.submission_karma: int = d['link_karma']
+        self.post_karma: int = d['link_karma']
         self.comment_karma: int = d['comment_karma']
         self.profile_img: str = d['profile_img']
         self.profile_color: str = d['profile_color']

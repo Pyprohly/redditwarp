@@ -2,14 +2,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable, TypeVar, Sequence
 if TYPE_CHECKING:
-    from ..client_SYNC import Client
+    from ..client_ASYNC import Client
 
-from .pushshift_paginator import PushshiftPaginator, PushshiftDocumentPaginator, PushshiftDocumentIDPaginator
+from .pushshift_async_paginator import PushshiftAsyncPaginator, PushshiftDocumentAsyncPaginator, PushshiftDocumentIDAsyncPaginator
 from ..models.pushshift_document import PushshiftDocument
 
 T = TypeVar('T')
 
-class _CommentSearchPaginatorMixin(PushshiftPaginator[T]):
+class CommentSearchAsyncPaginatorMixin(PushshiftAsyncPaginator[T]):
     _query: str
     _author: str
     _subreddit: str
@@ -24,9 +24,10 @@ class _CommentSearchPaginatorMixin(PushshiftPaginator[T]):
             yield ('subreddit', (self._subreddit,))
 
 
-class CommentSearchDocumentPaginator(
-    _CommentSearchPaginatorMixin[PushshiftDocument],
-    PushshiftDocumentPaginator,
+
+class CommentSearchDocumentAsyncPaginator(
+    CommentSearchAsyncPaginatorMixin[PushshiftDocument],
+    PushshiftDocumentAsyncPaginator,
 ):
     def __init__(self,
         *,
@@ -54,9 +55,9 @@ class CommentSearchDocumentPaginator(
         self._author: str = author
         self._subreddit: str = subreddit
 
-class CommentSearchDocumentIDPaginator(
-    _CommentSearchPaginatorMixin[int],
-    PushshiftDocumentIDPaginator,
+class CommentSearchDocumentIDAsyncPaginator(
+    CommentSearchAsyncPaginatorMixin[int],
+    PushshiftDocumentIDAsyncPaginator,
 ):
     def __init__(self,
         *,

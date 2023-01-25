@@ -13,7 +13,7 @@ from ...exceptions import NoResultException, RejectedResultException
 
 T = TypeVar('T')
 
-class _Common(Generic[T]):
+class Common(Generic[T]):
     def __init__(self, client: Client) -> None:
         self._client = client
 
@@ -34,15 +34,17 @@ class _Common(Generic[T]):
     def by_url(self, url: str) -> T:
         return self(extract_submission_id_from_url(url))
 
-class Fetch(_Common[Submission]):
-    class _AsTextPost(_Common[TextPost]):
+
+
+class Fetch(Common[Submission]):
+    class AsTextPost(Common[TextPost]):
         def _load_object(self, m: Mapping[str, Any]) -> TextPost:
             post = load_submission(m, self._client)
             if isinstance(post, TextPost):
                 return post
             raise RejectedResultException('the submission is not a text post')
 
-    class _AsLinkPost(_Common[LinkPost]):
+    class AsLinkPost(Common[LinkPost]):
         def _load_object(self, m: Mapping[str, Any]) -> LinkPost:
             post = load_submission(m, self._client)
             if isinstance(post, LinkPost):
@@ -51,8 +53,8 @@ class Fetch(_Common[Submission]):
 
     def __init__(self, outer: SubmissionProcedures, client: Client) -> None:
         super().__init__(client)
-        self.as_textpost: Fetch._AsTextPost = self._AsTextPost(client)
-        self.as_linkpost: Fetch._AsLinkPost = self._AsLinkPost(client)
+        self.as_textpost: Fetch.AsTextPost = self.AsTextPost(client)
+        self.as_linkpost: Fetch.AsLinkPost = self.AsLinkPost(client)
 
     def _load_object(self, m: Mapping[str, Any]) -> Submission:
         return load_submission(m, self._client)

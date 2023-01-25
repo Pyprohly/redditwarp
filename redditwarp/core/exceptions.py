@@ -21,13 +21,13 @@ def raise_for_reddit_token_server_response_error(json_dict: Any) -> None:
     raise_for_token_server_response_error(json_dict)
 
 
-class _Throwaway(ArgExc):
+class Throwaway(ArgExc):
     """These exceptions are not intended to be caught."""
 
-class AuthError(_Throwaway):
+class AuthError(Throwaway):
     pass
 
-class CredentialsError(_Throwaway):
+class CredentialsError(Throwaway):
     pass
 
 class ClientCredentialsError(CredentialsError):
@@ -36,10 +36,10 @@ class ClientCredentialsError(CredentialsError):
 class GrantCredentialsError(CredentialsError):
     pass
 
-class BlacklistedUserAgent(_Throwaway):
+class BlacklistedUserAgent(Throwaway):
     pass
 
-class FaultyUserAgent(_Throwaway):
+class FaultyUserAgent(Throwaway):
     pass
 
 

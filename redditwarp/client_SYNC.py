@@ -52,11 +52,11 @@ class Client:
         return cls.from_http(http)
 
     @classmethod
-    def from_praw_config(cls: type[_TSelf], section_name: str, *, filename: Optional[str] = None) -> _TSelf:
+    def from_praw_config(cls: type[_TSelf], section_name: str, *, filepath: Optional[str] = None) -> _TSelf:
         """Initialize a `Client` instance from a praw.ini file.
 
         This method aims to replicate the single-argument form of PRAW's `Reddit` class
-        constructor. If no `filename` is given, this method will look for `praw.ini`
+        constructor. If no `filepath` is given, this method will look for `praw.ini`
         configuration files in various locations: the same locations PRAW does.
 
         Only a subset of PRAW's configuration keys are read:
@@ -71,12 +71,12 @@ class Client:
         The credential values are given directly to the `Client` constructor,
         then the `user_agent` value (if present) is passed to :meth:`.set_user_agent`.
 
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param section_name:
             The section name of the ini file in which to read values from.
             Pass an empty string to use the default section name "`DEFAULT`".
-        :param filename:
+        :param filepath:
             The location of the `praw.ini` file to read.
 
             If not specified, the locations returned by
@@ -85,7 +85,7 @@ class Client:
             configuration.
         """
         config = ConfigParser()
-        config.read(get_praw_ini_potential_file_locations() if filename is None else filename)
+        config.read(get_praw_ini_potential_file_locations() if filepath is None else filepath)
         section_name = section_name or config.default_section
         try:
             section = config[section_name]
@@ -124,7 +124,7 @@ class Client:
     def __init__(self, client_id: str, client_secret: str, username: str, password: str, /) -> None: ...
     def __init__(self, *creds: str, grant: Optional[AuthorizationGrant] = None) -> None:
         """
-        .. PARAMETERS
+        .. .PARAMETERS
 
         :param client_id:
         :param client_secret:
@@ -208,7 +208,7 @@ class Client:
         if you implement an API endpoint and know the structure of the errors,
         but the default snub function covers most Reddit API error structures.
 
-        .. RAISES
+        .. .RAISES
 
         :raises ValueError:
             The endpoint did not return JSON data.

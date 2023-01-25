@@ -1,29 +1,29 @@
 
 from __future__ import annotations
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Mapping, Optional
 
 from datetime import datetime, timezone
 
 from ..models.submission_draft import Draft, MarkdownDraft, RichTextDraft
 
 
-draft_column_names_table: Mapping[str, Sequence[str]] = {
-    'id': ('id', 'id'),
-    'kind': ('kind', 'kind'),
-    'created': ('created', 'created'),
-    'modified': ('modified', 'modified'),
-    'is_public_link': ('is_public_link', 'isPublicLink'),
-    'subreddit': ('subreddit', 'subredditId'),
-    'title': ('title', 'title'),
-    'body': ('body', 'body'),
-    'send_replies': ('send_replies', 'sendReplies'),
-    'spoiler': ('spoiler', 'isSpoiler'),
-    'nsfw': ('nsfw', 'isNSFW'),
-    'original_content': ('original_content', 'isOriginalContent'),
-    'flair': ('flair', 'flair'),
+normal_to_public_draft_field_names_map: Mapping[str, str] = {
+    'id': 'id',
+    'kind': 'kind',
+    'created': 'created',
+    'modified': 'modified',
+    'is_public_link': 'isPublicLink',
+    'subreddit': 'subredditId',
+    'title': 'title',
+    'body': 'body',
+    'send_replies': 'sendReplies',
+    'spoiler': 'isSpoiler',
+    'nsfw': 'isNSFW',
+    'original_content': 'isOriginalContent',
+    'flair': 'flair',
 }
-normal_draft_column_names_map: Mapping[str, str] = {k: v[0] for k, v in draft_column_names_table.items()}
-public_draft_column_names_map: Mapping[str, str] = {k: v[1] for k, v in draft_column_names_table.items()}
+normal_draft_field_names_map: Mapping[str, str] = {k: k for k, _ in normal_to_public_draft_field_names_map.items()}
+public_draft_field_names_map: Mapping[str, str] = normal_to_public_draft_field_names_map
 
 
 def _load_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
@@ -105,26 +105,26 @@ def _load_rich_text_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Ri
 
 
 def load_draft(d: Mapping[str, Any]) -> Draft:
-    return _load_draft_impl(d, normal_draft_column_names_map)
+    return _load_draft_impl(d, normal_draft_field_names_map)
 
 def xload_draft(d: Mapping[str, Any]) -> Draft:
-    return _xload_draft_impl(d, normal_draft_column_names_map)
+    return _xload_draft_impl(d, normal_draft_field_names_map)
 
 def load_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
-    return _load_markdown_draft_impl(d, normal_draft_column_names_map)
+    return _load_markdown_draft_impl(d, normal_draft_field_names_map)
 
 def load_rich_text_draft(d: Mapping[str, Any]) -> RichTextDraft:
-    return _load_rich_text_draft_impl(d, normal_draft_column_names_map)
+    return _load_rich_text_draft_impl(d, normal_draft_field_names_map)
 
 
 def load_public_draft(d: Mapping[str, Any]) -> Draft:
-    return _load_draft_impl(d, public_draft_column_names_map)
+    return _load_draft_impl(d, public_draft_field_names_map)
 
 def xload_public_draft(d: Mapping[str, Any]) -> Draft:
-    return _xload_draft_impl(d, public_draft_column_names_map)
+    return _xload_draft_impl(d, public_draft_field_names_map)
 
 def load_public_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
-    return _load_markdown_draft_impl(d, public_draft_column_names_map)
+    return _load_markdown_draft_impl(d, public_draft_field_names_map)
 
 def load_public_rich_text_draft(d: Mapping[str, Any]) -> RichTextDraft:
-    return _load_rich_text_draft_impl(d, public_draft_column_names_map)
+    return _load_rich_text_draft_impl(d, public_draft_field_names_map)

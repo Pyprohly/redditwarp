@@ -45,7 +45,31 @@ class WebSocket:
         raise NotImplementedError
 
     def cycle(self, t: float = -1) -> Iterator[object]:
-        raise NotImplementedError
+        """Yield events from `self.pulse()` over `t` seconds."""
+        if t < 0:
+            while True:
+                for event in self.pulse(timeout=-1):
+                    yield event
+                    if isinstance(event, events.ConnectionClosed):
+                        return
+
+        else:
+            tv = t
+            if tv == -2:
+                tv = self.default_waittime
+            tn = time.monotonic()
+            while tv > 0:
+                try:
+                    for event in self.pulse(timeout=tv):
+                        yield event
+                        if isinstance(event, events.ConnectionClosed):
+                            return
+                except exceptions.TimeoutException:
+                    return
+
+                now = time.monotonic()
+                tv -= now - tn
+                tn = now
 
     def receive(self, *, timeout: float = -2) -> Message:
         for event in self.cycle(timeout):
@@ -111,33 +135,6 @@ class PartiallyImplementedWebSocket(WebSocket):
             raise exceptions.InvalidStateException(f'cannot ingest frame in {self.state.name!r} state')
 
         yield from self._pulse_impl(timeout=timeout)
-
-    def cycle(self, t: float = -1) -> Iterator[object]:
-        """Yield events from `self.pulse()` over `t` seconds."""
-        if t == -1:
-            while True:
-                for event in self.pulse(timeout=-1):
-                    yield event
-                    if isinstance(event, events.ConnectionClosed):
-                        return
-
-        else:
-            tv = t
-            if tv == -2:
-                tv = self.default_waittime
-            tn = time.monotonic()
-            while tv > 0:
-                try:
-                    for event in self.pulse(timeout=tv):
-                        yield event
-                        if isinstance(event, events.ConnectionClosed):
-                            return
-                except exceptions.TimeoutException:
-                    return
-
-                now = time.monotonic()
-                tv -= now - tn
-                tn = now
 
     def _send_close_frame_impl(self, code: Optional[int] = 1000, reason: str = '') -> None:
         data = b''

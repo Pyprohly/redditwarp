@@ -38,7 +38,7 @@ class ModerationNotePaginator(MoreAvailablePaginator[ModerationNote], CursorPagi
     def has_more_available(self) -> bool:
         return self._has_next_page
 
-    def set_has_more_available(self, value: bool) -> None:
+    def set_has_more_available_flag(self, value: bool) -> None:
         self._has_next_page = value
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:

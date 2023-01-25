@@ -163,33 +163,37 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from redditwarp.models.submission_ASYNC import Submission
 
+import asyncio
+
 import redditwarp.ASYNC
 from redditwarp.streaming.makers.subreddit_ASYNC import make_submission_stream
-from redditwarp.streaming.ASYNC import run
+from redditwarp.streaming.ASYNC import flow
 
 
-client = redditwarp.ASYNC.Client()
+async def main() -> None:
+    client = redditwarp.ASYNC.Client()
 
-submission_stream = make_submission_stream(client, 'AskReddit')
+    submission_stream = make_submission_stream(client, 'AskReddit')
 
-@submission_stream.output.attach
-async def _(subm: Submission) -> None:
-    print(subm.id36, '~', subm.title)
+    @submission_stream.output.attach
+    async def _(subm: Submission) -> None:
+        print(subm.id36, '~', subm.title)
 
-@submission_stream.error.attach
-async def _(exc: Exception) -> None:
-    print('ERROR:', repr(exc))
+    @submission_stream.error.attach
+    async def _(exc: Exception) -> None:
+        print('ERROR:', repr(exc))
 
-run(submission_stream)
+    await flow(submission_stream)
+
+asyncio.run(main())
 ```
 
 </details>
 
 ## Support
 
-Post any questions you have to either [r/RedditWarp] or [r/redditdev].
+Post any questions you have to [r/redditdev].
 
-[r/RedditWarp]: https://www.reddit.com/r/RedditWarp/
 [r/redditdev]: https://www.reddit.com/r/redditdev/
 
 Join the discussion in the Discord guild: …
@@ -199,6 +203,5 @@ Join the discussion in the Discord guild: …
 * [Repository](https://github.com/Pyprohly/redditwarp)
 * Documentation
 * Discord guild
-* [r/RedditWarp]
 * [r/redditdev]
 * [Reddit API docs](https://www.reddit.com/dev/api/)

@@ -12,16 +12,16 @@ from .exceptions import raise_for_token_server_response_error
 
 class TokenObtainmentClient:
     def __init__(self, http: HTTPClient, url: str,
-            client_credentials: ClientCredentials,
+            client_creds: ClientCredentials,
             grant: AuthorizationGrant) -> None:
         self.http: HTTPClient = http
         self.url: str = url
-        self.client_credentials: ClientCredentials = client_credentials
-        self.grant: Mapping[str, str] = grant
+        self.client_creds: ClientCredentials = client_creds
+        self.grant: AuthorizationGrant = grant
 
     async def fetch_data(self) -> Mapping[str, Any]:
         headers: dict[str, str] = {}
-        apply_basic_auth(headers, *self.client_credentials)
+        apply_basic_auth(headers, *self.client_creds)
         resp = await self.http.request('POST', self.url, data=self.grant, headers=headers)
 
         try:

@@ -18,7 +18,7 @@ def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
     return module
 
 
-class _LazyImport:
+class LazyImport:
     """An object for lazily loading modules."""
 
     def __call__(self, name: str, package: Optional[str] = None) -> ModuleType:
@@ -45,4 +45,4 @@ class _LazyImport:
         caller_frame = sys._getframe(1)  # type: ignore
         caller_frame.f_globals[other] = module
 
-lazy_import: _LazyImport = _LazyImport()
+lazy_import: LazyImport = LazyImport()

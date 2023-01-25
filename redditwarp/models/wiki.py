@@ -35,7 +35,7 @@ class WikiPageRevisionAuthorUser(IArtifact):
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
         self.name: str = d['name']
 
-        self.submission_karma: int = d['link_karma']
+        self.post_karma: int = d['link_karma']
         self.comment_karma: int = d['comment_karma']
 
         self.has_premium: bool = d['is_gold']

@@ -35,10 +35,10 @@ class UnexpectedResultException(OperationException):
     """Raised when a certain result was not expected."""
 
 
-class _Throwaway(ArgExc):
+class Throwaway(ArgExc):
     pass
 
-class UserAgentRequired(_Throwaway):
+class UserAgentRequired(Throwaway):
     """Raised when the client detects that the Reddit API wants you to set a user agent."""
 
 

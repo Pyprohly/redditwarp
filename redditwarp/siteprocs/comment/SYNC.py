@@ -1,9 +1,12 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Union, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import Comment
+    from ...types import JSON_ro
+
+import json
 
 from ...model_loaders.comment_SYNC import load_comment
 from ...util.base_conversion import to_base36
@@ -29,13 +32,16 @@ class CommentProcedures:
 
         return CallChunkChainingIterator(CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
-    def reply(self, comment_id: int, text: str) -> Comment:
-        data = {
-            'thing_id': 't1_' + to_base36(comment_id),
-            'text': text,
-            'return_rtjson': '1',
-        }
-        result = self._client.request('POST', '/api/comment', data=data)
+    def reply(self, comment_id: int, text: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('thing_id', 't1_' + to_base36(comment_id))
+            yield ('return_rtjson', '1')
+            if isinstance(text, str):
+                yield ('text', text)
+            else:
+                yield ('richtext_json', json.dumps(text))
+
+        result = self._client.request('POST', '/api/comment', files=dict(g()))
         return load_comment(result, self._client)
 
     def edit_body(self, comment_id: int, text: str) -> Comment:

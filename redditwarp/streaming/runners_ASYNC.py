@@ -31,9 +31,8 @@ async def flow_series(*streams: AsyncIterator[float]) -> None:
         aq.task_done()
 
 async def flow_parallel(*streams: AsyncIterator[float]) -> None:
-    async def _coro_func(aitr: AsyncIterator[float]) -> None:
-        async for t in aitr:
-            await asyncio.sleep(t)
-
-    awbls = (_coro_func(m) for m in streams)
+    async def coro_func(aitr: AsyncIterator[float]) -> None:
+        async for s in aitr:
+            await asyncio.sleep(s)
+    awbls = (coro_func(m) for m in streams)
     await asyncio.gather(*awbls)

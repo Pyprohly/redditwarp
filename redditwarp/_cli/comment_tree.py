@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 from __future__ import annotations
 from typing import TYPE_CHECKING, MutableSequence, Iterator, Callable
 if TYPE_CHECKING:
@@ -47,7 +47,7 @@ base: int = args.base_opt
 
 # A recursive DFS. The algorithm looks clean and performs well, except that Python
 # limits the maximum function recursion depth to 1000, so if you have a very deep
-# comment tree you’ll have to use an iterative approach.
+# comment tree you'll have to use an iterative approach.
 def depth_first_recursive(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     def traverse(root: CommentSubtreeTreeNode[object], level: int = 0) -> Iterator[tuple[int, Comment]]:
         value = root.value
@@ -64,7 +64,7 @@ def depth_first_recursive(node: CommentSubtreeTreeNode[object]) -> Iterator[tupl
 
 # An iterative DFS that is functionally equivalent to the recursive version but is
 # slightly inaccurate because the `MoreComments` callables are evaluated before the
-# child nodes are processed. It’s undesirable because for a display script it has the
+# child nodes are processed. It's undesirable because for a display script it has the
 # effect of feeling slower and looking more jittery.
 def depth_first_iterative_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     stack: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
@@ -112,7 +112,7 @@ def depth_first_iterative_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tu
         levels.extend([level + 1] * len(node.children))
 
 # This BFS traversal evaluates the `MoreComments` callables before processing the
-# children which, we’ve established is undesirable because it feels slow.
+# children which, we've established is undesirable because it feels slow.
 def breadth_first_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     level = 0
     queue: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])

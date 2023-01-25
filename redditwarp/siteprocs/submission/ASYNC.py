@@ -1,6 +1,6 @@
  
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping, Union
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.submission_ASYNC import Submission, TextPost
@@ -43,16 +43,19 @@ class SubmissionProcedures:
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
-    async def reply(self, submission_id: int, text: str) -> Comment:
-        data = {
-            'thing_id': 't3_' + to_base36(submission_id),
-            'text': text,
-            'return_rtjson': '1',
-        }
-        result = await self._client.request('POST', '/api/comment', data=data)
+    async def reply(self, submission_id: int, text: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('thing_id', 't3_' + to_base36(submission_id))
+            yield ('return_rtjson', '1')
+            if isinstance(text, str):
+                yield ('text', text)
+            else:
+                yield ('richtext_json', json.dumps(text))
+
+        result = await self._client.request('POST', '/api/comment', files=dict(g()))
         return load_comment(result, self._client)
 
-    class __MediaUploading:
+    class MediaUploading:
         def __init__(self, outer: SubmissionProcedures) -> None:
             self._client = outer._client
 
@@ -99,12 +102,12 @@ class SubmissionProcedures:
             await self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-    media_uploading: cached_property[__MediaUploading] = cached_property(__MediaUploading)
+    media_uploading: cached_property[MediaUploading] = cached_property(MediaUploading)
 
-    async def create_markdown_text_post(self,
+    async def create_text_post(self,
         sr: str,
         title: str,
-        text: str,
+        text: Union[str, Mapping[str, JSON_ro]],
         *,
         reply_notifications: bool = True,
         spoiler: bool = False,
@@ -121,42 +124,10 @@ class SubmissionProcedures:
             yield ('kind', 'self')
             yield ('sr', sr)
             yield ('title', title)
-            yield ('text', text)
-            yield ('sendreplies', '01'[reply_notifications])
-            if spoiler: yield ('spoiler', '1')
-            if nsfw: yield ('nsfw', '1')
-            if original_content: yield ('original_content', '1')
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        root = await self._client.request('POST', '/api/submit', files=dict(g()))
-        return int(root['json']['data']['id'], 36)
-
-    async def create_richtext_text_post(self,
-        sr: str,
-        title: str,
-        rtjson: Mapping[str, JSON_ro],
-        *,
-        reply_notifications: bool = True,
-        spoiler: bool = False,
-        nsfw: bool = False,
-        original_content: bool = False,
-        collection_uuid: str = '',
-        flair_uuid: str = '',
-        flair_text: str = '',
-        event_start: str = '',
-        event_end: str = '',
-        event_tz: str = '',
-    ) -> int:
-        def g() -> Iterable[tuple[str, str]]:
-            yield ('kind', 'self')
-            yield ('sr', sr)
-            yield ('title', title)
-            yield ('richtext_json', json.dumps(rtjson))
+            if isinstance(text, str):
+                yield ('text', text)
+            else:
+                yield ('richtext_json', json.dumps(text))
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')

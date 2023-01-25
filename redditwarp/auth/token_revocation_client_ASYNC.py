@@ -9,10 +9,10 @@ from .utils import apply_basic_auth
 
 class TokenRevocationClient:
     def __init__(self, http: HTTPClient, url: str,
-            client_credentials: ClientCredentials) -> None:
+            client_creds: ClientCredentials) -> None:
         self.http: HTTPClient = http
         self.url: str = url
-        self.client_credentials: ClientCredentials = client_credentials
+        self.client_creds: ClientCredentials = client_creds
 
     async def revoke_token(self, token: str, token_type_hint: str = '') -> None:
         data = {'token': token}
@@ -20,7 +20,7 @@ class TokenRevocationClient:
             data['token_type_hint'] = token_type_hint
 
         headers: dict[str, str] = {}
-        apply_basic_auth(headers, *self.client_credentials)
+        apply_basic_auth(headers, *self.client_creds)
         resp = await self.http.request('POST', self.url, headers=headers, data=data)
         resp.raise_for_status()
 

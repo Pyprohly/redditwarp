@@ -14,8 +14,8 @@ from ..util.token_bucket import TokenBucket
 class RateLimited(DelegatingHandler):
     def __init__(self, handler: Handler) -> None:
         super().__init__(handler)
-        self.reset: int = 0
         self.remaining: int = 0
+        self.reset: int = 0
         self.used: int = 0
         self._delta: float = 0.
         self._timestamp: float = time.monotonic()
@@ -45,17 +45,17 @@ class RateLimited(DelegatingHandler):
 
         headers = xchg.response.headers
         if 'x-ratelimit-reset' in headers:
-            self.reset = int(headers['x-ratelimit-reset'])
             self.remaining = int(float(headers['x-ratelimit-remaining']))
+            self.reset = int(headers['x-ratelimit-reset'])
             self.used = int(headers['x-ratelimit-used'])
         else:
             if self.reset > 0:
-                self.reset = max(0, self.reset - int(self._delta))
                 self.remaining -= 1
+                self.reset = max(0, self.reset - int(self._delta))
                 self.used += 1
             else:
-                self.reset = 600
                 self.remaining = 300
+                self.reset = 600
                 self.used = 0
 
         return xchg

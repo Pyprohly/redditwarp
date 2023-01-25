@@ -2,14 +2,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable, TypeVar, Sequence
 if TYPE_CHECKING:
-    from ..client_ASYNC import Client
+    from ..client_SYNC import Client
 
-from .pushshift_async_paginator import PushshiftAsyncPaginator, PushshiftDocumentAsyncPaginator, PushshiftDocumentIDAsyncPaginator
+from .pushshift_paginator import PushshiftPaginator, PushshiftDocumentPaginator, PushshiftDocumentIDPaginator
 from ..models.pushshift_document import PushshiftDocument
 
 T = TypeVar('T')
 
-class _SubmissionSearchAsyncPaginatorMixin(PushshiftAsyncPaginator[T]):
+class SubmissionSearchPaginatorMixin(PushshiftPaginator[T]):
     _query: str
     _query_exclude: str
     _query_title: str
@@ -39,9 +39,10 @@ class _SubmissionSearchAsyncPaginatorMixin(PushshiftAsyncPaginator[T]):
             yield ('subreddit', (self._subreddit,))
 
 
-class SubmissionSearchDocumentAsyncPaginator(
-    _SubmissionSearchAsyncPaginatorMixin[PushshiftDocument],
-    PushshiftDocumentAsyncPaginator,
+
+class SubmissionSearchDocumentPaginator(
+    SubmissionSearchPaginatorMixin[PushshiftDocument],
+    PushshiftDocumentPaginator,
 ):
     def __init__(self,
         *,
@@ -79,9 +80,9 @@ class SubmissionSearchDocumentAsyncPaginator(
         self._author: str = author
         self._subreddit: str = subreddit
 
-class SubmissionSearchDocumentIDAsyncPaginator(
-    _SubmissionSearchAsyncPaginatorMixin[int],
-    PushshiftDocumentIDAsyncPaginator,
+class SubmissionSearchDocumentIDPaginator(
+    SubmissionSearchPaginatorMixin[int],
+    PushshiftDocumentIDPaginator,
 ):
     def __init__(self,
         *,

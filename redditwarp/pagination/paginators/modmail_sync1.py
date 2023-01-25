@@ -43,7 +43,7 @@ class ModmailConversationMessagePaginator(Resettable, CursorPaginator[Tuple[Conv
     def has_more_available(self) -> bool:
         return self._has_after
 
-    def set_has_more_available(self, value: bool) -> None:
+    def set_has_more_available_flag(self, value: bool) -> None:
         self._has_after = value
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:

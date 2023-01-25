@@ -45,7 +45,7 @@ class CommentTreeProcedures:
         root = self._client.request('GET', '/comments/' + submission_id36, params=dict(g()))
         return load_submission_tree_node(root, self._client, sort)
 
-    class _more_children:
+    class MoreChildren:
         def __init__(self, outer: CommentTreeProcedures) -> None:
             self._outer = outer
             self._client = outer._client
@@ -87,4 +87,4 @@ class CommentTreeProcedures:
             resp_data = self._client.request('POST', '/api/morechildren', data=dict(g()))
             return load_more_comments_tree_node(resp_data, self._client, submission_id36, sort)
 
-    more_children: cached_property[_more_children] = cached_property(_more_children)
+    more_children: cached_property[MoreChildren] = cached_property(MoreChildren)

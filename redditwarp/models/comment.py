@@ -10,6 +10,14 @@ from .report import ModReport, UserReport
 from ..model_loaders.report import load_mod_report, load_user_report
 
 class Comment(Artifact):
+    @property
+    def submission(self) -> Comment.Submission:
+        return self.__submission
+
+    @property
+    def subreddit(self) -> Comment.Subreddit:
+        return self.__subreddit
+
     class Me:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.saved: bool = d['saved']
@@ -136,8 +144,8 @@ class Comment(Artifact):
 
         self.me: Comment.Me = self.Me(d)
 
-        self.submission: Comment.Submission = self.Submission(d)
-        self.subreddit: Comment.Subreddit = self.Subreddit(d)
+        self.__submission: Comment.Submission = self.Submission(d)
+        self.__subreddit: Comment.Subreddit = self.Subreddit(d)
 
         s: str = d['author']
         self.author_name: str = s
@@ -156,7 +164,15 @@ class LooseComment(Comment):
     # * `GET /r/{subreddit}/comments`
     # * `GET /user/{username}/overview` (and variants)
 
-    class Submission2(Comment.Submission):
+    @property
+    def submission(self) -> LooseComment.Submission:
+        return self.__submission
+
+    @property
+    def subreddit(self) -> LooseComment.Subreddit:
+        return self.__subreddit
+
+    class Submission(Comment.Submission):
         def __init__(self, d: Mapping[str, Any]) -> None:
             super().__init__(d)
             self.title: str = d['link_title']
@@ -165,12 +181,12 @@ class LooseComment(Comment):
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
             self.nsfw: bool = d['over_18']
 
-    class Subreddit2(Comment.Subreddit):
+    class Subreddit(Comment.Subreddit):
         def __init__(self, d: Mapping[str, Any]) -> None:
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
-        self.submission2: LooseComment.Submission2 = self.Submission2(d)
-        self.subreddit2: LooseComment.Subreddit2 = self.Subreddit2(d)
+        self.__submission: LooseComment.Submission = self.Submission(d)
+        self.__subreddit: LooseComment.Subreddit = self.Subreddit(d)

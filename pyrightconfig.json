@@ -1,4 +1,6 @@
 {
+  "include": ["src", "tests"],
+  // +--=-*-=--+
   "strictParameterNoneValue": true,
   "reportPropertyTypeMismatch": true,
   "reportFunctionMemberAccess": true,
@@ -11,6 +13,7 @@
   "reportUntypedNamedTuple": true,
   "reportPrivateUsage": true,
   "reportConstantRedefinition": "warning",
+  "reportDeprecated": "warning",
   "reportIncompatibleMethodOverride": true,
   "reportIncompatibleVariableOverride": true,
   "reportInconsistentConstructor": true,

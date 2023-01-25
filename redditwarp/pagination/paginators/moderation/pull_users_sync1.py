@@ -48,7 +48,7 @@ class ModerationUsersPaginator(MoreAvailablePaginator[T], Bidirectional, CursorP
     def has_more_available(self) -> bool:
         return self._has_after if self.direction else self._has_before
 
-    def set_has_more_available(self, value: bool) -> None:
+    def set_has_more_available_flag(self, value: bool) -> None:
         if self.direction:
             self._has_after = value
         else:

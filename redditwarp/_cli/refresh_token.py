@@ -143,7 +143,8 @@ if received_state != state:
 
 code = response_params.get('code', '')
 if not code:
-    raise Exception('authorization was declined by the user')
+    print('Aborting: authorization was declined by the user', file=sys.stderr)
+    sys.exit(1)
 print(f'Authorization code: {code}')
 
 if authorization_code_only:

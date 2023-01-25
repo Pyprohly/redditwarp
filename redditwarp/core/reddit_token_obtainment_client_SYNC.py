@@ -10,7 +10,7 @@ from .exceptions import raise_for_reddit_token_server_response_error, raise_for_
 class RedditTokenObtainmentClient(TokenObtainmentClient):
     def fetch_data(self) -> Mapping[str, Any]:
         headers: dict[str, str] = {}
-        apply_basic_auth(headers, *self.client_credentials)
+        apply_basic_auth(headers, *self.client_creds)
         xchg = self.http.inquire('POST', self.url, headers=headers, data=self.grant)
         resp = xchg.response
 

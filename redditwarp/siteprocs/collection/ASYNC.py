@@ -36,7 +36,7 @@ class CollectionProcedures:
             return None
         return load_submission_collection_info(root, self._client)
 
-    class _get_subreddit_collections_details:
+    class GetSubredditCollectionsInfo:
         def __init__(self, outer: CollectionProcedures) -> None:
             self._client = outer._client
 
@@ -49,8 +49,8 @@ class CollectionProcedures:
             root = await self._client.request('GET', '/api/v1/collections/subreddit_collections', params=params)
             return [load_submission_collection_info(d, self._client) for d in root]
 
-    get_subreddit_collections_details: cached_property[_get_subreddit_collections_details] = \
-            cached_property(_get_subreddit_collections_details)
+    get_subreddit_collections_info: cached_property[GetSubredditCollectionsInfo] = \
+            cached_property(GetSubredditCollectionsInfo)
 
     async def delete(self, uuid: str) -> None:
         params = {'collection_id': uuid}

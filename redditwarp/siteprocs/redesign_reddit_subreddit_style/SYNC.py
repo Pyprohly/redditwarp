@@ -15,11 +15,11 @@ class RedesignRedditSubredditStyleProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    class __BannerUploading:
+    class BannerUploading:
         def __init__(self, outer: RedesignRedditSubredditStyleProcedures) -> None:
             self._client = outer._client
 
-        def __obtain_upload_lease(self,
+        def _obtain_upload_lease(self,
             *,
             sr: str,
             filepath: str,
@@ -38,7 +38,7 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: str,
             mimetype: Optional[str] = None,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='bannerBackgroundImage')
+            return self._obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='bannerBackgroundImage')
 
         def obtain_banner_overlay_upload_lease(self,
             *,
@@ -46,7 +46,7 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: str,
             mimetype: Optional[str] = None,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='bannerPositionedImage')
+            return self._obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='bannerPositionedImage')
 
         def obtain_banner_overlay_hover_upload_lease(self,
             *,
@@ -54,7 +54,7 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: str,
             mimetype: Optional[str] = None,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='secondaryBannerPositionedImage')
+            return self._obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='secondaryBannerPositionedImage')
 
         def obtain_mobile_banner_upload_lease(self,
             *,
@@ -62,7 +62,7 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: str,
             mimetype: Optional[str] = None,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='mobileBannerImage')
+            return self._obtain_upload_lease(sr=sr, filepath=filepath, mimetype=mimetype, imagetype='mobileBannerImage')
 
         def deposit_file(self,
             file: IO[bytes],
@@ -74,7 +74,7 @@ class RedesignRedditSubredditStyleProcedures:
                     data=upload_lease.fields, files={'file': file}, timeout=timeout)
             resp.raise_for_status()
 
-        class __ObtainUploadLeaseFunction(Protocol):
+        class ObtainUploadLeaseFunction(Protocol):
             def __call__(self,
                 *,
                 sr: str,
@@ -82,13 +82,13 @@ class RedesignRedditSubredditStyleProcedures:
                 mimetype: Optional[str] = None,
             ) -> SubredditStyleAssetUploadLease: ...
 
-        def __upload(self,
+        def _upload(self,
             file: IO[bytes],
             *,
             sr: str,
             filepath: Optional[str] = None,
             timeout: float = 1000,
-            obtain_upload_lease: __ObtainUploadLeaseFunction,
+            obtain_upload_lease: ObtainUploadLeaseFunction,
         ) -> SubredditStyleAssetUploadLease:
             if filepath is None:
                 filepath = op.basename(getattr(file, 'name', ''))
@@ -105,7 +105,7 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: Optional[str] = None,
             timeout: float = 1000,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_upload_lease)
+            return self._upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_upload_lease)
 
         def upload_banner_overlay(self,
             file: IO[bytes],
@@ -114,7 +114,7 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: Optional[str] = None,
             timeout: float = 1000,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_overlay_upload_lease)
+            return self._upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_overlay_upload_lease)
 
         def upload_banner_overlay_hover(self,
             file: IO[bytes],
@@ -123,7 +123,7 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: Optional[str] = None,
             timeout: float = 1000,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_overlay_hover_upload_lease)
+            return self._upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_banner_overlay_hover_upload_lease)
 
         def upload_mobile_banner(self,
             file: IO[bytes],
@@ -132,9 +132,9 @@ class RedesignRedditSubredditStyleProcedures:
             filepath: Optional[str] = None,
             timeout: float = 1000,
         ) -> SubredditStyleAssetUploadLease:
-            return self.__upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_mobile_banner_upload_lease)
+            return self._upload(file=file, sr=sr, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_mobile_banner_upload_lease)
 
-    banner_uploading: cached_property[__BannerUploading] = cached_property(__BannerUploading)
+    banner_uploading: cached_property[BannerUploading] = cached_property(BannerUploading)
 
     def configure_banner_settings(self,
         sr: str,

@@ -282,7 +282,7 @@ class WidgetProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    class __ImageUploading:
+    class ImageUploading:
         def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
@@ -332,9 +332,9 @@ class WidgetProcedures:
             await self.deposit_file(file, upload_lease, timeout=timeout)
             return upload_lease
 
-    image_uploading: cached_property[__ImageUploading] = cached_property(__ImageUploading)
+    image_uploading: cached_property[ImageUploading] = cached_property(ImageUploading)
 
-    class _create:
+    class Create:
         def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
@@ -484,9 +484,9 @@ class WidgetProcedures:
             root = await self._invoke(sr, json=json)
             return load_custom_css_widget(root)
 
-    create: cached_property[_create] = cached_property(_create)
+    create: cached_property[Create] = cached_property(Create)
 
-    class _update:
+    class Update:
         def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
@@ -695,7 +695,7 @@ class WidgetProcedures:
             root = await self._invoke(sr, idt, json=json)
             return load_rules_widget(root)
 
-    update: cached_property[_update] = cached_property(_update)
+    update: cached_property[Update] = cached_property(Update)
 
     async def create_menu_bar_tabs(self,
         sr: str,

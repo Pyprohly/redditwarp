@@ -32,7 +32,7 @@ class IStandardStreamEventSubject(Iterator[float], Generic[TOutput]):
     error: StreamEventDispatcher[Exception]
 
     def __iter__(self) -> Iterator[float]:
-        raise NotImplementedError
+        return self
 
     def __next__(self) -> float:
         raise NotImplementedError
@@ -41,7 +41,7 @@ class IStandardStreamEventSubject(Iterator[float], Generic[TOutput]):
 
 class Stream(IStandardStreamEventSubject[TOutput]):
     _BASE_POLL_INTERVAL: float = 5.0
-    _MAX_POLL_INTERVAL: float = 42.0
+    _MAX_POLL_INTERVAL: float = 50.0
     _BACKOFF_FACTOR: float =  2.0
     _JITTER_FACTOR: float = 0.4
 
@@ -68,9 +68,6 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         self.output: StreamEventDispatcher[TOutput] = StreamEventDispatcher()
         self.error: StreamEventDispatcher[Exception] = StreamEventDispatcher()
 
-    def __iter__(self) -> Iterator[float]:
-        return self
-
     def __next__(self) -> float:
         return next(self._gen)
 
@@ -93,27 +90,29 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         paginator.limit = max_limit
 
         retrieved: Sequence[TOutput] = ()
-        while True:
-            try:
-                retrieved = paginator.fetch()
-            except Exception as error:
-                self.emit_error(error)
-                if delay < self._MAX_POLL_INTERVAL:
-                    delay = min(self._BACKOFF_FACTOR * delay, self._MAX_POLL_INTERVAL)
-                yield from self._intermit(random.uniform(
-                    delay * (1 - self._JITTER_FACTOR),
-                    delay * (1 + self._JITTER_FACTOR)))
-                continue
-            break
 
-        delay = self._BASE_POLL_INTERVAL
+        if not paginator.get_cursor():
+            while True:
+                try:
+                    retrieved = paginator.fetch()
+                except Exception as error:
+                    self.emit_error(error)
+                    if delay < self._MAX_POLL_INTERVAL:
+                        delay = min(self._BACKOFF_FACTOR * delay, self._MAX_POLL_INTERVAL)
+                    yield from self._intermit(random.uniform(
+                        delay * (1 - self._JITTER_FACTOR),
+                        delay * (1 + self._JITTER_FACTOR)))
+                    continue
+                break
 
-        paginator__resettable.reset()
+            delay = self._BASE_POLL_INTERVAL
 
-        for obj in retrieved:
-            seen.add(extractor(obj))
+            paginator__resettable.reset()
 
-        yield 0
+            for obj in retrieved:
+                seen.add(extractor(obj))
+
+            yield 0
 
         tuna_limit: float = max_limit
         backtrack_count: int = 0

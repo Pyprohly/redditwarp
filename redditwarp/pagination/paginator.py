@@ -38,7 +38,7 @@ class MoreAvailablePaginator(Paginator[T]):
     def has_more_available(self) -> bool:
         raise NotImplementedError
 
-    def set_has_more_available(self, value: bool) -> None:
+    def set_has_more_available_flag(self, value: bool) -> None:
         raise NotImplementedError
 
 

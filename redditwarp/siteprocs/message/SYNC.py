@@ -73,7 +73,7 @@ class MessageProcedures:
     def uncollapse(self, idn: int) -> None:
         self._client.request('POST', '/api/uncollapse_message', data={'id': 't4_' + to_base36(idn)})
 
-    class _block_author:
+    class BlockAuthor:
         def __init__(self, outer: MessageProcedures) -> None:
             self._client = outer._client
 
@@ -89,4 +89,4 @@ class MessageProcedures:
         def of_submission(self, idn: int) -> None:
             self._client.request('POST', '/api/block', data={'id': 't3_' + to_base36(idn)})
 
-    block_author: cached_property[_block_author] = cached_property(_block_author)
+    block_author: cached_property[BlockAuthor] = cached_property(BlockAuthor)

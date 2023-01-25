@@ -28,7 +28,7 @@ class FlairEmojiProcedures:
             subreddit_id36,
         )
 
-    class _create:
+    class Create:
         def __init__(self, outer: FlairEmojiProcedures) -> None:
             self._client = outer._client
 
@@ -104,7 +104,7 @@ class FlairEmojiProcedures:
             }
             self._client.request('POST', f'/api/v1/{sr}/emoji', data=data)
 
-    create: cached_property[_create] = cached_property(_create)
+    create: cached_property[Create] = cached_property(Create)
 
     def set_emoji_permissions(self,
         sr: str,

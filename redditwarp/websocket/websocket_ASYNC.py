@@ -47,8 +47,30 @@ class WebSocket:
         yield
 
     async def cycle(self, t: float = -1) -> AsyncIterator[object]:
-        raise NotImplementedError
-        yield
+        if t < 0:
+            while True:
+                async for event in self.pulse(timeout=-1):
+                    yield event
+                    if isinstance(event, events.ConnectionClosed):
+                        return
+
+        else:
+            tv = t
+            if tv == -2:
+                tv = self.default_waittime
+            tn = time.monotonic()
+            while tv > 0:
+                try:
+                    async for event in self.pulse(timeout=tv):
+                        yield event
+                        if isinstance(event, events.ConnectionClosed):
+                            return
+                except exceptions.TimeoutException:
+                    return
+
+                now = time.monotonic()
+                tv -= now - tn
+                tn = now
 
     async def receive(self, *, timeout: float = -2) -> Message:
         async for event in self.cycle(timeout):
@@ -109,32 +131,6 @@ class PartiallyImplementedWebSocket(WebSocket):
 
         async for event in self._pulse_impl(timeout=timeout):
             yield event
-
-    async def cycle(self, t: float = -1) -> AsyncIterator[object]:
-        if t == -1:
-            while True:
-                async for event in self.pulse(timeout=-1):
-                    yield event
-                    if isinstance(event, events.ConnectionClosed):
-                        return
-
-        else:
-            tv = t
-            if tv == -2:
-                tv = self.default_waittime
-            tn = time.monotonic()
-            while tv > 0:
-                try:
-                    async for event in self.pulse(timeout=tv):
-                        yield event
-                        if isinstance(event, events.ConnectionClosed):
-                            return
-                except exceptions.TimeoutException:
-                    return
-
-                now = time.monotonic()
-                tv -= now - tn
-                tn = now
 
     async def _send_close_frame_impl(self, code: Optional[int] = 1000, reason: str = '') -> None:
         data = b''

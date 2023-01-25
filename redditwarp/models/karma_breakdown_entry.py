@@ -7,4 +7,4 @@ from dataclasses import dataclass
 class KarmaBreakdownEntry:
     sr: str
     comment_karma: int
-    submission_karma: int
+    post_karma: int

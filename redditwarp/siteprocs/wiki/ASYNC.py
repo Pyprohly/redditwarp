@@ -17,7 +17,7 @@ class WikiProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    class _page:
+    class Page:
         def __init__(self, outer: WikiProcedures) -> None:
             self._outer = outer
             self._client = outer._client
@@ -59,7 +59,7 @@ class WikiProcedures:
         async def remove_editor(self, sr: str, page: str, username: str) -> None:
             await self._client.request('POST', f'/r/{sr}/api/wiki/alloweditor/del', data={'username': username})
 
-    page: cached_property[_page] = cached_property(_page)
+    page: cached_property[Page] = cached_property(Page)
 
     def revisions(self, sr: str, amount: Optional[int] = None,
             ) -> ImpartedPaginatorChainingAsyncIterator[WikiPageRevisionsAsyncPaginator, WikiPageRevision]:

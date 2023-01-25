@@ -231,7 +231,7 @@ class ModerationProcedures:
         self._client.request('POST', '/api/unfriend', data=data)
 
 
-    class _removal_reason:
+    class RemovalReason:
         def __init__(self, outer: ModerationProcedures) -> None:
             self._outer = outer
             self._client = outer._client
@@ -257,4 +257,4 @@ class ModerationProcedures:
         def delete(self, sr: str, reason_id: str) -> None:
             self._client.request('DELETE', f'/api/v1/{sr}/removal_reasons/{reason_id}')
 
-    removal_reason: cached_property[_removal_reason] = cached_property(_removal_reason)
+    removal_reason: cached_property[RemovalReason] = cached_property(RemovalReason)
