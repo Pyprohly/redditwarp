@@ -4,6 +4,8 @@ from typing import TypeVar, Sequence, Generic, AsyncIterator, Optional
 
 T = TypeVar('T')
 
+# Abstract classes
+
 class AsyncPaginator(Generic[T]):
     def __init__(self, *, limit: Optional[int] = None) -> None:
         self.limit: Optional[int] = limit
@@ -28,19 +30,7 @@ class CursorAsyncPaginator(AsyncPaginator[T]):
         raise NotImplementedError
 
 
-class MoreAvailableAsyncPaginator(AsyncPaginator[T]):
-    async def __aiter__(self) -> AsyncIterator[Sequence[T]]:
-        if page := await self.fetch():
-            yield page
-            while self.has_more_available() and (page := await self.fetch()):
-                yield page
-
-    def has_more_available(self) -> bool:
-        raise NotImplementedError
-
-    def set_has_more_available_flag(self, value: bool) -> None:
-        raise NotImplementedError
-
+# Interfaces
 
 class Bidirectional:
     direction: bool
@@ -48,3 +38,20 @@ class Bidirectional:
 class Resettable:
     def reset(self) -> None:
         raise NotImplementedError
+
+class HasMore:
+    def has_more(self) -> bool:
+        raise NotImplementedError
+
+    def set_has_more(self, value: bool) -> None:
+        raise NotImplementedError
+
+
+# Mixins
+
+class HasMoreAsyncPaginator(HasMore, AsyncPaginator[T]):
+    async def __aiter__(self) -> AsyncIterator[Sequence[T]]:
+        if page := await self.fetch():
+            yield page
+            while self.has_more() and (page := await self.fetch()):
+                yield page

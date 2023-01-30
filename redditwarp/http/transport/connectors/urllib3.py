@@ -129,6 +129,12 @@ class Urllib3Connector(Connector):
         except Exception as cause:
             raise exceptions.TransportError from cause
 
+        x_requ = Request(
+            verb=r.verb,
+            url=url,
+            headers={},
+            data=b'',
+        )
         x_resp = UResponse(
             status=resp.status,
             headers=resp.headers,
@@ -137,7 +143,7 @@ class Urllib3Connector(Connector):
         )
         return Exchange(
             requisition=r,
-            request=Request('', '', {}),
+            request=x_requ,
             response=x_resp,
             history=(),
         )

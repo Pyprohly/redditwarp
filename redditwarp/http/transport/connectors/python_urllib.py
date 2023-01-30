@@ -94,6 +94,7 @@ class PythonUrllibConnector(Connector):
             verb=r.verb,
             url=url,
             headers={},
+            data=b'',
         )
         x_resp = UResponse(
             status=resp.status,

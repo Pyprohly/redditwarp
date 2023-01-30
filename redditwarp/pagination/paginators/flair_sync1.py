@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Any, Optional, Sequence, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
 
-from ..paginator import MoreAvailablePaginator, Bidirectional, CursorPaginator
+from ..paginator import HasMorePaginator, Bidirectional, CursorPaginator
 from ...models.flair import UserFlairAssociation
 from ...model_loaders.flair import load_user_flair_association
 
 class UserFlairAssociationPaginator(
-        MoreAvailablePaginator[UserFlairAssociation], Bidirectional, CursorPaginator[UserFlairAssociation]):
+        HasMorePaginator[UserFlairAssociation], Bidirectional, CursorPaginator[UserFlairAssociation]):
     def __init__(self,
         client: Client,
         url: str,
@@ -35,10 +35,10 @@ class UserFlairAssociationPaginator(
         else:
             self._before = value
 
-    def has_more_available(self) -> bool:
+    def has_more(self) -> bool:
         return self._has_after if self.direction else self._has_before
 
-    def set_has_more_available_flag(self, value: bool) -> None:
+    def set_has_more(self, value: bool) -> None:
         if self.direction:
             self._has_after = value
         else:

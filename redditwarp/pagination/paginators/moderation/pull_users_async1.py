@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, TypeVar, Optional, Sequence, Iterable, Any
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
-from ...async_paginator import MoreAvailableAsyncPaginator, Bidirectional, CursorAsyncPaginator
+from ...async_paginator import HasMoreAsyncPaginator, Bidirectional, CursorAsyncPaginator
 from ....models.subreddit_user_item import (
     ModeratorUserItem,
     ApprovedUserItem,
@@ -20,7 +20,7 @@ from ....model_loaders.subreddit_user_item import (
 
 T = TypeVar('T')
 
-class ModerationUsersAsyncPaginator(MoreAvailableAsyncPaginator[T], Bidirectional, CursorAsyncPaginator[T]):
+class ModerationUsersAsyncPaginator(HasMoreAsyncPaginator[T], Bidirectional, CursorAsyncPaginator[T]):
     def __init__(self,
         client: Client,
         url: str,
@@ -45,10 +45,10 @@ class ModerationUsersAsyncPaginator(MoreAvailableAsyncPaginator[T], Bidirectiona
         else:
             self._before = value
 
-    def has_more_available(self) -> bool:
+    def has_more(self) -> bool:
         return self._has_after if self.direction else self._has_before
 
-    def set_has_more_available_flag(self, value: bool) -> None:
+    def set_has_more(self, value: bool) -> None:
         if self.direction:
             self._has_after = value
         else:

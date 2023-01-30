@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, TypeVar, Any, Mapping, Optional, Callable, Ite
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
-from ...async_paginator import CursorAsyncPaginator, Bidirectional, MoreAvailableAsyncPaginator, Resettable
+from ...async_paginator import CursorAsyncPaginator, Bidirectional, HasMoreAsyncPaginator, Resettable
 
 T = TypeVar('T')
 
-class ListingAsyncPaginator(Resettable, MoreAvailableAsyncPaginator[T], Bidirectional, CursorAsyncPaginator[T]):
+class ListingAsyncPaginator(Resettable, HasMoreAsyncPaginator[T], Bidirectional, CursorAsyncPaginator[T]):
     def __init__(self,
         client: Client,
         url: str,
@@ -46,10 +46,10 @@ class ListingAsyncPaginator(Resettable, MoreAvailableAsyncPaginator[T], Bidirect
         else:
             self.before = value
 
-    def has_more_available(self) -> bool:
+    def has_more(self) -> bool:
         return self.has_after if self.direction else self.has_before
 
-    def set_has_more_available_flag(self, value: bool) -> None:
+    def set_has_more(self, value: bool) -> None:
         if self.direction:
             self.has_after = value
         else:

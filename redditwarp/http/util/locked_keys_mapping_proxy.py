@@ -23,11 +23,11 @@ class LockedKeysMappingProxy(MutableMapping[K, V]):
     def __contains__(self, item: object) -> bool:
         return item in self._store
 
-    def __len__(self) -> int:
-        return len(self._store)
-
     def __iter__(self) -> Iterator[K]:
         return iter(self._store)
+
+    def __len__(self) -> int:
+        return len(self._store)
 
     def __getitem__(self, key: K) -> V:
         return self._store[key]

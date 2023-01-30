@@ -52,9 +52,8 @@ class BoundedSet(OrderedSet[T]):
     def __init__(self, it: Iterable[T], capacity: int) -> None:
         if capacity < 0:
             raise ValueError('capacity must be non-negative')
-        self._capacity = capacity
         super().__init__(it)
-
+        self._capacity = capacity
         store = self._store
         keys = list(islice(store, max(len(store) - capacity, 0)))
         for key in keys:

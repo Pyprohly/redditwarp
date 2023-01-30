@@ -44,7 +44,7 @@ class UserProcedures:
             raise RejectedResultException('user is suspended')
         return load_user(obj_data, self._client)
 
-    def get_potentially_suspended_user_by_name(self, name: str) -> Optional[object]:
+    def get_potentially_suspended_by_name(self, name: str) -> Optional[object]:
         try:
             root = self._client.request('GET', f'/user/{name}/about')
         except http.exceptions.StatusCodeException as e:
@@ -53,7 +53,7 @@ class UserProcedures:
             raise
         return load_potentially_suspended_user(root['data'], self._client)
 
-    def fetch_potentially_suspended_user_by_name(self, name: str) -> object:
+    def fetch_potentially_suspended_by_name(self, name: str) -> object:
         root = self._client.request('GET', f'/user/{name}/about')
         return load_potentially_suspended_user(root['data'], self._client)
 

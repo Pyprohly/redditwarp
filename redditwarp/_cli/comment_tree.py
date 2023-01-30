@@ -66,7 +66,7 @@ def depth_first_recursive(node: CommentSubtreeTreeNode[object]) -> Iterator[tupl
 # slightly inaccurate because the `MoreComments` callables are evaluated before the
 # child nodes are processed. It's undesirable because for a display script it has the
 # effect of feeling slower and looking more jittery.
-def depth_first_iterative_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
+def depth_first_iterative_inaccurate(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     stack: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
     levels = deque([0])
     while stack:
@@ -86,7 +86,7 @@ def depth_first_iterative_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tu
 
 # This version is more algorithmically accurate to the recursive one but at the cost of
 # looking messier.
-def depth_first_iterative_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
+def depth_first_iterative_accurate(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     stack: MutableSequence[bool] = deque([True])
     node_stack: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
     more_stack: MutableSequence[Callable[[], MoreCommentsTreeNode]] = deque()
@@ -113,7 +113,7 @@ def depth_first_iterative_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tu
 
 # This BFS traversal evaluates the `MoreComments` callables before processing the
 # children which, we've established is undesirable because it feels slow.
-def breadth_first_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
+def breadth_first_inaccurate(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     level = 0
     queue: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
     while queue:
@@ -139,7 +139,7 @@ def breadth_first_1(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int,
 
 # A BFS that processes all children before evaluating `MoreComments` callables.
 # Algorithmically better but programmatically uglier.
-def breadth_first_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
+def breadth_first_accurate(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int, Comment]]:
     level = 0
     queue: MutableSequence[bool] = deque([True])
     node_queue: MutableSequence[CommentSubtreeTreeNode[object]] = deque([node])
@@ -179,13 +179,13 @@ def breadth_first_2(node: CommentSubtreeTreeNode[object]) -> Iterator[tuple[int,
 
 
 traversal = {
-    'dfs': depth_first_iterative_2,
+    'dfs': depth_first_iterative_accurate,
     'dfs0': depth_first_recursive,
-    'dfs1': depth_first_iterative_1,
-    'dfs2': depth_first_iterative_2,
-    'bfs': breadth_first_2,
-    'bfs1': breadth_first_1,
-    'bfs2': breadth_first_2,
+    'dfs1': depth_first_iterative_inaccurate,
+    'dfs2': depth_first_iterative_accurate,
+    'bfs': breadth_first_accurate,
+    'bfs1': breadth_first_inaccurate,
+    'bfs2': breadth_first_accurate,
 }[algo]
 
 client = (
@@ -219,7 +219,7 @@ m = tree_node.value
 
 print(f'''\
 {m.permalink}
-{m.id36}+ ^:{m.score} | {m.title}
+{m.id36}+ ^{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
 by u/{m.author_name} to r/{m.subreddit.name}
 ''')

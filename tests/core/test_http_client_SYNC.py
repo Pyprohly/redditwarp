@@ -16,7 +16,7 @@ from redditwarp.http.response import Response
 
 class NeutralHandler(Handler):
     DUMMY_REQUISITION = Requisition('', '', {}, {}, None)
-    DUMMY_REQUEST = Request('', '', {})
+    DUMMY_REQUEST = Request('', '', {}, b'')
 
     def __init__(self,
         response_status: int,

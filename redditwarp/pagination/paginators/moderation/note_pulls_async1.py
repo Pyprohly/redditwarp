@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Any
 if TYPE_CHECKING:
     from ....client_ASYNC import Client
 
-from ...async_paginator import MoreAvailableAsyncPaginator, CursorAsyncPaginator
+from ...async_paginator import HasMoreAsyncPaginator, CursorAsyncPaginator
 from ....models.moderation_note import ModerationNote
 from ....model_loaders.moderation_note import load_moderation_note
 
 
-class ModerationNoteAsyncPaginator(MoreAvailableAsyncPaginator[ModerationNote], CursorAsyncPaginator[ModerationNote]):
+class ModerationNoteAsyncPaginator(HasMoreAsyncPaginator[ModerationNote], CursorAsyncPaginator[ModerationNote]):
     def __init__(self,
         client: Client,
         url: str = '/api/mod/notes',
@@ -35,10 +35,10 @@ class ModerationNoteAsyncPaginator(MoreAvailableAsyncPaginator[ModerationNote], 
     def set_cursor(self, value: str) -> None:
         self._cursor = value
 
-    def has_more_available(self) -> bool:
+    def has_more(self) -> bool:
         return self._has_next_page
 
-    def set_has_more_available_flag(self, value: bool) -> None:
+    def set_has_more(self, value: bool) -> None:
         self._has_next_page = value
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:

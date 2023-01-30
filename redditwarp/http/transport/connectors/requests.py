@@ -91,10 +91,18 @@ class RequestsConnector(Connector):
             raise exceptions.TransportError from cause
 
         requ = resp.request
+
+        x_requ_data = requ.body
+        if isinstance(x_requ_data, str):
+            x_requ_data = x_requ_data.encode()
+        elif x_requ_data is None:
+            x_requ_data = b''
+
         x_requ = Request(
             verb=requ.method or '',
             url=requ.url or '',
             headers=requ.headers,
+            data=x_requ_data,
         )
         x_resp = UResponse(
             status=resp.status_code,

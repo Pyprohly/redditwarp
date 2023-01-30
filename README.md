@@ -20,7 +20,7 @@ client = redditwarp.SYNC.Client()
 it = client.p.front.pull.hot(6)
 l = list(it)
 for subm in l:
-    print("r/{0.subreddit.name} | {0.id36}+ ^:{0.score} | {0.title!r:.80}".format(subm))
+    print("r/{0.subreddit.name} | {0.id36}+ ^{0.score} | {0.title!r:.80}".format(subm))
 ```
 
 ## Features
@@ -60,7 +60,7 @@ client = redditwarp.SYNC.Client()
 it = client.p.front.pull.hot(6)
 l = list(it)
 for subm in l:
-    print("r/{0.subreddit.name} | {0.id36}+ ^:{0.score} | {0.title!r:.80}".format(subm))
+    print("r/{0.subreddit.name} | {0.id36}+ ^{0.score} | {0.title!r:.80}".format(subm))
 
 # How many subscribers does r/Python have?
 subr = client.p.subreddit.fetch_by_name('Python')
@@ -71,7 +71,7 @@ it1 = client.p.subreddit.pull.top('YouShouldKnow', amount=1, time='week')
 m = next(it1)
 print(f'''\
 {m.permalink}
-{m.id36}+ ^:{m.score} | {m.title}
+{m.id36}+ ^{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
 by u/{m.author_name} to r/{m.subreddit.name}
 ''')
@@ -80,7 +80,7 @@ by u/{m.author_name} to r/{m.subreddit.name}
 tree_node = client.p.comment_tree.fetch(int('uc8i1g', 36), sort='top', limit=1)
 c = tree_node.children[0].value
 print(f'''\
-{c.submission.id36}+{c.id36} ^:{c.score}
+{c.submission.id36}+{c.id36} ^{c.score}
 u/{c.author_name} says:
 {c.body}
 ''')
@@ -126,14 +126,14 @@ for obj in l:
         case Submission() as m:
             print(f'''\
 {m.permalink}
-{m.id36}+ ^:{m.score} | {m.title}
+{m.id36}+ ^{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
 by u/{m.author_name} to r/{m.subreddit.name}
 ''')
         case Comment() as c:
             print(f'''\
 {c.permalink}
-{c.submission.id36}+{c.id36} ^:{c.score}
+{c.submission.id36}+{c.id36} ^{c.score}
 u/{c.author_name} says:
 {c.body}
 ''')
@@ -158,6 +158,7 @@ client1.p.comment.delete(comm1.id)
   <summary>Streaming example</summary>
 
 ```python
+#!/usr/bin/env python
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -166,24 +167,23 @@ if TYPE_CHECKING:
 import asyncio
 
 import redditwarp.ASYNC
-from redditwarp.streaming.makers.subreddit_ASYNC import make_submission_stream
+from redditwarp.streaming.makers.subreddit_ASYNC import create_submission_stream
 from redditwarp.streaming.ASYNC import flow
-
 
 async def main() -> None:
     client = redditwarp.ASYNC.Client()
+    async with client:
+        submission_stream = create_submission_stream(client, 'AskReddit')
 
-    submission_stream = make_submission_stream(client, 'AskReddit')
+        @submission_stream.output.attach
+        async def _(subm: Submission) -> None:
+            print(subm.id36, '~', subm.title)
 
-    @submission_stream.output.attach
-    async def _(subm: Submission) -> None:
-        print(subm.id36, '~', subm.title)
+        @submission_stream.error.attach
+        async def _(exc: Exception) -> None:
+            print('ERROR:', repr(exc))
 
-    @submission_stream.error.attach
-    async def _(exc: Exception) -> None:
-        print('ERROR:', repr(exc))
-
-    await flow(submission_stream)
+        await flow(submission_stream)
 
 asyncio.run(main())
 ```

@@ -38,20 +38,17 @@ class AttributeMappingProxy(Mapping[str, V]):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._store})'
 
+    def __dir__(self) -> Iterable[str]:
+        return self.keys()
+
     def __contains__(self, item: object) -> bool:
         return item in self._store
-
-    def __len__(self) -> int:
-        return len(self._store)
 
     def __iter__(self) -> Iterator[str]:
         return iter(self._store)
 
-    def __dir__(self) -> Iterable[str]:
-        return self.keys()
-
-    def __abs__(self) -> Mapping[str, V]:
-        return self._store
+    def __len__(self) -> int:
+        return len(self._store)
 
     def __getitem__(self, key: str) -> V:
         return self._store[key]
@@ -61,6 +58,9 @@ class AttributeMappingProxy(Mapping[str, V]):
             return self[name]
         except KeyError:
             raise AttributeError(repr(name)) from None
+
+    def __abs__(self) -> Mapping[str, V]:
+        return self._store
 
     def __getstate__(self) -> Mapping[str, V]:
         return self._store

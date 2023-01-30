@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Sequence, MutableSequence, Callable, Generic, TypeVar, Iterator, Protocol
+from typing import TYPE_CHECKING, Sequence, MutableSequence, Callable, Generic, TypeVar, Iterator, Protocol, Iterable
 if TYPE_CHECKING:
     from ..pagination.paginator import CursorPaginator
 
@@ -53,6 +53,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
     def __init__(self,
         paginator: CursorPaginator[TOutput],
         extractor: Callable[[TOutput], object],
+        seen: Iterable[TOutput] = (),
         *,
         max_limit: int = 100,
     ) -> None:
@@ -62,6 +63,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         self._paginator__resettable: Resettable = paginator
         self._extractor: Callable[[TOutput], object] = extractor
         self._max_limit: int = max_limit
+        self._init_seen: Iterable[object] = map(extractor, seen)
 
         self._gen: Iterator[float] = self._routine()
 
@@ -84,7 +86,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         extractor = self._extractor
         max_limit = self._max_limit
 
-        seen: BoundedSet[object] = BoundedSet((), self._MEMORY)
+        seen: BoundedSet[object] = BoundedSet(self._init_seen, self._MEMORY)
         delay: float = self._BASE_POLL_INTERVAL
 
         paginator.limit = max_limit

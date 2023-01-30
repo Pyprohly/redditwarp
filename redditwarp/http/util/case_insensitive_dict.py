@@ -27,17 +27,22 @@ class CaseInsensitiveDict(MutableMapping[str, V]):
             return '%s(%r)' % (type(self).__name__, dict(self))
         return type(self).__name__ + '()'
 
+    def __contains__(self, item: object) -> bool:
+        if not isinstance(item, str):
+            return False
+        return item.casefold() in self._store
+
     def __iter__(self) -> Iterator[str]:
         return (k for k, _ in self._store.values())
 
     def __len__(self) -> int:
         return len(self._store)
 
-    def __setitem__(self, key: str, value: V) -> None:
-        self._store[key.casefold()] = (key, value)
-
     def __getitem__(self, key: str) -> V:
         return self._store[key.casefold()][1]
+
+    def __setitem__(self, key: str, value: V) -> None:
+        self._store[key.casefold()] = (key, value)
 
     def __delitem__(self, key: str) -> None:
         del self._store[key.casefold()]

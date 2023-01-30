@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Iterator
 
-from ..util.sched import Scheduler
+from ..util.shdlr import Scheduler
 
 
 def flow(*streams: Iterator[float]) -> None:

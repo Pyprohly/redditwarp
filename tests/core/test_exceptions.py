@@ -26,7 +26,7 @@ def test_incorrect_access_token_url() -> None:
     exc = http.exceptions.StatusCodeException(status_code=401)
     xchg = make_exchange(
         Requisition('GET', "https://reddit.com/api/v1/access_token", {}, {}, None),
-        Request('', '', {}),
+        Request('', '', {}, b''),
         Response(401, {}, b''),
     )
     with pytest.raises(exceptions.AuthError) as exc_info:
@@ -37,7 +37,7 @@ def test_no_authorization_header() -> None:
     exc = http.exceptions.StatusCodeException(status_code=401)
     xchg = make_exchange(
         Requisition('GET', "https://www.reddit.com/api/v1/access_token", {}, {}, None),
-        Request('', '', {}),
+        Request('', '', {}, b''),
         Response(401, {}, b''),
     )
     with pytest.raises(exceptions.AuthError) as exc_info:
@@ -48,7 +48,7 @@ def test_authorization_header_no_basic() -> None:
     exc = http.exceptions.StatusCodeException(status_code=401)
     xchg = make_exchange(
         Requisition('GET', "https://www.reddit.com/api/v1/access_token", {}, {}, None),
-        Request('', '', {'Authorization': 'asdf'}),
+        Request('', '', {'Authorization': 'asdf'}, b''),
         Response(401, {}, b''),
     )
     with pytest.raises(exceptions.AuthError) as exc_info:
@@ -59,7 +59,7 @@ def test_BlacklistedUserAgent() -> None:
     exc = http.exceptions.StatusCodeException(status_code=403)
     xchg = make_exchange(
         Requisition('', '', {}, {}, None),
-        Request('', '', {'User-Agent': 'xscrapingx'}),
+        Request('', '', {'User-Agent': 'xscrapingx'}, b''),
         Response(403, {}, b'<!doctype html>'),
     )
     with pytest.raises(exceptions.BlacklistedUserAgent):
@@ -69,7 +69,7 @@ def test_CredentialsError() -> None:
     exc: Exception = auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant(error_name='invalid_grant')
     xchg = make_exchange(
         Requisition('', '', {}, {}, None),
-        Request('', '', {}),
+        Request('', '', {}, b''),
         Response(400, {}, b'{"error": "invalid_grant"}'),
     )
     with pytest.raises(exceptions.GrantCredentialsError):
@@ -78,7 +78,7 @@ def test_CredentialsError() -> None:
     exc = auth.exceptions.TokenServerResponseErrorTypes.InvalidGrant(error_name='invalid_grant')
     xchg = make_exchange(
         make_requisition('', '', data={'grant_type': 'password'}),
-        Request('', '', {}),
+        Request('', '', {}, b''),
         Response(400, {}, b'{"error": "invalid_grant"}'),
     )
     with pytest.raises(exceptions.GrantCredentialsError) as exc_info:
@@ -88,7 +88,7 @@ def test_CredentialsError() -> None:
     exc = http.exceptions.StatusCodeException(status_code=401)
     xchg = make_exchange(
         make_requisition('GET', "https://www.reddit.com/api/v1/access_token", data={'grant_type': 'password'}),
-        Request('', '', {'Authorization': 'Basic waterfall'}),
+        Request('', '', {'Authorization': 'Basic waterfall'}, b''),
         Response(401, {}, b''),
     )
     with pytest.raises(exceptions.ClientCredentialsError):
@@ -98,7 +98,7 @@ def test_FaultyUserAgent() -> None:
     exc = http.exceptions.StatusCodeException(status_code=429)
     xchg = make_exchange(
         Requisition('', '', {}, {}, None),
-        Request('', '', {'User-Agent': 'xcurlx'}),
+        Request('', '', {'User-Agent': 'xcurlx'}, b''),
         Response(429, {}, b''),
     )
     with pytest.raises(exceptions.FaultyUserAgent):
@@ -108,7 +108,7 @@ def test_UnsupportedGrantType() -> None:
     exc = auth.exceptions.TokenServerResponseErrorTypes.UnsupportedGrantType(error_name='unsupported_grant_type')
     xchg = make_exchange(
         Requisition('', '', {}, {}, None),
-        Request('', '', {'Content-Type': 'application/json'}),
+        Request('', '', {'Content-Type': 'application/json'}, b''),
         Response(200, {}, b''),
     )
     with pytest.raises(exceptions.AuthError) as exc_info:
@@ -119,7 +119,7 @@ def test_500_http_error_on_auth_code_reuse() -> None:
     exc = http.exceptions.StatusCodeException(status_code=404)
     xchg = make_exchange(
         make_requisition('', '', data={'grant_type': 'authorization_code'}),
-        Request('', '', {}),
+        Request('', '', {}, b''),
         Response(404, {}, b''),
     )
     with pytest.raises(http.exceptions.StatusCodeException) as exc_info:
@@ -130,7 +130,7 @@ def test_refresh_token_invalid() -> None:
     exc = http.exceptions.StatusCodeException(status_code=400)
     xchg = make_exchange(
         make_requisition('', '', data={'grant_type': 'refresh_token'}),
-        Request('', '', {}),
+        Request('', '', {}, b''),
         Response(200, {}, b''),
     )
     with pytest.raises(http.exceptions.StatusCodeException) as exc_info:

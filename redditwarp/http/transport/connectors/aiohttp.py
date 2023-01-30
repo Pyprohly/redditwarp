@@ -104,6 +104,7 @@ class AiohttpConnector(Connector):
                     verb=requ.method,
                     url=str(requ.real_url),
                     headers=requ.headers,
+                    data=b'',
                 )
                 x_resp = UResponse(
                     status=resp.status,

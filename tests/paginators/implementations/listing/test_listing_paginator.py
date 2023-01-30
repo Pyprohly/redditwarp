@@ -13,7 +13,7 @@ from redditwarp.pagination.paginators.listing.listing_paginator import ListingPa
 
 class MyHandler(Handler):
     DUMMY_REQUISITION = Requisition('', '', {}, {}, None)
-    DUMMY_REQUEST = Request('', '', {})
+    DUMMY_REQUEST = Request('', '', {}, b'')
 
     def __init__(self,
         response_status: int,
@@ -274,7 +274,7 @@ def test_cursor_extractor() -> None:
         assert p.after == 'no_change1'
         assert p.before == 'no_change2'
 
-def test_has_more_available() -> None:
+def test_has_more() -> None:
     p = MyListingPaginator(client, '')
 
     for direction in (True, False):
@@ -295,7 +295,7 @@ def test_has_more_available() -> None:
 }
 '''
         p.fetch()
-        assert p.has_more_available()
+        assert p.has_more()
 
         handler.response_data = b'''\
 {
@@ -312,7 +312,7 @@ def test_has_more_available() -> None:
 }
 '''
         p.fetch()
-        assert p.has_more_available() is direction
+        assert p.has_more() is direction
 
         handler.response_data = b'''\
 {
@@ -329,7 +329,7 @@ def test_has_more_available() -> None:
 }
 '''
         p.fetch()
-        assert p.has_more_available() is not direction
+        assert p.has_more() is not direction
 
         handler.response_data = b'''\
 {
@@ -343,7 +343,7 @@ def test_has_more_available() -> None:
 }
 '''
         p.fetch()
-        assert not p.has_more_available()
+        assert not p.has_more()
 
 def test_dist_none_value() -> None:
     # Example endpoints where `dist`is null:

@@ -100,6 +100,7 @@ class HttpxConnector(Connector):
             verb=requ.method,
             url=str(requ.url),
             headers=requ.headers,
+            data=requ.read(),
         )
         x_resp = UResponse(
             status=resp.status_code,

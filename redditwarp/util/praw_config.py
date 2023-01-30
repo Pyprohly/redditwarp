@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Sequence
+from typing import Sequence, Optional
 
 import sys
 import os.path as op
@@ -30,8 +30,8 @@ def get_praw_ini_potential_file_locations() -> Sequence[str]:
         if path_components[0]
     ]
 
-def get_praw_config() -> ConfigParser:
-    """Return a `ConfigParser` initialised with the standard praw.ini file locations."""
+def get_praw_config(filepath: Optional[str] = None) -> ConfigParser:
+    """Return a `ConfigParser` initialised with the standard `praw.ini` file locations."""
     config = ConfigParser()
-    config.read(get_praw_ini_potential_file_locations())
+    config.read(get_praw_ini_potential_file_locations() if filepath is None else filepath)
     return config

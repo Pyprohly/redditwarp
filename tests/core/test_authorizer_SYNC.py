@@ -98,7 +98,7 @@ class TestAuthorizer:
 
 
 class ReplayingHandler(Handler):
-    DUMMY_REQUEST = Request('', '', {})
+    DUMMY_REQUEST = Request('', '', {}, b'')
 
     def __init__(self, responses: Sequence[Response]) -> None:
         super().__init__()

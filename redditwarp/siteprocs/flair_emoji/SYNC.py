@@ -15,17 +15,21 @@ class FlairEmojiProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def get_subreddit_emojis(self, sr: str) -> SubredditFlairEmojis:
+    def retrieve_subreddit_emojis(self, sr: str) -> SubredditFlairEmojis:
         root = self._client.request('GET', f'/api/v1/{sr}/emojis/all')
         root = dict(root)
         reddit_emojis_root = root.pop('snoomojis')
-        _full_id36: str
-        _full_id36, subreddit_emojis_root = root.popitem()
-        _, _, subreddit_id36 = _full_id36.partition('_')
+        full_id36: str
+        full_id36, subreddit_emojis_root = root.popitem()
+        _, _, subreddit_id36 = full_id36.partition('_')
+        subreddit_emojis = {name: load_flair_emoji(d, name) for name, d in subreddit_emojis_root.items()}
+        reddit_emojis = {name: load_flair_emoji(d, name) for name, d in reddit_emojis_root.items()}
+        all_emojis = {**subreddit_emojis, **reddit_emojis}
         return SubredditFlairEmojis(
-            [load_flair_emoji(d, name) for name, d in subreddit_emojis_root.items()],
-            [load_flair_emoji(d, name) for name, d in reddit_emojis_root.items()],
-            subreddit_id36,
+            subreddit_emojis=subreddit_emojis,
+            reddit_emojis=reddit_emojis,
+            all_emojis=all_emojis,
+            subreddit_id36=subreddit_id36,
         )
 
     class Create:
@@ -111,14 +115,14 @@ class FlairEmojiProcedures:
         emoji_name: str,
         *,
         mod_only: bool = False,
-        user_enabled: bool = True,
         post_enabled: bool = True,
+        user_enabled: bool = True,
     ) -> None:
         data = {
             'name': emoji_name,
             'mod_flair_only': '01'[mod_only],
-            'user_flair_allowed': '01'[user_enabled],
             'post_flair_allowed': '01'[post_enabled],
+            'user_flair_allowed': '01'[user_enabled],
         }
         self._client.request('POST', f'/api/v1/{sr}/emoji_permissions', data=data)
 

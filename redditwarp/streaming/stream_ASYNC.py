@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Sequence, MutableSequence, Callable, Generic, TypeVar, Protocol, Awaitable, Generator, Optional, Iterator, AsyncIterator
+from typing import TYPE_CHECKING, Sequence, MutableSequence, Callable, Generic, TypeVar, Protocol, Awaitable, Generator, Optional, Iterator, AsyncIterator, Iterable
 if TYPE_CHECKING:
     from asyncio import Future
     from ..pagination.async_paginator import CursorAsyncPaginator
@@ -40,10 +40,10 @@ class IStandardStreamEventSubject(Awaitable[None], AsyncIterator[float], Generic
         raise NotImplementedError
 
     def __await__(self) -> Generator[Optional[Future[None]], None, None]:
-        async def coro_func() -> None:
+        async def coro_fn() -> None:
             async for s in self:
                 await asyncio.sleep(s)
-        return coro_func().__await__()
+        return coro_fn().__await__()
 
 
 
@@ -61,6 +61,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
     def __init__(self,
         paginator: CursorAsyncPaginator[TOutput],
         extractor: Callable[[TOutput], object],
+        seen: Iterable[TOutput] = (),
         *,
         max_limit: int = 100,
     ) -> None:
@@ -70,6 +71,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         self._paginator__resettable: Resettable = paginator
         self._extractor: Callable[[TOutput], object] = extractor
         self._max_limit: int = max_limit
+        self._init_seen: Iterable[object] = map(extractor, seen)
 
         self._agen: AsyncIterator[float] = self.__routine()
 
@@ -92,7 +94,7 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         extractor = self._extractor
         max_limit = self._max_limit
 
-        seen: BoundedSet[object] = BoundedSet((), self._MEMORY)
+        seen: BoundedSet[object] = BoundedSet(self._init_seen, self._MEMORY)
         delay: float = self._BASE_POLL_INTERVAL
 
         paginator.limit = max_limit

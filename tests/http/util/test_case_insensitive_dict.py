@@ -34,6 +34,7 @@ def test_contains() -> None:
     assert 'abc' in d
     assert 'ABC' in d
     assert 'aBC' in d
+    assert 1 not in d  # type: ignore[comparison-overlap]
 
 def test_iter() -> None:
     d: CaseInsensitiveDict[int] = CaseInsensitiveDict({'a': 1, 'B': 2, 'c': 3})

@@ -1,14 +1,12 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, Sequence, overload
+from typing import TYPE_CHECKING, Any, TypeVar, Optional, Mapping, Union, Callable, overload
 if TYPE_CHECKING:
     from types import TracebackType
     from .auth.types import AuthorizationGrant
     from .http.types import RequestFiles
     from .core.http_client_SYNC import HTTPClient
     from .types import JSON_ro
-
-from configparser import ConfigParser
 
 from .auth import Token
 from .auth import grants
@@ -18,7 +16,6 @@ from .core.http_client_SYNC import (
     build_reddit_http_client,
     build_reddit_http_client_from_access_token,
 )
-from .util.praw_config import get_praw_ini_potential_file_locations
 from .exceptions import raise_for_reddit_error, raise_for_non_json_response
 from .http.util.json_load import json_loads_response
 from .util.redditwarp_installed_client_credentials import get_redditwarp_client_id, get_device_id
@@ -29,30 +26,8 @@ class Client:
 
     _TSelf = TypeVar('_TSelf', bound='Client')
 
-    @classmethod
-    def from_http(cls: type[_TSelf], http: HTTPClient) -> _TSelf:
-        """Alternative constructor for testing purposes or advanced use cases."""
-        self = cls.__new__(cls)
-        self._init(http)
-        return self
-
-    @classmethod
-    def from_access_token(cls: type[_TSelf], access_token: str) -> _TSelf:
-        """Construct a `Client` instance without a token client.
-
-        No token client means `self.http.authorizer.token_client` will be `None`.
-
-        When the access token becomes invalid you'll need to deal with the
-        401 Unauthorized :class:`~redditwarp.http.exceptions.StatusCodeException`
-        exception that will be thrown upon making API calls.
-
-        Use the :meth:`set_access_token` instance method to assign a new token.
-        """
-        http = build_reddit_http_client_from_access_token(access_token)
-        return cls.from_http(http)
-
-    @classmethod
-    def from_praw_config(cls: type[_TSelf], section_name: str, *, filepath: Optional[str] = None) -> _TSelf:
+    @staticmethod
+    def from_praw_config(section_name: str, *, filepath: Optional[str] = None) -> Client:
         """Initialize a `Client` instance from a praw.ini file.
 
         This method aims to replicate the single-argument form of PRAW's `Reddit` class
@@ -84,33 +59,30 @@ class Client:
             are searched and any files found are read and combined into a single
             configuration.
         """
-        config = ConfigParser()
-        config.read(get_praw_ini_potential_file_locations() if filepath is None else filepath)
-        section_name = section_name or config.default_section
-        try:
-            section = config[section_name]
-        except KeyError:
-            empty = not any(s.values() for s in config.values())
-            msg = f"No section named {section_name!r} in{' empty' if empty else ''} praw.ini config."
-            class StrReprStr(str):
-                def __repr__(self) -> str:
-                    return str(self)
-            raise KeyError(StrReprStr(msg)) from None
+        from .util.praw_config_SYNC import client_from_praw_config  # Avoid cyclic import
+        return client_from_praw_config(section_name, filepath=filepath)
 
-        get = section.get
-        grant_creds: Sequence[str] = ()
-        if refresh_token := get('refresh_token'):
-            grant_creds = (refresh_token,)
-        elif (username := get('username')) and (password := get('password')):
-            grant_creds = (username, password)
-        self = cls(
-            section['client_id'],
-            section['client_secret'],
-            *grant_creds,
-        )
-        if x := get('user_agent'):
-            self.set_user_agent(x)
+    @classmethod
+    def from_http(cls: type[_TSelf], http: HTTPClient) -> _TSelf:
+        """Alternative constructor for testing purposes or advanced use cases."""
+        self = cls.__new__(cls)
+        self._init(http)
         return self
+
+    @classmethod
+    def from_access_token(cls: type[_TSelf], access_token: str) -> _TSelf:
+        """Construct a `Client` instance without a token client.
+
+        No token client means `self.http.authorizer.token_client` will be `None`.
+
+        When the access token becomes invalid you'll need to deal with the
+        401 Unauthorized :class:`~redditwarp.http.exceptions.StatusCodeException`
+        exception that will be thrown upon making API calls.
+
+        Use the :meth:`set_access_token` instance method to assign a new token.
+        """
+        http = build_reddit_http_client_from_access_token(access_token)
+        return cls.from_http(http)
 
     @overload
     def __init__(self) -> None: ...
