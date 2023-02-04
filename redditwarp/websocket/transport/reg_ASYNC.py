@@ -1,13 +1,12 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping, Optional, Sequence, Protocol, MutableSequence
+from typing import TYPE_CHECKING, MutableMapping, Sequence, Protocol, MutableSequence
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
 
-from importlib.util import find_spec
 from dataclasses import dataclass
 
-from ...util.imports import load_module_from_spec
+from ...util.imports import load_spec, import_module_from_spec
 from ..websocket_ASYNC import WebSocket
 
 
@@ -24,18 +23,11 @@ class TransportInfo:
     connect: ConnectFunctionProtocol
 
 
-def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
-    module_spec = find_spec(name, package)
-    if module_spec is None:
-        raise RuntimeError(f'module spec not found: {name} ({package})')
-    return module_spec
-
-
 def load_transport() -> TransportInfo:
     if not transport_info_registry:
         for module_spec in transport_module_spec_list:
             try:
-                load_module_from_spec(module_spec)
+                import_module_from_spec(module_spec)
             except ImportError:
                 continue
             break

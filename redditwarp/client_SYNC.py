@@ -22,17 +22,17 @@ from .util.redditwarp_installed_client_credentials import get_redditwarp_client_
 
 
 class Client:
-    """Gateway object for interacting with the Reddit API."""
+    """Gateway to interacting with the Reddit API."""
 
     _TSelf = TypeVar('_TSelf', bound='Client')
 
     @staticmethod
     def from_praw_config(section_name: str, *, filepath: Optional[str] = None) -> Client:
-        """Initialize a `Client` instance from a praw.ini file.
+        """Initialize a `Client` instance from a `praw.ini` file.
 
-        This method aims to replicate the single-argument form of PRAW's `Reddit` class
-        constructor. If no `filepath` is given, this method will look for `praw.ini`
-        configuration files in various locations: the same locations PRAW does.
+        This method aims to replicate the single-argument form of PRAW's `Reddit`
+        class constructor. If `filepath` is not specified it will search for
+        `praw.ini` files in the same locations PRAW does.
 
         Only a subset of PRAW's configuration keys are read:
 
@@ -52,10 +52,10 @@ class Client:
             The section name of the ini file in which to read values from.
             Pass an empty string to use the default section name "`DEFAULT`".
         :param filepath:
-            The location of the `praw.ini` file to read.
+            The location of a `praw.ini` file to read.
 
             If not specified, the locations returned by
-            :func:`redditwarp.util.praw_config.get_praw_ini_potential_file_locations`
+            :func:`redditwarp.util.praw_config.get_praw_ini_potential_locations`
             are searched and any files found are read and combined into a single
             configuration.
         """
@@ -71,15 +71,15 @@ class Client:
 
     @classmethod
     def from_access_token(cls: type[_TSelf], access_token: str) -> _TSelf:
-        """Construct a `Client` instance without a token client.
+        """Construct an instance without a token client.
 
         No token client means `self.http.authorizer.token_client` will be `None`.
 
         When the access token becomes invalid you'll need to deal with the
         401 Unauthorized :class:`~redditwarp.http.exceptions.StatusCodeException`
-        exception that will be thrown upon making API calls.
+        exception that will be thrown upon making API requests.
 
-        Use the :meth:`set_access_token` instance method to assign a new token.
+        Use the :meth:`.set_access_token` method to assign new access tokens.
         """
         http = build_reddit_http_client_from_access_token(access_token)
         return cls.from_http(http)
@@ -104,12 +104,12 @@ class Client:
         :param username:
         :param password:
         :param grant:
-            Specify a grant explicitly. Use this parameter if you need to limit
-            authorization scopes, or if you need the Installed Client grant type.
+            Specify an explicit grant. Use this parameter if you want to limit
+            authorization scopes, or if you need to use the Installed Client grant type.
 
         If `client_id` and `client_secret` are the only credentials given then a
         Client Credentials grant will be configured. The client will effectively
-        be in 'read-only' mode.
+        be in a read-only mode.
         """
         client_id = client_secret = ''
         n = len(creds)
@@ -172,13 +172,18 @@ class Client:
     ) -> Any:
         """Make an API request and return JSON data.
 
-        The parameters are similar to :meth:`redditwarp.http.SessionBase.request`,
+        The parameters are similar to
+        :meth:`redditwarp.http.http_client_SYNC.HTTPClient.request`,
         except for `snub`.
 
         The `snub` function examines the returned JSON data for API problems and
         generates exceptions based on them. You may choose to assign this option
         if you implement an API endpoint and know the structure of the errors,
         but the default snub function covers most Reddit API error structures.
+
+        This method is only appropriate for making calls to the Reddit API
+        and not any other website because of the domain specific post processing
+        that happens with the response data.
 
         .. .RAISES
 
@@ -220,9 +225,10 @@ class Client:
         http.authorizer.set_token(Token(access_token))
 
     def set_user_agent(self, s: Optional[str]) -> None:
-        """Set a custom user agent description.
+        """Set a user agent description.
 
-        To view or set the current user agent string directly, see `self.http.user_agent`.
+        To view or set the current user agent string directly,
+        use `self.http.get_user_agent()`.
         """
         ua = self.http.user_agent_base
         if s is not None:

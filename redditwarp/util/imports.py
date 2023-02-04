@@ -1,17 +1,31 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 if TYPE_CHECKING:
     from types import ModuleType
     from importlib.machinery import ModuleSpec
+    from os import PathLike
 
 import sys
 import importlib.util
 
-def load_module_from_spec(spec: ModuleSpec) -> ModuleType:
-    if spec.loader is None:
-        raise ImportError('spec has no loader')
 
+def load_spec(name: str, package: Optional[str] = None) -> ModuleSpec:
+    spec = importlib.util.find_spec(name, package)
+    if spec is None:
+        raise RuntimeError(f'module spec not found: {name} ({package})')
+    return spec
+
+def load_spec_from_file_location(name: str,
+        location: Union[str, bytes, PathLike[str], PathLike[bytes]]) -> ModuleSpec:
+    spec = importlib.util.spec_from_file_location(name, location)
+    if spec is None:
+        raise RuntimeError(f'module spec not found: {name} ({str(location)})')
+    return spec
+
+def import_module_from_spec(spec: ModuleSpec) -> ModuleType:
+    if spec.loader is None:
+        raise RuntimeError('spec has no loader')
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -27,15 +41,12 @@ class LazyImport:
         except KeyError:
             spec = importlib.util.find_spec(name, package)
             if spec is None:
-                raise ImportError(f'module named {name!r} not found')
+                raise RuntimeError(f'module named {name!r} not found')
             if spec.loader is None:
-                raise ImportError('spec has no loader')
-
-            module = importlib.util.module_from_spec(spec)
+                raise RuntimeError('spec has no loader')
             loader = importlib.util.LazyLoader(spec.loader)
-            loader.exec_module(module)
-            sys.modules[spec.name] = module
-            return module
+            spec.loader = loader
+            return import_module_from_spec(spec)
 
     def __mod__(self, other: str) -> None:
         if '.' in other:

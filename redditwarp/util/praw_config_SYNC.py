@@ -6,6 +6,7 @@ from .praw_config import get_praw_config
 from ..client_SYNC import Client
 
 def client_from_praw_config(section_name: str, *, filepath: Optional[str] = None) -> Client:
+    """See :meth:`Client.from_praw_config`."""
     config = get_praw_config(filepath)
     section_name = section_name or config.default_section
     try:

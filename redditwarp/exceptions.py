@@ -4,7 +4,12 @@ from typing import TYPE_CHECKING, Any, Mapping
 if TYPE_CHECKING:
     from .http.response import Response
 
+
 class ArgExcMixin(Exception):
+    """
+    Mixin exception class where the `arg` argument is used
+    as the exception message.
+    """
     def __init__(self, arg: object = None) -> None:
         super().__init__()
         self.arg: object = arg
@@ -15,7 +20,7 @@ class ArgExcMixin(Exception):
         return str(self.arg)
 
     def get_default_message(self) -> str:
-        """Get a default exception message for this exception type."""
+        """Get a default message for this exception type."""
         return ''
 
 class ArgExc(ArgExcMixin):
@@ -23,20 +28,23 @@ class ArgExc(ArgExcMixin):
 
 
 class OperationException(ArgExc):
-    """A class of exceptions for when the client needs to raise an exception."""
+    """
+    A class of exceptions for when the client needs to raise
+    an artificial exception.
+    """
 
 class NoResultException(OperationException):
     """Raised when a requested target does not exist."""
 
 class RejectedResultException(OperationException):
-    """Raised when a returned value does not fulfil an invariant."""
+    """Raised when a returned value does not fulfil some invariant."""
 
 class UnexpectedResultException(OperationException):
     """Raised when a certain result was not expected."""
 
 
 class Throwaway(ArgExc):
-    pass
+    """These exceptions are not intended to be caught."""
 
 class UserAgentRequired(Throwaway):
     """Raised when the client detects that the Reddit API wants you to set a user agent."""
@@ -68,7 +76,7 @@ def raise_for_non_json_response(resp: Response) -> None:
 
 
 class APIError(OperationException):
-    """A formal API-specified error."""
+    """A formal API error."""
 
 class RedditError(APIError):
     """
@@ -78,24 +86,21 @@ class RedditError(APIError):
 
     .. ATTRIBUTES
 
-    .. attribute:: label
-        :type: str
+    .. # attribute:: label
 
-        A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
-        In rare cases this label may not always be in uppercase. It can even contain spaces.
-        The value may be an empty string.
+       A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
+       In rare cases this label may not always be in uppercase. It can even contain spaces.
+       The value may be an empty string.
 
-    .. attribute:: explanation
-        :type: str
+    .. # attribute:: explanation
 
-        A description for the error.
-        The value may be an empty string.
+       A description for the error.
+       The value may be an empty string.
 
-    .. attribute:: field
-        :type: str
+    .. # attribute:: field
 
-        The name of the parameter relevant to the error, if applicable.
-        The value may be an empty string.
+       The name of the parameter relevant to the error, if applicable.
+       The value may be an empty string.
     """
 
     __match_args__ = ('label',)
@@ -109,8 +114,21 @@ class RedditError(APIError):
     ) -> None:
         super().__init__(arg)
         self.label: str = label
+        ("""
+        A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
+        In rare cases this label may not always be in uppercase. It can even contain spaces.
+        The value may be an empty string.
+        """)
         self.explanation: str = explanation
+        ("""
+        A description for the error.
+        The value may be an empty string.
+        """)
         self.field: str = field
+        ("""
+        The name of the parameter relevant to the error, if applicable.
+        The value may be an empty string.
+        """)
 
     def get_default_message(self) -> str:
         la = self.label
@@ -128,11 +146,11 @@ class RedditError(APIError):
 
 
 def raise_for_reddit_error(json_data: Any) -> None:
-    """Examine JSON data returned from the API and raise appropriate exceptions if
+    """Examine JSON data returned from the API and raise exceptions if
     any API errors were detected.
 
     This function is the default `snub` parameter value for the
-    :meth:`Client.request <.client_SYNC.Client.request>` method.
+    `Client.request` method.
     """
     if not isinstance(json_data, Mapping):
         return

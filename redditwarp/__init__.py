@@ -1,6 +1,4 @@
-"""An API wrapper for the Reddit API."""
-
-__all__ = '*'
+"""API wrapper for the Reddit API."""
 
 from . import __about__  # noqa: F401
 from .__about__ import (  # noqa: F401

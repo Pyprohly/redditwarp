@@ -44,5 +44,8 @@ class TokenObtainmentClient:
         return resp_json
 
     def fetch_token(self) -> Token:
-        """Call :meth:`self.fetch_data <.fetch_data>` and construct a :class:`~.token.Token` from it."""
+        """
+        Call :meth:`self.fetch_data <.fetch_data>` and construct a
+        :class:`~.redditwarp.auth.token.Token` from it.
+        """
         return Token.from_dict(self.fetch_data())

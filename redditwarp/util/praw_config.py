@@ -10,8 +10,8 @@ from configparser import ConfigParser
 def _safe_getenv(key: str) -> str:
     return getenv(key, '')
 
-def get_praw_ini_potential_file_locations() -> Sequence[str]:
-    """Return a list of potential praw.ini file locations."""
+def get_praw_ini_potential_locations() -> Sequence[str]:
+    """Return a list of potential `praw.ini` locations."""
     root_pkg_dirname = ''
     if __name__ != '__main__':
         root_pkg_name, _, _ = __name__.partition('.')
@@ -31,7 +31,7 @@ def get_praw_ini_potential_file_locations() -> Sequence[str]:
     ]
 
 def get_praw_config(filepath: Optional[str] = None) -> ConfigParser:
-    """Return a `ConfigParser` initialised with the standard `praw.ini` file locations."""
+    """Return a `ConfigParser` initialised with the standard `praw.ini` locations."""
     config = ConfigParser()
-    config.read(get_praw_ini_potential_file_locations() if filepath is None else filepath)
+    config.read(get_praw_ini_potential_locations() if filepath is None else filepath)
     return config

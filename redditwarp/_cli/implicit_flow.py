@@ -2,7 +2,7 @@
 """
 Step through the OAuth2 Implicit Flow to obtain an access token.
 
-Visit <https://www.reddit.com/prefs/apps> to create an OAuth2 application profile
+Visit <https://old.reddit.com/prefs/apps> to create an OAuth2 application profile
 for your client before running this script.
 
 Your app's redirect URI must *exactly* match `http://localhost:8080`.
