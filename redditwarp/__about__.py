@@ -48,7 +48,7 @@ from __future__ import annotations
 
 
 version_major: int = 0
-version_minor: int = 7
+version_minor: int = 8
 version_micro: int = 0
 version_extra: str = ''
 
