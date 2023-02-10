@@ -7,8 +7,7 @@ from datetime import datetime, timezone
 from ..models.moderation_note import ModerationNote, ModerationActionNote, ModerationUserNote
 
 def load_moderation_note(d: Mapping[str, Any]) -> ModerationNote:
-    is_user_note = d['type'] == 'NOTE'
-    if is_user_note:
+    if d['type'] == 'NOTE':
         return load_moderation_user_note(d)
     return load_moderation_action_note(d)
 
@@ -18,7 +17,7 @@ def load_moderation_action_note(d: Mapping[str, Any]) -> ModerationActionNote:
         uuid=d['id'].partition('_')[-1],
         unixtime=(unixtime := int(d['created_at'])),
         datetime=datetime.fromtimestamp(unixtime, timezone.utc),
-        type=d['type'],
+        label=d['type'],
         subreddit_id=int(d['subreddit_id'].partition('_')[-1], 36),
         subreddit=d['subreddit'],
         agent_id=int(d['operator_id'].partition('_')[-1], 36),
@@ -47,7 +46,6 @@ def load_moderation_user_note(d: Mapping[str, Any]) -> ModerationUserNote:
         uuid=d['id'].partition('_')[-1],
         unixtime=(unixtime := int(d['created_at'])),
         datetime=datetime.fromtimestamp(unixtime, timezone.utc),
-        type=d['type'],
         subreddit_id=int(d['subreddit_id'].partition('_')[-1], 36),
         subreddit=d['subreddit'],
         agent_id=int(d['operator_id'].partition('_')[-1], 36),

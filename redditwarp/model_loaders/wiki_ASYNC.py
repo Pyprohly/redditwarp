@@ -13,13 +13,12 @@ from .wiki import (
 )
 
 
-def promote_base_wiki_page_revision_author_user(base: BaseWikiPageRevisionAuthorUser, client: Client) -> WikiPageRevisionAuthorUser:
-    return WikiPageRevisionAuthorUser(base.d, client)
-
-
 def load_wiki_page_revision_author_user(d: Mapping[str, Any], client: Client) -> WikiPageRevisionAuthorUser:
     return WikiPageRevisionAuthorUser(d, client)
 
+
+def promote_base_wiki_page_revision_author_user(base: BaseWikiPageRevisionAuthorUser, client: Client) -> WikiPageRevisionAuthorUser:
+    return WikiPageRevisionAuthorUser(base.d, client)
 
 
 def load_wiki_page(d: Mapping[str, Any], client: Client) -> WikiPage:
@@ -51,5 +50,5 @@ def load_wiki_page_settings(d: Mapping[str, Any], client: Client) -> WikiPageSet
     return WikiPageSettings(
         permlevel=up.permlevel,
         editors=[promote_base_wiki_page_revision_author_user(o, client) for o in up.editors],
-        unlisted=up.unlisted,
+        indexed=up.indexed,
     )

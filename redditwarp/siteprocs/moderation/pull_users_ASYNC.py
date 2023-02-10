@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
-    from ...models.subreddit_user_item import (
-        ModeratorUserItem,
-        ApprovedUserItem,
-        BannedUserItem,
-        MutedUserItem,
+    from ...models.subreddit_user import (
+        Moderator,
+        ApprovedUser,
+        BannedUser,
+        MutedUser,
     )
 
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
@@ -22,26 +22,26 @@ class PullUsers:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def moderators(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ModeratorsAsyncPaginator, ModeratorUserItem]:
+    def moderators(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ModeratorsAsyncPaginator, Moderator]:
         p = ModeratorsAsyncPaginator(self._client, f'/api/v1/{sr}/moderators')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def moderator_invitations(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ModeratorsAsyncPaginator, ModeratorUserItem]:
+    def moderator_invitations(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ModeratorsAsyncPaginator, Moderator]:
         p = ModeratorsAsyncPaginator(self._client, f'/api/v1/{sr}/moderators_invited')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def editable_moderators(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ModeratorsAsyncPaginator, ModeratorUserItem]:
+    def editable_moderators(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ModeratorsAsyncPaginator, Moderator]:
         p = ModeratorsAsyncPaginator(self._client, f'/api/v1/{sr}/moderators_editable')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def approved_users(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ApprovedUsersAsyncPaginator, ApprovedUserItem]:
+    def approved_users(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[ApprovedUsersAsyncPaginator, ApprovedUser]:
         p = ApprovedUsersAsyncPaginator(self._client, f'/api/v1/{sr}/contributors')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def banned(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[BannedUsersAsyncPaginator, BannedUserItem]:
+    def banned(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[BannedUsersAsyncPaginator, BannedUser]:
         p = BannedUsersAsyncPaginator(self._client, f'/api/v1/{sr}/banned')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def muted(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[MutedUsersAsyncPaginator, MutedUserItem]:
+    def muted(self, sr: str, amount: Optional[int] = None) -> ImpartedPaginatorChainingAsyncIterator[MutedUsersAsyncPaginator, MutedUser]:
         p = MutedUsersAsyncPaginator(self._client, f'/api/v1/{sr}/muted')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)

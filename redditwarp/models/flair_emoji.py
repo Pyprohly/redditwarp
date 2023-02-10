@@ -19,12 +19,12 @@ class FlairEmojiUploadLease(IArtifact):
 class FlairEmoji:
     d: Mapping[str, Any]
     name: str
-    creator_id36: str
-    creator_id: int
     image_url: str
-    mod_only: bool
+    creator_id: int
+    creator_id36: str
     post_enabled: bool
     user_enabled: bool
+    mod_only: bool
 
 
 class SubredditFlairEmojis(Mapping[str, FlairEmoji]):

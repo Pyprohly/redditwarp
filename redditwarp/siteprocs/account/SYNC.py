@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, Optional, Sequence, Mapping, Any
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.my_account_SYNC import MyAccount
-    from ...models.user_relationship_item import UserRelationshipItem, FriendRelationshipItem
+    from ...models.user_relationship import UserRelationship, FriendRelationship
     from ...models.trophy import Trophy
     from ...models.karma_breakdown_entry import KarmaBreakdownEntry
     from ...types import JSON_ro
 
 from .pull_subreddits_SYNC import PullSubreddits
 from ...model_loaders.my_account_SYNC import load_account
-from ...model_loaders.user_relationship_item import load_user_relationship_item, load_friend_relationship_item
+from ...model_loaders.user_relationship import load_user_relationship, load_friend_relationship
 from ...model_loaders.karma_breakdown_entry import load_karma_breakdown_entry
 from ...model_loaders.trophy import load_trophy
 from ...util.base_conversion import to_base36
@@ -98,7 +98,7 @@ class AccountProcedures:
         kind_data = root['data']['trophies']
         return [load_trophy(d['data']) for d in kind_data]
 
-    def get_friend(self, name: str) -> UserRelationshipItem:
+    def get_friend(self, name: str) -> UserRelationship:
         """Get information about a specific 'friend'.
 
         .. .PARAMETERS
@@ -117,9 +117,9 @@ class AccountProcedures:
                 The specified user does not exist.
         """
         root = self._client.request('GET', f'/api/v1/me/friends/{name}')
-        return load_user_relationship_item(root)
+        return load_user_relationship(root)
 
-    def friends(self) -> Sequence[UserRelationshipItem]:
+    def friends(self) -> Sequence[UserRelationship]:
         """Get a list of friends.
 
         .. .RAISES
@@ -138,9 +138,9 @@ class AccountProcedures:
             raise exceptions.OperationException('no user context')
 
         entries = root['data']['children']
-        return [load_user_relationship_item(d) for d in entries]
+        return [load_user_relationship(d) for d in entries]
 
-    def add_friend(self, name: str, note: Optional[str] = None) -> FriendRelationshipItem:
+    def add_friend(self, name: str, note: Optional[str] = None) -> FriendRelationship:
         """Create or update a friend relationship.
 
         Also use this function to add or update a note.
@@ -175,7 +175,7 @@ class AccountProcedures:
         """
         json_data = {} if note is None else {'note': note}
         root = self._client.request('PUT', f'/api/v1/me/friends/{name}', json=json_data)
-        return load_friend_relationship_item(root)
+        return load_friend_relationship(root)
 
     def remove_friend(self, name: str) -> None:
         """Remove a friend.
@@ -193,7 +193,7 @@ class AccountProcedures:
         """
         self._client.request('DELETE', f'/api/v1/me/friends/{name}')
 
-    def blocked(self) -> Sequence[UserRelationshipItem]:
+    def blocked(self) -> Sequence[UserRelationship]:
         """Get a list of blocked users.
 
         .. .RAISES
@@ -212,7 +212,7 @@ class AccountProcedures:
             raise exceptions.OperationException('no user context')
 
         entries = root['data']['children']
-        return [load_user_relationship_item(d) for d in entries]
+        return [load_user_relationship(d) for d in entries]
 
     def block_user_by_id(self, idn: int) -> None:
         """Block a user by ID.
@@ -283,7 +283,7 @@ class AccountProcedures:
         }
         self._client.request('POST', '/api/unfriend', data=data)
 
-    def trusted(self) -> Sequence[UserRelationshipItem]:
+    def trusted(self) -> Sequence[UserRelationship]:
         """Get a list of trusted users.
 
         Behaves similarly to :meth:`.blocked`.
@@ -299,7 +299,7 @@ class AccountProcedures:
             raise exceptions.OperationException('no user context')
 
         entries = root['data']['children']
-        return [load_user_relationship_item(d) for d in entries]
+        return [load_user_relationship(d) for d in entries]
 
     def add_trusted_user(self, name: str) -> None:
         """Add a user to your trusted users list.
@@ -332,7 +332,7 @@ class AccountProcedures:
         """
         self._client.request('POST', '/api/remove_whitelisted', params={'name': name})
 
-    def messaging(self) -> tuple[Sequence[UserRelationshipItem], Sequence[UserRelationshipItem]]:
+    def messaging(self) -> tuple[Sequence[UserRelationship], Sequence[UserRelationship]]:
         """Return the blocked and trusted user lists in one call.
 
         .. .RETURNS
@@ -357,6 +357,6 @@ class AccountProcedures:
         blocked_entries = root[0]['data']['children']
         trusted_entries = root[1]['data']['children']
         return (
-            [load_user_relationship_item(d) for d in blocked_entries],
-            [load_user_relationship_item(d) for d in trusted_entries],
+            [load_user_relationship(d) for d in blocked_entries],
+            [load_user_relationship(d) for d in trusted_entries],
         )

@@ -7,8 +7,8 @@ if TYPE_CHECKING:
 from operator import itemgetter
 
 from ..listing.listing_async_paginator import ListingAsyncPaginator
-from ....model_loaders.user_relationship_item import load_user_relationship_item, load_banned_user_relation_item
-from ....models.user_relationship_item import UserRelationshipItem, BannedUserRelationshipItem
+from ....model_loaders.user_relationship import load_user_relationship, load_banned_subreddit_user_relation
+from ....models.user_relationship import UserRelationship, BannedSubredditUserRelationship
 
 T = TypeVar('T')
 
@@ -22,12 +22,12 @@ class LegacyModerationUsersAsyncPaginator(ListingAsyncPaginator[T]):
         super().__init__(client, url, limit=limit, cursor_extractor=itemgetter('rel_id'))
 
 
-class UserRelationshipItemListingAsyncPaginator(LegacyModerationUsersAsyncPaginator[UserRelationshipItem]):
-    async def fetch(self) -> Sequence[UserRelationshipItem]:
+class UserRelationshipListingAsyncPaginator(LegacyModerationUsersAsyncPaginator[UserRelationship]):
+    async def fetch(self) -> Sequence[UserRelationship]:
         data = await self._fetch_data()
-        return [load_user_relationship_item(d) for d in data['children']]
+        return [load_user_relationship(d) for d in data['children']]
 
-class BannedUserRelationshipItemListingAsyncPaginator(LegacyModerationUsersAsyncPaginator[BannedUserRelationshipItem]):
-    async def fetch(self) -> Sequence[BannedUserRelationshipItem]:
+class BannedSubredditUserRelationshipListingAsyncPaginator(LegacyModerationUsersAsyncPaginator[BannedSubredditUserRelationship]):
+    async def fetch(self) -> Sequence[BannedSubredditUserRelationship]:
         data = await self._fetch_data()
-        return [load_banned_user_relation_item(d) for d in data['children']]
+        return [load_banned_subreddit_user_relation(d) for d in data['children']]

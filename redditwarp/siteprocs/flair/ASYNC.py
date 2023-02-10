@@ -69,171 +69,171 @@ class FlairProcedures:
         return CallChunkChainingAsyncIterator(itr)
 
     async def _create_or_update_flair_template(self,
-        sr_name: str,
-        *,
+        sr: str,
         flair_type: str,
+        *,
         uuid: Optional[str] = None,
         text: Optional[str] = None,
-        allowable_content: Optional[str] = None,
-        bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        fg_light_or_dark: Optional[str] = None,
-        text_editable: Optional[bool] = None,
-        max_emojis: Optional[int] = None,
+        bg_color: Optional[str] = None,
+        fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
+        user_editable: Optional[bool] = None,
+        allowable_content: Optional[str] = None,
+        max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
         d = {'flair_type': flair_type}
         for k, v in (
             ('flair_template_id', uuid),
             ('text', text),
-            ('allowable_content', allowable_content),
-            ('background_color', bg_color),
             ('css_class', css_class),
-            ('text_color', fg_light_or_dark),
-            ('text_editable', None if text_editable is None else '01'[text_editable]),
-            ('max_emojis', str(max_emojis)),
+            ('background_color', bg_color),
+            ('text_color', fg_color_scheme),
             ('mod_only', None if mod_only is None else '01'[mod_only]),
+            ('text_editable', None if user_editable is None else '01'[user_editable]),
+            ('allowable_content', allowable_content),
+            ('max_emojis', str(max_emojis)),
         ):
             if v is not None:
                 d[k] = v
-        root = await self._client.request('POST', f'/r/{sr_name}/api/flairtemplate_v2', data=d)
+        root = await self._client.request('POST', f'/r/{sr}/api/flairtemplate_v2', data=d)
         return load_variant2_flair_template(root)
 
     async def create_user_flair_template(self,
-        sr_name: str,
+        sr: str,
         *,
         text: Optional[str] = None,
-        allowable_content: Optional[str] = None,
-        bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        fg_light_or_dark: Optional[str] = None,
-        text_editable: Optional[bool] = None,
-        max_emojis: Optional[int] = None,
+        bg_color: Optional[str] = None,
+        fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
+        user_editable: Optional[bool] = None,
+        allowable_content: Optional[str] = None,
+        max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
         return await self._create_or_update_flair_template(
-            sr_name,
+            sr,
             flair_type='USER_FLAIR',
             text=text,
-            allowable_content=allowable_content,
-            bg_color=bg_color,
             css_class=css_class,
-            fg_light_or_dark=fg_light_or_dark,
-            text_editable=text_editable,
-            max_emojis=max_emojis,
+            bg_color=bg_color,
+            fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
+            user_editable=user_editable,
+            allowable_content=allowable_content,
+            max_emojis=max_emojis,
         )
 
     async def create_post_flair_template(self,
-        sr_name: str,
+        sr: str,
         *,
         text: Optional[str] = None,
-        allowable_content: Optional[str] = None,
-        bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        fg_light_or_dark: Optional[str] = None,
-        text_editable: Optional[bool] = None,
-        max_emojis: Optional[int] = None,
+        bg_color: Optional[str] = None,
+        fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
+        user_editable: Optional[bool] = None,
+        allowable_content: Optional[str] = None,
+        max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
         return await self._create_or_update_flair_template(
-            sr_name,
+            sr,
             flair_type='POST_FLAIR',
             text=text,
-            allowable_content=allowable_content,
-            bg_color=bg_color,
             css_class=css_class,
-            fg_light_or_dark=fg_light_or_dark,
-            text_editable=text_editable,
-            max_emojis=max_emojis,
+            bg_color=bg_color,
+            fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
+            user_editable=user_editable,
+            allowable_content=allowable_content,
+            max_emojis=max_emojis,
         )
 
     async def update_user_flair_template(self,
-        sr_name: str,
+        sr: str,
         uuid: str,
         *,
         text: Optional[str] = None,
-        allowable_content: Optional[str] = None,
-        bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        fg_light_or_dark: Optional[str] = None,
-        text_editable: Optional[bool] = None,
-        max_emojis: Optional[int] = None,
+        bg_color: Optional[str] = None,
+        fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
+        user_editable: Optional[bool] = None,
+        allowable_content: Optional[str] = None,
+        max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
         return await self._create_or_update_flair_template(
-            sr_name,
+            sr,
             flair_type='USER_FLAIR',
             uuid=uuid,
             text=text,
-            allowable_content=allowable_content,
-            bg_color=bg_color,
             css_class=css_class,
-            fg_light_or_dark=fg_light_or_dark,
-            text_editable=text_editable,
-            max_emojis=max_emojis,
+            bg_color=bg_color,
+            fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
+            user_editable=user_editable,
+            allowable_content=allowable_content,
+            max_emojis=max_emojis,
         )
 
     async def update_post_flair_template(self,
-        sr_name: str,
+        sr: str,
         uuid: str,
         *,
         text: Optional[str] = None,
-        allowable_content: Optional[str] = None,
-        bg_color: Optional[str] = None,
         css_class: Optional[str] = None,
-        fg_light_or_dark: Optional[str] = None,
-        text_editable: Optional[bool] = None,
-        max_emojis: Optional[int] = None,
+        bg_color: Optional[str] = None,
+        fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
+        user_editable: Optional[bool] = None,
+        allowable_content: Optional[str] = None,
+        max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
         return await self._create_or_update_flair_template(
-            sr_name,
+            sr,
             flair_type='USER_FLAIR',
             uuid=uuid,
             text=text,
-            allowable_content=allowable_content,
-            bg_color=bg_color,
             css_class=css_class,
-            fg_light_or_dark=fg_light_or_dark,
-            text_editable=text_editable,
-            max_emojis=max_emojis,
+            bg_color=bg_color,
+            fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
+            user_editable=user_editable,
+            allowable_content=allowable_content,
+            max_emojis=max_emojis,
         )
 
     async def assign_user_flair_template(self,
-        sr_name: str,
-        name: str,
-        uuid: Optional[str],
+        sr: str,
+        user: str,
+        uuid: str,
         *,
         text: Optional[str] = None,
         css_class: Optional[str] = None,
         bg_color: Optional[str] = None,
-        fg_light_or_dark: Optional[str] = None,
+        fg_color_scheme: Optional[str] = None,
     ) -> None:
-        d = {'name': name}
+        d = {'name': user}
         for k, v in (
             ('flair_template_id', uuid),
             ('text', text),
             ('css_class', css_class),
             ('background_color', bg_color),
-            ('text_color', fg_light_or_dark),
+            ('text_color', fg_color_scheme),
         ):
             if v is not None:
                 d[k] = v
-        await self._client.request('POST', f'/r/{sr_name}/api/selectflair', data=d)
+        await self._client.request('POST', f'/r/{sr}/api/selectflair', data=d)
 
     async def assign_post_flair_template(self,
-        sr_name: str,
+        sr: str,
         submission_id: int,
-        uuid: Optional[str],
+        uuid: str,
         *,
         text: Optional[str] = None,
         css_class: Optional[str] = None,
         bg_color: Optional[str] = None,
-        fg_light_or_dark: Optional[str] = None,
+        fg_color_scheme: Optional[str] = None,
     ) -> None:
         full_id36 = 't3_' + to_base36(submission_id)
         d = {'link': full_id36}
@@ -242,11 +242,11 @@ class FlairProcedures:
             ('text', text),
             ('css_class', css_class),
             ('background_color', bg_color),
-            ('text_color', fg_light_or_dark),
+            ('text_color', fg_color_scheme),
         ):
             if v is not None:
                 d[k] = v
-        await self._client.request('POST', f'/r/{sr_name}/api/selectflair', data=d)
+        await self._client.request('POST', f'/r/{sr}/api/selectflair', data=d)
 
     async def revoke_user_flair_template(self, sr_name: str, name: str) -> None:
         await self._client.request('POST', f'/r/{sr_name}/api/selectflair', data=dict(name=name))

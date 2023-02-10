@@ -19,6 +19,7 @@ class Token(Mapping[str, object]):
 
     @classmethod
     def from_dict(cls: type[_TSelf], d: Mapping[str, Any]) -> _TSelf:
+        """Create an instance from OAuth2 token data."""
         return cls(
             access_token=d['access_token'],
             token_type=d['token_type'],

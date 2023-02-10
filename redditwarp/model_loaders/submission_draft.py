@@ -4,7 +4,12 @@ from typing import Any, Mapping, Optional
 
 from datetime import datetime, timezone
 
-from ..models.submission_draft import Draft, MarkdownDraft, RichTextDraft
+from ..models.submission_draft import (
+    SubmissionDraft,
+    MarkdownTextPostDraft,
+    RichTextTextPostDraft,
+    LinkPostDraft,
+)
 
 
 normal_to_public_draft_field_names_map: Mapping[str, str] = {
@@ -26,14 +31,7 @@ normal_draft_field_names_map: Mapping[str, str] = {k: k for k, _ in normal_to_pu
 public_draft_field_names_map: Mapping[str, str] = normal_to_public_draft_field_names_map
 
 
-def _load_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
-    if d[h['kind']] == 'markdown':
-        return load_markdown_draft(d)
-    if d[h['kind']] == 'richtext':
-        return load_rich_text_draft(d)
-    raise ValueError('unknown draft type')
-
-def _xload_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
+def _xload_submission_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> SubmissionDraft:
     created_ts: float = d[h['created']] / 1000
     modified_ts: float = d[h['modified']] / 1000
 
@@ -43,17 +41,17 @@ def _xload_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
         _, _, id36 = subreddit.partition('_')
         subreddit_id = int(id36, 36)
 
-    flair: Optional[Draft.FlairInfo] = None
+    flair: Optional[SubmissionDraft.Flair] = None
     if df := d[h['flair']]:
-        flair = Draft.FlairInfo(
+        flair = SubmissionDraft.Flair(
             uuid=df['templateId'],
-            type=df['type'],
-            text_override=df['text'],
+            text_mode=df['type'],
+            text=df['text'],
             bg_color=df['backgroundColor'],
-            fg_light_or_dark=df['textColor'],
+            fg_color_scheme=df['textColor'],
         )
 
-    return Draft(
+    return SubmissionDraft(
         d=d,
         uuid=d[h['id']],
         created_at=datetime.fromtimestamp(created_ts, timezone.utc),
@@ -64,13 +62,14 @@ def _xload_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Draft:
         reply_notifications=d[h['send_replies']],
         spoiler=d[h['spoiler']],
         nsfw=d[h['nsfw']],
-        original_content=d[h['original_content']],
+        oc=d[h['original_content']],
         flair=flair,
     )
 
-def _load_markdown_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> MarkdownDraft:
-    up = xload_draft(d)
-    return MarkdownDraft(
+
+def _load_markdown_text_post_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> MarkdownTextPostDraft:
+    up = _xload_submission_draft_impl(d, h)
+    return MarkdownTextPostDraft(
         d=up.d,
         uuid=up.uuid,
         created_at=up.created_at,
@@ -81,14 +80,14 @@ def _load_markdown_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Mar
         reply_notifications=up.reply_notifications,
         spoiler=up.spoiler,
         nsfw=up.nsfw,
-        original_content=up.original_content,
+        oc=up.oc,
         flair=up.flair,
         body=d['body'],
     )
 
-def _load_rich_text_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> RichTextDraft:
-    up = xload_draft(d)
-    return RichTextDraft(
+def _load_richtext_text_post_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> RichTextTextPostDraft:
+    up = _xload_submission_draft_impl(d, h)
+    return RichTextTextPostDraft(
         d=up.d,
         uuid=up.uuid,
         created_at=up.created_at,
@@ -99,32 +98,62 @@ def _load_rich_text_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> Ri
         reply_notifications=up.reply_notifications,
         spoiler=up.spoiler,
         nsfw=up.nsfw,
-        original_content=up.original_content,
+        oc=up.oc,
         flair=up.flair,
     )
 
+def _load_link_post_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> LinkPostDraft:
+    up = _xload_submission_draft_impl(d, h)
+    return LinkPostDraft(
+        d=up.d,
+        uuid=up.uuid,
+        created_at=up.created_at,
+        modified_at=up.modified_at,
+        public=up.public,
+        subreddit_id=up.subreddit_id,
+        title=up.title,
+        reply_notifications=up.reply_notifications,
+        spoiler=up.spoiler,
+        nsfw=up.nsfw,
+        oc=up.oc,
+        flair=up.flair,
+        link=d['body'],
+    )
 
-def load_draft(d: Mapping[str, Any]) -> Draft:
-    return _load_draft_impl(d, normal_draft_field_names_map)
 
-def xload_draft(d: Mapping[str, Any]) -> Draft:
-    return _xload_draft_impl(d, normal_draft_field_names_map)
+def _load_submission_draft_impl(d: Mapping[str, Any], h: Mapping[str, str]) -> SubmissionDraft:
+    kind: str = d[h['kind']]
+    if kind == 'markdown':
+        return _load_markdown_text_post_draft_impl(d, h)
+    if kind == 'richtext':
+        return _load_richtext_text_post_draft_impl(d, h)
+    if kind == 'link':
+        return _load_link_post_draft_impl(d, h)
+    raise ValueError('unknown draft type')
 
-def load_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
-    return _load_markdown_draft_impl(d, normal_draft_field_names_map)
-
-def load_rich_text_draft(d: Mapping[str, Any]) -> RichTextDraft:
-    return _load_rich_text_draft_impl(d, normal_draft_field_names_map)
 
 
-def load_public_draft(d: Mapping[str, Any]) -> Draft:
-    return _load_draft_impl(d, public_draft_field_names_map)
+def load_submission_draft(d: Mapping[str, Any]) -> SubmissionDraft:
+    return _load_submission_draft_impl(d, normal_draft_field_names_map)
 
-def xload_public_draft(d: Mapping[str, Any]) -> Draft:
-    return _xload_draft_impl(d, public_draft_field_names_map)
+def load_markdown_text_post_draft(d: Mapping[str, Any]) -> MarkdownTextPostDraft:
+    return _load_markdown_text_post_draft_impl(d, normal_draft_field_names_map)
 
-def load_public_markdown_draft(d: Mapping[str, Any]) -> MarkdownDraft:
-    return _load_markdown_draft_impl(d, public_draft_field_names_map)
+def load_richtext_text_post_draft(d: Mapping[str, Any]) -> RichTextTextPostDraft:
+    return _load_richtext_text_post_draft_impl(d, normal_draft_field_names_map)
 
-def load_public_rich_text_draft(d: Mapping[str, Any]) -> RichTextDraft:
-    return _load_rich_text_draft_impl(d, public_draft_field_names_map)
+def load_link_post_draft(d: Mapping[str, Any]) -> LinkPostDraft:
+    return _load_link_post_draft_impl(d, normal_draft_field_names_map)
+
+
+def load_public_submission_draft(d: Mapping[str, Any]) -> SubmissionDraft:
+    return _load_submission_draft_impl(d, public_draft_field_names_map)
+
+def load_public_markdown_text_post_draft(d: Mapping[str, Any]) -> MarkdownTextPostDraft:
+    return _load_markdown_text_post_draft_impl(d, public_draft_field_names_map)
+
+def load_public_rich_text_text_post_draft(d: Mapping[str, Any]) -> RichTextTextPostDraft:
+    return _load_richtext_text_post_draft_impl(d, public_draft_field_names_map)
+
+def load_public_link_post_draft(d: Mapping[str, Any]) -> LinkPostDraft:
+    return _load_link_post_draft_impl(d, public_draft_field_names_map)

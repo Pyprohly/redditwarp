@@ -33,17 +33,34 @@ class SubmissionCollectionInfo(IArtifact):
         self.last_post_added_at: datetime = datetime.fromtimestamp(self.last_post_added_ut, timezone.utc)
 
         self.display_layout: str = d['display_layout'] or ''
+        ("""
+            Either: empty string, `TIMELINE`, or `GALLERY`.
+
+            Value is an empty string on new collections. Empty string is treated the same as `TIMELINE`.
+            """)
         self.layout: str = 'TIMELINE'
-        if self.display_layout is not None:
+        ("""
+            Either `TIMELINE` or `GALLERY`.
+
+            This is the same as the :attr:`display_layout` attribute but the empty string is changed to `TIMELINE`.
+            """)
+        if self.display_layout:
             self.layout = self.display_layout
 
         submission_full_id36s: Sequence[str] = d['link_ids']
         self.submission_id36s: Sequence[str] = [s[3:] for s in submission_full_id36s]
+        ("""
+            List of submission ID36s contained in the collection.
+            """)
         self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
+        ("""
+            List of submission IDs contained in the collection.
+            """)
 
 class SubmissionCollection(SubmissionCollectionInfo, Sequence[Submission]):
     @property
     def submissions(self) -> Sequence[Submission]:
+        """List of submission objects contained in the collection."""
         return self.__submissions
 
     def __init__(self, d: Mapping[str, Any]) -> None:

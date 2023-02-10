@@ -60,7 +60,7 @@ class HTTPClient(BaseHTTPClient):
 
 
 class RedditHTTPClient(HTTPClient):
-    """An HTTP client for making requests to the public Reddit REST API."""
+    """An HTTP client for making requests to the public Reddit API."""
 
     @property
     def authorizer(self) -> Authorizer:
@@ -81,8 +81,8 @@ class RedditHTTPClient(HTTPClient):
     def fast_set_authorizer(self, value: Optional[Authorizer]) -> None:
         """Changes the value of `self.authorizer`.
 
-        Note, this attribute is just a holder and changing its value will not
-        change the underlying authorizer.
+        Note, the :attr:`authorizer` attribute is just a holder and changing
+        its value will not change the underlying authorizer.
         """
         self._authorizer = value
 

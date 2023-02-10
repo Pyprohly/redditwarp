@@ -197,10 +197,10 @@ def load_post_flair_widget(d: Mapping[str, Any]) -> PostFlairWidget:
         PostFlairWidgetItem(
             d=m,
             uuid=m['templateId'],
-            type=m['type'],
+            text_mode=m['type'],
             text=m['text'],
             bg_color=m['backgroundColor'],
-            fg_light_or_dark=m['textColor'],
+            fg_color_scheme=m['textColor'],
         )
         for m in d['templates']
     ]
@@ -261,11 +261,13 @@ def load_moderator_list_widget(d: Mapping[str, Any]) -> ModeratorListWidget:
     mods = [
         ModeratorInfo(
             name=m['name'],
-            flair_type=m['authorFlairType'],
-            flair_text=m['authorFlairText'] or '',
-            flair_fg_light_or_dark=m['authorFlairTextColor'],
-            flair_bg_color=m['authorFlairBackgroundColor'],
-            flair_has_had_flair=m['authorFlairText'] is not None,
+            flair=ModeratorInfo.Flair(
+                text_mode=m['authorFlairType'],
+                text=m['authorFlairText'] or '',
+                bg_color=m['authorFlairBackgroundColor'],
+                fg_color_scheme=m['authorFlairTextColor'],
+                has_had_flair_assigned_before_in_subreddit=m['authorFlairText'] is not None,
+            ),
         )
         for m in d.get('mods', ())
     ]

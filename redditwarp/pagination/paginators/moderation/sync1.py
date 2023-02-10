@@ -21,7 +21,7 @@ from .pull_users_sync1 import (  # noqa: F401
     MutedUsersPaginator as MutedUsersPaginator,
 )
 from .legacy_pull_users_sync1 import (  # noqa: F401
-    UserRelationshipItemListingPaginator as UserRelationshipItemListingPaginator,
-    BannedUserRelationshipItemListingPaginator as BannedUserRelationshipItemListingPaginator,
+    UserRelationshipListingPaginator as UserRelationshipListingPaginator,
+    BannedSubredditUserRelationshipListingPaginator as BannedSubredditUserRelationshipListingPaginator,
 )
 from .pull_actions_sync1 import ModerationActionLogPaginator as ModerationActionLogPaginator  # noqa: F401

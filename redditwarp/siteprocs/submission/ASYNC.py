@@ -43,14 +43,14 @@ class SubmissionProcedures:
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
 
-    async def reply(self, submission_id: int, text: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+    async def reply(self, submission_id: int, body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
         def g() -> Iterable[tuple[str, str]]:
             yield ('thing_id', 't3_' + to_base36(submission_id))
             yield ('return_rtjson', '1')
-            if isinstance(text, str):
-                yield ('text', text)
+            if isinstance(body, str):
+                yield ('text', body)
             else:
-                yield ('richtext_json', json.dumps(text))
+                yield ('richtext_json', json.dumps(body))
 
         result = await self._client.request('POST', '/api/comment', files=dict(g()))
         return load_comment(result, self._client)
@@ -107,12 +107,12 @@ class SubmissionProcedures:
     async def create_text_post(self,
         sr: str,
         title: str,
-        text: Union[str, Mapping[str, JSON_ro]],
+        body: Union[str, Mapping[str, JSON_ro]],
         *,
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        original_content: bool = False,
+        oc: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -124,14 +124,14 @@ class SubmissionProcedures:
             yield ('kind', 'self')
             yield ('sr', sr)
             yield ('title', title)
-            if isinstance(text, str):
-                yield ('text', text)
+            if isinstance(body, str):
+                yield ('text', body)
             else:
-                yield ('richtext_json', json.dumps(text))
+                yield ('richtext_json', json.dumps(body))
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if original_content: yield ('original_content', '1')
+            if oc: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -150,7 +150,7 @@ class SubmissionProcedures:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        original_content: bool = False,
+        oc: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -168,7 +168,7 @@ class SubmissionProcedures:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if original_content: yield ('original_content', '1')
+            if oc: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -187,7 +187,7 @@ class SubmissionProcedures:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        original_content: bool = False,
+        oc: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -203,7 +203,7 @@ class SubmissionProcedures:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if original_content: yield ('original_content', '1')
+            if oc: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -222,7 +222,7 @@ class SubmissionProcedures:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        original_content: bool = False,
+        oc: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -240,7 +240,7 @@ class SubmissionProcedures:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if original_content: yield ('original_content', '1')
+            if oc: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -258,7 +258,7 @@ class SubmissionProcedures:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        original_content: bool = False,
+        oc: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -282,7 +282,7 @@ class SubmissionProcedures:
             yield ('sendreplies', reply_notifications)
             if spoiler: yield ('spoiler', True)
             if nsfw: yield ('nsfw', True)
-            if original_content: yield ('original_content', True)
+            if oc: yield ('original_content', True)
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)
@@ -337,7 +337,7 @@ class SubmissionProcedures:
         reply_notifications: bool = True,
         spoiler: bool = False,
         nsfw: bool = False,
-        original_content: bool = False,
+        oc: bool = False,
         collection_uuid: str = '',
         flair_uuid: str = '',
         flair_text: str = '',
@@ -353,7 +353,7 @@ class SubmissionProcedures:
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')
-            if original_content: yield ('original_content', '1')
+            if oc: yield ('original_content', '1')
             if collection_uuid: yield ('collection_id', collection_uuid)
             if flair_uuid: yield ('flair_id', flair_uuid)
             if flair_text: yield ('flair_text', flair_text)

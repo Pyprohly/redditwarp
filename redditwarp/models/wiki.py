@@ -8,10 +8,11 @@ from datetime import datetime, timezone
 from .artifact import IArtifact
 
 
-# WikiPageRevisionAuthorUser is pretty much the same as User except the
-# `awardee_karma`, `awarder_karma`, `total_karma` fields are missing.
-
 class WikiPageRevisionAuthorUser(IArtifact):
+    """
+    This class is pretty much the same as :class:`~.models.User` except
+    the `awardee_karma`, `awarder_karma`, `total_karma` fields are missing.
+    """
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]) -> None:
             d = d['subreddit']
@@ -31,9 +32,9 @@ class WikiPageRevisionAuthorUser(IArtifact):
         self.d: Mapping[str, Any] = d
         self.id36: str = d['id']
         self.id: int = int(self.id36, 36)
+        self.name: str = d['name']
         self.created_ut: int = int(d['created_utc'])
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
-        self.name: str = d['name']
 
         self.post_karma: int = d['link_karma']
         self.comment_karma: int = d['comment_karma']
@@ -54,24 +55,79 @@ class WikiPageRevisionAuthorUser(IArtifact):
 class WikiPage(IArtifact):
     d: Mapping[str, Any]
     body: str
+    ("""
+        The wiki page markdown content.
+        """)
     body_html: str
+    ("""
+        The wiki page content as HTML.
+        """)
     can_revise: bool
+    ("""
+        True if the current user may edit the wiki page.
+        """)
     revision_uuid: str
+    ("""
+        The current revision UUID.
+        """)
     revision_unixtime: int
+    ("""
+        UNIX timestamp of when the current revision was commited.
+        """)
     revision_author: WikiPageRevisionAuthorUser
+    ("""
+        Author of the revision.
+        """)
     revision_message: str
+    ("""
+        The current revision message.
+
+        Up to 256 characters long.
+        """)
 
 @dataclass(repr=False, eq=False, frozen=True)
 class WikiPageRevision(IArtifact):
     d: Mapping[str, Any]
     uuid: str
+    ("""
+        Revision UUID.
+        """)
     unixtime: int
+    ("""
+        UNIX timestamp of when the current revision was commited.
+        """)
     author: WikiPageRevisionAuthorUser
+    ("""
+        Author of the revision.
+        """)
     message: str
+    ("""
+        Revision message.
+
+        Up to 256 characters long.
+        """)
     hidden: bool
+    ("""
+        True if the revision is hidden.
+        """)
 
 @dataclass(repr=False, eq=False, frozen=True)
 class WikiPageSettings:
     permlevel: int
+    ("""
+        Permission level indicating who can edit this wiki page.
+
+        "who can edit this page?"
+
+        `0`: "use subreddit wiki permissions"
+        `1`: "only approved wiki contributors for this page may edit"
+        `2`: "only mods may edit and view"
+        """)
     editors: Sequence[WikiPageRevisionAuthorUser]
-    unlisted: bool
+    ("""
+        List of users allowed to edit this page.
+        """)
+    indexed: bool
+    ("""
+        Whether this wiki page is indexed on the wiki page list.
+        """)

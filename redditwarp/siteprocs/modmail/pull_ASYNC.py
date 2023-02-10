@@ -42,6 +42,10 @@ class Pull:
             ) -> ImpartedPaginatorChainingAsyncIterator[ModmailConversationMessageAsyncPaginator, tuple[ConversationInfo, Message]]:
         return self._mailbox('archived', amount=amount, subreddit_names=subreddit_names, sort=sort)
 
+    def filtered(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
+            ) -> ImpartedPaginatorChainingAsyncIterator[ModmailConversationMessageAsyncPaginator, tuple[ConversationInfo, Message]]:
+        return self._mailbox('filtered', amount=amount, subreddit_names=subreddit_names, sort=sort)
+
     def appeals(self, amount: Optional[int] = None, *, subreddit_names: Sequence[str] = (), sort: str = '',
             ) -> ImpartedPaginatorChainingAsyncIterator[ModmailConversationMessageAsyncPaginator, tuple[ConversationInfo, Message]]:
         return self._mailbox('appeals', amount=amount, subreddit_names=subreddit_names, sort=sort)

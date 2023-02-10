@@ -5,9 +5,10 @@ from typing import Any, Mapping, Optional
 from functools import cached_property
 from datetime import datetime, timezone
 
-class UserRelationshipItem:
+class UserRelationship:
     @cached_property
     def added_at(self) -> datetime:
+        """Datetime object of when the relationship was created."""
         return datetime.fromtimestamp(self.added_ut, timezone.utc)
 
     def __init__(self, d: Mapping[str, Any]) -> None:
@@ -15,19 +16,39 @@ class UserRelationshipItem:
         full_id36: str = d['id']
         _, _, id36 = full_id36.partition('_')
         self.id36: str = id36
+        ("""
+            User ID as a base 36 number.
+            """)
         self.id: int = int(id36, 36)
+        ("""
+            User ID.
+            """)
         self.name: str = d['name']
+        ("""
+            Username.
+            """)
         #self.rel_id: str = d['rel_id']
         self.added_ut: int = int(d['date'])
+        ("""
+            UNIX timestamp of when the relationship was created.
+            """)
 
-class FriendRelationshipItem(UserRelationshipItem):
+class FriendRelationship(UserRelationship):
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
-        # Need premium to test this
-        #self.note: Optional[str] = d['note']
+        # Need Reddit Premium to test this
+        # self.note: str = d['note'] or ''
 
-class BannedUserRelationshipItem(UserRelationshipItem):
+class BannedSubredditUserRelationship(UserRelationship):
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.days_remaining: Optional[int] = d['days_left']
-        self.detail: str = d['note']
+        ("""
+            Number of days until the ban is lifted.
+
+            Value `None` if the ban is permanent.
+            """)
+        self.reason: str = d['note']
+        ("""
+            Ban reason.
+            """)

@@ -18,6 +18,15 @@ class CommentMessageCause(Enum):
 class MailboxMessage(IArtifact):
     d: Mapping[str, Any]
     subject: str
+    ("""
+        Subject of the message.
+
+        If a comment message (i.e., :class:`CommentMessage`) then the value will be:
+
+        * `comment reply` if a comment reply.
+        * `post reply` if a post reply.
+        * `username mention` if a username mention.
+        """)
     author_name: str
     unread: bool
 
@@ -25,16 +34,61 @@ class MailboxMessage(IArtifact):
 class ComposedMessage(MailboxMessage):
     id: int
     unixtime: int
+    ("""
+        Unix timestamp of when the composed message was sent.
+        """)
     datetime: DateTime
+    ("""
+        A datetime object of when the composed message was sent.
+        """)
     body: str
+    ("""
+        The message content.
+        """)
     body_html: str
+    ("""
+        The message content as HTML.
+        """)
     unread: bool
+    ("""
+        Whether the message is new.
+        """)
     distinguished: str
-    source_user_name: str
-    source_subreddit_name: str
-    destination_user_name: str
-    destination_subreddit_name: str
-    source_user_id: int
+    ("""
+        Either: `moderator`, `admin`, `gold-auto`, or empty string.
+
+        Empty string if not distinguished.
+        """)
+    src_user_name: str
+    ("""
+        Name of the user who sent the message.
+
+        Empty string if the message came from a subreddit.
+        """)
+    src_subr_name: str
+    ("""
+        Name of the subreddit in which the message was sent.
+
+        Empty string if the message came from a user.
+        """)
+    dst_user_name: str
+    ("""
+        Username of the recipient.
+
+        Empty string if the message was sent to a subreddit.
+        """)
+    dst_subr_name: str
+    ("""
+        Name of the subreddit in which the message was sent to.
+
+        Empty string if the message was sent to a user.
+        """)
+    src_user_id: int
+    ("""
+        ID of the user who sent the message.
+
+        Value is `-1` if the message came from a subreddit.
+        """)
 
 @dataclass(repr=False, eq=False)
 class CommentMessage(MailboxMessage):

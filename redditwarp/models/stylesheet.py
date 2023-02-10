@@ -6,10 +6,13 @@ from dataclasses import dataclass
 
 @dataclass
 class StylesheetImage:
-    url: str
     name: str
+    url: str
 
 @dataclass(repr=False, eq=False)
 class StylesheetInfo:
     content: str
+    ("""
+        The CSS content.
+        """)
     images: Sequence[StylesheetImage]

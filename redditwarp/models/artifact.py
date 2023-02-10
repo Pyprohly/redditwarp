@@ -9,8 +9,8 @@ from ..util.attribute_mapping_proxy import DictAndListRecursiveAttributeMappingP
 class Artifact:
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
-        self.a: DataMembersNamespaceMapping = DataMembersNamespaceMapping(self)
         self.b: DictAndListRecursiveAttributeMappingProxy[Any] = DictAndListRecursiveAttributeMappingProxy(d)
+        self.a: DataMembersNamespaceMapping = DataMembersNamespaceMapping(self)
 
 class IArtifact:
     d: Mapping[str, Any]

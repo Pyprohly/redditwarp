@@ -5,17 +5,17 @@ if TYPE_CHECKING:
     from ....client_SYNC import Client
 
 from ...paginator import HasMorePaginator, Bidirectional, CursorPaginator
-from ....models.subreddit_user_item import (
-    ModeratorUserItem,
-    ApprovedUserItem,
-    BannedUserItem,
-    MutedUserItem,
+from ....models.subreddit_user import (
+    Moderator,
+    ApprovedUser,
+    BannedUser,
+    MutedUser,
 )
-from ....model_loaders.subreddit_user_item import (
-    load_moderator_user_item,
-    load_approved_user_item,
-    load_banned_user_item,
-    load_muted_user_item,
+from ....model_loaders.subreddit_user import (
+    load_moderator,
+    load_approved_user,
+    load_banned_user,
+    load_muted_user,
 )
 
 T = TypeVar('T')
@@ -77,30 +77,30 @@ class ModerationUsersPaginator(HasMorePaginator[T], Bidirectional, CursorPaginat
         return root
 
 
-class ModeratorsPaginator(ModerationUsersPaginator[ModeratorUserItem]):
-    def fetch(self) -> Sequence[ModeratorUserItem]:
+class ModeratorsPaginator(ModerationUsersPaginator[Moderator]):
+    def fetch(self) -> Sequence[Moderator]:
         root = self._fetch_data()
         order = root['moderatorIds']
         object_map = root['moderators']
-        return [load_moderator_user_item(object_map[full_id36]) for full_id36 in order]
+        return [load_moderator(object_map[full_id36]) for full_id36 in order]
 
-class ApprovedUsersPaginator(ModerationUsersPaginator[ApprovedUserItem]):
-    def fetch(self) -> Sequence[ApprovedUserItem]:
+class ApprovedUsersPaginator(ModerationUsersPaginator[ApprovedUser]):
+    def fetch(self) -> Sequence[ApprovedUser]:
         root = self._fetch_data()
         order = root['approvedSubmitterIds']
         object_map = root['approvedSubmitters']
-        return [load_approved_user_item(object_map[full_id36]) for full_id36 in order]
+        return [load_approved_user(object_map[full_id36]) for full_id36 in order]
 
-class BannedUsersPaginator(ModerationUsersPaginator[BannedUserItem]):
-    def fetch(self) -> Sequence[BannedUserItem]:
+class BannedUsersPaginator(ModerationUsersPaginator[BannedUser]):
+    def fetch(self) -> Sequence[BannedUser]:
         root = self._fetch_data()
         order = root['bannedUserIds']
         object_map = root['bannedUsers']
-        return [load_banned_user_item(object_map[full_id36]) for full_id36 in order]
+        return [load_banned_user(object_map[full_id36]) for full_id36 in order]
 
-class MutedUsersPaginator(ModerationUsersPaginator[MutedUserItem]):
-    def fetch(self) -> Sequence[MutedUserItem]:
+class MutedUsersPaginator(ModerationUsersPaginator[MutedUser]):
+    def fetch(self) -> Sequence[MutedUser]:
         root = self._fetch_data()
         order = root['mutedUserIds']
         object_map = root['mutedUsers']
-        return [load_muted_user_item(object_map[full_id36]) for full_id36 in order]
+        return [load_muted_user(object_map[full_id36]) for full_id36 in order]

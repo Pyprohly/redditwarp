@@ -16,16 +16,16 @@ def load_mailbox_message(d: Mapping[str, Any]) -> MailboxMessage:
     )
 
 def load_composed_message(d: Mapping[str, Any]) -> ComposedMessage:
-    source_user_name: str = d['author'] or ''
-    source_subreddit_name: str = ''
-    destination_user_name: str = ''
-    destination_subreddit_name: str = ''
+    src_user_name: str = d['author'] or ''
+    src_subr_name: str = ''
+    dst_user_name: str = ''
+    dst_subr_name: str = ''
     dest: str = d['dest']
     if dest.startswith('#'):
-        destination_subreddit_name = dest.lstrip('#')
+        dst_subr_name = dest.lstrip('#')
     else:
-        source_subreddit_name = d['subreddit'] or ''
-        destination_user_name = dest
+        src_subr_name = d['subreddit'] or ''
+        dst_user_name = dest
 
     up = load_mailbox_message(d)
     return ComposedMessage(
@@ -39,18 +39,18 @@ def load_composed_message(d: Mapping[str, Any]) -> ComposedMessage:
         body=d['body'],
         body_html=d['body_html'],
         distinguished=d['distinguished'] or '',
-        source_user_name=source_user_name,
-        source_subreddit_name=source_subreddit_name,
-        destination_user_name=destination_user_name,
-        destination_subreddit_name=destination_subreddit_name,
-        source_user_id=(
+        src_user_name=src_user_name,
+        src_subr_name=src_subr_name,
+        dst_user_name=dst_user_name,
+        dst_subr_name=dst_subr_name,
+        src_user_id=(
             int(x.partition('_')[2], 36)
             if (x := d['author_fullname']) else
             {
                 '': -1,
                 'reddit': 81524,
                 'welcomebot': 404087392163,
-            }[source_user_name]
+            }[src_user_name]
         ),
     )
 

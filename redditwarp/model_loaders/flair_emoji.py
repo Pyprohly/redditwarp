@@ -23,10 +23,10 @@ def load_flair_emoji(d: Mapping[str, Any], name: str) -> FlairEmoji:
     return FlairEmoji(
         d=d,
         name=name,
-        creator_id36=id36,
-        creator_id=int(id36, 36),
         image_url=d['url'],
-        mod_only=d['mod_flair_only'],
+        creator_id=int(id36, 36),
+        creator_id36=id36,
         post_enabled=d['post_flair_allowed'],
         user_enabled=d['user_flair_allowed'],
+        mod_only=d['mod_flair_only'],
     )

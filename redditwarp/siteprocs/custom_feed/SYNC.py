@@ -29,7 +29,7 @@ class CustomFeedProcedures:
             raise
         return load_custom_feed(root['data'], self._client)
 
-    def list_created(self, user: str = '') -> Sequence[CustomFeed]:
+    def retrieve(self, user: str = '') -> Sequence[CustomFeed]:
         url = '/api/multi/mine'
         if user:
             url = f'/api/multi/user/{user}'
@@ -80,7 +80,7 @@ class CustomFeedProcedures:
     def delete(self, user: str, feed: str) -> None:
         self._client.request('DELETE', f'/api/multi/user/{user}/m/{feed}')
 
-    def duplicate(self, from_user: str, from_feed: str, to_user: str, to_feed: str, *,
+    def copy(self, from_user: str, from_feed: str, to_user: str, to_feed: str, *,
             title: Optional[str] = None, description: Optional[str] = None) -> CustomFeed:
         data = {
             'from': f'/user/{from_user}/m/{from_feed}',

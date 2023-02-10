@@ -33,6 +33,43 @@ class Authorizer:
 
     The `Authorizer` keeps token information and knows how to renew the token
     when it expires and how to prepare a requisition.
+
+    .. .ATTRIBUTES
+
+    .. attribute:: token_client
+       :type: Optional[TokenObtainmentClient]
+
+       The token obtainment client used to make the token obtainment requests.
+
+    .. attribute:: token
+       :type: Optional[Token]
+
+       Holds the current token information.
+
+    .. attribute:: renewal_time
+       :type: Optional[float]
+
+       The time at which the token is expected to expire. See :meth:`.time`.
+
+    .. attribute:: renewal_skew
+       :type: float
+
+       The number of seconds before the token expiration when the token should be renewed.
+
+    .. attribute:: expires_in_fallback
+       :type: Optional[int]
+
+       A fallback value for the token expiration time when not specified by the server.
+
+    .. attribute:: time_func
+       :type: Callable[[], float]
+
+       A function that returns the current time. The :meth:`time` method calls this this function.
+
+    .. attribute:: authorization_header_name
+       :type: str
+
+       Name of the `Authorization` header. Use this attribute to change its capitalization.
     """
 
     def __init__(self,
@@ -51,24 +88,28 @@ class Authorizer:
         return self.token_client is not None
 
     def fetch_token_client(self) -> TokenObtainmentClient:
+        """Return `.token_client`. Raise `RuntimeError` if not set."""
         v = self.token_client
         if v is None:
             raise RuntimeError('token client not set')
         return v
 
     def set_token_client(self, value: Optional[TokenObtainmentClient]) -> None:
+        """Set `.token_client`."""
         self.token_client = value
 
     def has_token(self) -> bool:
         return self.token is not None
 
     def fetch_token(self) -> Token:
+        """Return `.token`. Raise `RuntimeError` if not set."""
         v = self.token
         if v is None:
             raise RuntimeError('token not set')
         return v
 
     def set_token(self, value: Optional[Token]) -> None:
+        """Set `.token`."""
         self.token = value
 
     def renew_token(self) -> None:
@@ -77,7 +118,7 @@ class Authorizer:
         .. RAISES
 
         :raises RuntimeError:
-            There is no token client set.
+            No token client (:attr:`token_client`) is set.
         """
         tc = self.fetch_token_client()
         tk = tc.fetch_token()
@@ -103,9 +144,11 @@ class Authorizer:
                 tc.grant = {**grant1, 'refresh_token': tk.refresh_token}
 
     def time(self) -> float:
+        """Return the current internal time. This is used for :attr:`renewal_time`."""
         return self.time_func()
 
     def should_renew_token(self) -> bool:
+        """Return true if the token is expired, about to expire, or is unset."""
         if not self.has_token():
             return True
         if self.renewal_time is None:
@@ -113,9 +156,11 @@ class Authorizer:
         return self.time() >= self.renewal_time
 
     def can_renew_token(self) -> bool:
+        """The token can be renewed if a token client (:attr:`token_client`) is available."""
         return self.has_token_client()
 
     def prepare_requisition(self, requisition: Requisition) -> None:
+        """Prepare a requisition for authorization using the token (:attr:`token`)."""
         prepare_requisition(requisition, self.fetch_token(), authorization_header_name=self.authorization_header_name)
 
 

@@ -20,7 +20,7 @@ def load_conversation_info(d: Mapping[str, Any], client: Client) -> Conversation
 def load_message(d: Mapping[str, Any], client: Client) -> Message:
     return Message(d, client)
 
-def load_modmail_mod_action(d: Mapping[str, Any]) -> ModAction:
+def load_mod_action(d: Mapping[str, Any]) -> ModAction:
     return ModAction(d)
 
 def load_user_dossier(d: Mapping[str, Any]) -> UserDossier:
@@ -52,7 +52,7 @@ def load_conversation_aggregate(
             messages.append(convo_obj)
         elif key == 'modActions':
             mod_action_data = mod_actions_mapping_data[id36]
-            convo_obj = load_modmail_mod_action(mod_action_data)
+            convo_obj = load_mod_action(mod_action_data)
             mod_actions.append(convo_obj)
 
         if convo_obj is None:
@@ -88,7 +88,7 @@ def load_user_dossier_conversation_aggregate(
             messages.append(convo_obj)
         elif key == 'modActions':
             mod_action_data = mod_actions_mapping_data[id36]
-            convo_obj = load_modmail_mod_action(mod_action_data)
+            convo_obj = load_mod_action(mod_action_data)
             mod_actions.append(convo_obj)
 
         if convo_obj is None:
@@ -126,7 +126,7 @@ def load_optional_user_dossier_conversation_aggregate(
             messages.append(convo_obj)
         elif key == 'modActions':
             mod_action_data = mod_actions_mapping_data[id36]
-            convo_obj = load_modmail_mod_action(mod_action_data)
+            convo_obj = load_mod_action(mod_action_data)
             mod_actions.append(convo_obj)
 
         if convo_obj is None:

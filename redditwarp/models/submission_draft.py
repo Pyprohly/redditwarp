@@ -9,47 +9,106 @@ from .artifact import IArtifact
 from .subreddit import Subreddit
 
 @dataclass(repr=False, eq=False)
-class Draft(IArtifact):
+class SubmissionDraft(IArtifact):
+    """
+    A public draft link is of the following format:
+
+    `https://www.reddit.com/user/{USERNAME}/draft/{self.uuid}`
+    """
     @dataclass(repr=False, eq=False)
-    class FlairInfo:
-        uuid: str = ''
-        type: str = ''
-        text_override: str = ''
-        bg_color: str = ''
-        fg_light_or_dark: str = ''
+    class Flair:
+        uuid: str
+        ("""
+            The chosen flair template UUID.
+            """)
+        text_mode: str
+        ("""
+            Either `text` or `richtext`.
+            """)
+        text: str
+        ("""
+            Flair text.
+            """)
+        bg_color: str
+        ("""
+            Reminder: cannot be an empty string since this is isn't a user flair.
+            """)
+        fg_color_scheme: str
+        ("""
+            Either `dark` or `light`.
+            """)
 
     d: Mapping[str, Any]
     uuid: str
     created_at: datetime
+    ("""
+        Datetime object of when the draft was created.
+        """)
     modified_at: datetime
+    ("""
+        Datetime object of when the draft was last modified.
+        """)
     public: bool
+    ("""
+        Whether the draft is public.
+
+        Only those with the link can find the draft.
+        """)
     subreddit_id: Optional[int]
+    ("""
+        The ID36 of the target subreddit.
+
+        Value is null if not chosen yet.
+        """)
     title: str
     reply_notifications: bool
     spoiler: bool
     nsfw: bool
-    original_content: bool
-    flair: Optional[FlairInfo]
+    oc: bool
+    ("""
+        Whether the post should be marked as 'original content'.
+        """)
+    flair: Optional[Flair]
+    ("""
+        A flair option from the target subreddit.
+
+        Value `None` if no flair selected.
+        """)
+
+
+class TextPostDraft(SubmissionDraft):
+    pass
 
 @dataclass(repr=False, eq=False)
-class MarkdownDraft(Draft):
+class MarkdownTextPostDraft(TextPostDraft):
     body: str
+    ("""
+        The body text of the submission draft. In markdown format.
+        """)
 
-@dataclass(repr=False, eq=False)
-class RichTextDraft(Draft):
+class RichTextTextPostDraft(TextPostDraft):
     pass
 
 
-class DraftList(Sequence[Draft]):
+@dataclass(repr=False, eq=False)
+class LinkPostDraft(SubmissionDraft):
+    link: str
+    ("""
+        The linked URL.
+        """)
+
+
+
+class SubmissionDraftList(Sequence[SubmissionDraft]):
     @property
     def subreddits(self) -> Sequence[Subreddit]:
         return self.__subreddits
 
     def __init__(self,
-        drafts: Sequence[Draft],
+        drafts: Sequence[SubmissionDraft],
         subreddits: Sequence[Subreddit],
     ) -> None:
-        self.drafts: Sequence[Draft] = drafts
+        self.drafts: Sequence[SubmissionDraft] = drafts
         self.__subreddits: Sequence[Subreddit] = subreddits
 
     def __len__(self) -> int:
@@ -58,12 +117,12 @@ class DraftList(Sequence[Draft]):
     def __contains__(self, item: object) -> bool:
         return item in self.drafts
 
-    def __iter__(self) -> Iterator[Draft]:
+    def __iter__(self) -> Iterator[SubmissionDraft]:
         return iter(self.drafts)
 
     @overload
-    def __getitem__(self, index: int) -> Draft: ...
+    def __getitem__(self, index: int) -> SubmissionDraft: ...
     @overload
-    def __getitem__(self, index: slice) -> Sequence[Draft]: ...
-    def __getitem__(self, index: Union[int, slice]) -> Union[Draft, Sequence[Draft]]:
+    def __getitem__(self, index: slice) -> Sequence[SubmissionDraft]: ...
+    def __getitem__(self, index: Union[int, slice]) -> Union[SubmissionDraft, Sequence[SubmissionDraft]]:
         return self.drafts[index]

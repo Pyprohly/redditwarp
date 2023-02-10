@@ -5,9 +5,13 @@ from dataclasses import dataclass
 
 @dataclass(repr=False, eq=False)
 class ModeratorInfo:
+    @dataclass(repr=False, eq=False)
+    class Flair:
+        text_mode: str
+        text: str
+        bg_color: str
+        fg_color_scheme: str
+        has_had_flair_assigned_before_in_subreddit: bool
+
     name: str
-    flair_type: str
-    flair_text: str
-    flair_fg_light_or_dark: str
-    flair_bg_color: str
-    flair_has_had_flair: bool
+    flair: Flair

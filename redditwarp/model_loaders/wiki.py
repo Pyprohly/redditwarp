@@ -41,5 +41,5 @@ def load_wiki_page_settings(d: Mapping[str, Any]) -> WikiPageSettings:
     return WikiPageSettings(
         permlevel=d['permlevel'],
         editors=[load_wiki_page_revision_author_user(m['data']) for m in d['editors']],
-        unlisted=not d['listed'],
+        indexed=d['listed'],
     )

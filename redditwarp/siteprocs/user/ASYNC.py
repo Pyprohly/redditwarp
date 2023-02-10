@@ -59,6 +59,8 @@ class UserProcedures:
 
     async def moderated_subreddits(self, user: str) -> Sequence[ModeratedSubreddit]:
         root = await self._client.request('GET', f'/user/{user}/moderated_subreddits')
+        if not root:
+            return ()
         return [load_moderated_subreddit(d) for d in root['data']]
 
     def search(self, query: str, amount: Optional[int] = None,

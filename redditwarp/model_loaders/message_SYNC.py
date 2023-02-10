@@ -23,11 +23,11 @@ def load_composed_message(d: Mapping[str, Any], client: Client) -> ComposedMessa
         body=up.body,
         body_html=up.body_html,
         distinguished=up.distinguished,
-        source_user_name=up.source_user_name,
-        source_subreddit_name=up.source_subreddit_name,
-        destination_user_name=up.destination_user_name,
-        destination_subreddit_name=up.destination_subreddit_name,
-        source_user_id=up.source_user_id,
+        src_user_name=up.src_user_name,
+        src_subr_name=up.src_subr_name,
+        dst_user_name=up.dst_user_name,
+        dst_subr_name=up.dst_subr_name,
+        src_user_id=up.src_user_id,
         client=client,
     )
 

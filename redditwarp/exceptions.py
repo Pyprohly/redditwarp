@@ -79,25 +79,28 @@ class APIError(OperationException):
     """A formal API error."""
 
 class RedditError(APIError):
-    """
+    """A Reddit error.
 
     Errors from Reddit's API typically consist of three pieces of information:
     an error label, an explanation, and the name of a related parameter field.
 
-    .. ATTRIBUTES
+    .. .ATTRIBUTES
 
     .. # attribute:: label
+       :type: str
 
        A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
        In rare cases this label may not always be in uppercase. It can even contain spaces.
        The value may be an empty string.
 
     .. # attribute:: explanation
+       :type: str
 
        A description for the error.
        The value may be an empty string.
 
     .. # attribute:: field
+       :type: str
 
        The name of the parameter relevant to the error, if applicable.
        The value may be an empty string.

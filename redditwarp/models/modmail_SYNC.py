@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Mapping, Any, Sequence, Optional
 if TYPE_CHECKING:
     from ..client_SYNC import Client
 
+from dataclasses import dataclass
+
 from .modmail import (
     ConversationInfo as BaseConversationInfo,
     Message as BaseMessage,
@@ -41,22 +43,17 @@ class UserDossier(BaseUserDossier):
     pass
 
 
+@dataclass(repr=False, eq=False, frozen=True)
 class ConversationAggregate(BaseConversationAggregate):
-    conversation: ConversationInfo
+    info: ConversationInfo
     messages: Sequence[Message]
     mod_actions: Sequence[ModAction]
     history: Sequence[object]
 
-class UserDossierConversationAggregate(BaseUserDossierConversationAggregate):
-    conversation: ConversationInfo
-    messages: Sequence[Message]
-    mod_actions: Sequence[ModAction]
-    history: Sequence[object]
+@dataclass(repr=False, eq=False, frozen=True)
+class UserDossierConversationAggregate(ConversationAggregate, BaseUserDossierConversationAggregate):
     user_dossier: UserDossier
 
-class OptionalUserDossierConversationAggregate(BaseOptionalUserDossierConversationAggregate):
-    conversation: ConversationInfo
-    messages: Sequence[Message]
-    mod_actions: Sequence[ModAction]
-    history: Sequence[object]
+@dataclass(repr=False, eq=False, frozen=True)
+class OptionalUserDossierConversationAggregate(ConversationAggregate, BaseOptionalUserDossierConversationAggregate):
     user_dossier: Optional[UserDossier]

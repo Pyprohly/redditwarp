@@ -3,21 +3,21 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterable, Optional, Mapping
 if TYPE_CHECKING:
     from ...client_SYNC import Client
-    from ...models.subreddit_user_item import (
-        ModeratorUserItem,
-        ApprovedUserItem,
-        BannedUserItem,
-        MutedUserItem,
+    from ...models.subreddit_user import (
+        Moderator,
+        ApprovedUser,
+        BannedUser,
+        MutedUser,
     )
     from ...models.moderation_action_log_entry import ModerationActionLogEntry
 
 from functools import cached_property
 
-from ...model_loaders.subreddit_user_item import (
-    load_moderator_user_item,
-    load_approved_user_item,
-    load_banned_user_item,
-    load_muted_user_item,
+from ...model_loaders.subreddit_user import (
+    load_moderator,
+    load_approved_user,
+    load_banned_user,
+    load_muted_user,
 )
 from .pull_users_SYNC import PullUsers
 from .legacy_SYNC import Legacy
@@ -42,41 +42,41 @@ class ModerationProcedures:
         return ImpartedPaginatorChainingIterator(p, amount)
 
 
-    def get_moderator(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
+    def get_moderator(self, sr: str, user: str) -> Optional[Moderator]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators', params={'username': user})
         order = root['moderatorIds']
         object_map = root['moderators']
-        return load_moderator_user_item(object_map[order[0]]) if order else None
+        return load_moderator(object_map[order[0]]) if order else None
 
-    def get_moderator_invitation(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
+    def get_moderator_invitation(self, sr: str, user: str) -> Optional[Moderator]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators_invited', params={'username': user})
         order = root['moderatorIds']
         object_map = root['moderators']
-        return load_moderator_user_item(object_map[order[0]]) if order else None
+        return load_moderator(object_map[order[0]]) if order else None
 
-    def get_editable_moderator(self, sr: str, user: str) -> Optional[ModeratorUserItem]:
+    def get_editable_moderator(self, sr: str, user: str) -> Optional[Moderator]:
         root = self._client.request('GET', f'/api/v1/{sr}/moderators_editable', params={'username': user})
         order = root['moderatorIds']
         object_map = root['moderators']
-        return load_moderator_user_item(object_map[order[0]]) if order else None
+        return load_moderator(object_map[order[0]]) if order else None
 
-    def get_approved_user(self, sr: str, user: str) -> Optional[ApprovedUserItem]:
+    def get_approved_user(self, sr: str, user: str) -> Optional[ApprovedUser]:
         root = self._client.request('GET', f'/api/v1/{sr}/contributors', params={'username': user})
         order = root['approvedSubmitterIds']
         object_map = root['approvedSubmitters']
-        return load_approved_user_item(object_map[order[0]]) if order else None
+        return load_approved_user(object_map[order[0]]) if order else None
 
-    def get_banned_user(self, sr: str, user: str) -> Optional[BannedUserItem]:
+    def get_banned_user(self, sr: str, user: str) -> Optional[BannedUser]:
         root = self._client.request('GET', f'/api/v1/{sr}/banned', params={'username': user})
         order = root['bannedUserIds']
         object_map = root['bannedUsers']
-        return load_banned_user_item(object_map[order[0]]) if order else None
+        return load_banned_user(object_map[order[0]]) if order else None
 
-    def get_muted_user(self, sr: str, user: str) -> Optional[MutedUserItem]:
+    def get_muted_user(self, sr: str, user: str) -> Optional[MutedUser]:
         root = self._client.request('GET', f'/api/v1/{sr}/muted', params={'username': user})
         order = root['mutedUserIds']
         object_map = root['mutedUsers']
-        return load_muted_user_item(object_map[order[0]]) if order else None
+        return load_muted_user(object_map[order[0]]) if order else None
 
 
     def send_moderator_invite(self, sr: str, user: str, permissions: Iterable[str]) -> None:

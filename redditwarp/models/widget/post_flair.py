@@ -8,7 +8,7 @@ from dataclasses import dataclass
 class PostFlairWidgetItem:
     d: Mapping[str, Any]
     uuid: str
-    type: str
+    text_mode: str
     text: str
     bg_color: str
-    fg_light_or_dark: str
+    fg_color_scheme: str
