@@ -1,4 +1,4 @@
-"""API wrapper for the Reddit API."""
+"""Reddit API wrapper library."""
 
 from . import __about__  # noqa: F401
 from .__about__ import (  # noqa: F401

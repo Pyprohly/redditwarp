@@ -47,7 +47,7 @@
 from __future__ import annotations
 
 version_major: int = 0
-version_minor: int = 8
+version_minor: int = 9
 version_micro: int = 0
 version_extra: str = ''
 
@@ -58,7 +58,7 @@ version_string: str = '.'.join(map(str, version_triad)) + version_extra
 __version__: str = version_string
 
 __title__: str = 'RedditWarp'
-__summary__: str = "The unofficial Reddit API library for Python"
+__summary__: str = "The unofficial Reddit API library for Python."
 __uri__: str = "https://github.com/Pyprohly/redditwarp"
 __url__: str = __uri__
 __author__: str = 'Pyprohly'
