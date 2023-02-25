@@ -1,13 +1,13 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Mapping, Any
+from typing import TYPE_CHECKING, Mapping, Any, Optional
 if TYPE_CHECKING:
     from datetime import datetime as DateTime
 
 from dataclasses import dataclass
 from enum import Enum, auto
 
-from .artifact import IArtifact
+from .datamemento import DatamementoDataclassesMixin
 
 class CommentMessageCause(Enum):
     USERNAME_MENTION = auto()
@@ -15,7 +15,7 @@ class CommentMessageCause(Enum):
     COMMENT_REPLY = auto()
 
 @dataclass(repr=False, eq=False)
-class MailboxMessage(IArtifact):
+class MailboxMessage(DatamementoDataclassesMixin):
     d: Mapping[str, Any]
     subject: str
     ("""
@@ -28,6 +28,15 @@ class MailboxMessage(IArtifact):
         * `username mention` if a username mention.
         """)
     author_name: str
+    ("""
+        Author name.
+
+        Unknown what happens if the user is deleted.
+        Is the value `[deleted]`, an empty string, or does the field in the
+        underlying object not exist?
+        If you have any information about this, please open an issue report at
+        `<https://github.com/Pyprohly/redditwarp/issues>`_.
+        """)
     unread: bool
 
 @dataclass(repr=False, eq=False)
@@ -59,35 +68,25 @@ class ComposedMessage(MailboxMessage):
 
         Empty string if not distinguished.
         """)
-    src_user_name: str
+    src_user_name: Optional[str]
     ("""
-        Name of the user who sent the message.
-
-        Empty string if the message came from a subreddit.
+        Username of the sender.
         """)
-    src_subr_name: str
+    src_subr_name: Optional[str]
     ("""
-        Name of the subreddit in which the message was sent.
-
-        Empty string if the message came from a user.
+        Name of the subreddit in which the message was sent from.
         """)
-    dst_user_name: str
+    dst_user_name: Optional[str]
     ("""
         Username of the recipient.
-
-        Empty string if the message was sent to a subreddit.
         """)
-    dst_subr_name: str
+    dst_subr_name: Optional[str]
     ("""
         Name of the subreddit in which the message was sent to.
-
-        Empty string if the message was sent to a user.
         """)
-    src_user_id: int
+    src_user_id: Optional[int]
     ("""
         ID of the user who sent the message.
-
-        Value is `-1` if the message came from a subreddit.
         """)
 
 @dataclass(repr=False, eq=False)
@@ -106,8 +105,33 @@ class CommentMessage(MailboxMessage):
         created_ut: int
         created_at: DateTime
         author_name: str
+        ("""
+            Author name.
+
+            Unknown what happens if the user is deleted.
+            Is the value `[deleted]`, an empty string, or does the field in the
+            underlying object not exist?
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
+            """)
         author_id: int
+        ("""
+            Author ID.
+
+            Unknown what happens if the user is deleted.
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
+            """)
         subreddit_name: str
+        ("""
+            Subreddit name.
+
+            Unknown what happens if the subreddit is deleted.
+            Is the value `[deleted]`, an empty string, or does the field in the
+            underlying object not exist?
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
+            """)
         rel_permalink: str
         permalink: str
         is_top_level: bool

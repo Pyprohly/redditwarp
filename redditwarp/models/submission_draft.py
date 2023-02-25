@@ -5,11 +5,11 @@ from typing import Sequence, overload, Iterator, Union, Mapping, Any, Optional
 from datetime import datetime
 from dataclasses import dataclass
 
-from .artifact import IArtifact
+from .datamemento import DatamementoDataclassesMixin
 from .subreddit import Subreddit
 
 @dataclass(repr=False, eq=False)
-class SubmissionDraft(IArtifact):
+class SubmissionDraft(DatamementoDataclassesMixin):
     """
     A public draft link is of the following format:
 
@@ -50,7 +50,7 @@ class SubmissionDraft(IArtifact):
         """)
     public: bool
     ("""
-        Whether the draft is public.
+        Whether the draft's link is public.
 
         Only those with the link can find the draft.
         """)
@@ -109,6 +109,7 @@ class SubmissionDraftList(Sequence[SubmissionDraft]):
         subreddits: Sequence[Subreddit],
     ) -> None:
         self.drafts: Sequence[SubmissionDraft] = drafts
+        ("")
         self.__subreddits: Sequence[Subreddit] = subreddits
 
     def __len__(self) -> int:

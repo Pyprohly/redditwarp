@@ -1,6 +1,6 @@
 {
   "include": ["src", "tests"],
-  // +--=-*-=--+
+
   "strictParameterNoneValue": true,
   "reportPropertyTypeMismatch": true,
   "reportFunctionMemberAccess": true,

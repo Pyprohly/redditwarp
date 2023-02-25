@@ -30,7 +30,7 @@ def load_wiki_page_revision(d: Mapping[str, Any]) -> WikiPageRevision:
     return WikiPageRevision(
         d=d,
         uuid=d['id'],
-        unixtime=d['unixtime'],
+        unixtime=d['timestamp'],
         author=load_wiki_page_revision_author_user(d['author']['data']),
         message=d['reason'] or '',
         hidden=d['revision_hidden'],

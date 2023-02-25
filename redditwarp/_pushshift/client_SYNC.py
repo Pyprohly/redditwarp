@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, TypeVar, Optional, Mapping, Any, Union
 if TYPE_CHECKING:
     from ..http.http_client_SYNC import HTTPClient
     from ..http.types import RequestFiles
+    from ..http.payload import Payload
     from ..types import JSON_ro
 
 from .core.http_client_SYNC import build_http_client
@@ -37,12 +38,14 @@ class Client:
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
+        payload: Optional[Payload] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
     ) -> Any:
         json_data = None
         resp = self.http.request(verb, url, params=params, headers=headers,
-                data=data, json=json, files=files, timeout=timeout, follow_redirects=follow_redirects)
+                data=data, json=json, files=files, payload=payload,
+                timeout=timeout, follow_redirects=follow_redirects)
         if resp.data:
             json_data = json_loads_response(resp)
         resp.raise_for_status()

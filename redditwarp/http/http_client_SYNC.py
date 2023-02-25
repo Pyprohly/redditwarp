@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .handler_SYNC import Handler
     from .exchange import Exchange
     from ..types import JSON_ro
+    from .payload import Payload
 
 from urllib.parse import urljoin
 
@@ -39,6 +40,7 @@ class HTTPClient:
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
+        payload: Optional[Payload] = None,
     ) -> Requisition:
         return make_requisition(
             verb,
@@ -48,6 +50,7 @@ class HTTPClient:
             data=data,
             json=json,
             files=files,
+            payload=payload,
         )
 
     def __init__(self, handler: Handler) -> None:
@@ -77,11 +80,12 @@ class HTTPClient:
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
+        payload: Optional[Payload] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
     ) -> Response:
         xchg = self.inquire(verb, url, params=params, headers=headers,
-                data=data, json=json, files=files,
+                data=data, json=json, files=files, payload=payload,
                 timeout=timeout, follow_redirects=follow_redirects)
         return xchg.response
 
@@ -95,11 +99,12 @@ class HTTPClient:
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
+        payload: Optional[Payload] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
     ) -> Exchange:
         reqi = self.make_requisition(verb, url, params=params, headers=headers,
-                data=data, json=json, files=files)
+                data=data, json=json, files=files, payload=payload)
         return self.submit(reqi, timeout=timeout, follow_redirects=follow_redirects)
 
     @final

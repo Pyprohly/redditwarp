@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Optional, Mapping
+from typing import TYPE_CHECKING, Sequence, Optional, Mapping
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.subreddit_user import (
@@ -79,86 +79,86 @@ class ModerationProcedures:
         return load_muted_user(object_map[order[0]]) if order else None
 
 
-    async def send_moderator_invite(self, sr: str, user: str, permissions: Iterable[str]) -> None:
+    async def send_moderator_invite(self, sr: str, user: str, permissions: Sequence[str]) -> None:
         data = {
-            'r': sr,
             'type': 'moderator_invite',
+            'r': sr,
             'name': user,
             'permissions': ','.join('+' + p for p in permissions),
         }
         await self._client.request('POST', '/api/friend', data=data)
 
-    async def accept_moderator_invite(self, sr: str, user: str) -> None:
+    async def accept_moderator_invite(self, sr: str) -> None:
         await self._client.request('POST', '/api/accept_moderator_invite', data={'r': sr})
 
     async def revoke_moderator_invite(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'moderator_invite',
-            'name': user,
-        }
-        await self._client.request('POST', '/api/friend', data=data)
-
-    async def remove_moderator(self, sr: str, user: str) -> None:
-        data = {
             'r': sr,
-            'type': 'moderator',
             'name': user,
         }
         await self._client.request('POST', '/api/unfriend', data=data)
 
-    async def leave_moderator(self, subreddit_id: int) -> None:
-        await self._client.request('POST', '/api/leavemoderator', data={'id': 't5_' + to_base36(subreddit_id)})
-
-    async def set_moderator_permissions(self, sr: str, user: str, permissions: Iterable[str]) -> None:
+    async def remove_moderator(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'moderator',
+            'r': sr,
             'name': user,
-            'permissions': ','.join('+' + i for i in permissions),
+        }
+        await self._client.request('POST', '/api/unfriend', data=data)
+
+    async def leave_moderator(self, sr_id: int) -> None:
+        await self._client.request('POST', '/api/leavemoderator', data={'id': 't5_' + to_base36(sr_id)})
+
+    async def set_moderator_permissions(self, sr: str, user: str, permissions: Sequence[str]) -> None:
+        data = {
+            'type': 'moderator',
+            'r': sr,
+            'name': user,
+            'permissions': ','.join('+' + p for p in permissions) if permissions else '-access',
         }
         await self._client.request('POST', '/api/setpermissions', data=data)
 
-    async def set_moderator_invite_permissions(self, sr: str, user: str, permissions: Iterable[str]) -> None:
+    async def set_moderator_invite_permissions(self, sr: str, user: str, permissions: Sequence[str]) -> None:
         data = {
-            'r': sr,
             'type': 'moderator_invite',
+            'r': sr,
             'name': user,
-            'permissions': ','.join('+' + i for i in permissions),
+            'permissions': ','.join('+' + p for p in permissions) if permissions else '-access',
         }
         await self._client.request('POST', '/api/setpermissions', data=data)
 
     async def add_approved_user(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'contributor',
+            'r': sr,
             'name': user,
         }
         await self._client.request('POST', '/api/friend', data=data)
 
     async def remove_approved_user(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'contributor',
+            'r': sr,
             'name': user,
         }
         await self._client.request('POST', '/api/unfriend', data=data)
 
-    async def leave_approved_user(self, subreddit_id: int) -> None:
-        await self._client.request('POST', '/api/leavecontributor', data={'id': 't5_' + to_base36(subreddit_id)})
+    async def leave_approved_user(self, sr_id: int) -> None:
+        await self._client.request('POST', '/api/leavecontributor', data={'id': 't5_' + to_base36(sr_id)})
 
     async def ban_user(self, sr: str, user: str, *,
+            duration: Optional[int] = None,
             reason: str = '',
             note: str = '',
-            duration: Optional[int] = None,
             message: str = '') -> None:
         data = {
-            'r': sr,
             'type': 'banned',
+            'r': sr,
             'name': user,
             'ban_reason': reason,
-            'note': note,
             'ban_message': message,
+            'note': note,
         }
         if duration is not None:
             data['duration'] = str(duration)
@@ -167,16 +167,16 @@ class ModerationProcedures:
 
     async def unban_user(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'banned',
+            'r': sr,
             'name': user,
         }
         await self._client.request('POST', '/api/unfriend', data=data)
 
     async def mute_user(self, sr: str, user: str, *, note: str = '') -> None:
         data = {
-            'r': sr,
             'type': 'muted',
+            'r': sr,
             'name': user,
             'note': note,
         }
@@ -184,35 +184,35 @@ class ModerationProcedures:
 
     async def unmute_user(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'muted',
+            'r': sr,
             'name': user,
         }
         await self._client.request('POST', '/api/unfriend', data=data)
 
     async def add_wiki_contributor(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'wikicontributor',
+            'r': sr,
             'name': user,
         }
         await self._client.request('POST', '/api/friend', data=data)
 
     async def remove_wiki_contributor(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'wikicontributor',
+            'r': sr,
             'name': user,
         }
         await self._client.request('POST', '/api/unfriend', data=data)
 
     async def ban_wiki_contributor(self, sr: str, user: str, *,
+            duration: Optional[int] = None,
             reason: str = '',
-            note: str = '',
-            duration: Optional[int] = None) -> None:
+            note: str = '') -> None:
         data = {
-            'r': sr,
             'type': 'banned',
+            'r': sr,
             'name': user,
             'ban_reason': reason,
             'note': note,
@@ -224,8 +224,8 @@ class ModerationProcedures:
 
     async def unban_wiki_contributor(self, sr: str, user: str) -> None:
         data = {
-            'r': sr,
             'type': 'wikibanned',
+            'r': sr,
             'name': user,
         }
         await self._client.request('POST', '/api/unfriend', data=data)
@@ -236,12 +236,12 @@ class ModerationProcedures:
             self._outer = outer
             self._client = outer._client
 
-        async def create(self, sr: str, title: str, message: str) -> int:
+        async def create(self, sr: str, title: str, message: str) -> str:
             data = {'title': title, 'message': message}
             root = await self._client.request('POST', f'/api/v1/{sr}/removal_reasons', data=data)
-            return int(root['id'], 36)
+            return root['id']
 
-        async def retrieve_map(self, sr: str) -> Mapping[str, tuple[str, str]]:
+        async def retrieve(self, sr: str) -> Mapping[str, tuple[str, str]]:
             root = await self._client.request('GET', f'/api/v1/{sr}/removal_reasons')
             order = root['order']
             object_map = root['data']
@@ -250,11 +250,11 @@ class ModerationProcedures:
                 for y in order for m in [object_map[y]]
             }
 
-        async def update(self, sr: str, reason_id: str, title: str, message: str) -> None:
+        async def replace(self, sr: str, idt: str, title: str, message: str) -> None:
             data = {'title': title, 'message': message}
-            await self._client.request('PUT', f'/api/v1/{sr}/removal_reasons/{reason_id}', data=data)
+            await self._client.request('PUT', f'/api/v1/{sr}/removal_reasons/{idt}', data=data)
 
-        async def delete(self, sr: str, reason_id: str) -> None:
-            await self._client.request('DELETE', f'/api/v1/{sr}/removal_reasons/{reason_id}')
+        async def delete(self, sr: str, idt: str) -> None:
+            await self._client.request('DELETE', f'/api/v1/{sr}/removal_reasons/{idt}')
 
     removal_reason: cached_property[RemovalReason] = cached_property(RemovalReason)

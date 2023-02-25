@@ -13,8 +13,9 @@ _BOOLEAN_WORDS: Mapping[str, bool] = {
 def booleanify(s: str) -> bool:
     """Convert a string to boolean.
 
-    Raises `ValueError` if the given string is not booleanifiable.
     An empty string is `False`.
+
+    Raises `ValueError` if the given string is not booleanifiable.
 
     Booleanifiable strings:
 

@@ -1,19 +1,23 @@
 
 from __future__ import annotations
-from typing import Mapping, Any, Sequence, Iterator, Union, overload
+from typing import Mapping, Any, Sequence, Iterator, Union, overload, Optional
 
 from datetime import datetime, timezone
 
 class LiveThread:
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.idt: str = d['id']
         ("""
             E.g., `177beztuzebxj`.
             """)
         self.title: str = d['title']
+        ("")
         self.created_ut: int = int(d['created_utc'])
+        ("")
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        ("")
         self.description: str = d['description']
         ("""
             Live thread description as markdown text.
@@ -41,6 +45,7 @@ class LiveThread:
             True if the live thread is marked complete.
             """)
         self.nsfw: bool = d['nsfw']
+        ("")
         self.viewer_count: int = d['viewer_count']
         ("""
             Number of subscribers. Value is fuzzed
@@ -49,13 +54,16 @@ class LiveThread:
 class LiveUpdate:
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.uuid: str = d['id']
         ("""
             E.g., `890e9242-d7fb-11eb-b450-0ed185f1b209`.
             """)
-        self.author_name: str = d['author']
+        self.author: Optional[str] = d['author']
         ("""
             Name of the user who posted the update.
+
+            Value null if the user account was deleted.
             """)
         self.body: str = d['body']
         ("""
@@ -66,7 +74,9 @@ class LiveUpdate:
             Content body in HTML.
             """)
         self.created_ut: int = int(d['created_utc'])
+        ("")
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        ("")
         self.stricken: bool = d['stricken']
         ("""
             True if the update has been stricken.
@@ -75,6 +85,7 @@ class LiveUpdate:
 class Contributor:
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.name: str = d['name']
         ("""
             Name of a user; name of the contributor.
@@ -101,7 +112,9 @@ class ContributorList(Sequence[Contributor]):
             contributors: Sequence[Contributor],
             invitations: Sequence[Contributor]) -> None:
         self.contributors: Sequence[Contributor] = contributors
+        ("")
         self.invitations: Sequence[Contributor] = invitations
+        ("")
 
     def __len__(self) -> int:
         return len(self.contributors)

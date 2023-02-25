@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 from .get_user_summary_ASYNC import GetUserSummary
 from .bulk_fetch_user_summary_ASYNC import BulkFetchUserSummary
 from .pull_ASYNC import Pull
-from .pull_user_subreddits_ASYNC import PullUserSubreddits
+from .pull_subreddits_ASYNC import PullSubreddits
 from ...model_loaders.user_ASYNC import load_user, load_potentially_suspended_user
 from ...model_loaders.moderated_subreddit import load_moderated_subreddit
 from ... import http
@@ -23,7 +23,7 @@ class UserProcedures:
         self.get_user_summary: GetUserSummary = GetUserSummary(client)
         self.bulk_fetch_user_summary: BulkFetchUserSummary = BulkFetchUserSummary(client)
         self.pull: Pull = Pull(client)
-        self.pull_user_subreddits: PullUserSubreddits = PullUserSubreddits(client)
+        self.pull_subreddits: PullSubreddits = PullSubreddits(client)
 
     async def get_by_name(self, name: str) -> Optional[User]:
         try:
@@ -57,8 +57,8 @@ class UserProcedures:
         root = await self._client.request('GET', f'/user/{name}/about')
         return load_potentially_suspended_user(root['data'], self._client)
 
-    async def moderated_subreddits(self, user: str) -> Sequence[ModeratedSubreddit]:
-        root = await self._client.request('GET', f'/user/{user}/moderated_subreddits')
+    async def moderating(self, name: str) -> Sequence[ModeratedSubreddit]:
+        root = await self._client.request('GET', f'/user/{name}/moderated_subreddits')
         if not root:
             return ()
         return [load_moderated_subreddit(d) for d in root['data']]
@@ -68,5 +68,5 @@ class UserProcedures:
         p = UserSearchAsyncPaginator(self._client, '/users/search', query)
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    async def name_exists(self, name: str) -> bool:
+    async def exists(self, name: str) -> bool:
         return not await self._client.request('GET', '/api/username_available', params={'user': name})

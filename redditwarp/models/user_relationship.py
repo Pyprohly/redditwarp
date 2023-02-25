@@ -13,6 +13,7 @@ class UserRelationship:
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         full_id36: str = d['id']
         _, _, id36 = full_id36.partition('_')
         self.id36: str = id36

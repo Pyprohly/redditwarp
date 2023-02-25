@@ -6,7 +6,7 @@ from datetime import datetime
 from dataclasses import dataclass
 from enum import IntEnum
 
-from .artifact import IArtifact
+from .datamemento import DatamementoPropertiesMixin
 
 
 class ConversationProgress(IntEnum):
@@ -28,14 +28,14 @@ class ModActionType(IntEnum):
 
 
 @dataclass(repr=False, eq=False)
-class ModmailSubreddit(IArtifact):
+class ModmailSubreddit(DatamementoPropertiesMixin):
     d: Mapping[str, Any]
     id: int
     name: str
     subscriber_count: int
 
 
-class ConversationInfo(IArtifact):
+class ConversationInfo(DatamementoPropertiesMixin):
     @dataclass(repr=False, eq=False)
     class LegacyMessage:
         id: int
@@ -44,9 +44,13 @@ class ConversationInfo(IArtifact):
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.id36: str = d['id']
+        ("")
         self.id: int = int(self.id36, 36)
+        ("")
         self.subject: str = d['subject']
+        ("")
         self.progress: int = d['state']
         ("""
             Enum: :class:`.ConversationProgress`
@@ -94,6 +98,7 @@ class ConversationInfo(IArtifact):
             If :attr:`internal` is true this should always be null.
             """)
         self.last_mod_update: Optional[datetime] = (x := d['lastModUpdate']) and datetime.fromisoformat(x)
+        ("")
         self.last_update: datetime = datetime.fromisoformat(d['lastUpdated'])
         ("""
             Same as either :attr:`last_user_update` or :attr:`last_mod_update`, whichever is newer.
@@ -112,19 +117,32 @@ class ConversationInfo(IArtifact):
             ID of the subreddit associated with this conversation.
             """)
 
-class Message(IArtifact):
+class Message(DatamementoPropertiesMixin):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.id36: str = d['id']
+        ("")
         self.id: int = int(self.id36, 36)
+        ("")
         author = d['author']
         self.author_name: str = author['name']
         ("""
             User name of the author of the message.
+
+            Unknown what happens if the user is deleted.
+            Is the value `[deleted]`, an empty string, or does the field in the
+            underlying object not exist?
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
             """)
         self.author_id: int = author['id']
         ("""
             User ID of the author of the message.
+
+            Unknown what happens if the user is deleted.
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
             """)
         self.body: str = d['bodyMarkdown']
         ("""
@@ -144,10 +162,12 @@ class Message(IArtifact):
             Otherwise, true if this message is a private moderator note.
             """)
 
-class ModAction(IArtifact):
+class ModAction(DatamementoPropertiesMixin):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.id: int = int(d['id'], 36)
+        ("")
         self.action_type: int = d['actionTypeId']
         ("""
             Enum: :class:`.ModActionType`
@@ -155,39 +175,61 @@ class ModAction(IArtifact):
         self.agent_name: str = d['author']['name']
         ("""
             Name of the mod who performed the action.
+
+            Unknown what happens if the user is deleted.
+            Is the value `[deleted]`, an empty string, or does the field in the
+            underlying object not exist?
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
             """)
         self.agent_id: int = d['author']['id']
         ("""
             User ID of the mod who performed the action.
+
+            Unknown what happens if the user is deleted.
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
             """)
         self.datetime: datetime = datetime.fromisoformat(d['date'])
         ("""
             Datetime object of when the action was performed.
             """)
 
-class UserDossier(IArtifact):
+class UserDossier(DatamementoPropertiesMixin):
     class RecentPost:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.permalink: str
+            ("")
             self.title: str
+            ("")
             self.created_at: datetime
+            ("")
 
     class RecentComment:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.permalink: str
+            ("")
             self.title: str
+            ("")
             self.body: str
+            ("")
             self.created_at: datetime
+            ("")
 
     class RecentConvo:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.id: int
+            ("")
             self.subject: str
+            ("")
             self.permalink: str
+            ("")
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.id: int = int(d['id'][3:], 36)
+        ("")
         self.username: str = d['name']
         ("""
             The name of the target user.

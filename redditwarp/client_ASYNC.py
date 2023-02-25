@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from types import TracebackType
     from .auth.types import AuthorizationGrant
     from .http.types import RequestFiles
+    from .http.payload import Payload
     from .core.http_client_ASYNC import HTTPClient
     from .types import JSON_ro
 
@@ -104,6 +105,7 @@ class Client:
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
+        payload: Optional[Payload] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
         snub: Optional[Callable[[JSON_ro], None]] = raise_for_reddit_error,
@@ -111,7 +113,8 @@ class Client:
         json_data = None
         try:
             resp = await self.http.request(verb, url, params=params, headers=headers,
-                    data=data, json=json, files=files, timeout=timeout, follow_redirects=follow_redirects)
+                    data=data, json=json, files=files, payload=payload,
+                    timeout=timeout, follow_redirects=follow_redirects)
 
             if resp.data:
                 try:
@@ -125,10 +128,10 @@ class Client:
 
                 if snub is not None:
                     snub(json_data)
+
+            resp.raise_for_status()
         finally:
             self.last_value = json_data
-
-        resp.raise_for_status()
         return json_data
 
     def set_access_token(self, access_token: str) -> None:

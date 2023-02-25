@@ -4,9 +4,9 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from .artifact import IArtifact
+from .datamemento import DatamementoPropertiesMixin
 
-class Subreddit(IArtifact):
+class Subreddit(DatamementoPropertiesMixin):
     class Me:
         class Flair:
             def __init__(self, d: Mapping[str, Any]) -> None:
@@ -70,14 +70,19 @@ class Subreddit(IArtifact):
 
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.favorited: bool = d['user_has_favorited']
+            ("")
             self.is_banned: bool = d['user_is_banned']
+            ("")
             self.is_approved_user: bool = d['user_is_contributor']
+            ("")
             self.is_moderator: bool = d['user_is_moderator']
             ("""
                 Whether the current user is a moderator of the subreddit.
                 """)
             self.is_muted: bool = d['user_is_muted']
+            ("")
             self.is_subscribed: bool = d['user_is_subscriber']
+            ("")
             self.sr_theme_enabled: bool = d['user_sr_theme_enabled']
             ("""
                 Whether the current user allows subreddit custom CSS.
@@ -91,7 +96,7 @@ class Subreddit(IArtifact):
 
     class SubredditFlair:
         def __init__(self, d: Mapping[str, Any]) -> None:
-            self.user_flairs_enabled: bool = d['user_flair_enabled_in_sr']
+            self.user_flair_enabled: bool = d['user_flair_enabled_in_sr']
             ("""
                 Whether user flairs are enabled in the subreddit.
 
@@ -99,28 +104,6 @@ class Subreddit(IArtifact):
 
                 Caution: Value is false if object was retrieved from a search. This isn't the case with
                 the other variables.
-                """)
-            self.post_flairs_enabled: bool = d['link_flair_enabled']
-            ("""Whether post flairs are enabled in the subreddit.
-
-                In old Reddit, this field is tied to the 'link flair position' flair setting:
-                the value is false when set to `none`.
-                """)
-            self.users_can_assign_user_flair: bool = d['can_assign_user_flair']
-            ("""
-                Whether or not users can assign a flair to themselves in this subreddit.
-
-                If false, only a moderator can assign flairs to users.
-
-                In old Reddit this is the flair option that says "allow users to assign their own flair".
-                """)
-            self.users_can_assign_post_flair: bool = d['can_assign_link_flair']
-            ("""
-                Whether or not users can assign a flair to their submission in this subreddit.
-
-                If false, only a moderator can assign flairs to submissions.
-
-                In old Reddit this is the flair option that says "allow submitters to assign their own link flair".
                 """)
             self.user_flair_position: str = d['user_flair_position']
             ("""
@@ -131,17 +114,41 @@ class Subreddit(IArtifact):
                 Can be set to an empty string via API calls
                 (see :meth:`~.redditwarp.siteprocs.flair.SYNC.FlairProcedures.configure_subreddit_flair_settings`)
                 but not through the UI.
-                If an empty string then all user flairs are hidden, despite the :attr:`user_flairs_enabled` setting.
+                If an empty string then all user flairs are hidden, despite the :attr:`user_flair_enabled` setting.
+                """)
+            self.user_flair_self_assign: bool = d['can_assign_user_flair']
+            ("""
+                Whether or not users can assign a flair to themselves in this subreddit.
+
+                If false, only a moderator can assign flairs to users.
+
+                In old Reddit this is the flair option that says "allow users to assign their own flair".
+                """)
+
+            self.post_flair_enabled: bool = d['link_flair_enabled']
+            ("""Whether post flairs are enabled in the subreddit.
+
+                In old Reddit, this field is tied to the 'link flair position' flair setting:
+                the value is false when set to `none`.
                 """)
             self.post_flair_position: str = d['link_flair_position']
             ("""
                 Either `left` or `right`, or empty string.
 
-                Value is empty string if :attr:`post_flairs_enabled` is false (the 'none' option in the old Reddit UI).
+                Value is empty string if :attr:`post_flair_enabled` is false (the 'none' option in the old Reddit UI).
+                """)
+            self.post_flair_self_assign: bool = d['can_assign_link_flair']
+            ("""
+                Whether or not users can assign a flair to their submission in this subreddit.
+
+                If false, only a moderator can assign flairs to submissions.
+
+                In old Reddit this is the flair option that says "allow submitters to assign their own link flair".
                 """)
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.id36: str = d['id']
         ("""
             The ID of the subreddit as a base 36 number.
@@ -175,11 +182,17 @@ class Subreddit(IArtifact):
             Max. chars.: 100.
             """)
         self.public_description: str = d['public_description']
+        ("")
         self.public_description_html: str = d['public_description_html']
+        ("")
         self.sidebar_description: str = d['description']
+        ("")
         self.sidebar_description_html: str = d['description_html']
+        ("")
         self.submitting_form_note: str = d['submit_text']
+        ("")
         self.submitting_form_note_html: str = d['submit_text_html']
+        ("")
         self.submit_text_label: str = d['submit_text_label'] or ''
         ("""
             Custom label text for the "Submit a new text post" button.
@@ -194,6 +207,7 @@ class Subreddit(IArtifact):
             """)
 
         self.subscriber_count: int = d['subscribers']
+        ("")
         self.viewing_count: int = -1 if (x := d['active_user_count']) is None else x
         ("""
             The number of online users who are subscribed to the subreddit.
@@ -203,9 +217,13 @@ class Subreddit(IArtifact):
 
         submission_type: str = d['submission_type']
         self.accepts_text_submissions: bool = submission_type in ('any', 'self')
+        ("")
         self.accepts_link_submissions: bool = submission_type in ('any', 'link')
+        ("")
         self.accepts_gallery_submissions: bool = d['allow_galleries']
+        ("")
         self.accepts_poll_submissions: bool = d['allow_polls']
+        ("")
 
         self.suggested_comment_sort: str = d['suggested_comment_sort'] or ''
         ("""
@@ -215,7 +233,9 @@ class Subreddit(IArtifact):
             """)
 
         self.nsfw: bool = d['over18']
+        ("")
         self.quarantined: bool = d['quarantine']
+        ("")
 
         self.me: Optional[Subreddit.Me] = None
         ("""
@@ -225,6 +245,7 @@ class Subreddit(IArtifact):
             self.me = self.Me(d)
 
         self.flair: Subreddit.SubredditFlair = self.SubredditFlair(d)
+        ("")
 
         self.has_menu_widget: bool = d['has_menu_widget']
         ("""
@@ -234,15 +255,23 @@ class Subreddit(IArtifact):
             """)
 
 
-class InaccessibleSubreddit(IArtifact):
+class InaccessibleSubreddit(DatamementoPropertiesMixin):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.id36: str = d['id']
+        ("")
         self.id: int = int(self.id36, 36)
+        ("")
         self.created_ut: int = int(d['created_utc'])
+        ("")
         self.created_at: datetime = datetime.fromtimestamp(self.created_ut, timezone.utc)
+        ("")
 
         self.name: str = d['display_name']
+        ("")
         self.openness: str = d['subreddit_type']
+        ("")
 
         self.title: str = d['title']
+        ("")

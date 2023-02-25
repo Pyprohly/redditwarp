@@ -61,17 +61,27 @@ class Stream(IStandardStreamEventSubject[TOutput]):
     def __init__(self,
         paginator: CursorAsyncPaginator[TOutput],
         extractor: Callable[[TOutput], object],
-        seen: Iterable[TOutput] = (),
         *,
         max_limit: int = 100,
+        past: Optional[Iterable[TOutput]] = None,
+        seen: Optional[Iterable[object]] = None,
     ) -> None:
+        if None not in (past, seen):
+            raise TypeError("mutually exclusive parameters: `past`, `seen`")
         if not isinstance(paginator, Resettable):
             raise ValueError('paginator must be Resettable')
+
         self._paginator: CursorAsyncPaginator[TOutput] = paginator
         self._paginator__resettable: Resettable = paginator
         self._extractor: Callable[[TOutput], object] = extractor
         self._max_limit: int = max_limit
-        self._init_seen: Iterable[object] = map(extractor, seen)
+
+        init_seen: Iterable[object] = ()
+        if seen is not None:
+            init_seen = seen
+        elif past is not None:
+            init_seen = map(extractor, past)
+        self._init_seen: Iterable[object] = init_seen
 
         self._agen: AsyncIterator[float] = self.__routine()
 
@@ -142,9 +152,9 @@ class Stream(IStandardStreamEventSubject[TOutput]):
 
             selection: MutableSequence[TOutput] = []
             for obj in retrieved:
-                identity = self._extractor(obj)
-                if identity not in seen:
-                    seen.add(identity)
+                imprint = self._extractor(obj)
+                if imprint not in seen:
+                    seen.add(imprint)
                     selection.append(obj)
 
             for obj in selection:

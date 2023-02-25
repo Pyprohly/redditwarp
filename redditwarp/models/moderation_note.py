@@ -4,10 +4,10 @@ from typing import Any, Mapping, Optional
 from datetime import datetime
 from dataclasses import dataclass
 
-from .artifact import IArtifact
+from .datamemento import DatamementoDataclassesMixin
 
 @dataclass(repr=False, eq=False)
-class ModerationNote(IArtifact):
+class ModerationNote(DatamementoDataclassesMixin):
     #_: KW_ONLY
     d: Mapping[str, Any]
     uuid: str
@@ -77,4 +77,10 @@ class ModerationUserNote(ModerationNote):
         If true then either :attr:`anchor_submission_id` or :attr:`anchor_comment_id` will be non-`None`.
         """)
     anchor_submission_id: Optional[int]
+    ("""
+        The submission ID associated with this user note.
+        """)
     anchor_comment_id: Optional[int]
+    ("""
+        The comment ID associated with this user note.
+        """)

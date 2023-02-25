@@ -50,6 +50,29 @@ class Pull:
             return ImpartedPaginatorChainingIterator(p, amount)
 
     modqueue: cached_property[ModQueue] = cached_property(ModQueue)
+    ("""
+        Retrieve submissions/comments relevant to moderators.
+
+        .. .PARAMETERS
+
+        :param `str` sr:
+        :param `Optional[int]` amount:
+
+        .. .RETURNS
+
+        :returns: A paginator iterator of either submission or comment object.
+        :rtype: :class:`~.pagination.paginator_chaining_iterator.ImpartedPaginatorChainingIterator`\\[:class:`~.pagination.paginators.moderation.sync1.ModQueueListingPaginator`, `object`]
+
+        .. .RAISES
+
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            + `403`:
+               - You don't have access to the subreddit.
+               - You don't have the 'posts' moderator permission.
+            + `403`:
+                The specified subreddit name is too long (over 21 characters)
+                or contains invalid characters.
+        """)
 
     class Reported:
         def __init__(self, outer: Pull) -> None:
@@ -72,6 +95,9 @@ class Pull:
             return ImpartedPaginatorChainingIterator(p, amount)
 
     reported: cached_property[Reported] = cached_property(Reported)
+    ("""
+        Behaves similarly to :meth:`.modqueue`.
+        """)
 
     class Spam:
         def __init__(self, outer: Pull) -> None:
@@ -94,6 +120,9 @@ class Pull:
             return ImpartedPaginatorChainingIterator(p, amount)
 
     spam: cached_property[Spam] = cached_property(Spam)
+    ("""
+        Behaves similarly to :meth:`.modqueue`.
+        """)
 
     class Edited:
         def __init__(self, outer: Pull) -> None:
@@ -116,8 +145,14 @@ class Pull:
             return ImpartedPaginatorChainingIterator(p, amount)
 
     edited: cached_property[Edited] = cached_property(Edited)
+    ("""
+        Behaves similarly to :meth:`.modqueue`.
+        """)
 
     def unmoderated(self, sr: str, amount: Optional[int] = None,
             ) -> ImpartedPaginatorChainingIterator[UnmoderatedSubmissionListingPaginator, Submission]:
+        """
+        Behaves similarly to :meth:`.modqueue`.
+        """
         p = UnmoderatedSubmissionListingPaginator(self._client, f'/r/{sr}/about/unmoderated')
         return ImpartedPaginatorChainingIterator(p, amount)

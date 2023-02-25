@@ -5,11 +5,11 @@ from typing import Mapping, Any, Optional, Sequence
 from datetime import datetime, timezone
 
 from ..core.const import AUTHORIZATION_BASE_URL
-from .artifact import Artifact
+from .datamemento import DatamementoBase
 from .report import ModReport, UserReport
 from ..model_loaders.report import load_mod_report, load_user_report
 
-class Comment(Artifact):
+class Comment(DatamementoBase):
     @property
     def submission(self) -> Comment.Submission:
         """Information related to the comment's submission."""
@@ -99,9 +99,13 @@ class Comment(Artifact):
 
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.name: str = d['author']
+            ("")
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
+            ("")
             self.id: int = int(self.id36, 36)
+            ("")
             self.has_premium: bool = d['author_premium']
+            ("")
             self.flair: Comment.Author.AuthorFlair = self.AuthorFlair(d)
             ("""
                 Attributes related to the author's flair.
@@ -110,7 +114,9 @@ class Comment(Artifact):
     class Submission:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['link_id'].split('_', 1)[-1]
+            ("")
             self.id: int = int(self.id36, 36)
+            ("")
             self.archived: bool = d['archived']
             ("""
                 Whether the post is archived.
@@ -122,8 +128,11 @@ class Comment(Artifact):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
+            ("")
             self.id: int = int(self.id36, 36)
+            ("")
             self.name: str = d['subreddit']
+            ("")
             self.openness: str = d['subreddit_type']
             ("""
                 One of: `public`, `private`, `restricted`, `archived`,
@@ -138,7 +147,9 @@ class Comment(Artifact):
                     Name of the moderator who approved this comment.
                     """)
                 self.ut: int = d['approved_at_utc']
+                ("")
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
+                ("")
 
         class Removed:
             def __init__(self, d: Mapping[str, Any]) -> None:
@@ -147,42 +158,58 @@ class Comment(Artifact):
                     Name of the moderator who removed this comment.
                     """)
                 self.ut: int = d['banned_at_utc']
+                ("")
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
+                ("")
 
         class Reports:
             def __init__(self, d: Mapping[str, Any]) -> None:
                 self.ignoring: bool = d['ignore_reports']
+                ("")
                 self.num_reports: int = d['num_reports']
+                ("")
                 self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
+                ("")
                 self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
+                ("")
 
         class RemovalReason:
             def __init__(self, d: Mapping[str, Any]) -> None:
                 self.by: str = d['mod_reason_by'] or ''
+                ("")
                 self.title: str = d['mod_reason_title'] or ''
+                ("")
                 self.note: str = d['mod_note'] or ''
+                ("")
 
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.spam: bool = d['spam']
+            ("")
 
             self.approved: Optional[Comment.Moderation.Approved] = None
+            ("")
             if d['approved_by']:
                 self.approved = self.Approved(d)
 
             self.removed: Optional[Comment.Moderation.Removed] = None
+            ("")
             if d['banned_by']:
                 self.removed = self.Removed(d)
 
             self.reports: Comment.Moderation.Reports = self.Reports(d)
+            ("")
 
             self.removal_reason: Optional[Comment.Moderation.RemovalReason] = None
+            ("")
             if d['mod_reason_by']:
                 self.removal_reason = self.RemovalReason(d)
 
     class Edited:
         def __init__(self, outer: Comment) -> None:
             self.ut: int = outer.edited_ut
+            ("")
             self.at: datetime = outer.edited_at
+            ("")
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
@@ -191,6 +218,7 @@ class Comment(Artifact):
             ID of the comment as a base 36 number.
             """)
         self.id: int = int(self.id36, 36)
+        ("")
         self.created_ut: int = int(d['created_utc'])
         ("""
             Unix timestamp of when the comment was made.
@@ -258,7 +286,9 @@ class Comment(Artifact):
             True if the author of this comment is the submission author ("OP").
             """)
         self.stickied: bool = d['stickied']
+        ("")
         self.locked: bool = d['locked']
+        ("")
         self.collapsed: bool = d['collapsed']
         ("""
             Whether the comment is collapsed by default, i.e., when it has been downvoted significantly.
@@ -304,7 +334,7 @@ class Comment(Artifact):
         self.__subreddit: Comment.Subreddit = self.Subreddit(d)
 
         s: str = d['author']
-        self.author_name: str = s
+        self.author_display_name: str = s
         ("""
             The author's username.
 
@@ -348,15 +378,21 @@ class LooseComment(Comment):
         def __init__(self, d: Mapping[str, Any]) -> None:
             super().__init__(d)
             self.title: str = d['link_title']
-            self.author_name: str = d['link_author']
+            ("")
+            self.author_display_name: str = d['link_author']
+            ("")
             self.rel_permalink: str = d['link_permalink']
+            ("")
             self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
+            ("")
             self.nsfw: bool = d['over_18']
+            ("")
 
     class Subreddit(Comment.Subreddit):
         def __init__(self, d: Mapping[str, Any]) -> None:
             super().__init__(d)
             self.quarantined: bool = d['quarantine']
+            ("")
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)

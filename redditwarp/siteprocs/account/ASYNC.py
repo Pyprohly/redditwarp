@@ -35,21 +35,17 @@ class AccountProcedures:
     async def set_preferences(self, prefs: Mapping[str, JSON_ro]) -> Mapping[str, Any]:
         return await self._client.request('PATCH', '/api/v1/me/prefs', json=prefs)
 
-    async def get_karma_breakdown(self) -> Sequence[KarmaBreakdownEntry]:
+    async def karma_breakdown(self) -> Sequence[KarmaBreakdownEntry]:
         root = await self._client.request('GET', '/api/v1/me/karma')
         entries = root['data']
         return [load_karma_breakdown_entry(d) for d in entries]
 
-    async def get_trophies(self) -> Sequence[Trophy]:
+    async def trophies(self) -> Sequence[Trophy]:
         root = await self._client.request('GET', '/api/v1/me/trophies')
         kind_data = root['data']['trophies']
         return [load_trophy(d['data']) for d in kind_data]
 
-    async def get_friend(self, name: str) -> UserRelationship:
-        root = await self._client.request('GET', f'/api/v1/me/friends/{name}')
-        return load_user_relationship(root)
-
-    async def friends(self) -> Sequence[UserRelationship]:
+    async def list_friends(self) -> Sequence[UserRelationship]:
         try:
             root = await self._client.request('GET', '/api/v1/me/friends')
 
@@ -63,6 +59,10 @@ class AccountProcedures:
         entries = root['data']['children']
         return [load_user_relationship(d) for d in entries]
 
+    async def get_friend(self, name: str) -> UserRelationship:
+        root = await self._client.request('GET', f'/api/v1/me/friends/{name}')
+        return load_user_relationship(root)
+
     async def add_friend(self, name: str, note: Optional[str] = None) -> FriendRelationship:
         json_data = {} if note is None else {'note': note}
         root = await self._client.request('PUT', f'/api/v1/me/friends/{name}', json=json_data)
@@ -71,7 +71,7 @@ class AccountProcedures:
     async def remove_friend(self, name: str) -> None:
         await self._client.request('DELETE', f'/api/v1/me/friends/{name}')
 
-    async def blocked(self) -> Sequence[UserRelationship]:
+    async def list_blocked_users(self) -> Sequence[UserRelationship]:
         try:
             root = await self._client.request('GET', '/prefs/blocked')
 
@@ -107,7 +107,7 @@ class AccountProcedures:
         }
         await self._client.request('POST', '/api/unfriend', data=data)
 
-    async def trusted(self) -> Sequence[UserRelationship]:
+    async def list_trusted_users(self) -> Sequence[UserRelationship]:
         try:
             root = await self._client.request('GET', '/prefs/trusted')
 
@@ -127,7 +127,7 @@ class AccountProcedures:
     async def remove_trusted_user(self, name: str) -> None:
         await self._client.request('POST', '/api/remove_whitelisted', params={'name': name})
 
-    async def messaging(self) -> tuple[Sequence[UserRelationship], Sequence[UserRelationship]]:
+    async def get_blocked_and_trusted_users(self) -> tuple[Sequence[UserRelationship], Sequence[UserRelationship]]:
         try:
             root = await self._client.request('GET', '/prefs/messaging')
 

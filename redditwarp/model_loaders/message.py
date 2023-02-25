@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional, Sequence
 
 from datetime import datetime, timezone
 
@@ -16,15 +16,15 @@ def load_mailbox_message(d: Mapping[str, Any]) -> MailboxMessage:
     )
 
 def load_composed_message(d: Mapping[str, Any]) -> ComposedMessage:
-    src_user_name: str = d['author'] or ''
-    src_subr_name: str = ''
-    dst_user_name: str = ''
-    dst_subr_name: str = ''
+    src_user_name: Optional[str] = d['author']
+    src_subr_name: Optional[str] = None
+    dst_user_name: Optional[str] = None
+    dst_subr_name: Optional[str] = None
     dest: str = d['dest']
     if dest.startswith('#'):
         dst_subr_name = dest.lstrip('#')
     else:
-        src_subr_name = d['subreddit'] or ''
+        src_subr_name = d['subreddit']
         dst_user_name = dest
 
     up = load_mailbox_message(d)
@@ -47,10 +47,10 @@ def load_composed_message(d: Mapping[str, Any]) -> ComposedMessage:
             int(x.partition('_')[2], 36)
             if (x := d['author_fullname']) else
             {
-                '': -1,
+                None: None,
                 'reddit': 81524,
                 'welcomebot': 404087392163,
-            }[src_user_name]
+            }.get(src_user_name)
         ),
     )
 
@@ -92,3 +92,11 @@ def load_comment_message(d: Mapping[str, Any]) -> CommentMessage:
             voted={False: -1, None: 0, True: 1}[d['likes']],
         ),
     )
+
+
+def load_composed_message_thread(d: Mapping[str, Any]) -> Sequence[ComposedMessage]:
+    first = load_composed_message(d)
+    children = []
+    if replies := d['replies']:
+        children = [load_composed_message(d['data']) for d in replies['data']['children']]
+    return [first] + children

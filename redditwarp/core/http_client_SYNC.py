@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
     from ..http.handler_SYNC import Handler
 
-from .const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL
+from .const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL, TRUSTED_ORIGINS
 from ..http.http_client_SYNC import HTTPClient as BaseHTTPClient
 from ..auth.types import AuthorizationGrant
 from .authorizer_SYNC import Authorized
@@ -104,7 +104,8 @@ def build_reddit_http_client(
     authorizer = Authorizer(token_client)
     handler: Handler
     handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
-    handler = DirectByOrigin(connector, {RESOURCE_BASE_URL: handler})
+    directions = {x: handler for x in TRUSTED_ORIGINS}
+    handler = DirectByOrigin(connector, directions)
     http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
     return http
@@ -118,7 +119,8 @@ def build_reddit_http_client_from_access_token(
     authorizer = Authorizer(token=Token(access_token))
     handler: Handler
     handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
-    handler = DirectByOrigin(connector, {RESOURCE_BASE_URL: handler})
+    directions = {x: handler for x in TRUSTED_ORIGINS}
+    handler = DirectByOrigin(connector, directions)
     http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
     return http

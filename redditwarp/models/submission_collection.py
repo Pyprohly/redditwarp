@@ -4,33 +4,46 @@ from typing import Mapping, Any, Sequence, TypeVar, overload, Iterator, Union, f
 
 from datetime import datetime, timezone
 
-from .artifact import IArtifact
+from .datamemento import DatamementoPropertiesMixin
 from ..model_loaders.submission import load_submission
 from .submission import Submission
 
-class SubmissionCollectionInfo(IArtifact):
+class SubmissionCollectionInfo(DatamementoPropertiesMixin):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         self.uuid: str = d['collection_id']
+        ("")
 
         full_id36: str = d['subreddit_id']
         _, _, id36 = full_id36.partition('_')
         self.subreddit_id36: str = id36
+        ("")
         self.subreddit_id: int = int(id36, 36)
+        ("")
 
         full_id36 = d['author_id']
         _, _, id36 = full_id36.partition('_')
         self.author_id36: str = id36
+        ("")
         self.author_id: int = int(id36, 36)
+        ("")
 
-        self.author_name: str = d['author_name']
+        self.author_display_name: str = d['author_name']
+        ("")
         self.title: str = d['title']
+        ("")
         self.description: str = d['description']
+        ("")
 
         self.created_ts: float = d['created_at_utc']
+        ("")
         self.created_at: datetime = datetime.fromtimestamp(self.created_ts, timezone.utc)
+        ("")
         self.last_post_added_ut: float = d['last_update_utc']
+        ("")
         self.last_post_added_at: datetime = datetime.fromtimestamp(self.last_post_added_ut, timezone.utc)
+        ("")
 
         self.display_layout: str = d['display_layout'] or ''
         ("""

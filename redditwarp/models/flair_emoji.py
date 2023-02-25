@@ -4,11 +4,11 @@ from typing import Mapping, Any, Iterator
 
 from dataclasses import dataclass
 
-from .artifact import IArtifact
+from .datamemento import DatamementoDataclassesMixin
 
 
 @dataclass(repr=False, eq=False)
-class FlairEmojiUploadLease(IArtifact):
+class FlairEmojiUploadLease(DatamementoDataclassesMixin):
     d: Mapping[str, Any]
     endpoint: str
     fields: Mapping[str, str]
@@ -36,10 +36,15 @@ class SubredditFlairEmojis(Mapping[str, FlairEmoji]):
         subreddit_id36: str,
     ) -> None:
         self.subreddit_emojis: Mapping[str, FlairEmoji] = subreddit_emojis
+        ("")
         self.reddit_emojis: Mapping[str, FlairEmoji] = reddit_emojis
+        ("")
         self.all_emojis: Mapping[str, FlairEmoji] = all_emojis
+        ("")
         self.subreddit_id36: str = subreddit_id36
+        ("")
         self.subreddit_id: int = int(subreddit_id36, 36)
+        ("")
 
     def __contains__(self, item: object) -> bool:
         return item in self.all_emojis

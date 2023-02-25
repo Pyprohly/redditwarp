@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TypeVar, Optional, Any, Mapping, Iterator
+from typing import Optional, Any, Mapping, Iterator
 from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
@@ -15,12 +15,10 @@ class Token(Mapping[str, object]):
     scope: Optional[str] = None
     d: Mapping[str, object] = field(repr=False, default_factory=dict)
 
-    _TSelf = TypeVar('_TSelf', bound='Token')
-
-    @classmethod
-    def from_dict(cls: type[_TSelf], d: Mapping[str, Any]) -> _TSelf:
+    @staticmethod
+    def from_dict(d: Mapping[str, Any]) -> Token:
         """Create an instance from OAuth2 token data."""
-        return cls(
+        return Token(
             access_token=d['access_token'],
             token_type=d['token_type'],
             expires_in=d.get('expires_in'),

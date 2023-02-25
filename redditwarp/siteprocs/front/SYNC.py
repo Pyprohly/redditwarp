@@ -14,7 +14,11 @@ class FrontProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
         self.pull: Pull = Pull(client)
+        ("""
+            Pull front page submissions.
+            """)
 
     def pull_new_comments(self, amount: Optional[int] = None) -> ImpartedPaginatorChainingIterator[LooseCommentListingPaginator, LooseComment]:
+        """Pull new comments from all of Reddit."""
         p = LooseCommentListingPaginator(self._client, '/comments')
         return ImpartedPaginatorChainingIterator(p, amount)

@@ -40,7 +40,7 @@ class ContinueThisThread(MoreComments):
     def __call__(self, *,
         depth: Optional[int] = None,
     ) -> MoreCommentsTreeNode:
-        node = self.client.p.comment_tree.fetch.by_id36(self.submission_id36, self.comment_id36)
+        node = self.client.p.comment_tree.low.fetch(self.submission_id36, self.comment_id36)
         return MoreCommentsTreeNode(None, node.children[0].children, node.more)
 
 class LoadMoreComments(MoreComments):
@@ -68,7 +68,7 @@ class LoadMoreComments(MoreComments):
         depth: Optional[int] = None,
         exact: bool = False,
     ) -> MoreCommentsTreeNode:
-        return self.client.p.comment_tree.more_children.by_id36(
+        return self.client.p.comment_tree.low.more_children(
             self.submission_id36,
             self.child_id36s,
             sort=self.sort,

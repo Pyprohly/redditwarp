@@ -13,8 +13,8 @@ class GetUserSummary:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, id: int) -> Optional[UserSummary]:
-        id36 = to_base36(id)
+    def __call__(self, idn: int) -> Optional[UserSummary]:
+        id36 = to_base36(idn)
         return self.by_id36(id36)
 
     def by_id36(self, id36: str) -> Optional[UserSummary]:

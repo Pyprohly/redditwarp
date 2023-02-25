@@ -48,9 +48,9 @@ class WikiProcedures:
             root = await self._client.request('GET', f'/r/{sr}/wiki/settings/{page}')
             return load_wiki_page_settings(root['data'], self._client)
 
-        async def set_settings(self, sr: str, page: str, *, permlevel: int, unlisted: bool) -> WikiPageSettings:
+        async def set_settings(self, sr: str, page: str, *, permlevel: int, indexed: bool) -> WikiPageSettings:
             root = await self._client.request('POST', f'/r/{sr}/wiki/settings/{page}',
-                    data={'permlevel': str(permlevel), 'listed': '10'[unlisted]})
+                    data={'permlevel': str(permlevel), 'listed': '01'[indexed]})
             return load_wiki_page_settings(root['data'], self._client)
 
         async def add_editor(self, sr: str, page: str, username: str) -> None:

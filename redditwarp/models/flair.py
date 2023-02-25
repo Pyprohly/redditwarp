@@ -1,13 +1,14 @@
 
-from typing import Any, Mapping, Optional, Sequence
+from __future__ import annotations
+from typing import Any, Mapping, Sequence, Iterator, Union, overload
 
 from dataclasses import dataclass
 
-from .artifact import IArtifact
+from .datamemento import DatamementoDataclassesMixin
 
 
 @dataclass(repr=False, eq=False)
-class FlairTemplate(IArtifact):
+class FlairTemplate(DatamementoDataclassesMixin):
     d: Mapping[str, Any]
     uuid: str
     text_mode: str
@@ -32,7 +33,7 @@ class FlairTemplate(IArtifact):
     ("""
         Whether flair is only available for mods to select.
         """)
-    user_editable: bool
+    text_editable: bool
     ("""
         Whether users are able to edit the flair text.
         """)
@@ -52,29 +53,35 @@ class FlairTemplate(IArtifact):
 
 
 @dataclass(repr=False, eq=False)
-class CurrentFlairChoice:
-    template_uuid: Optional[str]
-    ("""
-        Value is null if no flair template is being used.
-        """)
-    text: str
-    css_class: str
-
-@dataclass(repr=False, eq=False)
 class FlairTemplateChoice:
     uuid: str
     text: str
     css_class: str
-    user_editable: bool
+    text_editable: bool
 
 @dataclass(repr=False, eq=False)
-class FlairChoices:
-    current: Optional[CurrentFlairChoice]
+class FlairTemplateChoices(Sequence[FlairTemplateChoice]):
     choices: Sequence[FlairTemplateChoice]
-    subreddit_user_flair_position: str
+    subreddit_flair_user_position: str
     ("""
         Either: `left`, `right`, or empty string.
         """)
+
+    def __len__(self) -> int:
+        return len(self.choices)
+
+    def __contains__(self, item: object) -> bool:
+        return item in self.choices
+
+    def __iter__(self) -> Iterator[FlairTemplateChoice]:
+        return iter(self.choices)
+
+    @overload
+    def __getitem__(self, index: int) -> FlairTemplateChoice: ...
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[FlairTemplateChoice]: ...
+    def __getitem__(self, index: Union[int, slice]) -> Union[FlairTemplateChoice, Sequence[FlairTemplateChoice]]:
+        return self.choices[index]
 
 
 @dataclass(repr=False, eq=False)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
-    from ...models.flair import FlairTemplate, FlairChoices, UserFlairAssociation
+    from ...models.flair import FlairTemplate, FlairTemplateChoices, UserFlairAssociation
 
 import csv
 from io import StringIO
@@ -17,7 +17,7 @@ from ...pagination.paginators.flair_async1 import UserFlairAssociationAsyncPagin
 from ...model_loaders.flair import (
     load_variant2_flair_template,
     load_variant1_flair_template,
-    load_flair_choices,
+    load_flair_template_choices,
     load_user_flair_association,
 )
 
@@ -25,46 +25,48 @@ class FlairProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def assign_user_flair(self, sr_name: str, name: str,
-            text: Optional[str] = None, css_class: Optional[str] = None) -> None:
-        d = {'name': name}
-        if text is not None:
-            d['text'] = text
-        if css_class is not None:
-            d['css_class'] = css_class
-        await self._client.request('POST', f'/r/{sr_name}/api/flair', data=d)
+    async def set_user_flair(self,
+        sr: str,
+        user: str,
+        text: Optional[str],
+        css_class: Optional[str] = None,
+    ) -> None:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('name', user)
+            if text is not None: yield ('text', text)
+            if css_class is not None: yield ('css_class', css_class)
 
-    async def assign_post_flair(self, sr_name: str, submission_id: int,
-            text: Optional[str] = None, css_class: Optional[str] = None) -> None:
-        full_id36 = 't3_' + to_base36(submission_id)
-        d = {'link': full_id36}
-        if text is not None:
-            d['text'] = text
-        if css_class is not None:
-            d['css_class'] = css_class
-        await self._client.request('POST', f'/r/{sr_name}/api/flair', data=d)
+        await self._client.request('POST', f'/r/{sr}/api/flair', data=dict(g()))
 
-    async def revoke_user_flair(self, sr_name: str, name: str) -> None:
-        await self._client.request('POST', f'/r/{sr_name}/api/flair', data=dict(name=name))
+    async def set_post_flair(self,
+        sr: str,
+        subm: int,
+        text: Optional[str],
+        css_class: Optional[str] = None,
+    ) -> None:
+        full_id36 = 't3_' + to_base36(subm)
 
-    async def revoke_post_flair(self, sr_name: str, submission_id: int) -> None:
-        full_id36 = 't3_' + to_base36(submission_id)
-        await self._client.request('POST', f'/r/{sr_name}/api/flair', data=dict(link=full_id36))
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('link', full_id36)
+            if text is not None: yield ('text', text)
+            if css_class is not None: yield ('css_class', css_class)
 
-    def bulk_update_user_flairs(self,
-        sr_name: str,
-        data: Iterable[Tuple[str, str, str]],
+        await self._client.request('POST', f'/r/{sr}/api/flair', data=dict(g()))
+
+    def bulk_set_user_flairs(self,
+        sr: str,
+        items: Iterable[Tuple[str, str, str]],
     ) -> CallChunkChainingAsyncIterator[bool]:
-        async def mass_update_user_flairs(data: Sequence[Tuple[str, str, str]]) -> Sequence[bool]:
+        async def mass_update_user_flairs(items: Sequence[Tuple[str, str, str]]) -> Sequence[bool]:
             sio = StringIO()
-            csv.writer(sio).writerows(data)
+            csv.writer(sio).writerows(items)
             s = sio.getvalue()
-            root = await self._client.request('POST', f'/r/{sr_name}/api/flaircsv', data={'flair_csv': s})
-            return [i['ok'] for i in root]
+            root = await self._client.request('POST', f'/r/{sr}/api/flaircsv', files={'flair_csv': s})
+            return [d['ok'] for d in root]
 
         itr = map(
             lambda xs: AsyncCallChunk(mass_update_user_flairs, xs),
-            chunked(data, 100),
+            chunked(items, 100),
         )
         return CallChunkChainingAsyncIterator(itr)
 
@@ -78,7 +80,7 @@ class FlairProcedures:
         bg_color: Optional[str] = None,
         fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
-        user_editable: Optional[bool] = None,
+        text_editable: Optional[bool] = None,
         allowable_content: Optional[str] = None,
         max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
@@ -90,7 +92,7 @@ class FlairProcedures:
             ('background_color', bg_color),
             ('text_color', fg_color_scheme),
             ('mod_only', None if mod_only is None else '01'[mod_only]),
-            ('text_editable', None if user_editable is None else '01'[user_editable]),
+            ('text_editable', None if text_editable is None else '01'[text_editable]),
             ('allowable_content', allowable_content),
             ('max_emojis', str(max_emojis)),
         ):
@@ -107,7 +109,7 @@ class FlairProcedures:
         bg_color: Optional[str] = None,
         fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
-        user_editable: Optional[bool] = None,
+        text_editable: Optional[bool] = None,
         allowable_content: Optional[str] = None,
         max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
@@ -119,7 +121,7 @@ class FlairProcedures:
             bg_color=bg_color,
             fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
-            user_editable=user_editable,
+            text_editable=text_editable,
             allowable_content=allowable_content,
             max_emojis=max_emojis,
         )
@@ -132,19 +134,19 @@ class FlairProcedures:
         bg_color: Optional[str] = None,
         fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
-        user_editable: Optional[bool] = None,
+        text_editable: Optional[bool] = None,
         allowable_content: Optional[str] = None,
         max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
         return await self._create_or_update_flair_template(
             sr,
-            flair_type='POST_FLAIR',
+            flair_type='LINK_FLAIR',
             text=text,
             css_class=css_class,
             bg_color=bg_color,
             fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
-            user_editable=user_editable,
+            text_editable=text_editable,
             allowable_content=allowable_content,
             max_emojis=max_emojis,
         )
@@ -158,7 +160,7 @@ class FlairProcedures:
         bg_color: Optional[str] = None,
         fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
-        user_editable: Optional[bool] = None,
+        text_editable: Optional[bool] = None,
         allowable_content: Optional[str] = None,
         max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
@@ -171,7 +173,7 @@ class FlairProcedures:
             bg_color=bg_color,
             fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
-            user_editable=user_editable,
+            text_editable=text_editable,
             allowable_content=allowable_content,
             max_emojis=max_emojis,
         )
@@ -185,23 +187,48 @@ class FlairProcedures:
         bg_color: Optional[str] = None,
         fg_color_scheme: Optional[str] = None,
         mod_only: Optional[bool] = None,
-        user_editable: Optional[bool] = None,
+        text_editable: Optional[bool] = None,
         allowable_content: Optional[str] = None,
         max_emojis: Optional[int] = None,
     ) -> FlairTemplate:
         return await self._create_or_update_flair_template(
             sr,
-            flair_type='USER_FLAIR',
+            flair_type='LINK_FLAIR',
             uuid=uuid,
             text=text,
             css_class=css_class,
             bg_color=bg_color,
             fg_color_scheme=fg_color_scheme,
             mod_only=mod_only,
-            user_editable=user_editable,
+            text_editable=text_editable,
             allowable_content=allowable_content,
             max_emojis=max_emojis,
         )
+
+    async def delete_flair_template(self, sr: str, uuid: str) -> None:
+        await self._client.request('POST', f'/r/{sr}/api/deleteflairtemplate', data={'flair_template_id': uuid})
+
+    async def delete_all_user_flair_templates(self, sr: str) -> None:
+        await self._client.request('POST', f'/r/{sr}/api/clearflairtemplates', data={'flair_type': 'USER_FLAIR'})
+
+    async def delete_all_post_flair_templates(self, sr: str) -> None:
+        await self._client.request('POST', f'/r/{sr}/api/clearflairtemplates', data={'flair_type': 'LINK_FLAIR'})
+
+    async def retrieve_user_flair_templates(self, sr: str) -> Sequence[FlairTemplate]:
+        root = await self._client.request('GET', f'/r/{sr}/api/user_flair_v2')
+        return [load_variant1_flair_template(d) for d in root]
+
+    async def retrieve_post_flair_templates(self, sr: str) -> Sequence[FlairTemplate]:
+        root = await self._client.request('GET', f'/r/{sr}/api/link_flair_v2')
+        return [load_variant1_flair_template(d) for d in root]
+
+    async def reorder_user_flair_templates(self, sr: str, order: Sequence[str]) -> None:
+        params = {'subreddit': sr, 'flair_type': 'USER_FLAIR'}
+        await self._client.request('PATCH', '/api/flair_template_order', params=params, json=order)
+
+    async def reorder_post_flair_templates(self, sr: str, order: Sequence[str]) -> None:
+        params = {'subreddit': sr, 'flair_type': 'LINK_FLAIR'}
+        await self._client.request('PATCH', '/api/flair_template_order', params=params, json=order)
 
     async def assign_user_flair_template(self,
         sr: str,
@@ -209,13 +236,42 @@ class FlairProcedures:
         uuid: str,
         *,
         text: Optional[str] = None,
+    ) -> None:
+        d = {
+            'name': user,
+            'flair_template_id': uuid,
+        }
+        if text is not None:
+            d['text'] = text
+        await self._client.request('POST', f'/r/{sr}/api/selectflair', data=d)
+
+    async def assign_post_flair_template(self,
+        sr: str,
+        subm: int,
+        uuid: str,
+        *,
+        text: Optional[str] = None,
+    ) -> None:
+        full_id36 = 't3_' + to_base36(subm)
+        d = {
+            'link': full_id36,
+            'flair_template_id': uuid,
+        }
+        if text is not None:
+            d['text'] = text
+        await self._client.request('POST', f'/r/{sr}/api/selectflair', data=d)
+
+    async def assign_user_flair(self,
+        sr: str,
+        user: str,
+        text: Optional[str],
         css_class: Optional[str] = None,
+        *,
         bg_color: Optional[str] = None,
         fg_color_scheme: Optional[str] = None,
     ) -> None:
         d = {'name': user}
         for k, v in (
-            ('flair_template_id', uuid),
             ('text', text),
             ('css_class', css_class),
             ('background_color', bg_color),
@@ -225,20 +281,18 @@ class FlairProcedures:
                 d[k] = v
         await self._client.request('POST', f'/r/{sr}/api/selectflair', data=d)
 
-    async def assign_post_flair_template(self,
+    async def assign_post_flair(self,
         sr: str,
-        submission_id: int,
-        uuid: str,
-        *,
-        text: Optional[str] = None,
+        subm: int,
+        text: Optional[str],
         css_class: Optional[str] = None,
+        *,
         bg_color: Optional[str] = None,
         fg_color_scheme: Optional[str] = None,
     ) -> None:
-        full_id36 = 't3_' + to_base36(submission_id)
+        full_id36 = 't3_' + to_base36(subm)
         d = {'link': full_id36}
         for k, v in (
-            ('flair_template_id', uuid),
             ('text', text),
             ('css_class', css_class),
             ('background_color', bg_color),
@@ -248,104 +302,57 @@ class FlairProcedures:
                 d[k] = v
         await self._client.request('POST', f'/r/{sr}/api/selectflair', data=d)
 
-    async def revoke_user_flair_template(self, sr_name: str, name: str) -> None:
-        await self._client.request('POST', f'/r/{sr_name}/api/selectflair', data=dict(name=name))
-
-    async def revoke_post_flair_template(self, sr_name: str, submission_id: int) -> None:
-        full_id36 = 't3_' + to_base36(submission_id)
-        await self._client.request('POST', f'/r/{sr_name}/api/selectflair', data=dict(link=full_id36))
-
-    async def delete_user_flair_template(self, sr_name: str, uuid: str) -> None:
-        await self._client.request('POST', f'/r/{sr_name}/api/deleteflairtemplate',
-                data=dict(flair_template_id=uuid))
-
-    async def delete_post_flair_template(self, sr_name: str, uuid: str) -> None:
-        await self.delete_user_flair_template(sr_name, uuid)
-
-    async def delete_all_user_flair_templates(self, sr_name: str) -> None:
-        await self._client.request('POST', f'/r/{sr_name}/api/clearflairtemplates', data={'flair_type': 'USER_FLAIR'})
-
-    async def delete_all_post_flair_templates(self, sr_name: str) -> None:
-        await self._client.request('POST', f'/r/{sr_name}/api/clearflairtemplates', data={'flair_type': 'POST_FLAIR'})
-
     async def configure_subreddit_flair_settings(self,
-        sr_name: str,
+        sr: str,
         *,
-        user_flair_enabled: Optional[bool],
-        user_flair_position: Optional[str],
-        user_flair_self_assign: Optional[bool],
-        post_flair_position: Optional[str],
-        post_flair_self_assign: Optional[bool],
+        user_enabled: Optional[bool] = False,
+        user_position: Optional[str] = '',
+        user_self_assign: Optional[bool] = False,
+        post_position: Optional[str] = '',
+        post_self_assign: Optional[bool] = False,
     ) -> None:
         def g() -> Iterable[tuple[str, str]]:
-            if user_flair_enabled is not None:
-                yield ('flair_enabled', '01'[user_flair_enabled])
-            if user_flair_position is not None:
-                yield ('flair_position', user_flair_position)
-            if user_flair_self_assign is not None:
-                yield ('flair_self_assign_enabled', '01'[user_flair_self_assign])
-            if post_flair_position is not None:
-                yield ('link_flair_position', post_flair_position)
-            if post_flair_self_assign is not None:
-                yield ('link_flair_self_assign_enabled', '01'[post_flair_self_assign])
+            if user_enabled is not None:
+                yield ('flair_enabled', '01'[user_enabled])
+            if user_position is not None:
+                yield ('flair_position', user_position)
+            if user_self_assign is not None:
+                yield ('flair_self_assign_enabled', '01'[user_self_assign])
+            if post_position is not None:
+                yield ('link_flair_position', post_position)
+            if post_self_assign is not None:
+                yield ('link_flair_self_assign_enabled', '01'[post_self_assign])
 
-        await self._client.request('POST', f'/r/{sr_name}/api/flairconfig', data=dict(g()))
+        await self._client.request('POST', f'/r/{sr}/api/flairconfig', data=dict(g()))
 
-    async def reorder_user_flair_templates(self, sr_name: str, order: Sequence[str]) -> None:
-        params = {'subreddit': sr_name, 'flair_type': 'USER_FLAIR'}
-        await self._client.request('PATCH', '/api/flair_template_order', params=params, json=order)
+    async def get_user_flair_template_choices(self, sr: str) -> FlairTemplateChoices:
+        root = await self._client.request('POST', f'/r/{sr}/api/flairselector')
+        return load_flair_template_choices(root)
 
-    async def reorder_post_flair_templates(self, sr_name: str, order: Sequence[str]) -> None:
-        params = {'subreddit': sr_name, 'flair_type': 'POST_FLAIR'}
-        await self._client.request('PATCH', '/api/flair_template_order', params=params, json=order)
+    async def get_post_flair_template_choices(self, sr: str) -> FlairTemplateChoices:
+        root = await self._client.request('POST', f'/r/{sr}/api/flairselector', data={'is_newlink': '1'})
+        return load_flair_template_choices(root)
 
-    async def get_user_flair_templates(self, sr_name: str) -> Sequence[FlairTemplate]:
-        root = await self._client.request('GET', f'/r/{sr_name}/api/user_flair_v2')
-        return [load_variant1_flair_template(i) for i in root]
-
-    async def get_post_flair_templates(self, sr_name: str) -> Sequence[FlairTemplate]:
-        root = await self._client.request('GET', f'/r/{sr_name}/api/link_flair_v2')
-        return [load_variant1_flair_template(i) for i in root]
-
-    async def get_user_flair_choices(self, sr_name: str, name: Optional[str]) -> Optional[FlairChoices]:
-        d = {}
-        if name is not None:
-            d['name'] = name
-        root = await self._client.request('POST', f'/r/{sr_name}/api/flairselector', data=d)
-        if root == '{}':
-            return None
-        return load_flair_choices(root)
-
-    async def get_post_flair_choices(self, sr_name: str, submission_id: Optional[int]) -> Optional[FlairChoices]:
-        d = {'is_newlink': '1'}
-        if submission_id is not None:
-            full_id36 = to_base36(submission_id)
-            d['link'] = full_id36
-        root = await self._client.request('POST', f'/r/{sr_name}/api/flairselector', data=d)
-        if root == '{}':
-            return None
-        return load_flair_choices(root)
-
-    async def get_user_flair_association(self, sr_name: str, name: str) -> Optional[UserFlairAssociation]:
-        params = {'name': name, 'limit': '1'}
-        root = await self._client.request('GET', f'/r/{sr_name}/api/flairlist', params=params)
+    async def get_user_flair_association(self, sr: str, user: str) -> Optional[UserFlairAssociation]:
+        params = {'name': user, 'limit': '1'}
+        root = await self._client.request('GET', f'/r/{sr}/api/flairlist', params=params)
         users_data = root['users']
         if not users_data:
             return None
         user_data = users_data[0]
-        if user_data['user'].lower() != name.lower():
+        if user_data['user'].lower() != user.lower():
             return None
         return load_user_flair_association(user_data)
 
     def get_user_flair_associations(self,
-        sr_name: str,
+        sr: str,
         amount: Optional[int] = None,
     ) -> ImpartedPaginatorChainingAsyncIterator[UserFlairAssociationAsyncPaginator, UserFlairAssociation]:
-        p = UserFlairAssociationAsyncPaginator(self._client, f'/r/{sr_name}/api/flairlist')
+        p = UserFlairAssociationAsyncPaginator(self._client, f'/r/{sr}/api/flairlist')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    async def show_my_flair(self, sr_name: str) -> None:
-        await self._client.request('GET', f'/r/{sr_name}/api/setflairenabled', params={'flair_enabled': '1'})
+    async def show_my_flair(self, sr: str) -> None:
+        await self._client.request('GET', f'/r/{sr}/api/setflairenabled', params={'flair_enabled': '1'})
 
-    async def hide_my_flair(self, sr_name: str) -> None:
-        await self._client.request('GET', f'/r/{sr_name}/api/setflairenabled', params={'flair_enabled': '0'})
+    async def hide_my_flair(self, sr: str) -> None:
+        await self._client.request('GET', f'/r/{sr}/api/setflairenabled', params={'flair_enabled': '0'})

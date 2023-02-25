@@ -111,6 +111,8 @@ class Urllib3Connector(Connector):
                         fields[pt.name] = pt.text
                     elif isinstance(pt, payload.MultipartFormData.FileField):
                         fields[pt.name] = (pt.filename, pt.file.read(), pt.content_type)
+                    else:
+                        raise ValueError('unexpected multipart field type: ' + repr(pt))
 
                 resp = self.http.request_encode_body(
                     r.verb,

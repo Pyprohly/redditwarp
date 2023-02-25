@@ -4,16 +4,9 @@ from typing import Mapping, Any, Optional
 
 from datetime import datetime, timezone
 
-from .artifact import IArtifact
+from .datamemento import DatamementoPropertiesMixin
 
-class ModeratedSubreddit(IArtifact):
-    """
-    Moderated subreddits that are user subreddits lack the `created_utc` backing field,
-    so
-
-    The :attr:`created_ut` and :attr:`created_at` attributes contain nonsense values if
-    the subreddit is a user subreddit. This is because 
-    """
+class ModeratedSubreddit(DatamementoPropertiesMixin):
     class Me:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.is_subscribed: bool = d['user_is_subscriber']
@@ -59,10 +52,15 @@ class ModeratedSubreddit(IArtifact):
             self.created_at = datetime.fromtimestamp(self.created_ut, timezone.utc)
 
         self.title: str = d['title']
+        ("")
         self.subscriber_count: int = d['subscribers']
+        ("")
         self.nsfw: bool = d['over_18']
+        ("")
         self.icon_img: str = d['icon_img']
+        ("")
 
         self.me: Optional[ModeratedSubreddit.Me] = None
+        ("")
         if 'user_is_subscriber' in d:
             self.me = self.Me(d)

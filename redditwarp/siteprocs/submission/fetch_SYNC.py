@@ -17,8 +17,8 @@ class Common(Generic[T]):
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def __call__(self, id: int) -> T:
-        id36 = to_base36(id)
+    def __call__(self, idn: int) -> T:
+        id36 = to_base36(idn)
         return self.by_id36(id36)
 
     def _load_object(self, m: Mapping[str, Any]) -> T:

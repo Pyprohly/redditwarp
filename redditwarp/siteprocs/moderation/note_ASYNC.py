@@ -3,10 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Sequence, Iterable
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
-    from ...models.moderation_note import ModerationUserNote
+    from ...models.moderation_note import (
+        ModerationNote,
+        ModerationUserNote,
+    )
 
 from ...pagination.paginator_chaining_async_iterator import ImpartedPaginatorChainingAsyncIterator
-from ...pagination.paginators.moderation.note_pulls_async1 import ModerationNoteAsyncPaginator
+from ...pagination.paginators.moderation.note_pulls_async1 import (
+    ModerationNoteAsyncPaginator,
+    ModerationUserNoteAsyncPaginator,
+)
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.async_call_chunk import AsyncCallChunk
@@ -17,7 +23,7 @@ class Note:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def create_user_note(self, subreddit: str, user: str, note: str, *,
+    async def create_user_note(self, sr: str, user: str, content: str, *,
             label: str = '',
             anchor_submission_id: Optional[int] = None,
             anchor_comment_id: Optional[int] = None) -> ModerationUserNote:
@@ -25,39 +31,56 @@ class Note:
         if len(mxp) - mxp.count(None) > 1:
             raise TypeError("mutually exclusive parameters: `anchor_submission_id`, `anchor_comment_id`.")
 
-        params = {'subreddit': subreddit, 'user': user, 'label': label}
+        params = {'subreddit': sr, 'user': user, 'note': content, 'label': label}
         root = await self._client.request('POST', '/api/mod/notes', params=params)
         return load_moderation_user_note(root['created'])
 
-    def pulls(self,
-        subreddit: str,
+    async def delete(self, sr: str, user: str, uuid: str) -> None:
+        params = {'subreddit': sr, 'user': user, 'note_id': 'ModNote_' + uuid}
+        await self._client.request('DELETE', '/api/mod/notes', params=params)
+
+    def pull_notes(self,
+        sr: str,
         user: str,
         amount: Optional[int] = None,
         *,
-        type: Optional[str] = None,
-    ) -> ImpartedPaginatorChainingAsyncIterator[ModerationNoteAsyncPaginator, ModerationUserNote]:
+        label: Optional[str] = None,
+    ) -> ImpartedPaginatorChainingAsyncIterator[ModerationNoteAsyncPaginator, ModerationNote]:
         p = ModerationNoteAsyncPaginator(
             client=self._client,
             url='/api/mod/notes',
-            subreddit=subreddit,
+            subreddit=sr,
             user=user,
-            type=type,
+            type=label,
         )
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    async def delete(self, note_uuid: str, subreddit: str, user: str) -> None:
-        params = {'note_id': 'ModNote_' + note_uuid, 'subreddit': subreddit, 'user': user}
-        await self._client.request('DELETE', '/api/mod/notes', params=params)
+    def pull_user_notes(self,
+        sr: str,
+        user: str,
+        amount: Optional[int] = None,
+    ) -> ImpartedPaginatorChainingAsyncIterator[ModerationUserNoteAsyncPaginator, ModerationUserNote]:
+        p = ModerationUserNoteAsyncPaginator(
+            client=self._client,
+            url='/api/mod/notes',
+            subreddit=sr,
+            user=user,
+            type='NOTE',
+        )
+        return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    async def get_latest_user_note(self, subreddit: str, user: str) -> Optional[ModerationUserNote]:
-        params = {'subreddits': subreddit, 'users': user}
+    async def get_latest_user_note(self, sr: str, user: str) -> Optional[ModerationUserNote]:
+        params = {'subreddits': sr, 'users': user}
         try:
             root = await self._client.request('GET', '/api/mod/notes/recent', params=params)
         except http.exceptions.StatusCodeException as e:
             if e.status_code == 400:
                 return None
             raise
-        return load_moderation_user_note(root['mod_notes'][0])
+        note_obj = root['mod_notes'][0]
+        if note_obj is None:
+            return None
+        return load_moderation_user_note(note_obj)
 
     def bulk_get_latest_user_note(self, pairs: Iterable[tuple[str, str]]) -> CallChunkChainingAsyncIterator[Optional[ModerationUserNote]]:
         async def mass_get_latest_user_note(pairs: Sequence[tuple[str, str]]) -> Sequence[Optional[ModerationUserNote]]:

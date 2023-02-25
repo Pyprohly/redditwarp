@@ -12,6 +12,7 @@ class SubredditUser:
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         full_id36: str = d['id']
         _, _, id36 = full_id36.partition('_')
         self.id36: str = id36
@@ -35,6 +36,7 @@ class SubredditUser:
             Usually `(256, 256)`.
             """)
         self.added_ut: int = 0
+        ("")
 
 class Moderator(SubredditUser):
     def __init__(self, d: Mapping[str, Any]) -> None:
@@ -72,6 +74,12 @@ class BannedUser(SubredditUser):
         self.agent_name: str = d['bannedBy']
         ("""
             Name of the moderator who banned the user.
+
+            Unknown what happens if the user is deleted.
+            Is the value `[deleted]`, an empty string, or does the field in the
+            underlying object not exist?
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
             """)
         self.reason: str = d['reason'] or ''
         ("""
@@ -102,6 +110,12 @@ class MutedUser(SubredditUser):
         self.agent_name: str = d['mutedBy']
         ("""
             Name of the moderator who muted the user.
+
+            Unknown what happens if the user is deleted.
+            Is the value `[deleted]`, an empty string, or does the field in the
+            underlying object not exist?
+            If you have any information about this, please open an issue report at
+            `<https://github.com/Pyprohly/redditwarp/issues>`_.
             """)
         self.reason: str = d['reason']
         ("""

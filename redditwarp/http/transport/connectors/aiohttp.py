@@ -84,6 +84,8 @@ class AiohttpConnector(Connector):
                     data.add_field(pt.name, pt.text)
                 elif isinstance(pt, payload.MultipartFormData.FileField):
                     data.add_field(pt.name, pt.file, filename=pt.filename, content_type=pt.content_type)
+                else:
+                    raise ValueError('unexpected multipart field type: ' + repr(pt))
 
         else:
             raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")

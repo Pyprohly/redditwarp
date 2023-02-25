@@ -83,27 +83,6 @@ class RedditError(APIError):
 
     Errors from Reddit's API typically consist of three pieces of information:
     an error label, an explanation, and the name of a related parameter field.
-
-    .. .ATTRIBUTES
-
-    .. # attribute:: label
-       :type: str
-
-       A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
-       In rare cases this label may not always be in uppercase. It can even contain spaces.
-       The value may be an empty string.
-
-    .. # attribute:: explanation
-       :type: str
-
-       A description for the error.
-       The value may be an empty string.
-
-    .. # attribute:: field
-       :type: str
-
-       The name of the parameter relevant to the error, if applicable.
-       The value may be an empty string.
     """
 
     __match_args__ = ('label',)
@@ -118,20 +97,20 @@ class RedditError(APIError):
         super().__init__(arg)
         self.label: str = label
         ("""
-        A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
-        In rare cases this label may not always be in uppercase. It can even contain spaces.
-        The value may be an empty string.
-        """)
+            A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
+            In rare cases this label may not always be in uppercase. It can even contain spaces.
+            The value may be an empty string.
+            """)
         self.explanation: str = explanation
         ("""
-        A description for the error.
-        The value may be an empty string.
-        """)
+            A description for the error.
+            The value may be an empty string.
+            """)
         self.field: str = field
         ("""
-        The name of the parameter relevant to the error, if applicable.
-        The value may be an empty string.
-        """)
+            The name of the parameter relevant to the error, if applicable.
+            The value may be an empty string.
+            """)
 
     def get_default_message(self) -> str:
         la = self.label

@@ -16,7 +16,7 @@ class MessageProcedures:
         self._client = client
         self.pulls: Pulls = Pulls(client)
 
-    async def get_message_thread(self, idn: int) -> Sequence[ComposedMessage]:
+    async def get_thread(self, idn: int) -> Sequence[ComposedMessage]:
         id36 = to_base36(idn)
         root = await self._client.request('GET', f'/message/messages/{id36}')
         obj_data = root['data']['children'][0]['data']

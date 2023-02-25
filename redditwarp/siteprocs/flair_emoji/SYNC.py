@@ -15,7 +15,30 @@ class FlairEmojiProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    def retrieve_subreddit_emojis(self, sr: str) -> SubredditFlairEmojis:
+    def retrieve(self, sr: str) -> SubredditFlairEmojis:
+        """Get a list of all flair emojis in a subreddit.
+
+        .. .PARAMETERS
+
+        :param `str` sr:
+
+        .. .RETURNS
+
+        :returns: A mapping from flair emoji name to
+            :class:`~.models.flair_emoji.FlairEmoji`.
+        :rtype: :class:`~.models.flair_emoji.SubredditFlairEmojis`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            + `403`:
+                The specified subreddit cannot be accessed.
+            + `500`:
+                The specified subreddit does not exist.
+        """
         root = self._client.request('GET', f'/api/v1/{sr}/emojis/all')
         root = dict(root)
         reddit_emojis_root = root.pop('snoomojis')
@@ -42,15 +65,15 @@ class FlairEmojiProcedures:
             file: IO[bytes],
             *,
             filepath: Optional[str] = None,
-            post_enabled: bool = True,
-            user_enabled: bool = True,
             mod_only: bool = False,
+            user_enabled: bool = True,
+            post_enabled: bool = True,
             timeout: float = 1000,
         ) -> None:
             upload_lease = self.upload(file, sr=sr, filepath=filepath, timeout=timeout)
             self.add(sr, upload_lease.s3_object_key, name,
-                    post_enabled=post_enabled,
                     user_enabled=user_enabled,
+                    post_enabled=post_enabled,
                     mod_only=mod_only)
 
         def obtain_upload_lease(self,
@@ -95,54 +118,147 @@ class FlairEmojiProcedures:
             name: str,
             s3_object_key: str,
             *,
-            post_enabled: bool = True,
-            user_enabled: bool = True,
             mod_only: bool = False,
+            user_enabled: bool = True,
+            post_enabled: bool = True,
         ) -> None:
             data = {
                 's3_key': s3_object_key,
                 'name': name,
-                'post_flair_allowed': '01'[post_enabled],
                 'user_flair_allowed': '01'[user_enabled],
+                'post_flair_allowed': '01'[post_enabled],
                 'mod_flair_only': '01'[mod_only],
             }
             self._client.request('POST', f'/api/v1/{sr}/emoji', data=data)
 
     create: cached_property[Create] = cached_property(Create)
+    ("""
+        Create a new flair emoji.
 
-    def set_emoji_permissions(self,
+        .. .PARAMETERS
+
+        :param `str` sr:
+        :param `str` name:
+        :param `IO[bytes]` file:
+        :param `Optional[str]` filepath:
+        :param `bool` mod_only:
+        :param `bool` post_enabled:
+        :param `bool` user_enabled:
+        :param `float` timeout:
+
+        .. .RETURNS
+
+        :rtype: `None`
+        """)
+
+    def set_permissions(self,
         sr: str,
-        emoji_name: str,
+        name: str,
         *,
         mod_only: bool = False,
-        post_enabled: bool = True,
         user_enabled: bool = True,
+        post_enabled: bool = True,
     ) -> None:
+        """Change emoji permissions.
+
+        .. .PARAMETERS
+
+        :param `str` sr:
+        :param `str` name:
+        :param `bool` mod_only:
+        :param `bool` user_enabled:
+        :param `bool` post_enabled:
+
+        .. .RETURNS
+
+        :rtype: `None`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            + `403`:
+                You do not have permission.
+            + `404`:
+                The specified emoji doesn't exist.
+            + `500`:
+               - The specified subreddit does not exist.
+               - The specified emoji name was empty.
+        """
         data = {
-            'name': emoji_name,
+            'name': name,
             'mod_flair_only': '01'[mod_only],
-            'post_flair_allowed': '01'[post_enabled],
             'user_flair_allowed': '01'[user_enabled],
+            'post_flair_allowed': '01'[post_enabled],
         }
         self._client.request('POST', f'/api/v1/{sr}/emoji_permissions', data=data)
 
-    def delete(self, sr: str, emoji_name: str) -> None:
-        self._client.request('DELETE', f'/api/v1/{sr}/emoji/{emoji_name}')
+    def delete(self, sr: str, name: str) -> None:
+        """Delete a flair emoji.
 
-    def set_custom_emoji_size(self, sr: str, size: Optional[tuple[int, int]]) -> None:
-        data = None
-        if size is not None:
-            w, h = size
-            data = {
-                'width': str(w),
-                'height': str(h),
-            }
-        self._client.request('POST', f'/api/v1/{sr}/emoji_custom_size', data=data)
+        .. .PARAMETERS
 
-    def enable_emojis_in_sr(self, sr: str) -> None:
+        :param `str` sr:
+        :param `str` name:
+
+        .. .RETURNS
+
+        :rtype: `None`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            + `400`:
+               - The specified subreddit does not exist.
+               - The specified emoji name was empty.
+        """
+        self._client.request('DELETE', f'/api/v1/{sr}/emoji/{name}')
+
+    def enable_emojis_in_subreddit(self, sr: str) -> None:
+        """Enable flair emojis in a subreddit.
+
+        .. .PARAMETERS
+
+        :param `str` sr:
+
+        .. .RETURNS
+
+        :rtype: `None`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            + `403`:
+                You do not have permission.
+            + `500`:
+               - The specified subreddit does not exist.
+               - The specified subreddit was empty.
+        """
         data = {'subreddit': sr, 'enable': '1'}
         self._client.request('POST', '/api/enable_emojis_in_sr', data=data)
 
-    def disable_emojis_in_sr(self, sr: str) -> None:
+    def disable_emojis_in_subreddit(self, sr: str) -> None:
+        """Disable flair emojis in a subreddit.
+
+        .. .PARAMETERS
+
+        :param `str` sr:
+
+        .. .RETURNS
+
+        :rtype: `None`
+
+        .. .RAISES
+
+        :(raises): Same as :meth:`.enable_emojis_in_subreddit`.
+        """
         data = {'subreddit': sr, 'enable': '0'}
         self._client.request('POST', '/api/enable_emojis_in_sr', data=data)

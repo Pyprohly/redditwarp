@@ -11,20 +11,25 @@ class LiveThread(BaseLiveThread):
         super().__init__(d)
         self.client: Client = client
 
-    def configure(self, title: str, description: str, resources: str, nsfw: bool) -> None:
-        self.client.p.live_thread.configure(self.idt, title, description, resources, nsfw)
+    def config(self,
+        title: str,
+        description: str,
+        resources: str,
+        nsfw: bool,
+    ) -> None:
+        self.client.p.live_thread.config(self.idt, title, description, resources, nsfw)
 
-    def get_live_update(self, update_uuid: str) -> LiveUpdate:
-        return self.client.p.live_thread.get_live_update(self.idt, update_uuid)
+    def get_update(self, uuid: str) -> LiveUpdate:
+        return self.client.p.live_thread.get_update(self.idt, uuid)
 
-    def create_live_update(self, body: str) -> None:
-        self.client.p.live_thread.create_live_update(self.idt, body)
+    def create_update(self, body: str) -> None:
+        self.client.p.live_thread.create_update(self.idt, body)
 
-    def strike_live_update(self, update_uuid: str) -> None:
-        self.client.p.live_thread.strike_live_update(self.idt, update_uuid)
+    def strike_update(self, uuid: str) -> None:
+        self.client.p.live_thread.strike_update(self.idt, uuid)
 
-    def delete_live_update(self, update_uuid: str) -> None:
-        self.client.p.live_thread.delete_live_update(self.idt, update_uuid)
+    def delete_update(self, uuid: str) -> None:
+        self.client.p.live_thread.delete_update(self.idt, uuid)
 
 
 class LiveUpdate(BaseLiveUpdate):

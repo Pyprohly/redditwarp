@@ -4,21 +4,26 @@ from typing import Mapping, Any
 
 from datetime import datetime, timezone
 
-from .artifact import Artifact
+from .datamemento import DatamementoBase
 
-class MyAccount(Artifact):
+class MyAccount(DatamementoBase):
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.name: str = d['display_name']
+            ("")
             self.openness: str = d['subreddit_type']
             ("""
                 Either: `public`, `private`, `restricted`, `archived`,
                 `employees_only`, `gold_only`, `gold_restricted`, or `user`.
                 """)
             self.subscriber_count: int = d['subscribers']
+            ("")
             self.title: str = d['title']
+            ("")
             self.public_description: str = d['public_description']
+            ("")
             self.nsfw: bool = d['over_18']
+            ("")
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
@@ -43,10 +48,15 @@ class MyAccount(Artifact):
             Datetime object of when the current user account was created.
             """)
         self.post_karma: int = d['link_karma']
+        ("")
         self.comment_karma: int = d['comment_karma']
+        ("")
         self.awardee_karma: int = d['awardee_karma']
+        ("")
         self.awarder_karma: int = d['awarder_karma']
+        ("")
         self.total_karma: int = d['total_karma']
+        ("")
         self.has_mail: bool = d['has_mail']
         ("""
             True if the current user has a new inbox message.

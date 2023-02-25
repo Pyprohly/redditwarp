@@ -4,10 +4,10 @@ from typing import Mapping, Any
 
 from dataclasses import dataclass
 
-from ..artifact import IArtifact
+from ..datamemento import DatamementoDataclassesMixin
 
 @dataclass(repr=False, eq=False)
-class Widget(IArtifact):
+class Widget(DatamementoDataclassesMixin):
     d: Mapping[str, Any]
     idt: str
     kind: str

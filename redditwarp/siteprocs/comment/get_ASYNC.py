@@ -13,8 +13,8 @@ class Get:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def __call__(self, id: int) -> Optional[Comment]:
-        id36 = to_base36(id)
+    async def __call__(self, idn: int) -> Optional[Comment]:
+        id36 = to_base36(idn)
         return await self.by_id36(id36)
 
     async def by_id36(self, id36: str) -> Optional[Comment]:

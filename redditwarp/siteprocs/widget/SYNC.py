@@ -486,7 +486,7 @@ class WidgetProcedures:
 
     create: cached_property[Create] = cached_property(Create)
 
-    class Update:
+    class Replace:
         def __init__(self, outer: WidgetProcedures) -> None:
             self._client = outer._client
 
@@ -695,7 +695,7 @@ class WidgetProcedures:
             root = self._invoke(sr, idt, json=json)
             return load_rules_widget(root)
 
-    update: cached_property[Update] = cached_property(Update)
+    replace: cached_property[Replace] = cached_property(Replace)
 
     def create_menu_bar_tabs(self,
         sr: str,
@@ -710,7 +710,7 @@ class WidgetProcedures:
         root = self._client.request('POST', f'/r/{sr}/api/widget', json=json)
         return load_menu_bar(root)
 
-    def update_menu_bar_tabs(self,
+    def replace_menu_bar_tabs(self,
         sr: str,
         idt: str,
         *,

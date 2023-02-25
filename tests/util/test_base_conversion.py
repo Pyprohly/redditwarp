@@ -7,12 +7,13 @@ def test_base_digits() -> None:
     assert list(base_digits(10, 1746)) == [6,4,7,1]
     assert ''.join(map(str, reversed(list(base_digits(10, 385))))) == '385'
     assert list(base_digits(36, 1746)) == [18, 12, 1]
-    assert list(base_digits(17, 0)) == []
 
     with pytest.raises(ValueError):
-        base_digits(1, 99)
+        base_digits(1, 17)
     with pytest.raises(ValueError):
-        base_digits(99, -1)
+        base_digits(17, 0)
+    with pytest.raises(ValueError):
+        base_digits(17, -1)
 
 def test_to_base() -> None:
     assert to_base(4, 643, '0123') == '22003'

@@ -4,10 +4,10 @@ from typing import Any, Mapping
 
 from dataclasses import dataclass
 
-from .artifact import IArtifact
+from .datamemento import DatamementoDataclassesMixin
 
 @dataclass(repr=False, eq=False)
-class Trophy(IArtifact):
+class Trophy(DatamementoDataclassesMixin):
     d: Mapping[str, Any]
     name: str
     ("""

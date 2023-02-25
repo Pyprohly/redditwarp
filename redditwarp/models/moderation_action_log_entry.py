@@ -4,10 +4,10 @@ from typing import Any, Mapping
 from datetime import datetime
 from dataclasses import dataclass
 
-from .artifact import IArtifact
+from .datamemento import DatamementoDataclassesMixin
 
 @dataclass(repr=False, eq=False)
-class ModerationActionLogEntry(IArtifact):
+class ModerationActionLogEntry(DatamementoDataclassesMixin):
     #_: KW_ONLY
     d: Mapping[str, Any]
     uuid: str

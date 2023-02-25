@@ -12,7 +12,7 @@ json_decode: Callable[[str], Any] = json_decoder.decode
 def json_loads_response(response: Response, /) -> Any:
     """Return the JSON data contained in a response object.
 
-    .. RAISES
+    .. .RAISES
 
     :raises ValueError:
         * The `Content-Type` header does not start with `application/json`.

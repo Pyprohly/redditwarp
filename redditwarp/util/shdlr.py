@@ -1,7 +1,7 @@
 """A general purpose event scheduler.
 
 This is just a reimplementation of the `sched` module from the standard library,
-however, the names of the methods are different.
+but the names of the methods are different.
 """
 
 from __future__ import annotations
@@ -48,9 +48,9 @@ class Handle:
         return self._entry.when
     def get_callback(self) -> Callable[[], None]:
         return self._entry.callback
-    def get_scheduled(self) -> bool:
+    def is_scheduled(self) -> bool:
         return self._entry.scheduled
-    def get_cancelled(self) -> bool:
+    def is_cancelled(self) -> bool:
         return self._entry.cancelled
 
     def cancel(self) -> None:

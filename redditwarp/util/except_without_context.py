@@ -12,11 +12,13 @@ class except_without_context(ContextManager[bool]):
 
     Example 1::
 
+        #region common
         def f() -> None:
             try:
                 raise LookupError
             except LookupError as e:
                 raise KeyError from e
+        #regionend
 
         try:
             raise PermissionError

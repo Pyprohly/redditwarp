@@ -15,7 +15,7 @@ class FlairEmojiProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def retrieve_subreddit_emojis(self, sr: str) -> SubredditFlairEmojis:
+    async def retrieve(self, sr: str) -> SubredditFlairEmojis:
         root = await self._client.request('GET', f'/api/v1/{sr}/emojis/all')
         root = dict(root)
         reddit_emojis_root = root.pop('snoomojis')
@@ -42,15 +42,15 @@ class FlairEmojiProcedures:
             file: IO[bytes],
             *,
             filepath: Optional[str] = None,
-            post_enabled: bool = True,
-            user_enabled: bool = True,
             mod_only: bool = False,
+            user_enabled: bool = True,
+            post_enabled: bool = True,
             timeout: float = 1000,
         ) -> None:
             upload_lease = await self.upload(file, sr=sr, filepath=filepath, timeout=timeout)
             await self.add(sr, upload_lease.s3_object_key, name,
-                    post_enabled=post_enabled,
                     user_enabled=user_enabled,
+                    post_enabled=post_enabled,
                     mod_only=mod_only)
 
         async def obtain_upload_lease(self,
@@ -95,54 +95,44 @@ class FlairEmojiProcedures:
             name: str,
             s3_object_key: str,
             *,
-            post_enabled: bool = True,
-            user_enabled: bool = True,
             mod_only: bool = False,
+            user_enabled: bool = True,
+            post_enabled: bool = True,
         ) -> None:
             data = {
                 's3_key': s3_object_key,
                 'name': name,
-                'post_flair_allowed': '01'[post_enabled],
                 'user_flair_allowed': '01'[user_enabled],
+                'post_flair_allowed': '01'[post_enabled],
                 'mod_flair_only': '01'[mod_only],
             }
             await self._client.request('POST', f'/api/v1/{sr}/emoji', data=data)
 
     create: cached_property[Create] = cached_property(Create)
 
-    async def set_emoji_permissions(self,
+    async def set_permissions(self,
         sr: str,
-        emoji_name: str,
+        name: str,
         *,
         mod_only: bool = False,
-        post_enabled: bool = True,
         user_enabled: bool = True,
+        post_enabled: bool = True,
     ) -> None:
         data = {
-            'name': emoji_name,
+            'name': name,
             'mod_flair_only': '01'[mod_only],
-            'post_flair_allowed': '01'[post_enabled],
             'user_flair_allowed': '01'[user_enabled],
+            'post_flair_allowed': '01'[post_enabled],
         }
         await self._client.request('POST', f'/api/v1/{sr}/emoji_permissions', data=data)
 
-    async def delete(self, sr: str, emoji_name: str) -> None:
-        await self._client.request('DELETE', f'/api/v1/{sr}/emoji/{emoji_name}')
+    async def delete(self, sr: str, name: str) -> None:
+        await self._client.request('DELETE', f'/api/v1/{sr}/emoji/{name}')
 
-    async def set_custom_emoji_size(self, sr: str, size: Optional[tuple[int, int]]) -> None:
-        data = None
-        if size is not None:
-            w, h = size
-            data = {
-                'width': str(w),
-                'height': str(h),
-            }
-        await self._client.request('POST', f'/api/v1/{sr}/emoji_custom_size', data=data)
-
-    async def enable_emojis_in_sr(self, sr: str) -> None:
+    async def enable_emojis_in_subreddit(self, sr: str) -> None:
         data = {'subreddit': sr, 'enable': '1'}
         await self._client.request('POST', '/api/enable_emojis_in_sr', data=data)
 
-    async def disable_emojis_in_sr(self, sr: str) -> None:
+    async def disable_emojis_in_subreddit(self, sr: str) -> None:
         data = {'subreddit': sr, 'enable': '0'}
         await self._client.request('POST', '/api/enable_emojis_in_sr', data=data)

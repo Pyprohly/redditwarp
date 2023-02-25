@@ -4,10 +4,10 @@ from typing import Mapping, Any
 
 from dataclasses import dataclass
 
-from ..artifact import IArtifact
+from ..datamemento import DatamementoDataclassesMixin
 
 @dataclass(repr=False, eq=False)
-class WidgetImageUploadLease(IArtifact):
+class WidgetImageUploadLease(DatamementoDataclassesMixin):
     d: Mapping[str, Any]
     endpoint: str
     fields: Mapping[str, str]

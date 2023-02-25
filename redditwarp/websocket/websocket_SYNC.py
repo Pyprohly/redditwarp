@@ -128,7 +128,7 @@ class PartiallyImplementedWebSocket(WebSocket):
         yield
 
     def pulse(self, *, timeout: float = -2) -> Iterator[object]:
-        """Process one frame’s worth of incoming data and possibly generate events for it."""
+        """Process one frame's worth of incoming data and possibly generate events for it."""
         if self.state == ConnectionState.CLOSED:
             raise exceptions.ConnectionClosedException
         if self.state not in {ConnectionState.OPEN, ConnectionState.CLOSING}:

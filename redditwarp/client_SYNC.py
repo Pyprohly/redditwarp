@@ -5,6 +5,7 @@ if TYPE_CHECKING:
     from types import TracebackType
     from .auth.types import AuthorizationGrant
     from .http.types import RequestFiles
+    from .http.payload import Payload
     from .core.http_client_SYNC import HTTPClient
     from .types import JSON_ro
 
@@ -48,10 +49,10 @@ class Client:
 
         .. .PARAMETERS
 
-        :param section_name:
+        :param `str` section_name:
             The section name of the ini file in which to read values from.
             Pass an empty string to use the default section name "`DEFAULT`".
-        :param filepath:
+        :param `Optional[str]` filepath:
             The location of a `praw.ini` file to read.
 
             If not specified, the locations returned by
@@ -98,14 +99,15 @@ class Client:
         """
         .. .PARAMETERS
 
-        :param client_id:
-        :param client_secret:
-        :param refresh_token:
-        :param username:
-        :param password:
+        :param `str` client_id:
+        :param `str` client_secret:
+        :param `str` refresh_token:
+        :param `str` username:
+        :param `str` password:
         :param grant:
             Specify an explicit grant. Use this parameter if you want to limit
             authorization scopes, or if you need to use the Installed Client grant type.
+        :type grant: :obj:`~.auth.types.AuthorizationGrant`
 
         If `client_id` and `client_secret` are the only credentials given then a
         Client Credentials grant will be configured. The client will effectively
@@ -166,6 +168,7 @@ class Client:
         data: Optional[Union[Mapping[str, str], bytes]] = None,
         json: JSON_ro = None,
         files: Optional[RequestFiles] = None,
+        payload: Optional[Payload] = None,
         timeout: float = -2,
         follow_redirects: Optional[bool] = None,
         snub: Optional[Callable[[JSON_ro], None]] = raise_for_reddit_error,
@@ -173,7 +176,7 @@ class Client:
         """Make an API request and return JSON data.
 
         The parameters are similar to
-        :meth:`redditwarp.http.http_client_SYNC.HTTPClient.request`,
+        :meth:`HTTPClient.request <redditwarp.http.http_client_SYNC.HTTPClient.request>`,
         except for `snub`.
 
         The `snub` function examines the returned JSON data for API problems and
@@ -185,19 +188,27 @@ class Client:
         and not any other website because of the domain specific post processing
         that happens with the response data.
 
+        Below is a list of the main exception types thrown by this method, ordered
+        by precedence if multiple exceptions apply:
+
+        - `redditwarp.exceptions.RedditError`
+        - `redditwarp.http.exceptions.StatusCodeException`
+        - `ValueError`
+
         .. .RAISES
 
-        :raises ValueError:
-            The endpoint did not return JSON data.
-        :raises redditwarp.http.exceptions.StatusCodeException:
-            The API call returned a non 2XX status code.
         :raises redditwarp.exceptions.RedditError:
-            The `snub` function detected an API error.
+            An API error was detected. Thrown by the `snub` function.
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            The request returned a non 200 status.
+        :raises ValueError:
+            The endpoint did not return JSON.
         """
         json_data = None
         try:
             resp = self.http.request(verb, url, params=params, headers=headers,
-                    data=data, json=json, files=files, timeout=timeout, follow_redirects=follow_redirects)
+                    data=data, json=json, files=files, payload=payload,
+                    timeout=timeout, follow_redirects=follow_redirects)
 
             if resp.data:
                 try:
@@ -211,10 +222,10 @@ class Client:
 
                 if snub is not None:
                     snub(json_data)
+
+            resp.raise_for_status()
         finally:
             self.last_value = json_data
-
-        resp.raise_for_status()
         return json_data
 
     def set_access_token(self, access_token: str) -> None:

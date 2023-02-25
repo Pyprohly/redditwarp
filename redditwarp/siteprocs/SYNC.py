@@ -23,8 +23,8 @@ from .misc.SYNC import MiscProcedures
 from .modmail.SYNC import ModmailProcedures
 from .widget.SYNC import WidgetProcedures
 from .wiki.SYNC import WikiProcedures
-from .legacy_reddit_subreddit_style.SYNC import LegacyRedditSubredditStyleProcedures
-from .redesign_reddit_subreddit_style.SYNC import RedesignRedditSubredditStyleProcedures
+from .subreddit_style_old.SYNC import SubredditStyleOldProcedures
+from .subreddit_style_new.SYNC import SubredditStyleNewProcedures
 
 class SiteProcedures:
     def __init__(self, client: Client) -> None:
@@ -48,8 +48,8 @@ class SiteProcedures:
         self.modmail: ModmailProcedures = ModmailProcedures(client)
         self.widget: WidgetProcedures = WidgetProcedures(client)
         self.wiki: WikiProcedures = WikiProcedures(client)
-        self.legacy_reddit_subreddit_style: LegacyRedditSubredditStyleProcedures = LegacyRedditSubredditStyleProcedures(client)
-        self.redesign_reddit_subreddit_style: RedesignRedditSubredditStyleProcedures = RedesignRedditSubredditStyleProcedures(client)
+        self.subreddit_style_old: SubredditStyleOldProcedures = SubredditStyleOldProcedures(client)
+        self.subreddit_style_new: SubredditStyleNewProcedures = SubredditStyleNewProcedures(client)
 
     def ping(self) -> None:
         self._client.request('GET', '/api/v1/scopes', params={'scopes': 'read'})

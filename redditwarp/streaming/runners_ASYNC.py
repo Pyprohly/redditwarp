@@ -20,15 +20,15 @@ async def flow_series(*streams: AsyncIterator[float]) -> None:
 
     while count > 0:
         aitr = await aq.get()
-
         try:
-            t = await aitr.__anext__()
-        except StopAsyncIteration:
-            count -= 1
-        else:
-            loop.call_later(t, (lambda: aq.put_nowait(aitr)))
-
-        aq.task_done()
+            try:
+                t = await aitr.__anext__()
+            except StopAsyncIteration:
+                count -= 1
+            else:
+                loop.call_later(t, (lambda: aq.put_nowait(aitr)))
+        finally:
+            aq.task_done()
 
 async def flow_parallel(*streams: AsyncIterator[float]) -> None:
     async def coro_fn(aitr: AsyncIterator[float]) -> None:

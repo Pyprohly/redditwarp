@@ -31,8 +31,15 @@ def make_requisition(
     data: Optional[Union[Mapping[str, str], bytes]] = None,
     json: JSON_ro = None,
     files: Optional[RequestFiles] = None,
+    payload: Optional[Payload] = None,
 ) -> Requisition:
     params = dict(params or {})
     headers = CaseInsensitiveDict(headers or {})
-    payload = make_payload(data, json, files)
+
+    payload_args = (data, json, files)
+    if payload is None:
+        payload = make_payload(*payload_args)
+    elif any(i is not None for i in payload_args):
+        raise TypeError("`payload` cannot be used with payload arguments: `data`, `json`, `files`")
+
     return Requisition(verb, url, params=params, headers=headers, payload=payload)

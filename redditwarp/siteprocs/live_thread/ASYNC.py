@@ -36,32 +36,41 @@ class LiveThreadProcedures:
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, idfs) for idfs in chunked(idts, 100))
 
-    async def create(self, title: str, description: str = '', resources: str = '', *, nsfw: bool = False) -> str:
-        form_data = {
-            'title': title,
-            'description': description,
-            'resources': resources,
-        }
-        if nsfw:
-            form_data['nsfw'] = '1'
+    async def create(self,
+        title: str,
+        description: str = '',
+        resources: str = '',
+        nsfw: bool = False,
+    ) -> str:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('title', title)
+            yield ('description', description)
+            yield ('resources', resources)
+            if nsfw: yield ('nsfw', '1')
 
-        root = await self._client.request('POST', '/api/live/create', data=form_data)
+        root = await self._client.request('POST', '/api/live/create', data=dict(g()))
         return root['json']['data']['id']
 
-    async def configure(self, idt: str, title: str, description: str, resources: str, nsfw: bool) -> None:
-        form_data = {
-            'title': title,
-            'description': description,
-            'resources': resources,
-            'nsfw': '01'[nsfw],
-        }
-        await self._client.request('POST', f'/api/live/{idt}/edit', data=form_data)
+    async def config(self,
+        idt: str,
+        title: str,
+        description: str = '',
+        resources: str = '',
+        nsfw: bool = False,
+    ) -> None:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('title', title)
+            yield ('description', description)
+            yield ('resources', resources)
+            if nsfw: yield ('nsfw', '1')
+
+        await self._client.request('POST', f'/api/live/{idt}/edit', data=dict(g()))
 
     async def close(self, idt: str) -> None:
         await self._client.request('POST', f'/api/live/{idt}/close_thread')
 
-    async def get_live_update(self, idt: str, update_uuid: str) -> LiveUpdate:
-        root = await self._client.request('GET', f'/live/{idt}/updates/{update_uuid}')
+    async def get_update(self, idt: str, uuid: str) -> LiveUpdate:
+        root = await self._client.request('GET', f'/live/{idt}/updates/{uuid}')
         return load_live_update(root['data'], self._client)
 
     def pull(self, idt: str, amount: Optional[int] = None,
@@ -69,18 +78,18 @@ class LiveThreadProcedures:
         p = LiveUpdateListingAsyncPaginator(self._client, f'/live/{idt}')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    async def create_live_update(self, idt: str, body: str) -> None:
+    async def create_update(self, idt: str, body: str) -> None:
         await self._client.request('POST', f'/api/live/{idt}/update', data={'body': body})
 
-    async def strike_live_update(self, idt: str, update_uuid: str) -> None:
-        await self._client.request('POST', f'/api/live/{idt}/strike_update', data={'id': 'LiveUpdate_' + update_uuid})
+    async def strike_update(self, idt: str, uuid: str) -> None:
+        await self._client.request('POST', f'/api/live/{idt}/strike_update', data={'id': 'LiveUpdate_' + uuid})
 
-    async def delete_live_update(self, idt: str, update_uuid: str) -> None:
-        await self._client.request('POST', f'/api/live/{idt}/delete_update', data={'id': 'LiveUpdate_' + update_uuid})
+    async def delete_update(self, idt: str, uuid: str) -> None:
+        await self._client.request('POST', f'/api/live/{idt}/delete_update', data={'id': 'LiveUpdate_' + uuid})
 
     async def list_contributors(self, idt: str) -> ContributorList:
         root = await self._client.request('GET', f'/live/{idt}/contributors')
-        if isinstance(root, Mapping):
+        if isinstance(root, (dict, Mapping)):
             return ContributorList([Contributor(d) for d in root['data']['children']], ())
 
         contributors = [Contributor(d) for d in root[0]['data']['children']]
@@ -91,29 +100,29 @@ class LiveThreadProcedures:
         data = {
             'type': 'liveupdate_contributor_invite',
             'name': user,
-            'permissions': ','.join('+' + i for i in permissions),
+            'permissions': ','.join('+' + p for p in permissions),
         }
         await self._client.request('POST', f'/api/live/{idt}/invite_contributor', data=data)
 
     async def accept_contributor_invite(self, idt: str) -> None:
         await self._client.request('POST', f'/api/live/{idt}/accept_contributor_invite')
 
-    async def revoke_contributor_invite(self, idt: str, user_id36: int) -> None:
-        id36 = to_base36(user_id36)
+    async def revoke_contributor_invite(self, idt: str, user_id: int) -> None:
+        id36 = to_base36(user_id)
         await self._client.request('POST', f'/api/live/{idt}/rm_contributor_invite', data={'id': 't2_' + id36})
 
     async def leave_contributor(self, idt: str) -> None:
         await self._client.request('POST', f'/api/live/{idt}/leave_contributor')
 
-    async def remove_contributor(self, idt: str, user_id36: int) -> None:
-        id36 = to_base36(user_id36)
+    async def remove_contributor(self, idt: str, user_id: int) -> None:
+        id36 = to_base36(user_id)
         await self._client.request('POST', f'/api/live/{idt}/rm_contributor', data={'id': 't2_' + id36})
 
     async def set_contributor_permissions(self, idt: str, user: str, permissions: Iterable[str]) -> None:
         data = {
             'type': 'liveupdate_contributor',
             'name': user,
-            'permissions': ','.join('+' + i for i in permissions),
+            'permissions': ','.join('+' + p for p in permissions),
         }
         await self._client.request('POST', f'/api/live/{idt}/set_contributor_permissions', data=data)
 
@@ -121,6 +130,6 @@ class LiveThreadProcedures:
         data = {
             'type': 'liveupdate_contributor_invite',
             'name': user,
-            'permissions': ','.join('+' + i for i in permissions),
+            'permissions': ','.join('+' + p for p in permissions),
         }
         await self._client.request('POST', f'/api/live/{idt}/set_contributor_permissions', data=data)

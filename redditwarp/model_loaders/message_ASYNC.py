@@ -49,6 +49,7 @@ def load_mailbox_message(d: Mapping[str, Any], client: Client) -> MailboxMessage
         return load_comment_message(d, client)
     return load_composed_message(d, client)
 
+
 def load_composed_message_thread(d: Mapping[str, Any], client: Client) -> Sequence[ComposedMessage]:
     first = load_composed_message(d, client)
     children = []

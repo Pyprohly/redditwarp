@@ -221,7 +221,7 @@ print(f'''\
 {m.permalink}
 {m.id36}+ ^{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
-by u/{m.author_name} to r/{m.subreddit.name}
+by u/{m.author_display_name} to r/{m.subreddit.name}
 ''')
 
 columns, _lines = shutil.get_terminal_size()
@@ -229,5 +229,5 @@ columns, _lines = shutil.get_terminal_size()
 for depth, comment in traversal(tree_node):
     c = comment
     body_text = repr(c.body)
-    line = f"{depth*'.'} u/{c.author_name} | {body_text}"
+    line = f"{depth*'.'} u/{c.author_display_name} | {body_text}"
     print(line[:columns])

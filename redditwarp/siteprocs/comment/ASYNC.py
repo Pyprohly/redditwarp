@@ -32,111 +32,114 @@ class CommentProcedures:
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
 
-    async def reply(self, comment_id: int, text: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+    async def reply(self, idn: int, body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
         def g() -> Iterable[tuple[str, str]]:
-            yield ('thing_id', 't1_' + to_base36(comment_id))
+            yield ('thing_id', 't1_' + to_base36(idn))
             yield ('return_rtjson', '1')
-            if isinstance(text, str):
-                yield ('text', text)
+            if isinstance(body, str):
+                yield ('text', body)
             else:
-                yield ('richtext_json', json.dumps(text))
+                yield ('richtext_json', json.dumps(body))
 
         result = await self._client.request('POST', '/api/comment', files=dict(g()))
         return load_comment(result, self._client)
 
-    async def edit_body(self, comment_id: int, text: str) -> Comment:
-        data = {
-            'thing_id': 't1_' + to_base36(comment_id),
-            'text': text,
-            'return_rtjson': '1',
-        }
-        result = await self._client.request('POST', '/api/editusertext', data=data)
+    async def edit_body(self, idn: int, body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+        def g() -> Iterable[tuple[str, str]]:
+            yield ('thing_id', 't1_' + to_base36(idn))
+            yield ('return_rtjson', '1')
+            if isinstance(body, str):
+                yield ('text', body)
+            else:
+                yield ('richtext_json', json.dumps(body))
+
+        result = await self._client.request('POST', '/api/editusertext', files=dict(g()))
         return load_comment(result, self._client)
 
-    async def delete(self, comment_id: int) -> None:
-        data = {'id': 't1_' + to_base36(comment_id)}
+    async def delete(self, idn: int) -> None:
+        data = {'id': 't1_' + to_base36(idn)}
         await self._client.request('POST', '/api/del', data=data)
 
-    async def lock(self, comment_id: int) -> None:
-        data = {'id': 't1_' + to_base36(comment_id)}
+    async def lock(self, idn: int) -> None:
+        data = {'id': 't1_' + to_base36(idn)}
         await self._client.request('POST', '/api/lock', data=data)
 
-    async def unlock(self, comment_id: int) -> None:
-        data = {'id': 't1_' + to_base36(comment_id)}
+    async def unlock(self, idn: int) -> None:
+        data = {'id': 't1_' + to_base36(idn)}
         await self._client.request('POST', '/api/unlock', data=data)
 
-    async def vote(self, comment_id: int, direction: int) -> None:
+    async def vote(self, idn: int, direction: int) -> None:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'dir': str(direction),
         }
         await self._client.request('POST', '/api/vote', data=data)
 
-    async def save(self, comment_id: int, category: Optional[str] = None) -> None:
+    async def save(self, idn: int, category: Optional[str] = None) -> None:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
         }
         if category is not None:
             data['category'] = category
         await self._client.request('POST', '/api/save', data=data)
 
-    async def unsave(self, comment_id: int) -> None:
-        data = {'id': 't1_' + to_base36(comment_id)}
+    async def unsave(self, idn: int) -> None:
+        data = {'id': 't1_' + to_base36(idn)}
         await self._client.request('POST', '/api/unsave', data=data)
 
-    async def distinguish(self, comment_id: int) -> Comment:
+    async def distinguish(self, idn: int) -> Comment:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'how': 'yes',
         }
         root = await self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    async def distinguish_and_sticky(self, comment_id: int) -> Comment:
+    async def distinguish_and_sticky(self, idn: int) -> Comment:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'how': 'yes',
             'sticky': '1',
         }
         root = await self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    async def undistinguish(self, comment_id: int) -> Comment:
+    async def undistinguish(self, idn: int) -> Comment:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'how': 'no',
         }
         root = await self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    async def enable_reply_notifications(self, comment_id: int) -> None:
+    async def enable_reply_notifications(self, idn: int) -> None:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'state': '1'
         }
         await self._client.request('POST', '/api/sendreplies', data=data)
 
-    async def disable_reply_notifications(self, comment_id: int) -> None:
+    async def disable_reply_notifications(self, idn: int) -> None:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'state': '0'
         }
         await self._client.request('POST', '/api/sendreplies', data=data)
 
-    async def approve(self, comment_id: int) -> None:
-        data = {'id': 't1_' + to_base36(comment_id)}
+    async def approve(self, idn: int) -> None:
+        data = {'id': 't1_' + to_base36(idn)}
         await self._client.request('POST', '/api/approve', data=data)
 
-    async def remove(self, comment_id: int) -> None:
+    async def remove(self, idn: int) -> None:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'spam': '0',
         }
         await self._client.request('POST', '/api/remove', data=data)
 
-    async def remove_spam(self, comment_id: int) -> None:
+    async def remove_spam(self, idn: int) -> None:
         data = {
-            'id': 't1_' + to_base36(comment_id),
+            'id': 't1_' + to_base36(idn),
             'spam': '1',
         }
         await self._client.request('POST', '/api/remove', data=data)
@@ -156,34 +159,38 @@ class CommentProcedures:
         await self._client.request('POST', '/api/unsnooze_reports', data=data)
 
     async def apply_removal_reason(self,
-            comment_id: int,
-            reason_id: Optional[str],
+            idn: int,
+            reason_id: Optional[str] = None,
             note: Optional[str] = None) -> None:
-        target = 't1_' + to_base36(comment_id)
+        target = 't1_' + to_base36(idn)
         json_data = {'item_ids': [target], 'reason_id': reason_id, 'mod_note': note}
         await self._client.request('POST', '/api/v1/modactions/removal_reasons', json=json_data)
 
     async def send_removal_comment(self,
-            comment_id: int,
+            idn: int,
             title: str,
-            message: str) -> Comment:
-        target = 't1_' + to_base36(comment_id)
+            message: str,
+            *,
+            exposed: bool = False,
+            locked: bool = False) -> Comment:
+        target = 't1_' + to_base36(idn)
         json_data = {
-            'type': 'public',
+            'type': 'public' + ('' if exposed else '_as_subreddit'),
             'item_id': [target],
             'title': title,
             'message': message,
+            'lock_comment': '01'[locked],
         }
         root = await self._client.request('POST', '/api/v1/modactions/removal_comment_message', json=json_data)
         return load_comment(root, self._client)
 
     async def send_removal_message(self,
-            comment_id: int,
+            idn: int,
             title: str,
             message: str,
             *,
             exposed: bool = False) -> None:
-        target = 't1_' + to_base36(comment_id)
+        target = 't1_' + to_base36(idn)
         json_data = {
             'type': 'private' + ('_exposed' if exposed else ''),
             'item_id': [target],

@@ -14,6 +14,12 @@ class ModReport:
     agent_name: str
     ("""
         Name of the reporting moderator.
+
+        Unknown what happens if the user is deleted.
+        Is the value `[deleted]`, an empty string, or does the field in the
+        underlying object not exist?
+        If you have any information about this, please open an issue report at
+        `<https://github.com/Pyprohly/redditwarp/issues>`_.
         """)
 
 @dataclass

@@ -33,43 +33,6 @@ class Authorizer:
 
     The `Authorizer` keeps token information and knows how to renew the token
     when it expires and how to prepare a requisition.
-
-    .. .ATTRIBUTES
-
-    .. attribute:: token_client
-       :type: Optional[TokenObtainmentClient]
-
-       The token obtainment client used to make the token obtainment requests.
-
-    .. attribute:: token
-       :type: Optional[Token]
-
-       Holds the current token information.
-
-    .. attribute:: renewal_time
-       :type: Optional[float]
-
-       The time at which the token is expected to expire. See :meth:`.time`.
-
-    .. attribute:: renewal_skew
-       :type: float
-
-       The number of seconds before the token expiration when the token should be renewed.
-
-    .. attribute:: expires_in_fallback
-       :type: Optional[int]
-
-       A fallback value for the token expiration time when not specified by the server.
-
-    .. attribute:: time_func
-       :type: Callable[[], float]
-
-       A function that returns the current time. The :meth:`time` method calls this this function.
-
-    .. attribute:: authorization_header_name
-       :type: str
-
-       Name of the `Authorization` header. Use this attribute to change its capitalization.
     """
 
     def __init__(self,
@@ -77,12 +40,33 @@ class Authorizer:
         token: Optional[Token] = None,
     ) -> None:
         self.token_client: Optional[TokenObtainmentClient] = token_client
+        ("""
+            A token obtainment client used to make the token obtainment requests.
+            """)
         self.token: Optional[Token] = token
+        ("""
+            Holds the current token information.
+            """)
         self.renewal_time: Optional[float] = None
+        ("""
+            Time at which the token is expected to expire. See :meth:`.time`.
+            """)
         self.renewal_skew: float = 30
+        ("""
+            Number of seconds before the token expiration when the token should be renewed.
+            """)
         self.expires_in_fallback: Optional[int] = None
+        ("""
+            A fallback value for the token expiration time when not specified by the server.
+            """)
         self.time_func: Callable[[], float] = time.monotonic
+        ("""
+            A function that returns the current time. The :meth:`time` method calls this this function.
+            """)
         self.authorization_header_name: str = 'Authorization'
+        ("""
+            Name of the `Authorization` header. Use this attribute to change its capitalization.
+            """)
 
     def has_token_client(self) -> bool:
         return self.token_client is not None
@@ -115,7 +99,7 @@ class Authorizer:
     def renew_token(self) -> None:
         """Renew the token.
 
-        .. RAISES
+        .. .RAISES
 
         :raises RuntimeError:
             No token client (:attr:`token_client`) is set.

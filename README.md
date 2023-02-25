@@ -73,7 +73,7 @@ print(f'''\
 {m.permalink}
 {m.id36}+ ^{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
-by u/{m.author_name} to r/{m.subreddit.name}
+by u/{m.author_display_name} to r/{m.subreddit.name}
 ''')
 
 # Get the first comment of a submission.
@@ -81,7 +81,7 @@ tree_node = client.p.comment_tree.fetch(int('uc8i1g', 36), sort='top', limit=1)
 c = tree_node.children[0].value
 print(f'''\
 {c.submission.id36}+{c.id36} ^{c.score}
-u/{c.author_name} says:
+u/{c.author_display_name} says:
 {c.body}
 ''')
 
@@ -128,13 +128,13 @@ for obj in l:
 {m.permalink}
 {m.id36}+ ^{m.score} | {m.title}
 Submitted {m.created_at.astimezone().ctime()}{' *' if m.is_edited else ''} \
-by u/{m.author_name} to r/{m.subreddit.name}
+by u/{m.author_display_name} to r/{m.subreddit.name}
 ''')
         case Comment() as c:
             print(f'''\
 {c.permalink}
 {c.submission.id36}+{c.id36} ^{c.score}
-u/{c.author_name} says:
+u/{c.author_display_name} says:
 {c.body}
 ''')
 

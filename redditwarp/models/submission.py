@@ -5,12 +5,12 @@ from typing import Mapping, Any, Optional, Sequence, TypeVar, Callable, final
 from datetime import datetime, timezone
 
 from ..core.const import AUTHORIZATION_BASE_URL
-from .artifact import Artifact
+from .datamemento import DatamementoBase
 from .report import ModReport, UserReport
 from ..model_loaders.report import load_mod_report, load_user_report
 from dataclasses import dataclass
 
-class Submission(Artifact):
+class Submission(DatamementoBase):
     class Me:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.saved: bool = d['saved']
@@ -102,23 +102,33 @@ class Submission(Artifact):
 
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.name: str = d['author']
+            ("")
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
+            ("")
             self.id: int = int(self.id36, 36)
+            ("")
             self.has_premium: bool = d['author_premium']
+            ("")
             self.flair: Submission.Author.AuthorFlair = self.AuthorFlair(d)
+            ("")
 
     class Subreddit:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
+            ("")
             self.id: int = int(self.id36, 36)
+            ("")
             self.name: str = d['subreddit']
+            ("")
             self.openness: str = d['subreddit_type']
             ("""
                 Either: `public`, `private`, `restricted`, `archived`,
                 `employees_only`, `gold_only`, `gold_restricted`, or `user`.
                 """)
             self.quarantined: bool = d['quarantine']
+            ("")
             self.subscriber_count: int = d['subreddit_subscribers']
+            ("")
 
     class Moderation:
         class Approved:
@@ -128,7 +138,9 @@ class Submission(Artifact):
                     Name of the moderator who approved this comment.
                     """)
                 self.ut: int = d['approved_at_utc']
+                ("")
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
+                ("")
 
         class Removed:
             def __init__(self, d: Mapping[str, Any]) -> None:
@@ -137,49 +149,68 @@ class Submission(Artifact):
                     Name of the moderator who removed this comment.
                     """)
                 self.ut: int = d['banned_at_utc']
+                ("")
                 self.at: datetime = datetime.fromtimestamp(self.ut, timezone.utc)
+                ("")
 
         class Reports:
             def __init__(self, d: Mapping[str, Any]) -> None:
                 self.ignoring: bool = d['ignore_reports']
+                ("")
                 self.num_reports: int = d['num_reports']
+                ("")
                 self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
+                ("")
                 self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
+                ("")
 
         class RemovalReason:
             def __init__(self, d: Mapping[str, Any]) -> None:
                 self.by: str = d['mod_reason_by'] or ''
+                ("")
                 self.title: str = d['mod_reason_title'] or ''
+                ("")
                 self.note: str = d['mod_note'] or ''
+                ("")
 
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.spam: bool = d['spam']
+            ("")
 
             self.approved: Optional[Submission.Moderation.Approved] = None
+            ("")
             if d['approved_by']:
                 self.approved = self.Approved(d)
 
             self.removed: Optional[Submission.Moderation.Removed] = None
+            ("")
             if d['banned_by']:
                 self.removed = self.Removed(d)
 
             self.reports: Submission.Moderation.Reports = self.Reports(d)
+            ("")
 
             self.removal_reason: Optional[Submission.Moderation.RemovalReason] = None
+            ("")
             if d['mod_reason_by']:
                 self.removal_reason = self.RemovalReason(d)
 
     class Event:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.start_ut: int = int(d['event_start'])
+            ("")
             self.start_at: datetime = datetime.fromtimestamp(self.start_ut, timezone.utc)
+            ("")
             self.end_ut: int = int(d['event_end'])
+            ("")
             self.end_at: datetime = datetime.fromtimestamp(self.end_ut, timezone.utc)
+            ("")
             self.is_live: bool = d['event_is_live']
+            ("")
 
     class Flair:
         def __init__(self, d: Mapping[str, Any]) -> None:
-            self.template_uuid: Optional[str] = x if (x := d['link_flair_template_id']) else None
+            self.template_uuid: Optional[str] = d.get('link_flair_template_id')
             ("""
                 The post flair template UUID.
 
@@ -201,7 +232,8 @@ class Submission(Artifact):
                 that of the CSS class designated by the template. If the flair template
                 does not specify a CSS class then the value will be an empty string.
                 """)
-            self.bg_color: str = d['link_flair_background_color']
+            # Post flairs can't be `transparent` but just in case.
+            self.bg_color: str = '' if (x := d['link_flair_background_color']) == 'transparent' else x
             ("""A background color hex string. E.g., `#46d160`.
 
                 If a flair template is not being used then the value is an empty string.
@@ -218,14 +250,20 @@ class Submission(Artifact):
     class Reports:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.ignoring: bool = d['ignore_reports']
+            ("")
             self.num_reports: int = d['num_reports']
+            ("")
             self.mod_reports: Sequence[ModReport] = [load_mod_report(m) for m in d['mod_reports']]
+            ("")
             self.user_reports: Sequence[UserReport] = [load_user_report(m) for m in d['user_reports']]
+            ("")
 
     class Edited:
         def __init__(self, outer: Submission) -> None:
             self.ut: int = outer.edited_ut
+            ("")
             self.at: datetime = outer.edited_at
+            ("")
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
@@ -234,6 +272,7 @@ class Submission(Artifact):
             The ID of the submission as a base 36 number.
             """)
         self.id: int = int(self.id36, 36)
+        ("")
         self.created_ut: int = int(d['created_utc'])
         ("""
             Unix timestamp of when the submission was made.
@@ -244,6 +283,7 @@ class Submission(Artifact):
             """)
 
         self.title: str = d['title']
+        ("")
         self.score: int = d['score']
         ("""
             The number of upvotes (minus downvotes).
@@ -297,6 +337,7 @@ class Submission(Artifact):
             self.edited = self.Edited(self)
 
         self.upvote_ratio: float = d['upvote_ratio']
+        ("")
         self.removal_category: Optional[str] = d['removed_by_category']
         ("""
             `None` if not removed.
@@ -313,6 +354,7 @@ class Submission(Artifact):
             Value empty string if not set.
             """)
         self.stickied: bool = d['stickied']
+        ("")
         self.archived: bool = d['archived']
         ("""
             Whether the post is archived.
@@ -321,6 +363,7 @@ class Submission(Artifact):
             but the author can still edit the OP.
             """)
         self.locked: bool = d['locked']
+        ("")
         self.in_contest_mode: bool = d['contest_mode']
         ("""
             Whether the post is in contest mode.
@@ -328,7 +371,9 @@ class Submission(Artifact):
             In contest mode, the comments are shown in a random order.
             """)
         self.nsfw: bool = d['over_18']
+        ("")
         self.spoiler: bool = d['spoiler']
+        ("")
         self.oc: bool = d['is_original_content']
         ("""
             Whether the post is marked as 'original content'.
@@ -382,7 +427,7 @@ class Submission(Artifact):
             """)
 
         author: str = d['author']
-        self.author_name: str = author
+        self.author_display_name: str = author
         ("""
             The author's username.
 
@@ -413,6 +458,7 @@ class Submission(Artifact):
             """)
 
         self.reports: Optional[Submission.Reports] = None
+        ("")
         if d['num_reports'] is not None:
             self.reports = self.Reports(d)
 
@@ -448,6 +494,7 @@ class GalleryPost(Submission):
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.gallery_link: str = d['url_overridden_by_dest']
+        ("")
 
         gallery_data_items: Sequence[Any] = ()
         if gallery_data := d.get('gallery_data'):
@@ -461,6 +508,7 @@ class GalleryPost(Submission):
             )
             for m in gallery_data_items
         ]
+        ("")
 
 class PollPost(Submission):
     pass
@@ -478,7 +526,9 @@ class CrosspostSubmission(Submission):
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.original_id36: str = d['crosspost_parent'][3:]
+        ("")
         self.original_id: int = int(self.original_id36, 36)
+        ("")
 
         self.__original: Optional[Submission] = None
         # https://github.com/python/mypy/issues/4177

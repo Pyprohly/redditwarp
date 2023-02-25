@@ -1,13 +1,13 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Mapping, Union, \
-        IO, Sequence, ClassVar
+        IO, Sequence, ClassVar, cast
 if TYPE_CHECKING:
     from ..types import JSON_ro
 
 from dataclasses import dataclass
 
-from .types import RequestFiles
+from .types import RequestFiles, ExtendedRequestFiles
 from .util.guess_filename_mimetype import guess_filename_mimetype as guess_filename_mimetype  # noqa: F401
 
 
@@ -62,7 +62,33 @@ class MultipartFormData(Content):
 
 
 
-def make_multipart_form_data_payload(files: RequestFiles) -> MultipartFormData:
+def make_multipart_payload_from_extended_request_files(xfiles: ExtendedRequestFiles) -> MultipartFormData:
+    parts: list[MultipartFormData.Field] = []
+    for key, value in xfiles.items():
+        if isinstance(value, str):
+            parts.append(MultipartFormData.TextField(key, value))
+
+        elif isinstance(value, tuple):
+            length = len(value)
+            if length == 2:
+                file, filename = cast("tuple[IO[bytes], str]", value)
+                parts.append(MultipartFormData.FileField(key, file, filename))
+            elif length == 3:
+                file, filename, content_type = cast("tuple[IO[bytes], str, str]", value)
+                parts.append(MultipartFormData.FileField(key, file, filename, content_type))
+            else:
+                raise TypeError
+
+        else:
+            parts.append(MultipartFormData.FileField(key, value))
+
+    return MultipartFormData(parts)
+
+def make_multipart(xfiles: ExtendedRequestFiles) -> MultipartFormData:
+    return make_multipart_payload_from_extended_request_files(xfiles)
+
+
+def make_multipart_payload_from_request_files(files: RequestFiles) -> MultipartFormData:
     parts: list[MultipartFormData.Field] = []
     for key, value in files.items():
         field: MultipartFormData.Field
@@ -85,7 +111,7 @@ def make_payload(
             if isinstance(data, bytes):
                 raise TypeError("`data` cannot be bytes when `files` is used")
             files = {**data, **files}
-        return make_multipart_form_data_payload(files)
+        return make_multipart_payload_from_request_files(files)
 
     if data is not None:
         if json is not None:
