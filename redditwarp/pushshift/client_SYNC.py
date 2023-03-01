@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from ..types import JSON_ro
 
 from .core.http_client_SYNC import build_http_client
-from ..http.util.json_load import json_loads_response
+from ..http.util.json_loading import load_json_from_response
 
 class Client:
     _TSelf = TypeVar('_TSelf', bound='Client')
@@ -47,10 +47,10 @@ class Client:
                 data=data, json=json, files=files, payload=payload,
                 timeout=timeout, follow_redirects=follow_redirects)
         if resp.data:
-            json_data = json_loads_response(resp)
-        resp.raise_for_status()
+            json_data = load_json_from_response(resp)
+        resp.ensure_successful_status()
         return json_data
 
-PushshiftClient: type[Client] = Client
-Pushshift: type[Client] = Client
-PushshiftAPI: type[Client] = Client
+PushshiftClient = Client
+Pushshift = Client
+PushshiftAPI = Client

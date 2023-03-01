@@ -101,7 +101,7 @@ class WikiProcedures:
 
             :raises redditwarp.exceptions.RedditError:
                 + `INVALID_REVISION`:
-                The specified revision UUID does not exist.
+                    The specified revision UUID does not exist.
             """
             self._client.request('POST', f'/r/{sr}/api/wiki/revert',
                     data={'page': page, 'revision': revision})

@@ -18,7 +18,7 @@ from .core.http_client_ASYNC import (
     build_reddit_http_client_from_access_token,
 )
 from .exceptions import raise_for_reddit_error, raise_for_non_json_response
-from .http.util.json_load import json_loads_response
+from .http.util.json_loading import load_json_from_response
 from .util.redditwarp_installed_client_credentials import get_redditwarp_client_id, get_device_id
 
 
@@ -118,18 +118,18 @@ class Client:
 
             if resp.data:
                 try:
-                    json_data = json_loads_response(resp)
-                except ValueError:
+                    json_data = load_json_from_response(resp)
+                except ValueError as cause:
                     try:
                         raise_for_non_json_response(resp)
                     except Exception as exc:
-                        raise exc from None
+                        raise exc from cause
                     raise
 
                 if snub is not None:
                     snub(json_data)
 
-            resp.raise_for_status()
+            resp.ensure_successful_status()
         finally:
             self.last_value = json_data
         return json_data

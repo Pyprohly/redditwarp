@@ -63,7 +63,7 @@ def raise_for_non_json_response(resp: Response) -> None:
             raise UserAgentRequired('the Reddit API wants you to set a user agent')
 
     try:
-        resp.raise_for_status()
+        resp.ensure_successful_status()
     except http.exceptions.StatusCodeException as e:
         if is_html_content:
             msg = None
@@ -99,17 +99,14 @@ class RedditError(APIError):
         ("""
             A label for the error. E.g., `USER_REQUIRED`, `INVALID_OPTION`, `SUBREDDIT_NOEXIST`.
             In rare cases this label may not always be in uppercase. It can even contain spaces.
-            The value may be an empty string.
             """)
         self.explanation: str = explanation
         ("""
             A description for the error.
-            The value may be an empty string.
             """)
         self.field: str = field
         ("""
             The name of the parameter relevant to the error, if applicable.
-            The value may be an empty string.
             """)
 
     def get_default_message(self) -> str:
@@ -125,6 +122,8 @@ class RedditError(APIError):
                 return f'{la} -> {fd}'
             return la
         return ''
+
+VanillaProviderAPIError = RedditError
 
 
 def raise_for_reddit_error(json_data: Any) -> None:

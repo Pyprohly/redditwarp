@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from .types import ClientCredentials, AuthorizationGrant
     from ..http.http_client_ASYNC import HTTPClient
 
-from ..http.util.json_load import json_loads_response
+from ..http.util.json_loading import load_json_from_response_but_prefer_status_code_exception_on_failure
 from .token import Token
 from .utils import apply_basic_auth
 from .exceptions import raise_for_token_server_response_error
@@ -24,15 +24,10 @@ class TokenObtainmentClient:
         apply_basic_auth(headers, *self.client_creds)
         resp = await self.http.request('POST', self.url, data=self.grant, headers=headers)
 
-        try:
-            resp_json = json_loads_response(resp)
-        except ValueError:
-            resp.raise_for_status()
-            raise
-
-        raise_for_token_server_response_error(resp_json)
-        resp.raise_for_status()
-        return resp_json
+        json_data = load_json_from_response_but_prefer_status_code_exception_on_failure(resp)
+        raise_for_token_server_response_error(json_data)
+        resp.ensure_successful_status()
+        return json_data
 
     async def fetch_token(self) -> Token:
         return Token.from_dict(await self.fetch_data())

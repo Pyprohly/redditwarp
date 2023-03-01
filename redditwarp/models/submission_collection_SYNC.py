@@ -40,5 +40,6 @@ class SubmissionCollection(SubmissionCollectionInfo, BaseSubmissionCollection):
         return self.__submissions
 
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
+        super().__init__(d, client)
         load = lambda d: load_submission(d, client)
         self.__submissions: Sequence[Submission] = self._load_submissions(d, load)

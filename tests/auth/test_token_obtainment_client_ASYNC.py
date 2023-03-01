@@ -76,9 +76,9 @@ async def test_fetch_data() -> None:
         client_credentials,
         grant,
     )
-    resp_json = await toc.fetch_data()
+    json_data = await toc.fetch_data()
 
-    assert resp_json == {'a': 100, "some": "text"}
+    assert json_data == {'a': 100, "some": "text"}
     assert len(http.history) == 1
     req = http.history[0]
     assert req.verb == 'POST'

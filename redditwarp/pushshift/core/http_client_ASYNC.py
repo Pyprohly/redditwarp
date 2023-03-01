@@ -8,7 +8,7 @@ from ...core.http_client_ASYNC import HTTPClient
 from ...http.transport.reg_ASYNC import new_connector
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ...core.user_agent_ASYNC import get_user_agent
-from .const import PUSHSHIFT_BASE_URL
+from .const import RESOURCE_BASE_URL
 from .rate_limited_ASYNC import RateLimited
 
 def build_http_client() -> BaseHTTPClient:
@@ -16,5 +16,5 @@ def build_http_client() -> BaseHTTPClient:
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     http = HTTPClient(RateLimited(connector), headers=headers)
-    http.base_url = PUSHSHIFT_BASE_URL
+    http.base_url = RESOURCE_BASE_URL
     return http

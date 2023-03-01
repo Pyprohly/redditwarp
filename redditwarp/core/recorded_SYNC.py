@@ -6,6 +6,8 @@ if TYPE_CHECKING:
     from ..http.send_params import SendParams
     from ..http.exchange import Exchange
     from ..http.requisition import Requisition
+    from ..http.request import Request
+    from ..http.response import Response
 
 from collections import deque
 
@@ -63,6 +65,18 @@ class Last:
     @property
     def exchange(self) -> Optional[Exchange]:
         return self.recorder.last_exchange
+    @property
+    def request(self) -> Optional[Request]:
+        xchg = self.recorder.last_exchange
+        if xchg is None:
+            return None
+        return xchg.request
+    @property
+    def response(self) -> Optional[Response]:
+        xchg = self.recorder.last_exchange
+        if xchg is None:
+            return None
+        return xchg.response
     @property
     def transmit(self) -> Optional[tuple[Requisition, Optional[Exchange]]]:
         return self.recorder.last_transmit

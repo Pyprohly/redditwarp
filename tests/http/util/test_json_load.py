@@ -1,15 +1,15 @@
 
 import pytest
 
-from redditwarp.http.util.json_load import json_loads_response
+from redditwarp.http.util.json_loading import load_json_from_response
 from redditwarp.http.response import Response
 
-def test_json_loads_response() -> None:
+def test_load_json_from_response() -> None:
     resp = Response(200, {'Content-Type': 'application/json'}, b'{"hello": "world"}')
-    json_dict = json_loads_response(resp)
+    json_dict = load_json_from_response(resp)
     assert json_dict == {"hello": "world"}
 
-def test_json_loads_response__exception() -> None:
+def test_load_json_from_response__exception() -> None:
     resp = Response(200, {}, b'{"hello": "world"}')
     with pytest.raises(ValueError):
-        json_loads_response(resp)
+        load_json_from_response(resp)

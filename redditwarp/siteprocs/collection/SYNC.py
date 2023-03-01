@@ -405,6 +405,25 @@ class CollectionProcedures:
     def follow(self, uuid: str) -> None:
         """Follow a collection.
 
+        This actually has a similar effect to
+        :meth:`~.siteprocs.submission.SYNC.SubmissionProcedures.follow_event`.
+        When you follow a collection, all submissions in the collection will be followed,
+        *even if there is no event information* on any of the posts.
+
+        When a new submission is added to a followed collection, the submission is
+        automatically followed. If any of the individual submissions are unfollowed via
+        :meth:`~.siteprocs.submission.SYNC.SubmissionProcedures.unfollow_event`
+        then the whole collection and all of its submissions are unfollowed,
+        having the same effect as :meth:`.unfollow`.
+
+        To tell if a collection is followed, check if one of its submissions is::
+
+           coll = client.p.collection.get_full('84359211-be58-4c98-87cd-26bc10c59fb3')
+           if coll is None:
+               raise Exception
+           followed = any(subm.me.is_following_event for subm in coll)
+           print(followed)
+
         .. .PARAMETERS
 
         :param `str` uuid:
@@ -428,7 +447,7 @@ class CollectionProcedures:
             + `500`:
                 The specified `uuid` does not exist.
         """
-        params = {'follow': '1'}
+        params = {'follow': '1', 'collection_id': uuid}
         self._client.request('POST', '/api/v1/collections/follow_collection', params=params)
 
     def unfollow(self, uuid: str) -> None:
@@ -444,8 +463,8 @@ class CollectionProcedures:
 
         .. .RAISES
 
-        :raises:
+        :(raises):
             (Same as :meth:`.follow`.)
         """
-        params = {'follow': '0'}
+        params = {'follow': '0', 'collection_id': uuid}
         self._client.request('POST', '/api/v1/collections/follow_collection', params=params)

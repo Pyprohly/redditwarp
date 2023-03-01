@@ -109,15 +109,16 @@ def get_status_code_exception_class_by_status_code(n: int) -> type[StatusCodeExc
             klass = StatusCodeExceptionTypes.ServerErrorStatusCodeException
     return klass
 
-def status_successful(n: int) -> bool:
-    """Return true if `200 <= n <= 299`."""
+
+def is_successful_status(n: int) -> bool:
+    """Return true if `200 <= n < 300`."""
     return 200 <= n <= 299
 
 def raise_now(n: int) -> None:
-    """Raises a :class:`.StatusCodeException` exception type based on the given HTTP error number."""
+    """Raises a :class:`.StatusCodeException` exception type based on the given HTTP status number."""
     raise get_status_code_exception_class_by_status_code(n)(status_code=n)
 
-def raise_for_status(n: int) -> None:
-    """Raises a :class:`.StatusCodeException` exception if `status_successful(n)` returns false."""
-    if not status_successful(n):
+def ensure_successful_status(n: int) -> None:
+    """Raises a :class:`.StatusCodeException` exception if `is_successful_status(n)` returns false."""
+    if not is_successful_status(n):
         raise_now(n)

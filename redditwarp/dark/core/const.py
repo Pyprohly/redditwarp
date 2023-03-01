@@ -1,5 +1,11 @@
 
-from ...types import JSON_ro
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from collections.abc import Set
+    from ...types import JSON_ro
+
+from ...core.const import RESOURCE_BASE_URL
 
 # Although the authorisation system used by Reddit's internal API is not
 # OAuth2-spec compliant, there are similarities in the way credentials are used.
@@ -15,6 +21,12 @@ GRANT_DATA: JSON_ro = {"scopes":["*","email","pii"]}
 
 
 GRAPHQL_BASE_URL: str = "https://gql.reddit.com"
+
+
+TRUSTED_ORIGINS: Set[str] = {
+    RESOURCE_BASE_URL,
+    GRAPHQL_BASE_URL,
+}
 
 
 SENDBIRD_BASE_URL: str = "https://s.reddit.com"

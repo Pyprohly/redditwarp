@@ -47,7 +47,7 @@ class TokenRevocationClient:
         headers: dict[str, str] = {}
         apply_basic_auth(headers, *self.client_creds)
         resp = self.http.request('POST', self.url, headers=headers, data=data)
-        resp.raise_for_status()
+        resp.ensure_successful_status()
 
     def revoke_access_token(self, token: str) -> None:
         """Makes a revocation request for an access token.

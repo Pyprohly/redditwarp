@@ -14,6 +14,8 @@ from ..auth.token_obtainment_client_ASYNC import new_token_obtainment_client
 from .authorizer_ASYNC import Authorizer, Authorized
 from ...core.user_agent_ASYNC import get_user_agent
 from ...http.http_client_ASYNC import HTTPClient as BaseHTTPClient
+from ...core.direct_by_origin_ASYNC import DirectByOrigin
+from .const import TRUSTED_ORIGINS
 
 
 class RedditHTTPClient(HTTPClient):
@@ -44,6 +46,9 @@ def build_reddit_http_client() -> RedditHTTPClient:
     http = BaseHTTPClient(ApplyDefaultHeaders(connector, headers))
     token_client = new_token_obtainment_client(http)
     authorizer = Authorizer(token_client)
+    handler: Handler
     handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    directions = {x: handler for x in TRUSTED_ORIGINS}
+    handler = DirectByOrigin(connector, directions)
     http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
     return http

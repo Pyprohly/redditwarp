@@ -2,10 +2,9 @@
 from __future__ import annotations
 from typing import Any, Mapping, Iterator
 
-class PushshiftDocument(Mapping[str, Any]):
+class Document(Mapping[str, Any]):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
-        # self.id: int = int(d['id'], 36)
 
     def __contains__(self, item: object) -> bool:
         return item in self.d

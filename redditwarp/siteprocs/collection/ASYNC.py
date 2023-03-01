@@ -71,9 +71,9 @@ class CollectionProcedures:
         await self._client.request('POST', '/api/v1/collections/update_collection_display_layout', params=params)
 
     async def follow(self, uuid: str) -> None:
-        params = {'follow': '1'}
+        params = {'follow': '1', 'collection_id': uuid}
         await self._client.request('POST', '/api/v1/collections/follow_collection', params=params)
 
     async def unfollow(self, uuid: str) -> None:
-        params = {'follow': '0'}
+        params = {'follow': '0', 'collection_id': uuid}
         await self._client.request('POST', '/api/v1/collections/follow_collection', params=params)

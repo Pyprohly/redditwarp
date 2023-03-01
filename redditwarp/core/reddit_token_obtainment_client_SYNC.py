@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import Mapping, Any
 
-from ..http.util.json_load import json_loads_response
+from ..http.util.json_loading import load_json_from_response_but_prefer_status_code_exception_on_failure
 from ..auth.token_obtainment_client_SYNC import TokenObtainmentClient
 from ..auth.utils import apply_basic_auth
 from .exceptions import raise_for_reddit_token_server_response_error, raise_for_reddit_auth_response_exception
@@ -15,17 +15,9 @@ class RedditTokenObtainmentClient(TokenObtainmentClient):
         resp = xchg.response
 
         try:
-            try:
-                resp_json = json_loads_response(resp)
-            except ValueError as cause:
-                try:
-                    resp.raise_for_status()
-                except Exception as exc:
-                    raise exc from cause
-                raise
-
-            raise_for_reddit_token_server_response_error(resp_json)
-            resp.raise_for_status()
+            json_data = load_json_from_response_but_prefer_status_code_exception_on_failure(resp)
+            raise_for_reddit_token_server_response_error(json_data)
+            resp.ensure_successful_status()
 
         except Exception as cause:
             try:
@@ -34,4 +26,4 @@ class RedditTokenObtainmentClient(TokenObtainmentClient):
                 raise exc from cause
             raise
 
-        return resp_json
+        return json_data

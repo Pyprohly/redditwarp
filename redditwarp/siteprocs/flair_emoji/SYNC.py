@@ -96,7 +96,7 @@ class FlairEmojiProcedures:
         ) -> None:
             resp = self._client.http.request('POST', upload_lease.endpoint,
                     data=upload_lease.fields, files={'file': file}, timeout=timeout)
-            resp.raise_for_status()
+            resp.ensure_successful_status()
 
         def upload(self,
             file: IO[bytes],

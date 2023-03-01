@@ -72,7 +72,7 @@ class SubredditStyleNewProcedures:
         ) -> None:
             resp = await self._client.http.request('POST', upload_lease.endpoint,
                     data=upload_lease.fields, files={'file': file}, timeout=timeout)
-            resp.raise_for_status()
+            resp.ensure_successful_status()
 
         class ObtainUploadLeaseFunction(Protocol):
             async def __call__(self,
