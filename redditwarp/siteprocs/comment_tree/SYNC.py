@@ -12,6 +12,9 @@ class CommentTreeProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
         self.low: Low = Low(self, client)
+        ("""
+            Low level calls for efficiency.
+            """)
 
     def get(self,
         submission_id: int,
@@ -173,6 +176,16 @@ class CommentTreeProcedures:
             This is kind of the same as specifying `depth=1` but more-comment objects won't be present.
 
             If this is specified with the `depth` parameter, this parameter will take precedence.
+
+        .. .RETURNS
+
+        :rtype: :class:`~.models.comment_tree_SYNC.MoreCommentsTreeNode`
+
+        .. .RAISES
+
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            + `403`:
+                The specified submission does not exist.
         """
         submission_id36 = to_base36(submission_id)
         child_id36s = (to_base36(x) for x in child_ids)

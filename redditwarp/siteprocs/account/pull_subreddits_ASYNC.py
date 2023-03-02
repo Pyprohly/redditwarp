@@ -18,15 +18,18 @@ class PullSubreddits:
 
     def subscribed(self, amount: Optional[int] = None
             ) -> ImpartedPaginatorChainingAsyncIterator[SubscribedListingAsyncPaginator, Subreddit]:
+        """Pull subreddits the current user is subscribed to."""
         p = SubscribedListingAsyncPaginator(self._client, '/subreddits/mine/subscriber')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     def contributing(self, amount: Optional[int] = None
             ) -> ImpartedPaginatorChainingAsyncIterator[ContributingListingAsyncPaginator, Subreddit]:
+        """Pull subreddits the current user is an approved user in."""
         p = ContributingListingAsyncPaginator(self._client, '/subreddits/mine/contributor')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
     def moderating(self, amount: Optional[int] = None
             ) -> ImpartedPaginatorChainingAsyncIterator[ModeratingListingAsyncPaginator, Subreddit]:
+        """Pull subreddits the current user is a moderator of."""
         p = ModeratingListingAsyncPaginator(self._client, '/subreddits/mine/moderator')
         return ImpartedPaginatorChainingAsyncIterator(p, amount)

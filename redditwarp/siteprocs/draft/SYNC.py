@@ -142,7 +142,7 @@ class DraftProcedures:
     ) -> None:
         """Update a draft.
 
-        Every parameter should be specified otherwise their effective default will used!
+        Every parameter should be specified otherwise their effective default will be used!
         """
         def g() -> Iterable[tuple[str, str]]:
             yield ('id', uuid)

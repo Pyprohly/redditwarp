@@ -354,7 +354,7 @@ class CustomFeedProcedures:
         json_str = self._json_encode({"name": "abc"})
         self._client.request('PUT', f'/api/multi/user/{user}/m/{feed}/r/{sr_name}', data={'model': json_str})
 
-    def bulk_add_item(self, user: str, feed: str, sr_names: Iterable[str]) -> CallChunkCallingIterator[None]:
+    def bulk_add_items(self, user: str, feed: str, sr_names: Iterable[str]) -> CallChunkCallingIterator[None]:
         """Bulk add subreddits to a custom feed.
 
         If any of the subreddit names in `sr_names` doesn't exist, the request will fail
@@ -381,11 +381,11 @@ class CustomFeedProcedures:
                - The specified custom feed name doesn't exist.
                - One of the subreddits specified in the `sr_names` list does not exist.
         """
-        def mass_add_item(sr_names: Sequence[str]) -> None:
+        def mass_add_items(sr_names: Sequence[str]) -> None:
             data = {'path': f'/user/{user}/m/{feed}', 'sr_names': (','.join(sr_names))}
             self._client.request('POST', '/api/multi/add_srs_bulk', data=data)
 
-        return CallChunkCallingIterator(CallChunk(mass_add_item, chunk) for chunk in chunked(sr_names, 300))
+        return CallChunkCallingIterator(CallChunk(mass_add_items, chunk) for chunk in chunked(sr_names, 300))
 
     def remove_item(self, user: str, feed: str, sr_name: str) -> None:
         """Remove a subreddit from a custom feed.

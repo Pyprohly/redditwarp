@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 import os.path as op
 from functools import cached_property
 
-from ...http.payload import guess_filename_mimetype
+from ...http.util.guess_filename_mimetype import guess_filename_mimetype
 from ...models.widget.widget_image_upload_lease import WidgetImageUploadLease
 from ...models.widget.SYNC import WidgetList
 from ...model_loaders.widget import load_widget_image_upload_lease

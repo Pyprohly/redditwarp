@@ -8,7 +8,6 @@ if TYPE_CHECKING:
 from dataclasses import dataclass
 
 from .types import RequestFiles, ExtendedRequestFiles
-from .util.guess_filename_mimetype import guess_filename_mimetype as guess_filename_mimetype  # noqa: F401
 
 
 class Payload:

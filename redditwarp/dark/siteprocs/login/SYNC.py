@@ -16,7 +16,6 @@ from ....util.redditwarp_installed_client_credentials import get_device_id
 from ...util.request_signing import (
     SIGNATURE_UA_MESSAGE_TEMPLATE,
     SIGNATURE_BODY_MESSAGE_TEMPLATE,
-    generate_hmac_hash,
     generate_android_mobile_hmac_hash,
     get_android_mobile_request_signature,
 )
@@ -35,7 +34,6 @@ class LoginProcedures:
         resp = self._http.request(
                 'POST', 'https://old.reddit.com/api/login',
                 params={'api_type': 'json'},
-                headers={'User-Agent': self._http.get_user_agent()},
                 data=dict(g()))
 
         json_data = load_json_from_response_but_prefer_status_code_exception_on_failure(resp)
@@ -51,9 +49,7 @@ class LoginProcedures:
         return (d['cookie'], d['modhash'])
 
     def do_modern_web_login(self, username: str, password: str, otp: Optional[str] = None) -> None:
-        headers = {'User-Agent': self._http.get_user_agent()}
-
-        resp = self._http.request('GET', 'https://www.reddit.com/login/', headers=headers)
+        resp = self._http.request('GET', 'https://www.reddit.com/login/')
         resp.ensure_successful_status()
 
         body = resp.data.decode()
@@ -68,7 +64,7 @@ class LoginProcedures:
             yield ('password', password)
             if otp is not None: yield ('otp', otp)
 
-        resp = self._http.request('POST', 'https://www.reddit.com/login', headers=headers, data=dict(g()))
+        resp = self._http.request('POST', 'https://www.reddit.com/login', data=dict(g()))
 
         json_data = load_json_from_response_but_prefer_status_code_exception_on_failure(resp)
 

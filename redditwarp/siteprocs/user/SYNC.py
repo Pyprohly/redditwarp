@@ -160,8 +160,7 @@ class UserProcedures:
         return load_potentially_suspended_user(root['data'], self._client)
 
     def moderating(self, name: str) -> Sequence[ModeratedSubreddit]:
-        """
-        Get a list of partial subreddit objects the target user is a moderator of.
+        """Get a list of partial subreddit objects the target user is a moderator of.
 
         This endpoint isn't very reliable on users with big lists.
 

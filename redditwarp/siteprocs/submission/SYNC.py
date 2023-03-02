@@ -15,7 +15,7 @@ import json
 from ...model_loaders.submission_SYNC import load_submission, load_text_post
 from ...models.media_upload_lease import MediaUploadLease
 from ...model_loaders.media_upload_lease import load_media_upload_lease
-from ...http.payload import guess_filename_mimetype
+from ...http.util.guess_filename_mimetype import guess_filename_mimetype
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_iterator import CallChunkCallingIterator
@@ -195,7 +195,7 @@ class SubmissionProcedures:
             Specify either markdown text or a richtext document.
         :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
         :param `bool` reply_notifications:
-            Whether to receive inbox notifications for replies.
+            Receive inbox notifications for replies.
         :param `bool` spoiler:
             Mark as spoiler.
         :param `bool` nsfw:
@@ -704,7 +704,6 @@ class SubmissionProcedures:
         Nothing happens if the target is already locked.
 
         .. hint::
-
            Locking prevents a submission/comment from receiving new comments.
            A locked submission is unable to receive any new comments.
            Locking a comment only stops direct comments, but
@@ -1038,7 +1037,6 @@ class SubmissionProcedures:
         """Set a submission as sticky in its subreddit.
 
         .. hint::
-
            Stickied posts are shown at the top of the subreddit in the default 'Hot' listing.
 
         In a subreddit, there can be at most 2 sticked posts at a time.
@@ -1104,7 +1102,6 @@ class SubmissionProcedures:
         """Pin a post you created to your user profile.
 
         .. hint::
-
            Pinned posts show up at the start of the
            'Overview', or 'Submitted' (old UI) / 'POSTS' (redesign UI)
            user profile listings.
@@ -1360,7 +1357,6 @@ class SubmissionProcedures:
         """Follow a post event.
 
         .. hint::
-
            Followers receive a push notification when the event starts.
 
         .. .PARAMETERS
@@ -1471,7 +1467,6 @@ class SubmissionProcedures:
         """Ignore reports on a submission.
 
         .. hint::
-
            If you ignore reports, you won't receive notifications and the
            ignored thing will be absent from moderation listings.
 
@@ -1641,7 +1636,7 @@ class SubmissionProcedures:
 
             If true, the comment is created by the current user.
         :param `bool` locked:
-            Whether to lock the newly created comment.
+            Lock the newly created comment.
 
         .. .RETURNS
 

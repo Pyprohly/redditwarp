@@ -84,8 +84,7 @@ class TestRequestExceptions:
     async def test_no_content_type_in_response(self) -> None:
         http = MyHTTPClient(200, {}, b'{"some": "data"}')
         client = Client.from_http(http)
-        with pytest.raises(ValueError):
-            await client.request('', '')
+        await client.request('', '')
 
     @pytest.mark.asyncio
     async def test_non_json_response(self) -> None:

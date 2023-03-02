@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Collection, Sequence, Set
+    from collections.abc import Iterable, Collection, Sequence, Set, Mapping
     from ..client_SYNC import Client
 
 from ...pagination.paginator import Paginator
@@ -15,37 +15,20 @@ class DocumentPaginator(Paginator[Document]):
         url: str,
         *,
         limit: Optional[int] = 1000,
-        query: Optional[str] = None,
-        query_title: Optional[str] = None,
-        query_body: Optional[str] = None,
-        subreddit: Optional[str] = None,
-        author: Optional[str] = None,
-        time_range: Optional[tuple[Optional[int], Optional[int]]] = None,
+        search_params: Optional[Mapping[str, str]] = None,
         since: Optional[int] = None,
         until: Optional[int] = None,
         fields: Optional[Collection[str]] = None,
         descending: bool = False,
     ) -> None:
-        if time_range is not None:
-            if (since, until) != (None, None):
-                raise TypeError("`time_range` cannot be used with `since` or `until`")
-            since, until = time_range
-
         super().__init__(limit=limit)
         self.client: Client = client
         self.url: str = url
-        self._query: Optional[str] = query
-        self._query_title: Optional[str] = query_title
-        self._query_body: Optional[str] = query_body
-        self._subreddit: Optional[str] = subreddit
-        self._author: Optional[str] = author
-        self._since: Optional[int] = since
-        self._until: Optional[int] = until
-        self._fields: Optional[Collection[str]] = fields
-        self._descending: bool = descending
-
+        self._search_params: Mapping[str, str] = {} if search_params is None else search_params
         self._since_cursor: Optional[int] = since
         self._until_cursor: Optional[int] = until
+        self._fields: Optional[Collection[str]] = fields
+        self._descending: bool = descending
         self._previous_document_ids: Set[int] = set()
 
     def fetch(self) -> Sequence[Document]:
@@ -54,12 +37,8 @@ class DocumentPaginator(Paginator[Document]):
             if self.limit is not None: yield ('limit', str(self.limit))
             if self._since_cursor is not None: yield ('since', str(self._since_cursor))
             if self._until_cursor is not None: yield ('until', str(self._until_cursor))
-            if self._query is not None: yield ('q', self._query)
-            if self._query_title is not None: yield ('title', self._query_title)
-            if self._query_body is not None: yield ('selftext', self._query_body)
-            if self._subreddit is not None: yield ('subreddit', self._subreddit)
-            if self._author is not None: yield ('author', self._author)
             if self._fields: yield ('filter', ','.join(self._fields))
+            yield from self._search_params.items()
 
         root = self.client.request('GET', self.url, params=dict(g()))
         documents = root['data']

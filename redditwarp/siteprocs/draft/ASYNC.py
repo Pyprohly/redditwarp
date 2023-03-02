@@ -18,10 +18,48 @@ class DraftProcedures:
         self._client = client
 
     async def retrieve(self) -> SubmissionDraftList:
+        """Retrieve the current user's drafts.
+
+        .. .RETURNS
+
+        :rtype: :class:`~.models.submission_draft_ASYNC.SubmissionDraftList`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        """
         root = await self._client.request('GET', '/api/v1/drafts')
         return load_submission_draft_list(root, self._client)
 
     async def read_public(self, user: str, uuid: str) -> SubmissionDraft:
+        """Read a public draft.
+
+        .. .PARAMETERS
+
+        :param `str` user:
+            User name.
+        :param `str` uuid:
+            Draft UUID.
+
+        .. .RETURNS
+
+        :rtype: `~.models.submission_draft.SubmissionDraft`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `FORBIDDEN`:
+               - There is no user context.
+               - The specified draft does not exist.
+               - You do not have permission to view the draft.
+
+            + `BAD_GATEWAY`:
+                The specified ID is not a valid UUID.
+            + `NOT_FOUND`:
+                The specified draft could not be found.
+        """
         url = f"https://gateway.reddit.com/desktopapi/v1/draftpreviewpage/{user}/{uuid}"
         root = await self._client.request('GET', url)
         draft_data = root['drafts'][uuid]
@@ -40,6 +78,33 @@ class DraftProcedures:
         flair_uuid: Optional[str] = None,
         flair_text: Optional[str] = None,
     ) -> str:
+        """Create a draft.
+
+        .. .PARAMETERS
+
+        :param body:
+        :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
+        :param `Optional[bool]` public:
+        :param `Optional[int]` subreddit_id:
+        :param `Optional[str]` title:
+        :param `Optional[bool]` reply_notifications:
+        :param `Optional[bool]` spoiler:
+        :param `Optional[bool]` nsfw:
+        :param `Optional[bool]` oc:
+        :param `Optional[str]` flair_uuid:
+        :param `Optional[str]` flair_text:
+
+        .. .RETURNS
+
+        :returns: The UUID of the newly created draft.
+        :rtype: `str`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        """
         def g() -> Iterable[tuple[str, str]]:
             if isinstance(body, str):
                 yield ('kind', 'markdown')
@@ -75,6 +140,10 @@ class DraftProcedures:
         flair_uuid: Optional[str] = None,
         flair_text: Optional[str] = None,
     ) -> None:
+        """Update a draft.
+
+        Every parameter should be specified otherwise their effective default will be used!
+        """
         def g() -> Iterable[tuple[str, str]]:
             yield ('id', uuid)
 
@@ -98,4 +167,26 @@ class DraftProcedures:
         await self._client.request('PUT', '/api/v1/draft', data=dict(g()))
 
     async def delete(self, uuid: str) -> None:
+        """Delete a draft.
+
+        .. .PARAMETERS
+
+        :param `str` uuid:
+
+        .. .RETURNS
+
+        :rtype: `None`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+            + `VALIDATION_ERRORS`:
+               - The specified draft does not exist.
+               - The specified draft UUID is not valid.
+
+            + `UNKNOWN_THRIFT_ERROR`:
+                The specified draft no longer exists.
+        """
         await self._client.request('DELETE', '/api/v1/draft', params={'draft_id': uuid})

@@ -87,7 +87,7 @@ class LiveThreadProcedures:
 
             Default: empty string.
         :param `bool` nsfw:
-            Whether to mark the live thread as NSFW.
+            Mark the live thread as NSFW.
 
             Default false.
 

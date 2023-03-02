@@ -10,7 +10,7 @@ class Subreddit(DatamementoPropertiesMixin):
     class Me:
         class Flair:
             def __init__(self, d: Mapping[str, Any]) -> None:
-                self.enabled: bool = False if (x := d['user_sr_flair_enabled']) is None else x
+                self.shown: bool = False if (x := d['user_sr_flair_enabled']) is None else x
                 ("""Whether the current user has their flair enabled in the subreddit.
 
                     Value is `False` if the subreddit object comes from a search item.""")

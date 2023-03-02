@@ -32,6 +32,14 @@ class Legacy:
         This procedure doesn't work (403 HTTP error) if there is no user context.
         Use :meth:`~.siteprocs.moderation.pull_users_SYNC.PullUsers.moderators` instead.
 
+        .. .PARAMETERS
+
+        :param `str` sr:
+
+        .. .RETURNS
+
+        :rtype: `Sequence`\\[:class:`~.models.moderator_list.ModeratorListItem`]
+
         .. .RAISES
 
         :(raises): In addition to :meth:`.get_approved_user`:
@@ -47,6 +55,15 @@ class Legacy:
 
     def get_approved_user(self, sr: str, user: str) -> Optional[UserRelationship]:
         """Get information about an approved user in a subreddit.
+
+        .. .PARAMETERS
+
+        :param `str` sr:
+        :param `str` user:
+
+        .. .RETURNS
+
+        :rtype: `Optional`\\[:class:`~.models.user_relationship.UserRelationship`]
 
         .. .RAISES
 

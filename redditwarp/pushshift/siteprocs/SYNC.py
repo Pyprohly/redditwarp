@@ -70,13 +70,13 @@ class Procedures:
         def g() -> Iterable[tuple[str, str]]:
             yield ('track_total_hits', '1')
             yield ('limit', '0')
+            if since is not None: yield ('since', str(since))
+            if until is not None: yield ('until', str(until))
             if query is not None: yield ('q', query)
             if query_title is not None: yield ('title', query_title)
             if query_body is not None: yield ('selftext', query_body)
             if subreddit is not None: yield ('subreddit', subreddit)
             if author is not None: yield ('author', author)
-            if since is not None: yield ('since', str(since))
-            if until is not None: yield ('until', str(until))
 
         root = self._client.request('GET', '/reddit/submission/search', params=dict(g()))
         return root['metadata']['es']['hits']['total']['value']
@@ -115,7 +115,9 @@ class Procedures:
         :param `Optional[tuple[Optional[int], Optional[int]]]` time_range:
             Filter by time.
 
-            Takes a time range tuple of (since, until).
+            Takes a time range tuple of `(since, until)`.
+            The `since` value is inclusive.
+            The `until` value is exclusive.
 
             The `until` value should always be greater than `since`.
 
@@ -140,15 +142,22 @@ class Procedures:
 
         :rtype: :class:`~.pushshift.paginators.document_paginator.DocumentPaginator`
         """
+        if time_range is not None:
+            if (since, until) != (None, None):
+                raise TypeError("`time_range` cannot be used with `since` or `until`")
+            since, until = time_range
+
+        def g() -> Iterable[tuple[str, str]]:
+            if query is not None: yield ('q', query)
+            if query_title is not None: yield ('title', query_title)
+            if query_body is not None: yield ('selftext', query_body)
+            if subreddit is not None: yield ('subreddit', subreddit)
+            if author is not None: yield ('author', author)
+
         return DocumentPaginator(
             client=self._client,
             url='/reddit/submission/search',
-            query=query,
-            query_title=query_title,
-            query_body=query_body,
-            subreddit=subreddit,
-            author=author,
-            time_range=time_range,
+            search_params=dict(g()),
             since=since,
             until=until,
             fields=fields,
@@ -207,8 +216,6 @@ class Procedures:
     def count_search_comments(self,
         *,
         query: Optional[str] = None,
-        query_title: Optional[str] = None,
-        query_body: Optional[str] = None,
         subreddit: Optional[str] = None,
         author: Optional[str] = None,
         time_range: Optional[tuple[Optional[int], Optional[int]]] = None,
@@ -227,13 +234,11 @@ class Procedures:
         def g() -> Iterable[tuple[str, str]]:
             yield ('track_total_hits', '1')
             yield ('limit', '0')
-            if query is not None: yield ('q', query)
-            if query_title is not None: yield ('title', query_title)
-            if query_body is not None: yield ('selftext', query_body)
-            if subreddit is not None: yield ('subreddit', subreddit)
-            if author is not None: yield ('author', author)
             if since is not None: yield ('since', str(since))
             if until is not None: yield ('until', str(until))
+            if query is not None: yield ('q', query)
+            if subreddit is not None: yield ('subreddit', subreddit)
+            if author is not None: yield ('author', author)
 
         root = self._client.request('GET', '/reddit/comment/search', params=dict(g()))
         return root['metadata']['es']['hits']['total']['value']
@@ -241,8 +246,6 @@ class Procedures:
     def page_search_comments(self,
         *,
         query: Optional[str] = None,
-        query_title: Optional[str] = None,
-        query_body: Optional[str] = None,
         subreddit: Optional[str] = None,
         author: Optional[str] = None,
         time_range: Optional[tuple[Optional[int], Optional[int]]] = None,
@@ -255,15 +258,20 @@ class Procedures:
 
         Behaves similarly to :meth:`.page_search_submissions`.
         """
+        if time_range is not None:
+            if (since, until) != (None, None):
+                raise TypeError("`time_range` cannot be used with `since` or `until`")
+            since, until = time_range
+
+        def g() -> Iterable[tuple[str, str]]:
+            if query is not None: yield ('q', query)
+            if subreddit is not None: yield ('subreddit', subreddit)
+            if author is not None: yield ('author', author)
+
         return DocumentPaginator(
             client=self._client,
             url='/reddit/comment/search',
-            query=query,
-            query_title=query_title,
-            query_body=query_body,
-            subreddit=subreddit,
-            author=author,
-            time_range=time_range,
+            search_params=dict(g()),
             since=since,
             until=until,
             fields=fields,
@@ -274,8 +282,6 @@ class Procedures:
         *,
         amount: Optional[int] = None,
         query: Optional[str] = None,
-        query_title: Optional[str] = None,
-        query_body: Optional[str] = None,
         subreddit: Optional[str] = None,
         author: Optional[str] = None,
         time_range: Optional[tuple[Optional[int], Optional[int]]] = None,
@@ -290,8 +296,6 @@ class Procedures:
         """
         paginator = self.page_search_comments(
             query=query,
-            query_title=query_title,
-            query_body=query_body,
             subreddit=subreddit,
             author=author,
             time_range=time_range,

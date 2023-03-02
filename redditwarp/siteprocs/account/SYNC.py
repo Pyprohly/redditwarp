@@ -22,6 +22,9 @@ class AccountProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
         self.pull_subreddits: PullSubreddits = PullSubreddits(client)
+        ("""
+            Pull subreddits the current user is a member of.
+            """)
 
     def fetch(self) -> MyAccount:
         """Fetch information about the currently logged in user.
@@ -287,7 +290,7 @@ class AccountProcedures:
 
         .. .RAISES
 
-        :raises:
+        :(raises):
             (Same as in :meth:`.block_user_by_id`.)
         """
         self._client.request('POST', '/api/block_user', data={'name': name})
@@ -344,7 +347,7 @@ class AccountProcedures:
 
         .. .RAISES
 
-        :raises:
+        :(raises):
             See :meth:`.unblock_user_by_target_id`.
         """
         data = {
@@ -365,7 +368,7 @@ class AccountProcedures:
 
         .. .RAISES
 
-        :raises:
+        :(raises):
             See :meth:`.blocked`.
         """
         try:
@@ -439,7 +442,7 @@ class AccountProcedures:
 
         .. .RAISES
 
-        :raises:
+        :(raises):
             See :meth:`.blocked`.
         """
         try:

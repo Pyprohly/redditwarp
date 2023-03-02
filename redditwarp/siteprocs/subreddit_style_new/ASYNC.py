@@ -9,7 +9,7 @@ import os.path as op
 from functools import cached_property
 
 from ...model_loaders.subreddit_style_asset_upload_lease import load_subreddit_style_asset_upload_lease
-from ...http.payload import guess_filename_mimetype
+from ...http.util.guess_filename_mimetype import guess_filename_mimetype
 
 class SubredditStyleNewProcedures:
     def __init__(self, client: Client) -> None:
@@ -148,6 +148,57 @@ class SubredditStyleNewProcedures:
         banner_overlay_hover_image_url: Optional[str] = None,
         mobile_banner_image_url: Optional[str] = None,
     ) -> None:
+        """Set banner images in a subreddit.
+
+        Parameters set to `None` are ignored.
+
+        Use an empty string to set a setting to its default.
+
+        .. .PARAMETERS
+
+        :param `Optional[str]` banner_size:
+            Either: `small`, `medium`, `large`.
+
+            Empty string or any other value defaults to `small`.
+        :param `Optional[str]` banner_background_color:
+            A hex color.
+
+            Empty string or any other value defaults to `#33a8ff`.
+        :param `Optional[str]` banner_image_url:
+            Location of the a banner image.
+
+            Use empty string to remove the image.
+        :param `Optional[str]` banner_image_display:
+            Either: `cover`, `tiled`.
+
+            Empty string or any other value defaults to `cover`.
+        :param `Optional[str]` banner_overlay_image_url:
+            Location of the a banner overlay image.
+
+            Use empty string to remove the image.
+        :param `Optional[str]` banner_overlay_image_position:
+            Either: `left`, `centered`, `right`.
+
+            Empty string or any other value defaults to `left`.
+        :param `Optional[str]` banner_overlay_hover_image_url:
+            The location of the a banner overlay hover image.
+
+            Use empty string to remove the image.
+        :param `Optional[str]` mobile_banner_image_url:
+            The location of the a mobile banner image.
+
+            Use empty string to remove the image.
+
+        .. .RETURNS
+
+        :rtype: `None`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        """
         def g() -> Iterable[tuple[str, str]]:
             if banner_size is not None:
                 yield ('bannerHeight', banner_size)

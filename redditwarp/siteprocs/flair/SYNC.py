@@ -908,6 +908,11 @@ class FlairProcedures:
     def show_my_flair(self, sr: str) -> None:
         """Show the current user's flair in the subreddit.
 
+        To tell if the current user's flair is shown::
+
+           subr = client.p.subreddit.fetch_by_name('Python')
+           print(subr.me.flair.shown)
+
         .. .PARAMETERS
 
         :param `str` sr:

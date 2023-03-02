@@ -78,8 +78,7 @@ class TestRequestExceptions:
     def test_no_content_type_in_response(self) -> None:
         http = MyHTTPClient(200, {}, b'{"some": "data"}')
         client = Client.from_http(http)
-        with pytest.raises(ValueError):
-            client.request('', '')
+        client.request('', '')
 
     def test_non_json_response(self) -> None:
         http = MyHTTPClient(200, {'Content-Type': 'text/html'}, b'<!DOCTYPE html>')

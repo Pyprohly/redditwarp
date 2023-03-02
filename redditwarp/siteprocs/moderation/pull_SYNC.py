@@ -60,7 +60,9 @@ class Pull:
 
         .. .RETURNS
 
-        :returns: A paginator iterator of either submission or comment object.
+        :returns:
+            A paginator iterator of either :class:`~.models.submission_SYNC.Submission`
+            or :class:`~.models.comment_SYNC.Comment` objects.
         :rtype: :class:`~.pagination.paginator_chaining_iterator.ImpartedPaginatorChainingIterator`\\[:class:`~.pagination.paginators.moderation.sync1.ModQueueListingPaginator`, `object`]
 
         .. .RAISES

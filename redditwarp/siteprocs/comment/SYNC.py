@@ -327,7 +327,6 @@ class CommentProcedures:
         """Distinguish a comment.
 
         .. hint::
-
            Distinguishing decoratates the author's name by
            giving it a different color and putting a sigil beside it.
 
@@ -541,7 +540,6 @@ class CommentProcedures:
         """Ignore reports on a comment.
 
         .. hint::
-
            If you ignore reports, you won't receive notifications and the
            ignored thing will be absent from moderation listings.
 
@@ -711,7 +709,7 @@ class CommentProcedures:
 
             If true, the comment is created by the current user.
         :param `bool` locked:
-            Whether to lock the newly created comment.
+            Lock the newly created comment.
 
         .. .RETURNS
 

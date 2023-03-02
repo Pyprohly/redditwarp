@@ -9,7 +9,7 @@ import os.path as op
 from functools import cached_property
 
 from ...model_loaders.subreddit_style_asset_upload_lease import load_subreddit_style_asset_upload_lease
-from ...http.payload import guess_filename_mimetype
+from ...http.util.guess_filename_mimetype import guess_filename_mimetype
 
 class SubredditStyleNewProcedures:
     def __init__(self, client: Client) -> None:

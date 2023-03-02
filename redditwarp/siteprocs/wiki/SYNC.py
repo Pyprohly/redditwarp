@@ -283,7 +283,7 @@ class WikiProcedures:
 
         .. .RETURNS
 
-        :rtype: :class:`~.pagination.paginator_chaining_iterator.`[:class:`~.pagination.paginators.wiki_sync1.WikiPageRevisionsPaginator`, :class:`~.models.wiki_SYNC.WikiPageRevision`]
+        :rtype: :class:`~.pagination.paginator_chaining_iterator.ImpartedPaginatorChainingIterator`[:class:`~.pagination.paginators.wiki_sync1.WikiPageRevisionsPaginator`, :class:`~.models.wiki_SYNC.WikiPageRevision`]
 
         .. .RAISES
 

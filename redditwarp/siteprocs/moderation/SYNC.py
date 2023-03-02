@@ -192,6 +192,7 @@ class ModerationProcedures:
             + `403`:
                - You don't have permission.
                - The target subreddit specified was empty.
+
             + `404`:
                 The specified subreddit does not exist.
         """
@@ -434,6 +435,7 @@ class ModerationProcedures:
             + `403`:
                - You don't have permission.
                - The target subreddit specified was empty.
+
             + `404`:
                 The specified subreddit does not exist.
         """
@@ -473,6 +475,7 @@ class ModerationProcedures:
             + `403`:
                - You don't have permission.
                - The target subreddit specified was empty.
+
             + `404`:
                 The specified subreddit does not exist.
         """
@@ -559,10 +562,12 @@ class ModerationProcedures:
             + `TOO_LONG`:
                - The value specified by `reason` is over 100 characters.
                - The value specified by `note` is over 300 characters.
+
         :raises redditwarp.http.exceptions.StatusCodeException:
             + `403`:
                - You don't have permission.
                - The target subreddit specified was empty.
+
             + `404`:
                 The specified subreddit does not exist.
         """
@@ -624,7 +629,7 @@ class ModerationProcedures:
             In addition to :meth:`~.add_approved_user`:
 
             + `TOO_LONG`:
-               - The value specified by `note` is over 300 characters.
+                The value specified by `note` is over 300 characters.
         :raises redditwarp.http.exceptions.StatusCodeException:
             Same as :meth:`~.add_approved_user`.
         """
@@ -738,6 +743,7 @@ class ModerationProcedures:
             + `TOO_LONG`:
                - The value specified by `reason` is over 100 characters.
                - The value specified by `note` is over 300 characters.
+
         :raises redditwarp.http.exceptions.StatusCodeException:
             Same as :meth:`~.add_approved_user`.
         """
@@ -804,12 +810,15 @@ class ModerationProcedures:
                 + `MOD_REQUIRED`:
                    - There is no user context.
                    - The current user is not a moderator of the subreddit.
+
                 + `NO_TEXT`:
                    - The `title` parameter was not specified or was empty.
                    - The `message` parameter was not specified or was empty.
+
                 + `TOO_LONG`:
                    - The value specified for `title` is over 50 characters.
                    - The value specified for `message` is over 10000 characters.
+
             :raises redditwarp.http.exceptions.StatusCodeException:
                 + `500`:
                     The target subreddit does not exist.
@@ -836,6 +845,7 @@ class ModerationProcedures:
                 + `MOD_REQUIRED`:
                    - There is no user context.
                    - The current user is not a moderator of the subreddit.
+
                 + `SUBREDDIT_NOEXIST`:
                     The target subreddit does not exist.
             """
@@ -871,6 +881,7 @@ class ModerationProcedures:
                 + `MOD_REQUIRED`:
                    - There is no user context.
                    - The current user is not a moderator of the subreddit.
+
                 + `SUBREDDIT_NOEXIST`:
                     The target subreddit does not exist.
                 + `INVALID_ID`:
@@ -878,6 +889,7 @@ class ModerationProcedures:
                 + `NO_TEXT`:
                    - The `title` parameter was not specified or was empty.
                    - The `message` parameter was not specified or was empty.
+
                 + `TOO_LONG`:
                    - The value specified for `title` is over 50 characters.
                    - The value specified for `message` is over 10000 characters.
@@ -905,6 +917,7 @@ class ModerationProcedures:
                 + `MOD_REQUIRED`:
                    - There is no user context.
                    - The current user is not a moderator of the subreddit.
+
                 + `SUBREDDIT_NOEXIST`:
                     The target subreddit does not exist.
                 + `INVALID_ID`:

@@ -16,8 +16,44 @@ class ModmailProcedures:
         self.pull: Pull = Pull(client)
 
     async def get_unread_counts(self) -> Mapping[str, int]:
+        """Get unread conversations counts by mailbox.
+
+        Returns a dictionary like the following::
+
+           {"archived": 0,
+            "appeals": 0,
+            "highlighted": 0,
+            "notifications": 2,
+            "join_requests": 0,
+            "filtered": 0,
+            "new": 1,
+            "inprogress": 0,
+            "mod": 0}
+
+        .. .RETURNS
+
+        :rtype: `Mapping`\\[`str`, `int`]
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+        """
         return await self._client.request('GET', '/api/mod/conversations/unread/count')
 
     async def subreddits(self) -> Sequence[ModmailSubreddit]:
+        """Return subreddits the current user is moderating that have modmail enabled.
+
+        .. .RETURNS
+
+        :rtype: `Sequence`\\[:class:`~.models.modmail.ModmailSubreddit`]
+
+        .. .RAISES
+
+        :raises redditwarp.http.exceptions.StatusCodeException:
+            + `500`:
+                There is no user context.
+        """
         root = await self._client.request('GET', '/api/mod/conversations/subreddits')
         return [load_modmail_subreddit(d) for d in root['subreddits'].values()]

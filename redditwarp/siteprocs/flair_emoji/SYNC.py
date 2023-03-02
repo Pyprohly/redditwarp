@@ -9,7 +9,7 @@ from functools import cached_property
 
 from ...models.flair_emoji import FlairEmojiUploadLease, SubredditFlairEmojis
 from ...model_loaders.flair_emoji import load_flair_emoji_upload_lease, load_flair_emoji
-from ...http.payload import guess_filename_mimetype
+from ...http.util.guess_filename_mimetype import guess_filename_mimetype
 
 class FlairEmojiProcedures:
     def __init__(self, client: Client) -> None:

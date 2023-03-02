@@ -12,7 +12,6 @@ from redditwarp.auth.exceptions import (
     TokenServerResponseErrorTypes,
     UnrecognizedTokenServerResponseError,
 )
-from redditwarp.http import exceptions as http_exceptions
 from redditwarp.http.http_client_ASYNC import HTTPClient
 from redditwarp.http.handler_ASYNC import Handler
 from redditwarp.http.send_params import SendParams
@@ -98,7 +97,7 @@ async def test_fetch_json_dict__exceptions() -> None:
         response_data=b'{"error": "invalid_client"}',
     )
     toc = new_token_obtainment_client(http)
-    with pytest.raises(http_exceptions.StatusCodeException):
+    with pytest.raises(TokenServerResponseErrorTypes.InvalidClient):
         await toc.fetch_data()
 
     http = MyHTTPClient(
