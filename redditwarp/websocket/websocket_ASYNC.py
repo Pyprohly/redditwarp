@@ -95,11 +95,6 @@ class WebSocket:
             return event.data
         raise exceptions.MessageTypeMismatchException('bytes message received')
 
-    async def shutdown(self) -> None:
-        if self.close_code < 0:
-            self.close_code = 1006
-        self.state = ConnectionState.CLOSED
-
     async def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         raise NotImplementedError
 
@@ -155,7 +150,9 @@ class PartiallyImplementedWebSocket(WebSocket):
         async for _ in self.cycle(waitfor):
             pass
 
-        await self.shutdown()
+        if self.close_code < 0:
+            self.close_code = 1006
+        self.state: ConnectionState = ConnectionState.CLOSED
 
 
 
@@ -182,9 +179,11 @@ class PulsePartiallyImplementedWebSocketConnection(PartiallyImplementedWebSocket
         except exceptions.ConnectionClosedException:
             pass
 
-        await self.shutdown()
-
         yield m
+
+        if self.close_code < 0:
+            self.close_code = 1006
+        self.state = ConnectionState.CLOSED
         yield events.ConnectionClosed()
 
     async def _process_data_frame(self, m: Frame) -> AsyncIterator[object]:
@@ -212,10 +211,16 @@ class PulsePartiallyImplementedWebSocketConnection(PartiallyImplementedWebSocket
             async for event in self._process_data_frame(m):
                 yield event
 
-    async def _load_next_frame(self, *, timeout: float = -2) -> Frame:
+    async def _load_next_frame(self, *, timeout: float = -2) -> Optional[Frame]:
         raise NotImplementedError
 
     async def _pulse_impl(self, *, timeout: float = -2) -> AsyncIterator[object]:
         frame = await self._load_next_frame(timeout=timeout)
-        async for event in self._process_frame(frame):
-            yield event
+        if frame is None:
+            if self.close_code < 0:
+                self.close_code = 1006
+            self.state = ConnectionState.CLOSED
+            yield events.ConnectionClosed()
+        else:
+            async for event in self._process_frame(frame):
+                yield event

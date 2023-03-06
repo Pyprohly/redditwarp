@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, cast
+from typing import TYPE_CHECKING, Optional, Sequence, cast, Mapping
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
@@ -48,7 +48,7 @@ class WebSocketClient(PartiallyImplementedWebSocket):
         except websockets.exceptions.ConnectionClosed as e:
             self.close_code: int = e.code
             self.close_reason: str = e.reason
-            await self.shutdown()
+            self.state = ConnectionState.CLOSED
             yield events.ConnectionClosed()
         except Exception as cause:
             raise exceptions.TransportError from cause
@@ -86,10 +86,18 @@ class WebSocketClient(PartiallyImplementedWebSocket):
         except Exception as cause:
             raise exceptions.TransportError from cause
 
-        await self.shutdown()
+        if self.close_code < 0:
+            self.close_code = 1006
+        self.state = ConnectionState.CLOSED
 
 
-async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketClient:
+async def connect(
+    url: str,
+    *,
+    subprotocols: Sequence[str] = (),
+    headers: Optional[Mapping[str, str]] = None,
+    timeout: float = -2,
+) -> WebSocketClient:
     t: Optional[float] = timeout
     if timeout == -2:
         t = DEFAULT_WAITTIME
@@ -99,7 +107,11 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
         raise ValueError(f'invalid timeout value: {timeout}')
 
     subp = cast(Optional[Sequence[websockets.typing.Subprotocol]], subprotocols if subprotocols else None)
-    coro = websockets.legacy.client.connect(url, subprotocols=subp)
+    coro = websockets.legacy.client.connect(
+        url,
+        extra_headers=headers,
+        subprotocols=subp,
+    )
     try:
         ws = await asyncio.wait_for(coro, t)
     except asyncio.TimeoutError as cause:
@@ -107,7 +119,9 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
     except Exception as cause:
         raise exceptions.TransportError from cause
 
-    return WebSocketClient(ws)
+    wsc = WebSocketClient(ws)
+    wsc.subprotocol = ws.subprotocol or ''
+    return wsc
 
 
 name: str = websockets.__name__

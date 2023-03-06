@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Callable
+from typing import TYPE_CHECKING, Optional, Callable, MutableMapping
 if TYPE_CHECKING:
     from ..auth.token_obtainment_client_SYNC import TokenObtainmentClient
     from ..auth.token import Token
@@ -17,15 +17,6 @@ from ..auth.exceptions import (
     extract_www_authenticate_auth_params,
     raise_for_resource_server_response_error,
 )
-
-
-def prepare_requisition(requisition: Requisition, token: Token, *,
-        authorization_header_name: str = 'Authorization') -> None:
-    """Prepare a requisition for authorization.
-
-    This function sets the `Authorization` header using the token.
-    """
-    requisition.headers[authorization_header_name] = '{0.token_type} {0.access_token}'.format(token)
 
 
 class Authorizer:
@@ -143,9 +134,23 @@ class Authorizer:
         """The token can be renewed if a token client (:attr:`token_client`) is available."""
         return self.has_token_client()
 
+    def attain_token(self) -> Token:
+        if self.should_renew_token():
+            self.renew_token()
+        return self.fetch_token()
+
+    def get_header_entry(self) -> tuple[str, str]:
+        """Return an authorization header entry tuple."""
+        return (self.authorization_header_name, '{0.token_type} {0.access_token}'.format(self.fetch_token()))
+
     def prepare_requisition(self, requisition: Requisition) -> None:
-        """Prepare a requisition for authorization using the token (:attr:`token`)."""
-        prepare_requisition(requisition, self.fetch_token(), authorization_header_name=self.authorization_header_name)
+        """Prepare a requisition for authorization using the token."""
+        self.prepare_headers(requisition.headers)
+
+    def prepare_headers(self, headers: MutableMapping[str, str]) -> None:
+        """Update headers with an authorization entry."""
+        k, v = self.get_header_entry()
+        headers[k] = v
 
 
 class Authorized(DelegatingHandler):

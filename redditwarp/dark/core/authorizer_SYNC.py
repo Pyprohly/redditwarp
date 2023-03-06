@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Callable
+from typing import TYPE_CHECKING, Optional, Callable, MutableMapping
 if TYPE_CHECKING:
     from ..auth.token_obtainment_client_SYNC import TokenObtainmentClient
     from ..auth.token import Token
@@ -12,11 +12,6 @@ if TYPE_CHECKING:
 import time
 
 from ...http.delegating_handler_SYNC import DelegatingHandler
-
-
-def prepare_requisition(requisition: Requisition, token: Token, *,
-        authorization_header_name: str = 'Authorization') -> None:
-    requisition.headers[authorization_header_name] = 'Bearer {0.access_token}'.format(token)
 
 
 class Authorizer:
@@ -83,8 +78,20 @@ class Authorizer:
     def can_renew_token(self) -> bool:
         return self.has_token_client()
 
+    def attain_token(self) -> Token:
+        if self.should_renew_token():
+            self.renew_token()
+        return self.fetch_token()
+
+    def get_header_entry(self) -> tuple[str, str]:
+        return (self.authorization_header_name, 'Bearer {0.access_token}'.format(self.fetch_token()))
+
     def prepare_requisition(self, requisition: Requisition) -> None:
-        prepare_requisition(requisition, self.fetch_token(), authorization_header_name=self.authorization_header_name)
+        self.prepare_headers(requisition.headers)
+
+    def prepare_headers(self, headers: MutableMapping[str, str]) -> None:
+        k, v = self.get_header_entry()
+        headers[k] = v
 
 
 class Authorized(DelegatingHandler):

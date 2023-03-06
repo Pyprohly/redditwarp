@@ -300,11 +300,11 @@ class Submission(DatamementoBase):
             the number of actual visible comments. It could be higher or lower.
             """)
 
-        self.rel_permalink: str = d['permalink']
+        self.permalink_path: str = d['permalink']
         ("""
             The URL of the submission, without the domain.
             """)
-        self.permalink: str = AUTHORIZATION_BASE_URL + d['permalink']
+        self.permalink: str = AUTHORIZATION_BASE_URL + self.permalink_path
         ("""
             The URL of the submission.
             """)

@@ -95,7 +95,7 @@ class CommentMessage(MailboxMessage):
     class Submission:
         id: int
         title: str
-        rel_permalink: str
+        permalink_path: str
         permalink: str
         comment_count: int
 
@@ -132,7 +132,7 @@ class CommentMessage(MailboxMessage):
             If you have any information about this, please open an issue report at
             `<https://github.com/Pyprohly/redditwarp/issues>`_.
             """)
-        rel_permalink: str
+        permalink_path: str
         permalink: str
         is_top_level: bool
         has_parent_comment: bool

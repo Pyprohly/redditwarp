@@ -98,11 +98,6 @@ class WebSocket:
             return event.data
         raise exceptions.MessageTypeMismatchException('bytes message received')
 
-    def shutdown(self) -> None:
-        if self.close_code < 0:
-            self.close_code = 1006
-        self.state = ConnectionState.CLOSED
-
     def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         raise NotImplementedError
 
@@ -159,7 +154,9 @@ class PartiallyImplementedWebSocket(WebSocket):
         for _ in self.cycle(waitfor):
             pass
 
-        self.shutdown()
+        if self.close_code < 0:
+            self.close_code = 1006
+        self.state: ConnectionState = ConnectionState.CLOSED
 
 
 
@@ -186,9 +183,11 @@ class PulsePartiallyImplementedWebSocketConnection(PartiallyImplementedWebSocket
         except exceptions.ConnectionClosedException:
             pass
 
-        self.shutdown()
-
         yield m
+
+        if self.close_code < 0:
+            self.close_code = 1006
+        self.state = ConnectionState.CLOSED
         yield events.ConnectionClosed()
 
     def _process_data_frame(self, m: Frame) -> Iterator[object]:
@@ -213,9 +212,15 @@ class PulsePartiallyImplementedWebSocketConnection(PartiallyImplementedWebSocket
         elif m.opcode in {Opcode.CONTINUATION, Opcode.TEXT, Opcode.BINARY}:
             yield from self._process_data_frame(m)
 
-    def _load_next_frame(self, *, timeout: float = -2) -> Frame:
+    def _load_next_frame(self, *, timeout: float = -2) -> Optional[Frame]:
         raise NotImplementedError
 
     def _pulse_impl(self, *, timeout: float = -2) -> Iterator[object]:
         frame = self._load_next_frame(timeout=timeout)
-        yield from self._process_frame(frame)
+        if frame is None:
+            if self.close_code < 0:
+                self.close_code = 1006
+            self.state = ConnectionState.CLOSED
+            yield events.ConnectionClosed()
+        else:
+            yield from self._process_frame(frame)

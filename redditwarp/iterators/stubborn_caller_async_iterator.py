@@ -5,6 +5,14 @@ from typing import TypeVar, AsyncIterator, Callable, Optional, Awaitable, Iterab
 T = TypeVar('T')
 
 class StubbornCallerAsyncIterator(AsyncIterator[T]):
+    """Call each callable in the given iterator and return its result.
+
+    If a call raises an exception it will propagate normally. Doing
+    `next(self)` will re-attempt the call until it returns a result.
+
+    Has a `self.current` attribute to get the current callable.
+    """
+
     def __init__(self, iterable: Iterable[Callable[[], Awaitable[T]]]) -> None:
         self.__itr = iter(iterable)
         self.current: Optional[Callable[[], Awaitable[T]]] = None

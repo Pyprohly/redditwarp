@@ -28,6 +28,8 @@ DEFAULT_TIMEOUT: float = 8
 
 
 class HTTPClient(BaseHTTPClient):
+    """An HTTP client specialised for the purposes of this library."""
+
     @property
     def last(self) -> Last:
         return self._last
@@ -58,6 +60,8 @@ class HTTPClient(BaseHTTPClient):
 
 
 class RedditHTTPClient(HTTPClient):
+    """An HTTP client for making requests to the public Reddit API."""
+
     @property
     def authorizer(self) -> Authorizer:
         return self.fetch_authorizer()
@@ -75,6 +79,11 @@ class RedditHTTPClient(HTTPClient):
         return self._authorizer
 
     def fast_set_authorizer(self, value: Optional[Authorizer]) -> None:
+        """Changes the value of `self.authorizer`.
+
+        Note, the :attr:`authorizer` attribute is just a holder and changing
+        its value will not change the underlying authorizer.
+        """
         self._authorizer = value
 
 

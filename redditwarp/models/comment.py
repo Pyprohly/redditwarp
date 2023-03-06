@@ -245,11 +245,11 @@ class Comment(DatamementoBase):
             Whether the score should be hidden.
             """)
 
-        self.rel_permalink: str = d['permalink']
+        self.permalink_path: str = d['permalink']
         ("""
             URL of the comment, without the domain.
             """)
-        self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
+        self.permalink: str = AUTHORIZATION_BASE_URL + self.permalink_path
         ("""
             URL of the comment.
             """)
@@ -381,9 +381,9 @@ class LooseComment(Comment):
             ("")
             self.author_display_name: str = d['link_author']
             ("")
-            self.rel_permalink: str = d['link_permalink']
+            self.permalink_path: str = d['link_permalink']
             ("")
-            self.permalink: str = AUTHORIZATION_BASE_URL + self.rel_permalink
+            self.permalink: str = AUTHORIZATION_BASE_URL + self.permalink_path
             ("")
             self.nsfw: bool = d['over_18']
             ("")

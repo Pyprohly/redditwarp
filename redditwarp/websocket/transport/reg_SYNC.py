@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping, Sequence, Protocol, MutableSequence
+from typing import TYPE_CHECKING, MutableMapping, Sequence, Protocol, MutableSequence, Optional, Mapping
 if TYPE_CHECKING:
     from importlib.machinery import ModuleSpec
 
@@ -11,8 +11,12 @@ from ..websocket_SYNC import WebSocket
 
 
 class ConnectFunctionProtocol(Protocol):
-    def __call__(self, url: str, *,
-        subprotocols: Sequence[str] = (), timeout: float = -2
+    def __call__(self,
+        url: str,
+        *,
+        subprotocols: Sequence[str] = (),
+        headers: Optional[Mapping[str, str]] = None,
+        timeout: float = -2,
     ) -> WebSocket: ...
 
 @dataclass
@@ -36,10 +40,20 @@ def load_transport() -> TransportInfo:
 
     return next(iter(transport_info_registry.values()))
 
-def connect(url: str, *,
-        subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocket:
+def connect(
+    url: str,
+    *,
+    subprotocols: Sequence[str] = (),
+    headers: Optional[Mapping[str, str]] = None,
+    timeout: float = -2,
+) -> WebSocket:
     connect = load_transport().connect
-    return connect(url, subprotocols=subprotocols, timeout=timeout)
+    return connect(
+        url,
+        subprotocols=subprotocols,
+        headers=headers,
+        timeout=timeout,
+    )
 
 def register(
     adaptor_module_name: str,

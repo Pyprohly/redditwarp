@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence
+from typing import TYPE_CHECKING, Optional, Sequence, Mapping
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
     from ...events import Frame
@@ -71,7 +71,11 @@ class WebSocketClient(PartiallyImplementedWebSocket):
         elif wsm.type == aiohttp.WSMsgType.CLOSING:
             self.state = ConnectionState.CLOSING
         elif wsm.type == aiohttp.WSMsgType.CLOSED:
-            await self.shutdown()
+            close_code = self.ws.close_code
+            if not close_code:
+                raise Exception('assertion')
+            self.close_code: int = close_code
+            self.state = ConnectionState.CLOSED
             yield events.ConnectionClosed()
         elif wsm.type == aiohttp.WSMsgType.ERROR:
             raise exceptions.TransportError from wsm.data
@@ -104,15 +108,22 @@ class WebSocketClient(PartiallyImplementedWebSocket):
             raise exceptions.TransportError from e
 
         if self.ws.close_code:
-            self.close_code: int = self.ws.close_code
+            self.close_code = self.ws.close_code
 
-        await self.shutdown()
+        if self.close_code < 0:
+            self.close_code = 1006
+        self.state = ConnectionState.CLOSED
 
-    async def shutdown(self) -> None:
-        await super().shutdown()
         await self.session.close()
 
-async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float = -2) -> WebSocketClient:
+
+async def connect(
+    url: str,
+    *,
+    subprotocols: Sequence[str] = (),
+    headers: Optional[Mapping[str, str]] = None,
+    timeout: float = -2,
+) -> WebSocketClient:
     t: Optional[float] = timeout
     if timeout == -2:
         t = DEFAULT_WAITTIME
@@ -122,14 +133,20 @@ async def connect(url: str, *, subprotocols: Sequence[str] = (), timeout: float 
         raise ValueError(f'invalid timeout value: {timeout}')
 
     session = aiohttp.ClientSession()
-    coro = session.ws_connect(url)
+    coro = session.ws_connect(
+        url,
+        headers=headers,
+        protocols=subprotocols,
+    )
     try:
         ws = await asyncio.wait_for(coro, t)
     except asyncio.TimeoutError:
         await session.close()
         raise exceptions.TimeoutException
 
-    return WebSocketClient(ws, session)
+    wsc = WebSocketClient(ws, session)
+    wsc.subprotocol = ws.protocol or ''
+    return wsc
 
 
 name: str = aiohttp.__name__

@@ -43,7 +43,7 @@ class CustomFeed:
         ("")
         self.nsfw: bool = d['over_18']
         ("")
-        self.rel_permalink: str = d['path']
+        self.path: str = d['path']
         ("")
         self.permalink: str = AUTHORIZATION_BASE_URL + d['path']
         ("")

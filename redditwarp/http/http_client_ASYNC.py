@@ -23,6 +23,11 @@ DEFAULT_TIMEOUT: float = 100.
 
 
 class HTTPClient:
+    """A class for sending HTTP requests.
+
+    The purpose of the HTTPClient is to be as useful as possible.
+    """
+
     _TSelf = TypeVar('_TSelf', bound='HTTPClient')
 
     @staticmethod

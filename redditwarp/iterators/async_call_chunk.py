@@ -6,6 +6,8 @@ TInput = TypeVar('TInput')
 TOutput = TypeVar('TOutput')
 
 class AsyncCallChunk(Generic[TInput, TOutput]):
+    """Perform `.operation` on `.operand` when called."""
+
     def __init__(self,
         operation: Callable[[TInput], Awaitable[TOutput]],
         operand: TInput,
