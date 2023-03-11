@@ -33,6 +33,7 @@ class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
     def __init__(self, ws: websocket.WebSocket) -> None:
         super().__init__()
         self.ws: websocket.WebSocket = ws
+        ("")
 
     def _send_frame_impl(self, m: Frame) -> None:
         frm = websocket.ABNF.create_frame(opcode=m.opcode, data=m.data, fin=int(m.fin))

@@ -17,13 +17,21 @@ class Recorded(DelegatingHandler):
     def __init__(self, handler: Handler) -> None:
         super().__init__(handler)
         self.last_requisition: Optional[Requisition] = None
+        ("")
         self.last_exchange: Optional[Exchange] = None
+        ("")
         self.last_transmit: Optional[tuple[Requisition, Optional[Exchange]]] = None
+        ("")
         self.last_transfer: Optional[tuple[Requisition, Exchange]] = None
+        ("")
         self.last_requisition_queue: MutableSequence[Requisition] = deque(maxlen=16)
+        ("")
         self.last_exchange_queue: MutableSequence[Exchange] = deque(maxlen=16)
+        ("")
         self.last_transmit_queue: MutableSequence[tuple[Requisition, Optional[Exchange]]] = deque(maxlen=16)
+        ("")
         self.last_transfer_queue: MutableSequence[tuple[Requisition, Exchange]] = deque(maxlen=16)
+        ("")
 
     def clear(self) -> None:
         self.last_requisition = None

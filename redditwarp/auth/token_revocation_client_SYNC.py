@@ -23,8 +23,11 @@ class TokenRevocationClient:
         :type client_creds: :data:`~.types.ClientCredentials`
         """
         self.http: HTTPClient = http
+        ("")
         self.url: str = url
+        ("")
         self.client_creds: ClientCredentials = client_creds
+        ("")
 
     def revoke_token(self, token: str, token_type_hint: str = '') -> None:
         """Makes a revocation request for a token.

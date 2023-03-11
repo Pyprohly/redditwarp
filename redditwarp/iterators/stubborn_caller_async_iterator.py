@@ -16,6 +16,7 @@ class StubbornCallerAsyncIterator(AsyncIterator[T]):
     def __init__(self, iterable: Iterable[Callable[[], Awaitable[T]]]) -> None:
         self.__itr = iter(iterable)
         self.current: Optional[Callable[[], Awaitable[T]]] = None
+        ("")
 
     def __aiter__(self) -> AsyncIterator[T]:
         return self

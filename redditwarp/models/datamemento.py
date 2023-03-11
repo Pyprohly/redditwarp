@@ -22,7 +22,9 @@ class DatamementoPropertiesMixin:
 class DatamementoBase:
     def __init__(self, d: D) -> None:
         self.d: D = d
+        ("")
         self.b: B = DictAndListRecursiveAttributeMappingProxy(d)
+        ("")
 
 
 class DatamementoDataclassesMixin:

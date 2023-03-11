@@ -14,6 +14,7 @@ class UnfalteringChainingIterator(Iterator[E]):
     def __init__(self, source: Iterable[Iterable[E]]) -> None:
         self.__iterator = iter(source)
         self.current_iterator: Iterator[E] = iter(())
+        ("")
 
     def __iter__(self) -> Iterator[E]:
         return self

@@ -37,9 +37,13 @@ class TokenObtainmentClient:
             :data:`~.types.AuthorizationGrant`
         """
         self.http: HTTPClient = http
+        ("")
         self.url: str = url
+        ("")
         self.client_creds: ClientCredentials = client_creds
+        ("")
         self.grant: AuthorizationGrant = grant
+        ("")
 
     def fetch_data(self) -> Mapping[str, Any]:
         """Exchange an authorisation grant for OAuth2 token data.

@@ -32,6 +32,7 @@ class RequestsConnector(Connector):
     ) -> None:
         super().__init__()
         self.session: requests.Session = session
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         r = p.requisition

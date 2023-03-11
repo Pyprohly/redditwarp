@@ -19,6 +19,7 @@ class Time(ListingPaginator[T]):
     ):
         super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self.time: str = ''
+        ("")
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

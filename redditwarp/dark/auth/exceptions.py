@@ -14,6 +14,7 @@ class UnknownTokenType(ArgExc):
     def __init__(self, arg: object = None, *, token: Token) -> None:
         super().__init__(arg)
         self.token: Token = token
+        ("")
 
 class TokenServerResponseError(ArgExc):
     def __init__(self, arg: object = None, *,
@@ -21,7 +22,9 @@ class TokenServerResponseError(ArgExc):
             explanation: str = '') -> None:
         super().__init__(arg)
         self.label: str = label
+        ("")
         self.explanation: str = explanation
+        ("")
 
     def get_default_message(self) -> str:
         la = self.label

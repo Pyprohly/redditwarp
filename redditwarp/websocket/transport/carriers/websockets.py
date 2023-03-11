@@ -25,6 +25,7 @@ class WebSocketClient(PartiallyImplementedWebSocket):
     def __init__(self, ws: websockets.legacy.client.WebSocketClientProtocol) -> None:
         super().__init__()
         self.ws: websockets.legacy.client.WebSocketClientProtocol = ws
+        ("")
 
     async def _send_frame_impl(self, m: Frame) -> None:
         try:

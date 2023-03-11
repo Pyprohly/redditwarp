@@ -11,6 +11,7 @@ class CustomFeed(BaseCustomFeed):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")
 
     async def delete(self) -> None:
         await self.client.p.custom_feed.delete(self.owner, self.name)

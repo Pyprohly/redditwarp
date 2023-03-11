@@ -11,7 +11,9 @@ class PaginatorChainingAsyncIterator(AsyncIterator[E]):
         self._paginator: AsyncPaginator[E] = paginator
         self._paginator_iterator: AsyncIterator[Sequence[E]] = paginator.__aiter__()
         self.remaining: Optional[int] = amount
+        ("")
         self.current_iterator: Iterator[E] = iter(())
+        ("")
 
     def __aiter__(self) -> AsyncIterator[E]:
         return self

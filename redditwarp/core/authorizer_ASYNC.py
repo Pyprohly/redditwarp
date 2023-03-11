@@ -165,6 +165,7 @@ class Authorized(DelegatingHandler):
     def __init__(self, handler: Handler, authorizer: Authorizer) -> None:
         super().__init__(handler)
         self.authorizer: Authorizer = authorizer
+        ("")
         self._lock = asyncio.Lock()
 
     async def _send(self, p: SendParams) -> Exchange:

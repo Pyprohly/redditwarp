@@ -196,34 +196,64 @@ class ModAction(DatamementoPropertiesMixin):
             """)
 
 class UserDossier(DatamementoPropertiesMixin):
+    @dataclass(repr=False, eq=False)
     class RecentPost:
-        def __init__(self, d: Mapping[str, Any]) -> None:
-            self.permalink: str
-            ("")
-            self.title: str
-            ("")
-            self.created_at: datetime
-            ("")
+        id: int
+        ("""
+            The submission ID.
+            """)
+        permalink: str
+        ("""
+            A URL to the submission.
+            """)
+        title: str
+        ("""
+            Title of the submission.
+            """)
+        created_at: datetime
+        ("""
+            When the submission was created.
+            """)
 
+    @dataclass(repr=False, eq=False)
     class RecentComment:
-        def __init__(self, d: Mapping[str, Any]) -> None:
-            self.permalink: str
-            ("")
-            self.title: str
-            ("")
-            self.body: str
-            ("")
-            self.created_at: datetime
-            ("")
+        id: int
+        ("""
+            The comment ID.
+            """)
+        permalink: str
+        ("""
+            A URL to the comment.
+            """)
+        submission_title: str
+        ("""
+            The title of the submission in which the comment resides.
+            """)
+        body: str
+        ("""
+            The comment the user wrote.
+            """)
+        created_at: datetime
+        ("""
+            When the comment was created.
+            """)
 
+    @dataclass(repr=False, eq=False)
     class RecentConvo:
-        def __init__(self, d: Mapping[str, Any]) -> None:
-            self.id: int
-            ("")
-            self.subject: str
-            ("")
-            self.permalink: str
-            ("")
+        id: int
+        ("""
+            The conversation ID.
+            """)
+        subject: str
+        ("""
+            The subject line of the conversation.
+            """)
+        permalink: str
+        ("""
+            A URL to the conversation.
+
+            E.g., https://mod.reddit.com/mail/perma/tiebu.
+            """)
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
@@ -297,15 +327,39 @@ class UserDossier(DatamementoPropertiesMixin):
             Value is `datetime.min` if :attr:`banned` is false.
             """)
 
-        self.recent_posts: Sequence[UserDossier.RecentPost] = [self.RecentPost(m) for m in d['recentPosts']]
+        self.recent_posts: Sequence[UserDossier.RecentPost] = [
+            self.RecentPost(
+                id=int(k.partition('_')[-1], 36),
+                permalink=v['permalink'],
+                title=v['title'],
+                created_at=datetime.fromisoformat(v['date']),
+            )
+            for k, v in d['recentPosts'].items()
+        ]
         ("""
             A bit of information about the user's recent submissions to the subreddit.
             """)
-        self.recent_comments: Sequence[UserDossier.RecentComment] = [self.RecentComment(m) for m in d['recentComments']]
+        self.recent_comments: Sequence[UserDossier.RecentComment] = [
+            self.RecentComment(
+                id=int(k.partition('_')[-1], 36),
+                permalink=v['permalink'],
+                submission_title=v['title'],
+                body=v['comment'],
+                created_at=datetime.fromisoformat(v['date']),
+            )
+            for k, v in d['recentComments'].items()
+        ]
         ("""
             A bit information about the user's recent comments in the subreddit.
             """)
-        self.recent_convos: Sequence[UserDossier.RecentConvo] = [self.RecentConvo(m) for m in d['recentConvos']]
+        self.recent_convos: Sequence[UserDossier.RecentConvo] = [
+            self.RecentConvo(
+                id=int(v['id'], 36),
+                subject=v['subject'],
+                permalink=v['permalink'],
+            )
+            for _k, v in d['recentConvos'].items()
+        ]
         ("""
             Other modmail conversations this user is involved in.
             """)

@@ -26,13 +26,17 @@ class SubmissionSearchAsyncPaginator(
     ) -> None:
         super().__init__(client, url, params=params)
         self.sort: str = sort
+        ("")
         self.time: str = time
+        ("")
 
 
 class SubmissionDuplicates(Sequence[Submission]):
     def __init__(self, dups: Sequence[Submission], origin: Submission) -> None:
         self.origin: Submission = origin
+        ("")
         self.dups: Sequence[Submission] = dups
+        ("")
 
     def __len__(self) -> int:
         return len(self.dups)
@@ -60,7 +64,9 @@ class SubmissionDuplicatesAsyncPaginator(ListingAsyncPaginator[Submission]):
     ) -> None:
         super().__init__(client, url)
         self.sort: str = sort
+        ("")
         self.crossposts_only: bool = crossposts_only
+        ("")
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

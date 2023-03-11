@@ -86,7 +86,9 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         self._agen: AsyncIterator[float] = self.__routine()
 
         self.output: StreamEventDispatcher[TOutput] = StreamEventDispatcher()
+        ("")
         self.error: StreamEventDispatcher[Exception] = StreamEventDispatcher()
+        ("")
 
     async def __anext__(self) -> float:
         return await self._agen.__anext__()

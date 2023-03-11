@@ -8,8 +8,11 @@ class TokenBucket:
     def __init__(self, capacity: float, rate: float, *,
             time_func: Callable[[], float] = time.monotonic) -> None:
         self.capacity: float = capacity
+        ("")
         self.rate: float = rate
+        ("")
         self.time_func: Callable[[], float] = time_func
+        ("")
         self._value = capacity
         self._timestamp = time_func()
 

@@ -29,8 +29,11 @@ class ModerationUsersPaginator(HasMorePaginator[T], Bidirectional, CursorPaginat
     ) -> None:
         super().__init__(limit=limit)
         self.direction: bool = True
+        ("")
         self.client: Client = client
+        ("")
         self.url: str = url
+        ("")
         self._after: str = ''
         self._before: str = ''
         self._has_after: bool = True

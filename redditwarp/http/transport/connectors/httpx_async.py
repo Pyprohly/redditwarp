@@ -31,6 +31,7 @@ class HttpxConnector(Connector):
     ) -> None:
         super().__init__()
         self.client: httpx.AsyncClient = client
+        ("")
 
     async def _send(self, p: SendParams) -> Exchange:
         r = p.requisition

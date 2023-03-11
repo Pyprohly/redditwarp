@@ -20,12 +20,19 @@ class Authorizer:
         token: Optional[Token] = None,
     ) -> None:
         self._token_client: Optional[TokenObtainmentClient] = token_client
+        ("")
         self._token: Optional[Token] = token
+        ("")
         self.renewal_time: Optional[float] = None
+        ("")
         self.renewal_skew: float = 30
+        ("")
         self.expires_in_fallback: Optional[int] = None
+        ("")
         self.time_func: Callable[[], float] = time.monotonic
+        ("")
         self.authorization_header_name: str = 'Authorization'
+        ("")
 
     def has_token_client(self) -> bool:
         return self._token_client is not None
@@ -98,6 +105,7 @@ class Authorized(DelegatingHandler):
     def __init__(self, handler: Handler, authorizer: Authorizer) -> None:
         super().__init__(handler)
         self.authorizer: Authorizer = authorizer
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         authorizer = self.authorizer

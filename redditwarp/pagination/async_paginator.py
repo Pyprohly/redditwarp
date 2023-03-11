@@ -9,6 +9,7 @@ T = TypeVar('T')
 class AsyncPaginator(Generic[T]):
     def __init__(self, *, limit: Optional[int] = None) -> None:
         self.limit: Optional[int] = limit
+        ("")
 
     async def __aiter__(self) -> AsyncIterator[Sequence[T]]:
         while page := await self.fetch():
@@ -21,6 +22,7 @@ class OffsetAsyncPaginator(AsyncPaginator[T]):
     def __init__(self, *, limit: Optional[int] = None, offset: Optional[int] = None) -> None:
         super().__init__(limit=limit)
         self.offset: Optional[int] = offset
+        ("")
 
 class CursorAsyncPaginator(AsyncPaginator[T]):
     def get_cursor(self) -> str:

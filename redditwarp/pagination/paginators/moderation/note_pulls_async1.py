@@ -30,7 +30,9 @@ class GBaseModerationNoteAsyncPaginator(HasMoreAsyncPaginator[T], CursorAsyncPag
     ) -> None:
         super().__init__(limit=limit)
         self.client: Client = client
+        ("")
         self.url: str = url
+        ("")
         self._cursor: str = cursor
         self._has_next_page: bool = True
         self._subreddit: str = subreddit

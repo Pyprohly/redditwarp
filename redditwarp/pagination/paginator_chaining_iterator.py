@@ -11,7 +11,9 @@ class PaginatorChainingIterator(Iterator[E]):
         self._paginator: Paginator[E] = paginator
         self._paginator_iterator: Iterator[Sequence[E]] = iter(paginator)
         self.remaining: Optional[int] = amount
+        ("")
         self.current_iterator: Iterator[E] = iter(())
+        ("")
 
     def __iter__(self) -> Iterator[E]:
         return self

@@ -10,6 +10,7 @@ class LiveThread(BaseLiveThread):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")
 
     async def config(self,
         title: str,
@@ -36,3 +37,4 @@ class LiveUpdate(BaseLiveUpdate):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")

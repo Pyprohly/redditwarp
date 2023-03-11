@@ -18,10 +18,15 @@ class WebSocket:
 
     def __init__(self) -> None:
         self.default_waittime: float = DEFAULT_WAITTIME
+        ("")
         self.state: ConnectionState = ConnectionState.OPEN
+        ("")
         self.close_code: int = -1
+        ("")
         self.close_reason: str = ''
+        ("")
         self.subprotocol: str = ''
+        ("")
 
     async def __aiter__(self) -> AsyncIterator[object]:
         async for event in self.cycle(-1):

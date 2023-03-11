@@ -15,7 +15,9 @@ class ApplyParamsAndHeaders(DelegatingHandler):
             headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
+        ("")
         self.headers: Mapping[str, str] = {} if headers is None else headers
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         reqi = p.requisition
@@ -29,7 +31,9 @@ class ApplyDefaultParamsAndHeaders(DelegatingHandler):
             headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
+        ("")
         self.headers: Mapping[str, str] = {} if headers is None else headers
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         reqi = p.requisition
@@ -42,6 +46,7 @@ class ApplyParams(DelegatingHandler):
     def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         reqi = p.requisition
@@ -52,6 +57,7 @@ class ApplyDefaultParams(DelegatingHandler):
     def __init__(self, handler: Handler, params: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = {} if params is None else params
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         reqi = p.requisition
@@ -63,6 +69,7 @@ class ApplyHeaders(DelegatingHandler):
     def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.headers: Mapping[str, str] = {} if headers is None else headers
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         reqi = p.requisition
@@ -73,6 +80,7 @@ class ApplyDefaultHeaders(DelegatingHandler):
     def __init__(self, handler: Handler, headers: Optional[Mapping[str, str]] = None) -> None:
         super().__init__(handler)
         self.headers: Mapping[str, str] = {} if headers is None else headers
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         reqi = p.requisition

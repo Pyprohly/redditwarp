@@ -15,9 +15,13 @@ import heapq
 class Entry:
     def __init__(self, when: float, callback: Callable[[], None]) -> None:
         self.when: float = when
+        ("")
         self.callback: Callable[[], None] = callback
+        ("")
         self.scheduled: bool = True
+        ("")
         self.cancelled: bool = False
+        ("")
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
@@ -64,7 +68,9 @@ class Scheduler(Sized):
         delay_func: Callable[[float], None] = time.sleep,
     ) -> None:
         self.time_func: Callable[[], float] = time_func
+        ("")
         self.delay_func: Callable[[float], None] = delay_func
+        ("")
         self._pq: list[Entry] = []
 
     def __len__(self) -> int:

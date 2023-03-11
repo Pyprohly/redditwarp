@@ -20,6 +20,7 @@ class ConversationInfo(BaseConversationInfo):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")
 
     async def reply(self, body: str, *, hidden: bool = False, internal: bool = False) -> ConversationAggregate:
         return await self.client.p.modmail.conversation.reply(self.id, body, hidden=hidden, internal=internal)
@@ -35,6 +36,7 @@ class Message(BaseMessage):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")
 
 class ModAction(BaseModAction):
     pass

@@ -78,7 +78,9 @@ class Stream(IStandardStreamEventSubject[TOutput]):
         self._gen: Iterator[float] = self._routine()
 
         self.output: StreamEventDispatcher[TOutput] = StreamEventDispatcher()
+        ("")
         self.error: StreamEventDispatcher[Exception] = StreamEventDispatcher()
+        ("")
 
     def __next__(self) -> float:
         return next(self._gen)

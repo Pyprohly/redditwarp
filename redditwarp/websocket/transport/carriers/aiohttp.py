@@ -21,7 +21,9 @@ class WebSocketClient(PartiallyImplementedWebSocket):
     def __init__(self, ws: aiohttp.ClientWebSocketResponse, session: aiohttp.ClientSession) -> None:
         super().__init__()
         self.ws: aiohttp.ClientWebSocketResponse = ws
+        ("")
         self.session: aiohttp.ClientSession = session
+        ("")
 
     async def send_frame(self, m: Frame) -> None:
         raise RuntimeError('sending raw frames is not supported by aiohttp')

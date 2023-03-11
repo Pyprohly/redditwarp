@@ -111,6 +111,8 @@ class SuspendedUser(DatamementoPropertiesMixin):
             ("")
 
     def __init__(self, d: Mapping[str, Any]) -> None:
+        self.d: Mapping[str, Any] = d
+        ("")
         self.name: str = d['name']
         ("")
         self.awardee_karma: int = d['awardee_karma']

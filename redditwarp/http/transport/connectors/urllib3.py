@@ -35,6 +35,7 @@ class Urllib3Connector(Connector):
     ) -> None:
         super().__init__()
         self.http: urllib3.poolmanager.PoolManager = http
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         r = p.requisition

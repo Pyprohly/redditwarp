@@ -9,6 +9,7 @@ T = TypeVar('T')
 class Paginator(Generic[T]):
     def __init__(self, *, limit: Optional[int] = None) -> None:
         self.limit: Optional[int] = limit
+        ("")
 
     def __iter__(self) -> Iterator[Sequence[T]]:
         while page := self.fetch():
@@ -21,6 +22,7 @@ class OffsetPaginator(Paginator[T]):
     def __init__(self, *, limit: Optional[int] = None, offset: Optional[int] = None) -> None:
         super().__init__(limit=limit)
         self.offset: Optional[int] = offset
+        ("")
 
 class CursorPaginator(Paginator[T]):
     def get_cursor(self) -> str:

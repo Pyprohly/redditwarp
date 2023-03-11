@@ -15,6 +15,7 @@ class SubmissionCollectionInfo(BaseSubmissionCollectionInfo):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")
 
     async def add_post(self, submission_id: int) -> None:
         await self.client.p.collection.add_post(self.uuid, submission_id)

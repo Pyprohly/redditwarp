@@ -20,11 +20,17 @@ class ModmailConversationMessageAsyncPaginator(Resettable, CursorAsyncPaginator[
     ) -> None:
         super().__init__()
         self.limit: Optional[int] = limit
+        ("")
         self.client: Client = client
+        ("")
         self.url: str = url
+        ("")
         self.mailbox: str = mailbox
+        ("")
         self.subreddit_names: Sequence[str] = subreddit_names
+        ("")
         self.sort: str = sort
+        ("")
         self.__reset()
 
     def __reset(self) -> None:

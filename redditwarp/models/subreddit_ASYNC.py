@@ -13,8 +13,10 @@ class Subreddit(BaseSubreddit):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")
 
 class InaccessibleSubreddit(BaseInaccessibleSubreddit):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d)
         self.client: Client = client
+        ("")

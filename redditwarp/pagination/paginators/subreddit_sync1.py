@@ -20,7 +20,9 @@ class SubredditSearchPaginator(
     ) -> None:
         super().__init__(client, url)
         self.query: str = query
+        ("")
         self.show_users: bool = show_users
+        ("")
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

@@ -56,8 +56,11 @@ class HTTPClient:
     def __init__(self, handler: Handler) -> None:
         self._invoker: Invoker = Invoker(handler)
         self.base_url: str = ''
+        ("")
         self.timeout: float = DEFAULT_TIMEOUT
+        ("")
         self.follow_redirects: Optional[bool] = False
+        ("")
 
     def __enter__(self: _TSelf) -> _TSelf:
         return self

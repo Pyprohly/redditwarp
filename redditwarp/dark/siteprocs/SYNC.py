@@ -10,6 +10,7 @@ class Procedures:
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
         self.login: LoginProcedures = LoginProcedures(http)
+        ("")
 
     def ping(self) -> None:
         self._http.request('GET', 'https://oauth.reddit.com/api/v1/scopes', params={'scopes': 'read'})

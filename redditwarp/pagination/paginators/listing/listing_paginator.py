@@ -19,11 +19,17 @@ class ListingPaginator(Resettable, HasMorePaginator[T], Bidirectional, CursorPag
     ) -> None:
         super().__init__(limit=limit)
         self.client: Client = client
+        ("")
         self.url: str = url
+        ("")
         self.params: Mapping[str, str] = {} if params is None else params
+        ("")
         self.cursor_extractor: Callable[[Any], str] = cursor_extractor
+        ("")
         self.direction: bool = True
+        ("")
         self.show_all: bool = False
+        ("")
         self.__reset()
 
     def __reset(self) -> None:

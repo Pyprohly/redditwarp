@@ -17,6 +17,7 @@ class DirectByOrigin(DelegatingHandler):
     ) -> None:
         super().__init__(handler)
         self.directions: Mapping[str, Handler] = directions
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         o = urlsplit(p.requisition.url)

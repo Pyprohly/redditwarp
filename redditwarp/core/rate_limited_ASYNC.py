@@ -23,8 +23,11 @@ class RateLimited(DelegatingHandler):
     def __init__(self, handler: Handler) -> None:
         super().__init__(handler)
         self.remaining: int = 0
+        ("")
         self.reset: int = 0
+        ("")
         self.used: int = 0
+        ("")
         self._delta: float = 0.
         self._timestamp: float = time.monotonic()
         self._tb = TokenBucket(10, 1)

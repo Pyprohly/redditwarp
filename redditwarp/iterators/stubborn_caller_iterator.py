@@ -16,6 +16,7 @@ class StubbornCallerIterator(Iterator[T]):
     def __init__(self, iterable: Iterable[Callable[[], T]]) -> None:
         self.__itr = iter(iterable)
         self.current: Optional[Callable[[], T]] = None
+        ("")
 
     def __iter__(self) -> Iterator[T]:
         return self

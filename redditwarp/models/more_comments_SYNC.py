@@ -26,10 +26,15 @@ class MoreComments:
         client: Client,
     ):
         self.submission_id36: str = submission_id36
+        ("")
         self.comment_id36: str = comment_id36
+        ("")
         self.sort: str = sort
+        ("")
         self.d: Mapping[str, Any] = d
+        ("")
         self.client: Client = client
+        ("")
 
     def __call__(self, *,
         depth: Optional[int] = None,
@@ -62,7 +67,9 @@ class LoadMoreComments(MoreComments):
             client=client,
         )
         self.child_id36s: Sequence[str] = child_id36s
+        ("")
         self.count: int = count
+        ("")
 
     def __call__(self, *,
         depth: Optional[int] = None,

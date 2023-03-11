@@ -16,6 +16,7 @@ class LockedKeysMappingProxy(MutableMapping[K, V]):
         if locked_keys is None:
             locked_keys = set()
         self.locked_keys: MutableSet[K] = locked_keys
+        ("")
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self._store})'

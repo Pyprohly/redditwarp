@@ -55,6 +55,7 @@ class Moderator(SubredditUser):
             `posts`, `access`, `mail`, `config`, `flair`.
             """)
         self.post_karma: int = d['postKarma']
+        ("")
 
 class ApprovedUser(SubredditUser):
     def __init__(self, d: Mapping[str, Any]) -> None:

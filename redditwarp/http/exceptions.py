@@ -26,6 +26,7 @@ class StatusCodeException(ArgExc):
     def __init__(self, arg: object = None, *, status_code: int) -> None:
         super().__init__(arg)
         self.status_code: int = status_code
+        ("")
 
     def get_default_message(self) -> str:
         sts = self.status_code

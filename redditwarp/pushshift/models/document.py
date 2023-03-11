@@ -5,6 +5,7 @@ from typing import Any, Mapping, Iterator
 class Document(Mapping[str, Any]):
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
 
     def __contains__(self, item: object) -> bool:
         return item in self.d

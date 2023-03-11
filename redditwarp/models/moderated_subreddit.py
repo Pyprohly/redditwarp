@@ -10,9 +10,11 @@ class ModeratedSubreddit(DatamementoPropertiesMixin):
     class Me:
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.is_subscribed: bool = d['user_is_subscriber']
+            ("")
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
+        ("")
         full_id36: str = d['name']
         self.id36: str = full_id36[3:]
         ("""

@@ -19,6 +19,7 @@ class SubredditDetail(ListingPaginator[T]):
     ):
         super().__init__(client, url, limit=limit, params=params, cursor_extractor=cursor_extractor)
         self.sr_detail: bool = False
+        ("")
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

@@ -159,6 +159,7 @@ class Authorized(DelegatingHandler):
     def __init__(self, handler: Handler, authorizer: Authorizer) -> None:
         super().__init__(handler)
         self.authorizer: Authorizer = authorizer
+        ("")
 
     def _send(self, p: SendParams) -> Exchange:
         authorizer = self.authorizer

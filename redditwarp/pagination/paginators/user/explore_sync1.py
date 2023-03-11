@@ -20,6 +20,7 @@ class UserSearchPaginator(
     ) -> None:
         super().__init__(client, url)
         self.query: str = query
+        ("")
 
     def _generate_params(self) -> Iterable[tuple[str, str]]:
         yield from super()._generate_params()

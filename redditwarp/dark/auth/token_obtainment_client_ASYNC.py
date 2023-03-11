@@ -16,9 +16,13 @@ class TokenObtainmentClient:
             client_id: str,
             grant_data: JSON_ro) -> None:
         self.http: HTTPClient = http
+        ("")
         self.url: str = url
+        ("")
         self.client_id: str = client_id
+        ("")
         self.grant_data: JSON_ro = grant_data
+        ("")
 
     async def fetch_data(self) -> Mapping[str, Any]:
         headers: dict[str, str] = {}

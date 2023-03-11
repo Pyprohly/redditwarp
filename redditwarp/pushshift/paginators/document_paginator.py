@@ -23,7 +23,9 @@ class DocumentPaginator(Paginator[Document]):
     ) -> None:
         super().__init__(limit=limit)
         self.client: Client = client
+        ("")
         self.url: str = url
+        ("")
         self._search_params: Mapping[str, str] = {} if search_params is None else search_params
         self._since_cursor: Optional[int] = since
         self._until_cursor: Optional[int] = until

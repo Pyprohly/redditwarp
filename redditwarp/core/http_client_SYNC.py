@@ -40,9 +40,13 @@ class HTTPClient(BaseHTTPClient):
         recorder = Recorded(handler)
         super().__init__(recorder)
         self.base_url: str = RESOURCE_BASE_URL
+        ("")
         self.timeout: float = DEFAULT_TIMEOUT
+        ("")
         self.user_agent_base: str = ''
+        ("")
         self.headers: MutableMapping[str, str] = CaseInsensitiveDict() if headers is None else headers
+        ("")
         self._last: Last = Last(recorder)
 
     def _send(self, p: SendParams) -> Exchange:

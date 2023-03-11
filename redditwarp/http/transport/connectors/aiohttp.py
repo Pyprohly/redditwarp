@@ -33,6 +33,7 @@ class AiohttpConnector(Connector):
     ) -> None:
         super().__init__()
         self.session: aiohttp.ClientSession = session
+        ("")
 
     async def _send(self, p: SendParams) -> Exchange:
         r = p.requisition

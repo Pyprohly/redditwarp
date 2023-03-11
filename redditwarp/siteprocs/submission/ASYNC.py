@@ -232,7 +232,8 @@ class SubmissionProcedures:
                - The specified subreddit is invalid.
 
             + `SUBREDDIT_NOTALLOWED`:
-               - You don't have permission to post to the subreddit.
+               - The subreddit is restricted and you are not an approved user.
+               - You are banned from the subreddit.
                - You are trying to submit an image or video post to a NSFW subreddit.
 
                Note, quarantined subreddits can be posted to even if you haven't

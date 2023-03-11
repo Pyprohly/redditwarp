@@ -17,6 +17,7 @@ class RedditPleaseSendJSON(DelegatingHandler):
     def __init__(self, handler: Handler) -> None:
         super().__init__(handler)
         self.params: Mapping[str, str] = dict(self.PARAMS)
+        ("")
 
     async def _send(self, p: SendParams) -> Exchange:
         params = p.requisition.params

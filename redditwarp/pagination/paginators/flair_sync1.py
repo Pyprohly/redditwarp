@@ -18,9 +18,13 @@ class UserFlairAssociationPaginator(
     ) -> None:
         super().__init__()
         self.limit: Optional[int] = limit
+        ("")
         self.direction: bool = True
+        ("")
         self.client: Client = client
+        ("")
         self.url: str = url
+        ("")
         self._after: str = ''
         self._before: str = ''
         self._has_after: bool = True
