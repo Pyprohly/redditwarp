@@ -17,7 +17,7 @@ import redditwarp.SYNC
 
 client = redditwarp.SYNC.Client()
 
-it = client.p.front.pull.hot(6)
+it = client.p.front.pull.hot(5)
 l = list(it)
 for subm in l:
     print("r/{0.subreddit.name} | {0.id36}+ ^{0.score} | {0.title!r:.80}".format(subm))
@@ -56,8 +56,8 @@ import redditwarp.SYNC
 
 client = redditwarp.SYNC.Client()
 
-# Display the first 6 submissions on the Reddit frontpage.
-it = client.p.front.pull.hot(6)
+# Display the first 5 submissions on the Reddit frontpage.
+it = client.p.front.pull.hot(5)
 l = list(it)
 for subm in l:
     print("r/{0.subreddit.name} | {0.id36}+ ^{0.score} | {0.title!r:.80}".format(subm))
@@ -196,12 +196,13 @@ Post any questions you have to [r/redditdev].
 
 [r/redditdev]: https://www.reddit.com/r/redditdev/
 
-Join the discussion in the Discord guild: …
+Join the discussion in the RedditWarp [Discord guild].
+
+[Discord guild]: https://discord.gg/wcXTQcJ6Fc
 
 ## Links
 
 * [Repository](https://github.com/Pyprohly/redditwarp)
-* Documentation
-* Discord guild
+* [Documentation](https://redditwarp.readthedocs.io/)
+* [Discord guild]
 * [r/redditdev]
-* [Reddit API docs](https://www.reddit.com/dev/api/)
