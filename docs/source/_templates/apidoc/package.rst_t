@@ -1,0 +1,56 @@
+{# https://github.com/sphinx-doc/sphinx/blob/master/sphinx/templates/apidoc/package.rst_t #}
+{%- macro automodule(modname, options) -%}
+.. automodule:: {{ modname }}
+  {%- for option in options %}
+   :{{ option }}:
+  {%- endfor %}
+{% endmacro %}
+
+{%- macro toctree(docnames, maxdepth) -%}
+.. toctree::
+   :maxdepth: {{ maxdepth }}
+  {{- '\n' if docnames }}
+  {%- for docname in docnames %}
+   {{ docname }}
+  {%- endfor %}
+{% endmacro %}
+
+{%- if is_namespace %}
+{{ (pkgname ~ " namespace") | e | heading }}
+
+.. py:module:: {{ pkgname }}
+{% else %}
+{{ ("`%s`" % pkgname) | heading }}
+{##}
+  {%- if modulefirst %}
+{{ automodule(pkgname, automodule_options) }}
+  {%- endif %}
+{%- endif %}
+
+{%- if subpackages %}
+.. rubric:: Subpackages
+
+{{ toctree(subpackages, 1) }}
+{%- endif %}
+
+{%- if submodules %}
+.. rubric:: Submodules
+{##}
+  {%- if separatemodules %}
+{{ toctree(submodules, 1) }}
+  {%- else %}
+    {%- for submodule in submodules %}
+      {%- if show_headings %}
+{{ ("`%s`" % submodule) | heading(2) }}
+{##}
+      {%- endif %}
+{{ automodule(submodule, automodule_options) }}
+    {%- endfor %}
+  {%- endif %}
+{%- endif %}
+
+{%- if not modulefirst and not is_namespace %}
+.. rubric:: Module contents
+
+{{ automodule(pkgname, automodule_options) }}
+{%- endif %}

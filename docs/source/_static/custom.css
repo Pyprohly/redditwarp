@@ -1,0 +1,58 @@
+
+body {
+  --sidebar-item-font-size: var(--font-size--normal);
+  --toc-font-size: var(--font-size--small);
+
+  --color-background-hover: moccasin;
+  --color-sidebar-link-text: #414348;
+  --color-brand-primary: orangered;
+  --color-brand-content: orangered;
+  --color-link--hover: #c94412;
+}
+
+body[data-theme="dark"] {
+  --color-background-hover: #282017;
+  --color-sidebar-link-text: #a9aeb4;
+  --color-brand-primary: #fb8559;
+  --color-brand-content: #fb8559;
+  --color-link--hover: #c94412;
+}
+@media (prefers-color-scheme: dark) {
+  body:not([data-theme=light]) {
+    --color-background-hover: #282017;
+    --color-sidebar-link-text: #a9aeb4;
+    --color-brand-primary: #fb8559;
+    --color-brand-content: #fb8559;
+    --color-link--hover: #c94412;
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+.highlight.highlight pre span:is(.nn, .nc) {
+  text-decoration: none;
+}
+.highlight .go {
+  font-style: normal;
+}
+
+.sidebar-tree > ul {
+  margin-bottom: 1.5rem;
+}
+.sidebar-tree label {
+  border-radius: 2px;
+}
+.sidebar-tree .reference {
+  border-radius: 2px;
+  font-weight: 500;
+}
+
+.toctree-wrapper {
+  margin-bottom: 1.5rem;
+}
+
+.toc-drawer {
+  width: 20em;
+}

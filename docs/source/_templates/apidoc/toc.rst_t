@@ -1,0 +1,11 @@
+{# https://github.com/sphinx-doc/sphinx/blob/master/sphinx/templates/apidoc/toc.rst_t #}
+{{ header | heading }}
+
+This page contains auto-generated API reference documentation.
+
+.. toctree::
+   :maxdepth: 2
+{% for docname in docnames %}
+   {{ docname }}
+{%- endfor %}
+{##}

@@ -1,0 +1,9 @@
+{# https://github.com/sphinx-doc/sphinx/blob/master/sphinx/templates/apidoc/module.rst_t #}
+{%- if show_headings %}
+{{ ("`%s`" % basename) | heading }}
+{% endif %}
+.. automodule:: {{ qualname }}
+{%- for option in automodule_options %}
+   :{{ option }}:
+{%- endfor %}
+{##}

@@ -196,7 +196,7 @@ Post any questions you have to [r/redditdev].
 
 [r/redditdev]: https://www.reddit.com/r/redditdev/
 
-Join the discussion in the RedditWarp [Discord guild].
+Join the conversation in the RedditWarp [Discord guild].
 
 [Discord guild]: https://discord.gg/wcXTQcJ6Fc
 
