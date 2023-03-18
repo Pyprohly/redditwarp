@@ -83,7 +83,7 @@ class CustomFeedProcedures:
         result = self._client.request('GET', '/api/multi/mine')
         return [load_custom_feed(d['data'], self._client) for d in result]
 
-    def retrieve(self, user: str) -> Sequence[CustomFeed]:
+    def retrieve_yours(self, user: str) -> Sequence[CustomFeed]:
         """Fetch a list of custom feeds curated by a given user.
 
         .. .PARAMETERS
@@ -103,6 +103,16 @@ class CustomFeedProcedures:
         """
         result = self._client.request('GET', f'/api/multi/user/{user}')
         return [load_custom_feed(d['data'], self._client) for d in result]
+
+    def retrieve(self, user: Optional[str] = None) -> Sequence[CustomFeed]:
+        """Fetch a list of custom feeds.
+
+        Calls :meth:`.retrieve_yours` if the parameter is specified,
+        else calls :meth:`.retrieve_mine`.
+        """
+        if user is None:
+            return self.retrieve_mine()
+        return self.retrieve_yours(user)
 
     def create(self,
         user: str,
