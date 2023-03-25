@@ -93,15 +93,15 @@ class ConversationInfo(DatamementoPropertiesMixin):
                 link="https://www.reddit.com/message/messages/" + x,
             )
 
-        self.last_user_update: Optional[datetime] = (x := d['lastUserUpdate']) and datetime.fromisoformat(x)
+        self.last_updated_by_user_at: Optional[datetime] = (x := d['lastUserUpdate']) and datetime.fromisoformat(x)
         ("""
             If :attr:`internal` is true this should always be null.
             """)
-        self.last_mod_update: Optional[datetime] = (x := d['lastModUpdate']) and datetime.fromisoformat(x)
+        self.last_updated_by_mod_at: Optional[datetime] = (x := d['lastModUpdate']) and datetime.fromisoformat(x)
         ("")
-        self.last_update: datetime = datetime.fromisoformat(d['lastUpdated'])
+        self.last_updated_at: datetime = datetime.fromisoformat(d['lastUpdated'])
         ("""
-            Same as either :attr:`last_user_update` or :attr:`last_mod_update`, whichever is newer.
+            Same as either :attr:`last_updated_by_user_at` or :attr:`last_updated_by_mod_at`, whichever is newer.
             """)
         self.last_unread: Optional[datetime] = (x := d['lastUnread']) and datetime.fromisoformat(x)
         ("""
