@@ -1,14 +1,17 @@
 
 # RedditWarp
 
+[![Latest version](https://img.shields.io/pypi/v/redditwarp)](https://pypi.org/p/redditwarp/)
+![Supported Python versions](https://img.shields.io/pypi/pyversions/redditwarp)
+[![Discord guild](https://img.shields.io/discord/1084793643673600062?logo=discord&logoColor=white&logoWidth=20&label=&labelColor=5865F2&color=7289DA)](http://pyprohly.github.io/redditwarp/discord-invite)
+
 A comprehensive, type-complete, easy-to-learn Python Reddit API wrapper.
 
-RedditWarp is a Python library designed to handle the complexities
-of the Reddit API in a package that is comprehensive, highly discoverable, static-type
-conscious, and provides a large set of useful abstractions that allow for better code
-organisation and maintainability.
-
-This library can be used to build robust statically-typed Reddit bots and programs.
+RedditWarp is a Python library that simplifies working with the Reddit API.
+It handles the complexities of the Reddit API in a way that is comprehensive,
+highly discoverable, and static-type conscious. It includes a variety of useful
+tools to facilitate a wide range of use cases, and even provides tools for
+accessing the API in ways previously not possible.
 
 Look how easy it is to use:
 
@@ -198,11 +201,12 @@ Post any questions you have to [r/redditdev].
 
 Join the conversation in the RedditWarp [Discord guild].
 
-[Discord guild]: https://discord.gg/wcXTQcJ6Fc
+[Discord guild]: http://pyprohly.github.io/redditwarp/discord-invite
 
 ## Links
 
 * [Repository](https://github.com/Pyprohly/redditwarp)
+* [PyPI](https://pypi.org/p/redditwarp/)
 * [Documentation](https://redditwarp.readthedocs.io/)
-* [Discord guild]
 * [r/redditdev]
+* [Discord guild]

@@ -9,10 +9,10 @@ Congratulations, you have reached the end of the main documentation for
 RedditWarp.
 
 If you get stuck and need help, please don't hesitate to ask questions in
-`r/redditdev`_ or on the RedditWarp `Discord server`_.
+`r/redditdev`_ or on the RedditWarp `Discord guild`_.
 
-.. _r/redditdev: https://www.reddit.com/r/redditdev/
-.. _Discord server: https://discord.gg/wcXTQcJ6Fc
+.. _`r/redditdev`: https://www.reddit.com/r/redditdev/
+.. _Discord guild: http://pyprohly.github.io/redditwarp/discord-invite
 
 The :doc:`API Reference <../api/index>` is a helpful resource for quickly
 discovering methods and reading their docstrings.
