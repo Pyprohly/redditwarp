@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>RedditWarp Discord Invite</title>
+		<script>
+			(async () => {
+				let resp = await fetch("https://discord.com/api/guilds/1084793643673600062/widget.json");
+				if (!resp.ok) {
+					throw new Error('unsuccessful status code');
+				}
+				let json = await resp.json();
+				let invite = json['instant_invite'];
+				if (invite === null) {
+					throw new Error('no invite link provided');
+				}
+				location.replace(invite);
+			})();
+		</script>
+	</head>
+	<body>
+		<p>Redirecting...</p>
+	</body>
+</html>
