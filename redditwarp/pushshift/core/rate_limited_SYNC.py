@@ -14,7 +14,7 @@ from ...util.token_bucket import TokenBucket
 class RateLimited(DelegatingHandler):
     def __init__(self, handler: Handler) -> None:
         super().__init__(handler)
-        self._tb = TokenBucket(3, 1/2)
+        self._tb = TokenBucket(1, 1)
 
     def _send(self, p: SendParams) -> Exchange:
         time.sleep(self._tb.get_cooldown(1))

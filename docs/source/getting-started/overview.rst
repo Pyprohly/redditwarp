@@ -7,15 +7,15 @@ RedditWarp is a Reddit API wrapper library written in Python, enabling the
 development of robust, statically-typed Reddit bots and programs.
 
 The library can be used to create advanced automations for subreddit moderation
-in ways that go beyond the capabilities of AutoModerator_. However, it is
-important to note that it is not designed primarily for moderators and they may
-find it challenging to use.
+in ways that go beyond the capabilities of AutoModerator_. However, it's worth
+noting that RedditWarp's tooling is primarily designed for developers and may
+not be as user-friendly for non-technical users.
 
 .. _AutoModerator: https://mods.reddithelp.com/hc/en-us/articles/360002561632-AutoModerator
 
 Although this library may not be well-suited for beginner programmers,
-experienced programmers should find it easy-to-use and familiar. It strives to
-be simple to understand and learn by having a consistent programming style
+experienced programmers should find it familiar and easy to learn. It strives
+to be simple to understand and learn by having a consistent programming style
 whose design emphasizes consistency, cleanliness, and correctness over brevity.
 Additionally, access to well-designed low-level components enables advanced
 use-cases. This provides a more powerful and fine-grained tool for working with

@@ -7,10 +7,6 @@ RedditWarp does not commit to a specific HTTP transport library, but instead
 contains adapters to support a variety of them. These adapters can be used in
 your own programs to make them HTTP transport library agnostic.
 
-Please keep in mind that RedditWarp's HTTP library lacks advanced features.
-It does not, for example, support cookies, HTTP/2, custom headers on
-multipart fields, or streaming, among other things.
-
 It is important to note that the functionality of RedditWarp's HTTP library is
 limited in scope, and does not have advanced features such as cookie handling,
 HTTP/2 support, the ability to set custom headers on multipart fields, or
@@ -163,7 +159,7 @@ Use the `json` parameter.
 
 ::
 
-   >>> requ = http.inquire('POST', 'http://httpbin.org/post', data={'a': [1, 2, 3]}).request
+   >>> requ = http.inquire('POST', 'http://httpbin.org/post', json={'a': [1, 2, 3]}).request
    >>> requ.data
    b'{"a": [1, 2, 3]}'
 

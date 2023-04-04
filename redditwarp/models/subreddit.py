@@ -254,6 +254,7 @@ class Subreddit(DatamementoPropertiesMixin):
             Value is false if the object was retrieved from a search.
             """)
 
+Community = Subreddit
 
 class InaccessibleSubreddit(DatamementoPropertiesMixin):
     def __init__(self, d: Mapping[str, Any]) -> None:
@@ -275,3 +276,5 @@ class InaccessibleSubreddit(DatamementoPropertiesMixin):
 
         self.title: str = d['title']
         ("")
+
+InaccessibleCommunity = InaccessibleSubreddit

@@ -33,11 +33,11 @@ You would have noticed by now the unusual capitalisation of the terms `SYNC`
 and `ASYNC` in many of RedditWarp's imports. This is how the library chooses
 to support both sync and async IO worlds.
 
-Switching a program's synchronicity is straightforward. To convert a sync
-program into an async one, for example, there are only two steps: change `SYNC`
-to `ASYNC` in the imports, then add `async` and `await` keywords to the
-appropriate locations. A type checker will greatly assist in locating these
-spots.
+Switching a program's synchronicity is straightforward. To convert a program
+into an asynchronous one, all you need to do is change `SYNC` to `ASYNC` in the
+imports, add `async` and `await` keywords to the appropriate locations, and
+then wrap `main()` in `asyncio.run()`. A type checker will greatly assist you
+in this process.
 
 .. tab:: Sync
 

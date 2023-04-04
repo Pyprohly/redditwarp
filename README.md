@@ -28,7 +28,7 @@ for subm in l:
 
 ## Features
 
-* A consistent and easy-to-learn programming interface.
+* A consistent and easy-to-use programming interface.
 * Modern type-complete codebase.
 * Sync and asynchronous IO support.
 * Automatic rate limit handling.
@@ -70,8 +70,7 @@ subr = client.p.subreddit.fetch_by_name('Python')
 print(subr.subscriber_count)
 
 # Display the top submission of the week in the r/YouShouldKnow subreddit.
-it1 = client.p.subreddit.pull.top('YouShouldKnow', amount=1, time='week')
-m = next(it1)
+m = next(client.p.subreddit.pull.top('YouShouldKnow', amount=1, time='week'))
 print(f'''\
 {m.permalink}
 {m.id36}+ ^{m.score} | {m.title}
@@ -89,8 +88,8 @@ u/{c.author_display_name} says:
 ''')
 
 # List the moderators of r/redditdev.
-it2 = client.p.moderation.pull_users.moderators('redditdev')
-for mod in it2:
+it1 = client.p.moderation.pull_users.moderators('redditdev')
+for mod in it1:
     print(mod.name)
 ```
 
@@ -113,16 +112,16 @@ me = client1.p.account.fetch()
 print(f"Hello u/{me.name}!")
 
 # Show my last 5 comments.
-it3 = client.p.user.pull.comments(me.name, 5)
-for comm in it3:
+it2 = client.p.user.pull.comments(me.name, 5)
+for comm in it2:
     print('###')
     print(comm.body)
 
 # Show my last 10 saved items.
 from redditwarp.models.submission_SYNC import Submission
 from redditwarp.models.comment_SYNC import Comment
-it4 = client1.p.user.pull.saved(me.name, 10)
-l = list(it4)
+it3 = client1.p.user.pull.saved(me.name, 10)
+l = list(it3)
 for obj in l:
     print('###')
     match obj:
