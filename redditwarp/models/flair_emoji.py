@@ -4,16 +4,8 @@ from typing import Mapping, Any, Iterator
 
 from dataclasses import dataclass
 
-from .datamemento import DatamementoDataclassesMixin
+from .upload_lease import UploadLease as FlairEmojiUploadLease  # noqa: F401
 
-
-@dataclass(repr=False, eq=False)
-class FlairEmojiUploadLease(DatamementoDataclassesMixin):
-    d: Mapping[str, Any]
-    endpoint: str
-    fields: Mapping[str, str]
-    s3_object_key: str
-    location: str
 
 @dataclass(repr=False, eq=False)
 class FlairEmoji:

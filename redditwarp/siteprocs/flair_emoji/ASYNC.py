@@ -7,8 +7,10 @@ if TYPE_CHECKING:
 import os.path as op
 from functools import cached_property
 
-from ...models.flair_emoji import FlairEmojiUploadLease, SubredditFlairEmojis
-from ...model_loaders.flair_emoji import load_flair_emoji_upload_lease, load_flair_emoji
+from ...models.flair_emoji import SubredditFlairEmojis
+from ...model_loaders.flair_emoji import load_flair_emoji
+from ...models.upload_lease import UploadLease
+from ...model_loaders.upload_lease import load_upload_lease
 from ...http.util.guess_filename_mimetype import guess_filename_mimetype
 
 class FlairEmojiProcedures:
@@ -81,16 +83,16 @@ class FlairEmojiProcedures:
             sr: str,
             filepath: str,
             mimetype: Optional[str] = None,
-        ) -> FlairEmojiUploadLease:
+        ) -> UploadLease:
             if mimetype is None:
                 mimetype = guess_filename_mimetype(filepath)
             result = await self._client.request('POST', f'/api/v1/{sr}/emoji_asset_upload_s3',
                     data={'filepath': filepath, 'mimetype': mimetype})
-            return load_flair_emoji_upload_lease(result)
+            return load_upload_lease(result)
 
         async def deposit_file(self,
             file: IO[bytes],
-            upload_lease: FlairEmojiUploadLease,
+            upload_lease: UploadLease,
             *,
             timeout: float = 1000,
         ) -> None:
@@ -104,7 +106,7 @@ class FlairEmojiProcedures:
             sr: str,
             filepath: Optional[str] = None,
             timeout: float = 1000,
-        ) -> FlairEmojiUploadLease:
+        ) -> UploadLease:
             if filepath is None:
                 filepath = op.basename(getattr(file, 'name', ''))
                 if not filepath:

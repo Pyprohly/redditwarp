@@ -37,9 +37,9 @@ import os.path as op
 from functools import cached_property
 
 from ...http.util.guess_filename_mimetype import guess_filename_mimetype
-from ...models.widget.widget_image_upload_lease import WidgetImageUploadLease
+from ...models.upload_lease import UploadLease
 from ...models.widget.ASYNC import WidgetList
-from ...model_loaders.widget import load_widget_image_upload_lease
+from ...model_loaders.upload_lease import load_upload_lease
 from ...model_loaders.widget_ASYNC import (
     load_widget,
     load_text_area_widget,
@@ -292,7 +292,7 @@ class WidgetProcedures:
             sr: str,
             filepath: Optional[str] = None,
             timeout: float = 1000,
-        ) -> WidgetImageUploadLease:
+        ) -> UploadLease:
             return await self.upload(file, sr=sr, filepath=filepath, timeout=timeout)
 
         async def obtain_upload_lease(self,
@@ -300,16 +300,16 @@ class WidgetProcedures:
             sr: str,
             filepath: str,
             mimetype: Optional[str] = None,
-        ) -> WidgetImageUploadLease:
+        ) -> UploadLease:
             if mimetype is None:
                 mimetype = guess_filename_mimetype(filepath)
             result = await self._client.request('POST', f'/api/v1/{sr}/emoji_asset_upload_s3',
                     data={'filepath': filepath, 'mimetype': mimetype})
-            return load_widget_image_upload_lease(result)
+            return load_upload_lease(result)
 
         async def deposit_file(self,
             file: IO[bytes],
-            upload_lease: WidgetImageUploadLease,
+            upload_lease: UploadLease,
             *,
             timeout: float = 1000,
         ) -> None:
@@ -323,7 +323,7 @@ class WidgetProcedures:
             sr: str,
             filepath: Optional[str] = None,
             timeout: float = 1000,
-        ) -> WidgetImageUploadLease:
+        ) -> UploadLease:
             if filepath is None:
                 filepath = op.basename(getattr(file, 'name', ''))
                 if not filepath:

@@ -13,8 +13,8 @@ from functools import cached_property
 import json
 
 from ...model_loaders.submission_ASYNC import load_submission, load_text_post
-from ...models.media_upload_lease import MediaUploadLease
-from ...model_loaders.media_upload_lease import load_media_upload_lease
+from ...models.submission_media_upload_lease import SubmissionMediaUploadLease
+from ...model_loaders.submission_media_upload_lease import load_submission_media_upload_lease
 from ...http.util.guess_filename_mimetype import guess_filename_mimetype
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
@@ -26,6 +26,7 @@ from ...pagination.paginators.submission_async1 import SubmissionSearchAsyncPagi
 from ...model_loaders.comment_ASYNC import load_comment
 from .fetch_ASYNC import Fetch
 from .get_ASYNC import Get
+
 
 class SubmissionProcedures:
     def __init__(self, client: Client) -> None:
@@ -125,23 +126,23 @@ class SubmissionProcedures:
             *,
             filepath: Optional[str] = None,
             timeout: float = 1000,
-        ) -> MediaUploadLease:
+        ) -> SubmissionMediaUploadLease:
             return await self.upload(file, filepath=filepath, timeout=timeout)
 
         async def obtain_upload_lease(self,
             *,
             filepath: str,
             mimetype: Optional[str] = None,
-        ) -> MediaUploadLease:
+        ) -> SubmissionMediaUploadLease:
             if mimetype is None:
                 mimetype = guess_filename_mimetype(filepath)
             result = await self._client.request('POST', '/api/media/asset',
                     data={'filepath': filepath, 'mimetype': mimetype})
-            return load_media_upload_lease(result)
+            return load_submission_media_upload_lease(result)
 
         async def deposit_file(self,
             file: IO[bytes],
-            upload_lease: MediaUploadLease,
+            upload_lease: SubmissionMediaUploadLease,
             *,
             timeout: float = 1000,
         ) -> None:
@@ -154,7 +155,7 @@ class SubmissionProcedures:
             *,
             filepath: Optional[str] = None,
             timeout: float = 1000,
-        ) -> MediaUploadLease:
+        ) -> SubmissionMediaUploadLease:
             if filepath is None:
                 filepath = op.basename(getattr(file, 'name', ''))
                 if not filepath:
