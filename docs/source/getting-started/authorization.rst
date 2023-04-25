@@ -22,6 +22,8 @@ account specifically for testing.
 A Reddit account isn't needed to use this library if you're only interested
 in reading data.
 
+.. _the-client-constructor:
+
 The client constructor
 ----------------------
 
@@ -56,7 +58,7 @@ intended use case for this is for testing things out in an interactive command
 line REPL session, or demonstrating a short-running sample script. When you
 don't specify credentials, RedditWarp will use its own embedded credentials.
 
-So the code below will work as is without any prior configuration.
+So the following code will work as is without any prior configuration.
 
 ::
 
@@ -80,8 +82,8 @@ own behalf is by passing your client credentials like so::
    CLIENT_SECRET = '...'
    client = redditwarp.SYNC.Client(CLIENT_ID, CLIENT_SECRET)
 
-The resulting client effectively behaves exactly like the zero-argument form:
-it lacks a user context and is effectively read-only.
+The resulting client effectively behaves like the zero-argument form:
+it lacks user context and hence is effectively read-only.
 
 Obtaining client credentials
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,7 +91,7 @@ Obtaining client credentials
 Client credentials are obtained by creating an OAuth2 app profile on Reddit.
 
 1. Head over to the
-   `developer apps page <https://www.reddit.com/prefs/apps/>`_
+   `developer apps page <https://old.reddit.com/prefs/apps/>`_
    and click :guilabel:`create app...` at the bottom.
 
 2. Enter some name for your app, like `My bot`.
@@ -161,7 +163,7 @@ Follow these steps to obtain a refresh token.
 
 4. Return to the terminal to see the newly generated OAuth2 tokens.
 
-5. **Copy the refresh token down somewhere safe.**
+5. Copy the refresh token down somewhere safe.
 
 The access token is a byproduct of obtaining a refresh token in the token
 obtainment process. Just ignore it and it will expire by itself after a day.
@@ -171,9 +173,9 @@ Copy the refresh token down to a safe place.
 The refresh token is not shown again.
 Refresh tokens expire after one year of non-use.
 
-Generating new tokens will not invalidate the old ones.
+Generating new tokens will not invalidate old ones.
 
-Check that the credentials work by fetching the current user with them::
+Check that your credentials work by fetching the current user with them::
 
    import redditwarp.SYNC
    CLIENT_ID = '...'
@@ -193,7 +195,8 @@ The `praw.ini` file
 .. _praw.ini: https://praw.readthedocs.io/en/stable/getting_started/configuration/prawini.html
 
 RedditWarp supports the PRAW `configuration file format <praw.ini>`_,
-`praw.ini`, through an alternative constructor, `Client.from_praw_config()`.
+`praw.ini`, through an alternative constructor,
+:meth:`Client.from_praw_config() <redditwarp.client_SYNC.Client.from_praw_config>`.
 It searches for these files in the same locations PRAW does.
 
 Only a subset of the usual PRAW configuration keys are read:

@@ -165,7 +165,7 @@ class SubredditStyleNewProcedures:
 
             Empty string or any other value defaults to `#33a8ff`.
         :param `Optional[str]` banner_image_url:
-            Location of the a banner image.
+            The URL location of a banner image.
 
             Use empty string to remove the image.
         :param `Optional[str]` banner_image_display:
@@ -173,19 +173,19 @@ class SubredditStyleNewProcedures:
 
             Empty string or any other value defaults to `cover`.
         :param `Optional[str]` banner_overlay_image_url:
-            Location of the a banner overlay image.
+            The URL location of a banner overlay image.
 
             Use empty string to remove the image.
         :param `Optional[str]` banner_overlay_image_position:
-            Either: `left`, `centered`, `right`.
+            Either: `left`, `center`, `right`.
 
             Empty string or any other value defaults to `left`.
         :param `Optional[str]` banner_overlay_hover_image_url:
-            The location of the a banner overlay hover image.
+            The URL location of a banner overlay hover image.
 
             Use empty string to remove the image.
         :param `Optional[str]` mobile_banner_image_url:
-            The location of the a mobile banner image.
+            The URL location of a mobile banner image.
 
             Use empty string to remove the image.
 

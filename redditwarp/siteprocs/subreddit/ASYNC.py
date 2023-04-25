@@ -424,7 +424,13 @@ class SubredditProcedures:
         await self._client.request('POST', '/api/subscribe', data={'action': 'unsub', 'sr_name': name})
 
     async def get_rules(self, sr: str) -> SubredditRules:
-        """Get a subreddit's rules.
+        r"""Get a subreddit's rules.
+
+        Example::
+
+           rules = await client.p.subreddit.get_rules(SR)
+           for i, rule in enumerate(rules, 1):
+               print(f"{i}. {rule.short_name}\n{rule.description}\n")
 
         .. .PARAMETERS
 

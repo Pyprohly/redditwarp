@@ -21,7 +21,7 @@ Both are recommended. Mypy's output looks nicer, but Pyright is the strongest
 Python type checker.
 
 The default settings for type checkers tend to be too lenient, while their
-strict option can be overly strict. The use of the `mypy.ini` (Mypy) and
+strict option can be overly strict. The `mypy.ini` (Mypy) and
 `pyrightconfig.json` (Pyright) files in the RedditWarp repository provide a
 well-balanced middle ground, and it is recommended to use them as a basis for
 your own projects if you don't already have a template.
@@ -52,7 +52,7 @@ To help internalise the convention that's going on here, the `SYNC.py` and
 `__init__.py` file but isn't because it is committed to a particular IO world.
 When a module ends with a capital `SYNC`/`ASYNC` it signifies that an analogous
 symbol exists in the the opposite module which can be mindlessly switched out
-if you decide to switch the synchronicity of your program.
+for if you decide to switch the synchronicity of your program.
 
 Sometimes, not all IO-committed objects have a perfect counterpart and the name
 of the symbol may differ slightly for the sake of correctness, even though they
@@ -80,8 +80,8 @@ be named without any specific convention. This typically occurs with iterators.
 Model attributes
 ----------------
 
-The methods of the procedure index return instances of model objects from the
-classes within the :mod:`redditwarp.models` subpackage.
+Procedure index methods return instances of model objects from the
+classes defined in the :mod:`redditwarp.models` subpackage.
 
 The attributes of the models have been deliberately named to be more meaningful
 and consistent, and only the most essential ones have been wired up.
@@ -119,7 +119,7 @@ provide the same level of type-safety as directly accessing attributes on the
 object itself does.
 
 Models can also have methods, but they are merely passthroughs to the procedure
-index's methods.
+index methods.
 
 ::
 

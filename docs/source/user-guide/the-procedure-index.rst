@@ -9,6 +9,8 @@ kind.
 
 ::
 
+   >>> import redditwarp.SYNC
+   >>> client = redditwarp.SYNC.Client()
    >>> client.p.
    client.p.account              client.p.misc
    client.p.collection           client.p.moderation
@@ -70,8 +72,9 @@ submission-related procedures.
    client.p.submission.mark_spoiler(
    >>> client.p.submission.
 
-Most resource kind sub-object groups will have methods `.get()` and `.fetch()`.
-Use these methods to obtain information about a particular resource by ID.
+Most resource kind sub-object groups will have methods `get()` and `fetch()`.
+These methods are usually used to retrieve information about a specific
+resource by its ID.
 
 ::
 
@@ -84,16 +87,16 @@ Use these methods to obtain information about a particular resource by ID.
 Get vs. fetch
 -------------
 
-The `.get()` and `.fetch()` methods are used to retrieve a resource by ID.
+The `get()` and `fetch()` methods are used to retrieve a resource by ID.
 These procedures are shared by the majority of resource kinds in the procedure
-index. The difference between them is that `.fetch()` raises an exception when
-it fails to retrieve a resource, whereas `.get()` will return `None`.
+index. The difference between them is that `fetch()` raises an exception when
+it fails to retrieve a resource, whereas `get()` will return `None`.
 
-The exception type thrown by `.fetch()` is not sugar-coated and may vary based
+The exception type thrown by `fetch()` is not sugar-coated and may vary based
 on the behaviour of the underlying endpoint. In some cases, the API does not
 produce an error when a retrieval fails and instead returns no information.
-RedditWarp will force an exception in these cases by raising a synthetic
-:exc:`redditwarp.exceptions.NoResultException` exception.
+RedditWarp will force an exception to occur in these cases by raising a
+synthetic :exc:`redditwarp.exceptions.NoResultException` exception.
 
 ::
 
@@ -120,23 +123,24 @@ RedditWarp will force an exception in these cases by raising a synthetic
        raise NoResultException('target not found')
    redditwarp.exceptions.NoResultException: target not found
 
-When using the `.get()` method, it's important to check if the returned object
-is `None` to maintain the type-safety of your program. Your IDE or type-checker
-will point out when you forget. In general, prefer the `.fetch()` method when
-you expect the resource to exist, and `.get()` when you don't care as much
-about whether the resource exists.
+When using the `get()` method, it's important to explicitly check if the
+returned object is `None` to maintain the type-safety of your program.
+Your IDE or type-checker should notify you if you forget to do this.
+
+In general, prefer the `fetch()` method when you expect the resource to exist,
+and `get()` when you don't care as much about whether the resource exists.
 
 Exceptions
 ----------
 
 View the docstring of a procedure index method to learn about the possible
-exceptions that could be raised. Note that the exceptions listed may not
-be exhaustive; for example, if Reddit's servers are down, many API requests
+exceptions it could raise. Note that the exceptions listed may not
+be exhaustive; for example, if Reddit servers are down, many API requests
 could result in a 500 HTTP status code exception.
 
-The :exc:`redditwarp.http.exceptions.StatusCodeException` exception is a typical
-exception type that can occur. Instances of this exception have a
-`status_code` attribute.
+The :exc:`redditwarp.http.exceptions.StatusCodeException` exception is a
+typical exception type that occurs from API procedures.
+Instances of this exception have a `status_code` attribute.
 
 ::
 
@@ -152,15 +156,14 @@ exception type that can occur. Instances of this exception have a
        print(user.total_karma)
 
 The status code exception gets raised as a last resort when more detailed error
-information cannot be found in in the response data. The majority of API errors
-get reported in the form of a :exc:`redditwarp.exceptions.RedditError` exception.
+information cannot be found in the response data. Most API errors are
+reported in the form of a :exc:`redditwarp.exceptions.RedditError` exception.
 
-There are three string fields on `RedditError`: `label`, `explanation`, and
-`field`. The `label` field is always filled, while the others could be empty
-strings, but the `explanation` field is usually not empty unlike `field`.
+There are three string fields on `RedditError`: `label`, `explanation`, and `field`.
+The `label` field will always be filled out, while the other two could be empty
+strings, although the `explanation` field is usually not empty, unlike `field`.
 
-When catching the `RedditError` exception, it's useful to check against the
-`label` field.
+When catching the `RedditError` exception, it is useful to check against `label`.
 
 ::
 
@@ -220,14 +223,12 @@ can be reentered if needed.
            continue
        break
 
-The downside of this approach is that the `try` block may be covering too much
-since it's not possible to put a `try..except` around only the `for` loop line
-and not its body. For more precise error handling it is preferable to evaluate
-the call chunks directly.
+The downside of this approach is that the `try` block may be covering too much,
+since it's not possible in Python syntax to put a `try..except` around only the
+`for` loop line and not its body. For more precise control over error handling,
+it is preferable to evaluate call chunks directly.
 
-Use `.get_chunking_iterator()` to access the underlying call chunks.
-
-::
+Use `get_chunking_iterator()` to access the underlying call chunks::
 
    itr = client.p.submission.bulk_fetch([...])
    chunks = itr.get_chunking_iterator()
@@ -242,7 +243,7 @@ Use `.get_chunking_iterator()` to access the underlying call chunks.
        for item in results:
            process_item(item)
 
-There are two types of iterators that are returned by `bulk_*` methods: a
+There are actually two types of iterators that are returned by `bulk_*` methods: a
 :class:`~redditwarp.iterators.call_chunk_calling_iterator.CallChunkCallingIterator`
 and a
 :class:`~redditwarp.iterators.call_chunk_chaining_iterator.CallChunkChainingIterator`.
@@ -251,10 +252,10 @@ returns single objects (often `None`), while the latter returns a sequence of
 objects when its call chunks are evaluated.
 
 Both `CallChunkCallingIterator` and `CallChunkChainingIterator` objects have a
-`.current_callable` attribute that will be assigned to a callable object if a
-call chunk call fails, otherwise `None`.
+`.current_callable` property that will be assigned a callable object if a
+call chunk call fails during iteration, otherwise it is `None`.
 
-The `CallChunkChainingIterator` object also has a `.current_iterator` attribute
+The `CallChunkChainingIterator` object also has a `.current_iterator` property
 which contains an iterator that may be populated if the main iterator was
 interrupted.
 
@@ -268,12 +269,12 @@ interrupted.
        pass
 
    # The `itr.current_iterator` object will be a non-empty iterator
-   # if an exception was caused by the `process_item(item)` line.
+   # if an exception was caused by the `process_item(item)` line above.
    for item in itr.current_iterator:
        process_item(item)
 
    # The `itr.current_callable` attribute will be non-`None`
-   # if an exception was caused by the `for item in itr:` line.
+   # if an exception was caused by the `for item in itr:` line above.
    if itr.current_callable is not None:
        for item in itr.current_callable():
            process_item(item)

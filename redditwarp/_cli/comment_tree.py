@@ -153,9 +153,9 @@ def breadth_first_accurate(node: CommentSubtreeTreeNode[object]) -> Iterator[tup
         more_queue.clear()
         while batch:
             if batch.popleft():
-                node = node_batch.pop()
+                node = node_batch.popleft()
             else:
-                node = more_batch.pop()()
+                node = more_batch.popleft()()
 
             if node.value is None:
                 if node.more:

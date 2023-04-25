@@ -53,7 +53,7 @@ useful is `int(x, 36)` to convert a base 36 number into an integer when using
    >>> subm.id36
    '10hlllq'
 
-Also, you will never come across or need to use fullname IDs, where an ID36
+Also, you will never come across or need to use 'fullname' IDs, where an ID36
 value must be prefixed with an object type indicator, such as `t3_` for
 submissions.
 
@@ -77,24 +77,23 @@ Some API methods can also be found on models, but these are just shorthands
 for the client's methods and are not preferred over directly invoking them::
 
    subm = client.p.submission.fetch(int('5e1az9', 36))
-
    subm.reply("Very cool!")
    # Or
-   client.p.submission.reply(subm.id, "Very cool!")
+   client.p.submission.reply(int('5e1az9', 36), "Very cool!")
 
 Fully type complete
 ~~~~~~~~~~~~~~~~~~~
 
-RedditWarp is type complete library. This means that a type checker does not
-need to resort to type inference to determine the type of any public symbol.
+RedditWarp is a type-complete library. This means that a type checker does not
+have to resort to type inference to determine the type of any public symbol.
 
 For normal non-library code it is not suggested that it needs to be type
 complete but rather fully typed, which means that the type of any symbol can
 be inferred. This is mostly accomplished by adding type annotations to all
 function signatures.
 
-Type annotating your code helps you write type safe code which can eliminate
-a whole class of programming errors, speeding up your development. Type safe
+Type annotating your code helps you write type-safe code which can eliminate
+a whole class of programming errors, helping speed up development. Type-safe
 code is easier to maintain and refactor.
 
 No lazy loading
@@ -122,7 +121,7 @@ Statically provided attributes
 
 PRAW dynamically provides the attributes on model objects directly from API
 data. This means the attribute names always match those of the API's, which
-may not be convenient in all cases.
+actually may not be convenient in all cases.
 
 RedditWarp::
 
@@ -233,7 +232,8 @@ No configuration file format
 RedditWarp does not prescribe an equivalent configuration file format like
 PRAW's `praw.ini` files, although, `praw.ini` files are supported for your
 convenience. To read credentials from a `praw.ini` file use the
-`Client.from_praw_config()` alternative constructor.
+:meth:`Client.from_praw_config() <redditwarp.client_SYNC.Client.from_praw_config>`
+alternative constructor.
 
 Fetching a submission does not fetch its comments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -257,4 +257,4 @@ Comment tree traversals must be done manually
 RedditWarp encourages you to create your own utilities to handle comment trees.
 In particular, there is no built-in function to obtain a flattened comment tree list like PRAW's `CommentForest.list()` method. Instead you must write a traversal algorithm yourself, even for this simple use case. The reason being is that all the different intricate traversal requirements of a traversal algorithm cannot easily be expressed by the parameters of a single function.
 
-See Comment Trees.
+See :doc:`../user-guide/comment-trees`.

@@ -73,4 +73,5 @@ class SiteProcedures:
         ("")
 
     async def ping(self) -> None:
+        """Make a request to the server having no effect."""
         await self._client.request('GET', '/api/v1/scopes', params={'scopes': 'read'})

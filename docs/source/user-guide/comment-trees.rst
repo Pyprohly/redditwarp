@@ -11,7 +11,7 @@ Typically though, the `children` field will always be some list of other tree
 nodes.
 
 Submission comment tree nodes extend the general tree node data structure and
-includes a new field: `more`. This object, if not `None`, is a `MoreComments`
+includes a new field: `more`. This object, if not `None`, is a '`MoreComments`'
 callable. Calling it makes a network request and returns another tree node
 whose `children` elements should be treated as a continuation of the original
 `children` list. The `value` field of this new node will be `None`.
@@ -24,7 +24,7 @@ A traversal algorithm is necessary for navigating through a tree structure.
 RedditWarp doesn't include any built-in tree traversal methods since there's no
 one-size-fits-all approach that covers every need, such as stopping at a
 certain depth, limiting the number of `MoreComments` fetches, processing only
-leaf node comments, and handling errors when evaluating `MoreComments`
+leaf node comments, and handling network errors when evaluating `MoreComments`
 callables.
 
 A submission's comment tree can be obtained via
@@ -84,8 +84,8 @@ versions, but they are more accurate to the correct order in which the
 
 The traversal algorithm recipes are illustrated below.
 
-Traversals
-----------
+Traversal recipes
+-----------------
 
 Depth-first, recursive
 ~~~~~~~~~~~~~~~~~~~~~~

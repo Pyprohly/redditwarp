@@ -33,7 +33,7 @@ for subm in l:
 * Sync and asynchronous IO support.
 * Automatic rate limit handling.
 * A comprehensive and discoverable index of API procedures.
-* Model classes that sensibly wrap API structures.
+* Model classes that are fully typed and sensibly wrap API structures.
 * Formal data structures to facilitate comment tree traversals and pagination.
 * HTTP transport library agnosticism.
 * OAuth2 tooling and CLI utilities to help manage auth tokens.

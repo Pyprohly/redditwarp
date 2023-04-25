@@ -2,9 +2,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, AsyncIterator
 if TYPE_CHECKING:
+    # from typing import MutableSequence, Callable, Awaitable
     from redditwarp.models.comment_tree_ASYNC import CommentSubtreeTreeNode
+    # from redditwarp.models.comment_tree_ASYNC import MoreCommentsTreeNode
 
 import asyncio
+# from collections import deque
 
 import redditwarp.ASYNC
 from redditwarp.models.comment_ASYNC import Comment
@@ -27,8 +30,9 @@ def traversal(node: CommentSubtreeTreeNode[object]) -> AsyncIterator[tuple[int, 
 
 async def main() -> None:
     client = redditwarp.ASYNC.Client()
+
     tree_node = await client.p.comment_tree.fetch(1537771841)
-    async for depth, comment in traversal(tree_node):
-        print(depth, comment.author_display_name, repr(comment.body)[:10])
+    async for depth, c in traversal(tree_node):
+        print(f"{depth*'.'} u/{c.author_display_name} | {c.body!r}"[:80])
 
 asyncio.run(main())

@@ -32,7 +32,7 @@ The steaming logic is based on paginators.
 
 Stream objects have two events on them: `output` and `error`. You can attach
 event handlers to these dispatchers by passing a single-argument function to
-their `.attach()` method.
+their `attach()` method.
 
 It is important to add thorough error handling logic to event handler code as
 any exceptions thrown from the attached handlers will be propagated and crash

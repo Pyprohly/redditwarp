@@ -66,11 +66,11 @@ bottiquette_ before wreaking havoc all over the internet.
 
 The amount of historical data that can be obtained from Reddit and its API is
 limited. For data science or academic research that requires large volumes of
-data from Reddit, using the PushShift_ service to bulk download historical
+data from Reddit, using the Pushshift_ service to bulk download historical
 archives is a more suitable option.
 Visit `r/pushshift <https://www.reddit.com/r/pushshift>`_ to learn more.
 
-.. _PushShift: https://pushshift.io
+.. _Pushshift: https://pushshift.io
 
 If you're familiar with PRAW, take a look at :doc:`this document <praw-comparison>`
 that contains extra examples to help you get the hang of RedditWarp quicker.

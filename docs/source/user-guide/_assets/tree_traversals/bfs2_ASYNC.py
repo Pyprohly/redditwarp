@@ -23,9 +23,9 @@ async def breadth_first_accurate(node: CommentSubtreeTreeNode[object]) -> AsyncI
         more_queue.clear()
         while batch:
             if batch.popleft():
-                node = node_batch.pop()
+                node = node_batch.popleft()
             else:
-                node = await more_batch.pop()()
+                node = await more_batch.popleft()()
 
             if node.value is None:
                 if node.more:

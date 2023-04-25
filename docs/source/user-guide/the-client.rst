@@ -3,7 +3,7 @@
 Meet The Client
 ===============
 
-Let's take a deeper look into what the client is capable of.
+Let's take a deeper look into what the client object is capable of.
 
 Instantiation
 -------------
@@ -11,7 +11,9 @@ Instantiation
 The `grant` parameter
 ~~~~~~~~~~~~~~~~~~~~~
 
-We've already seen several ways of constructing a client instance by directly
+We've already seen
+:ref:`several ways <the-client-constructor>`
+of constructing a client instance by directly
 inputting various combinations of credentials, but there's an important
 constructor overload we haven't yet covered::
 
@@ -23,14 +25,10 @@ overloads are shorthands for this one.
 
 The `grant` keyword takes a mapping (`Mapping[str, str]`) of grant credentials.
 There are built-in mapping object types found in :mod:`redditwarp.auth.grants` that
-make expressing grant credentials cleaner.
-
-::
+make expressing grant credentials cleaner. E.g.::
 
    from redditwarp.auth import grants
    from redditwarp.SYNC import Client
-
-   # Functionally equivalent
 
    Client(CLIENT_ID, CLIENT_SECRET)
    Client(CLIENT_ID, CLIENT_SECRET, grant=grants.ClientCredentialsGrant())
@@ -44,7 +42,8 @@ make expressing grant credentials cleaner.
 The need for the `grant` keyword parameter should be rare. The only practical
 situation where you would want to use this parameter is if you need to use the
 installed client grant type. There also happens to be little reason to ever
-pass in a :class:`redditwarp.auth.grants.AuthorizationCodeGrant` grant type.
+pass in a :class:`redditwarp.auth.grants.AuthorizationCodeGrant` grant type
+since that grant type is part of a more complex OAuth flow.
 
 Since the installed client grant type is a Reddit-specified extension grant
 type, the helper mapping object is located at
@@ -63,7 +62,7 @@ The PRAW config constructor
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 RedditWarp doesn't formalise or prescribe any particular file format for
-storing your API credentials but it does offer support for PRAW_'s `praw.ini`
+storing your API credentials, but it does offer support for PRAW_'s `praw.ini`
 files for convenience via
 :meth:`Client.from_praw_config() <redditwarp.client_SYNC.Client.from_praw_config>`.
 See :ref:`here <the-praw-ini-file>` for more info.
@@ -100,8 +99,8 @@ method can be used to set a user agent.
    RedditWarp/0.7.0 Python/3.10.6 httpx/0.23.0 Bot !-- u_SuvaBot/1.0.0 (by u/Pyprohly)
 
 The full user agent that is used differs slightly. The
-`client.http.set_user_agent()` function can be used to set the whole user
-agent, however this is not advised and if not done correctly would be a
+`client.http.set_user_agent()` function can be used to set the full user
+agent. However, doing this is not advised, and if not done correctly would be a
 violation of the Reddit API guidelines.
 
 Making requests
@@ -122,7 +121,7 @@ Use of this method is only really appropriate for making calls to the Reddit
 API and not any other website because of the domain specific post processing
 that happens with the response data.
 
-If you want to make requests to other sites you are welcome to use the
+If you do want to make requests to other sites, you are welcome to use the
 `client.http.request()` method::
 
    >>> from redditwarp.http.util.json_loading import load_json_from_response

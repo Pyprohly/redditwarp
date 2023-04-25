@@ -3,16 +3,16 @@
 HTTP Components
 ===============
 
-RedditWarp does not commit to a specific HTTP transport library, but instead
+RedditWarp does not commit to a specific HTTP transport library but instead
 contains adapters to support a variety of them. These adapters can be used in
 your own programs to make them HTTP transport library agnostic.
 
 It is important to note that the functionality of RedditWarp's HTTP library is
-limited in scope, and does not have advanced features such as cookie handling,
+limited in scope and does not have advanced features such as cookie handling,
 HTTP/2 support, the ability to set custom headers on multipart fields, or
 streaming capabilities.
 
-RedditWarp's HTTP components can be found under :mod:`redditwarp.http`.
+The HTTP components can be found under :mod:`redditwarp.http`.
 The design of these components were inspired by the `System.Net.Http`
 package of C#.NET.
 
@@ -51,15 +51,16 @@ Main components:
 
 * :class:`~redditwarp.http.requisition.Requisition`
 
-  This object represents an outgoing request. It is designed to be modified by
-  the handlers in a handler chain. You can construct a `Requisition` object
+  This object represents a request for an outgoing request.
+  It is designed to be modified by the handlers in a handler chain.
+  You can construct a `Requisition` object
   yourself and pass it to the `HTTPClient.submit()` method.
 
 Handers:
 
 * :class:`~redditwarp.http.handler_SYNC.Handler`
 
-  The base class. The `HTTPClient` constructor takes a `Handler` object.
+  A base class. The `HTTPClient` constructor takes a `Handler` object.
 
 * :class:`~redditwarp.http.delegating_handler_SYNC.DelegatingHandler`
 
@@ -119,8 +120,7 @@ Sending params
    >>> requ.url
    'http://httpbin.org/get?a=1&b=2'
 
-RedditWarp is rigid about typing, and the `params` mapping must only contain
-strings.
+The `params` mapping must only contain strings.
 
 Sending headers
 ---------------
@@ -203,7 +203,7 @@ utility function on a `Response` object:
 Response status code
 --------------------
 
-The response status code is available though the `status` attribute on the
+The response status code is available though the `status` attribute on a
 `Response` object.
 
 The :meth:`~redditwarp.http.response.Response.ensure_successful_status`
@@ -235,8 +235,8 @@ A default timeout can be set on an `HTTPClient` instance using the
 attribute. It is `100` seconds by default.
 
 Timeouts can be specified per request using the `timeout` parameter. A value of
-`-1` means an infinite timeout. A value of `-2` tells the HTTPClient to use the
-`HTTPClient.timeout` instance value.
+`-1` means an infinite timeout. A value of `-2`, which is the default,
+tells the HTTPClient to use the `HTTPClient.timeout` instance value.
 
 ::
 

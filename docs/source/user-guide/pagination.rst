@@ -44,11 +44,10 @@ Depending on the nature of your application, it may be more convenient to use
 the actual `Paginator` object directly. For the time being, the paginator can
 be accessed expediently through the
 :meth:`~redditwarp.pagination.paginator_chaining_iterator.ImpartedPaginatorChainingIterator.get_paginator`
-method on an
-'`ImpartedPaginatorChainingIterator`' instance.
+method of an "`ImpartedPaginatorChainingIterator`" instance.
 
-Using a `Paginator`, if we want to retrieve 3 pages of up to 5 results each, we
-could do so like this::
+Using a `Paginator`, if we wanted to retrieve 3 pages of up to 5 results each,
+we could do so like this::
 
    import redditwarp.SYNC
    client = redditwarp.SYNC.Client()
@@ -68,23 +67,21 @@ could do so like this::
 Nevertheless, using `.fetch()` and checking if the result is empty is not the
 best technique for traversing a paginator in general, because the underlying
 pagination structure may have a mechanism to indicate that the next fetch will
-return no items, and if this is the case then our algorithm above will
-make an additional network request that will be redundant.
+return no items, and if this is the case then our algorithm will make an
+additional network request at the end that will likely be redundant.
 
-If the paginator implements :class:`~redditwarp.pagination.paginator.HasMore`,
-we could use the `.has_more()` method to
-check if there are more results to consume and break the loop before calling
-`.fetch()` again, but it's best to just disregard this and take advantage
-of the fact that paginators are iterable and use paginator iterators.
+If the paginator implements :class:`~redditwarp.pagination.paginator.HasMore`
+then we could use the `.has_more()` method to check if there are more results
+to consume and break the loop before calling `.fetch()` again, but it's best to
+just disregard all this and take advantage of the fact that paginators are
+iterable and use paginator iterators instead.
 
 Paginator iterators will consume all items from the source until there are no
 more, taking into account whether the underlying pagination structure indicates
 that there are no more items available.
 
 When working with paginator iterators, we use `next(pitr, None)` instead of
-`paginator.fetch()`.
-
-::
+`paginator.fetch()`::
 
    pitr = iter(paginator)
    for _ in range(3):
@@ -108,4 +105,4 @@ A possibly cleaner alternative:
        print('---')
 
 Note, if an exception occurs inside a `Paginator` iterator, the iterator breaks
-and a new one must be created.
+and a new one must be created. The state of the paginator itself will remain intact.

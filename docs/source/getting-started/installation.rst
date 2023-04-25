@@ -25,7 +25,7 @@ Install an HTTP library
 RedditWarp has no dependencies. It will go as far as using Python's built-in
 `urllib.request` module to make requests if a better HTTP transport library
 isn't available. For async code, if no HTTP transport library is installed then
-an `ModuleNotFoundError` exception will be raised when attempting to construct a
+a `ModuleNotFoundError` exception will be raised when attempting to construct a
 client instance.
 
 The supported HTTP libraries are as follows, in order of precedence:
