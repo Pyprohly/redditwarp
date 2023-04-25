@@ -61,7 +61,7 @@ class WebSocketClient(PartiallyImplementedWebSocket):
 
     async def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         if code is None:
-            raise RuntimeError('must specify a close code with websockets library websockets')
+            raise RuntimeError('must specify a close code with websockets library')
 
         t: Optional[float] = waitfor
         if waitfor == -2:

@@ -642,6 +642,42 @@ class SubmissionProcedures:
         root = self._client.request('POST', '/api/submit', data=dict(g()))
         return int(root['json']['data']['id'], 36)
 
+    def create_cross_post(self,
+        sr: str,
+        title: str,
+        idn: int,
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: Optional[str] = None,
+        flair_uuid: Optional[str] = None,
+        flair_text: Optional[str] = None,
+        event_start: Optional[str] = None,
+        event_end: Optional[str] = None,
+        event_tz: Optional[str] = None,
+    ) -> int:
+        """Alias for :meth:`.create_crosspost`.
+
+        .. versionadded:: 1.1.0
+        """
+        return self.create_crosspost(
+            sr,
+            title,
+            idn,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            oc=oc,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+        )
+
     def edit_text_post_body(self, idn: int, body: Union[str, Mapping[str, JSON_ro]]) -> TextPost:
         """Edit the body text of a text post.
 

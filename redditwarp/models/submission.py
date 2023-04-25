@@ -526,23 +526,33 @@ class CrosspostSubmission(Submission):
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
         self.original_id36: str = d['crosspost_parent'][3:]
-        ("")
+        ("""
+            The ID36 of the original submission.
+            """)
         self.original_id: int = int(self.original_id36, 36)
-        ("")
+        ("""
+            The ID of the original submission.
+            """)
 
         self.__original: Optional[Submission] = None
         # https://github.com/python/mypy/issues/4177
         if self.__class__.original == __class__.original:  # type: ignore[name-defined]
             from ..model_loaders.submission import load_submission  # Avoid cyclic import
-            self.__original = self._load_original(d, load_submission)
+            self.__original = self._load_original(
+                d=d,
+                load_submission=load_submission,
+            )
 
     _TSubmission = TypeVar('_TSubmission', bound=Submission)
 
     @final
     def _load_original(self,
+        *,
         d: Mapping[str, Any],
-        load: Callable[[Mapping[str, Any]], _TSubmission],
+        load_submission: Callable[[Mapping[str, Any]], _TSubmission],
     ) -> Optional[_TSubmission]:
         if crosspost_parent_list := d['crosspost_parent_list']:
-            return load(crosspost_parent_list[0])
+            return load_submission(crosspost_parent_list[0])
         return None
+
+CrossPost = CrosspostSubmission

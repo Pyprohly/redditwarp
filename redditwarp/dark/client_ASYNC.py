@@ -26,3 +26,5 @@ class Client:
 
         from .siteprocs.ASYNC import Procedures
         self.p: Procedures = Procedures(self.http)
+
+DarkClient = Client

@@ -81,38 +81,32 @@ def load_submission_tree_node(d: Any, client: Client, sort: str) -> SubmissionTr
 
 
 def load_more_comments_tree_node(d: Any, client: Client, submission_id36: str, sort: str) -> MoreCommentsTreeNode:
-    value_lookup: dict[str, Comment] = {}
-    children_lookup: dict[str, list[CommentTreeNode]] = {}
-    more_lookup: dict[str, MoreComments] = {}
+    value_lookup: dict[object, Comment] = {}
+    children_lookup: dict[object, list[CommentTreeNode]] = {}
+    more_lookup: dict[object, MoreComments] = {}
 
     elements = d['json']['data']['things']
     for m in elements:
         data = m['data']
-        kind = m['kind']
-        if kind == 'more':
-            more = load_more_comments(data, client, submission_id36, sort)
-            parent_idt = data['parent_id']
-            more_lookup[parent_idt] = more
+        if m['kind'] == 'more':
+            more_lookup[data['parent_id']] = load_more_comments(data, client, submission_id36, sort)
         else:
-            value = load_comment(data, client)
-            children: list[CommentTreeNode] = []
             idt = data['name']
-            value_lookup[idt] = value
-            children_lookup[idt] = children
+            value_lookup[idt] = load_comment(data, client)
+            children_lookup[idt] = []
 
     root_children: list[CommentTreeNode] = []
     for m in elements:
         data = m['data']
-        kind = m['kind']
-        if kind != 'more':
+        if m['kind'] != 'more':
             idt = data['name']
-            node = CommentTreeNode(
-                value_lookup[idt],
-                children_lookup[idt],
-                more_lookup.pop(idt, None),
+            children_lookup.get(data['parent_id'], root_children).append(
+                CommentTreeNode(
+                    value_lookup[idt],
+                    children_lookup[idt],
+                    more_lookup.pop(idt, None),
+                ),
             )
-            parent_idt = data['parent_id']
-            children_lookup.get(parent_idt, root_children).append(node)
 
     root_more = None
     if more_lookup:

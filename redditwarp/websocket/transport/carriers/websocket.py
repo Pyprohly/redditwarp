@@ -82,6 +82,9 @@ class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
         yield events.ConnectionClosed()
 
     def _send_close_frame_impl(self, code: Optional[int] = 1000, reason: str = '') -> None:
+        if code is None:
+            raise RuntimeError('must specify a close code with websocket-client library')
+
         try:
             self.ws.send_close(code, reason.encode())
         except Exception as cause:

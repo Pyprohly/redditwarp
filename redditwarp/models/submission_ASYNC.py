@@ -89,5 +89,10 @@ class CrosspostSubmission(Submission, BaseCrosspostSubmission):
     def __init__(self, d: Mapping[str, Any], client: Client) -> None:
         super().__init__(d, client)
         from ..model_loaders.submission_ASYNC import load_submission  # Avoid cyclic import
-        load = lambda d: load_submission(d, client)
-        self.__original: Optional[Submission] = self._load_original(d, load)
+        my_load_submission = lambda d: load_submission(d=d, client=client)
+        self.__original: Optional[Submission] = self._load_original(
+            d=d,
+            load_submission=my_load_submission,
+        )
+
+CrossPost = CrosspostSubmission

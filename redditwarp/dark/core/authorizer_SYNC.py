@@ -19,9 +19,9 @@ class Authorizer:
         token_client: Optional[TokenObtainmentClient] = None,
         token: Optional[Token] = None,
     ) -> None:
-        self._token_client: Optional[TokenObtainmentClient] = token_client
+        self.token_client: Optional[TokenObtainmentClient] = token_client
         ("")
-        self._token: Optional[Token] = token
+        self.token: Optional[Token] = token
         ("")
         self.renewal_time: Optional[float] = None
         ("")
@@ -35,28 +35,28 @@ class Authorizer:
         ("")
 
     def has_token_client(self) -> bool:
-        return self._token_client is not None
+        return self.token_client is not None
 
     def fetch_token_client(self) -> TokenObtainmentClient:
-        v = self._token_client
+        v = self.token_client
         if v is None:
             raise RuntimeError('token client not set')
         return v
 
     def set_token_client(self, value: Optional[TokenObtainmentClient]) -> None:
-        self._token_client = value
+        self.token_client = value
 
     def has_token(self) -> bool:
-        return self._token is not None
+        return self.token is not None
 
     def fetch_token(self) -> Token:
-        v = self._token
+        v = self.token
         if v is None:
             raise RuntimeError('token not set')
         return v
 
     def set_token(self, value: Optional[Token]) -> None:
-        self._token = value
+        self.token = value
 
     def renew_token(self) -> None:
         tc = self.fetch_token_client()

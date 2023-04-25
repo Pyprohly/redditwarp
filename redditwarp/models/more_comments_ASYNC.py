@@ -48,6 +48,8 @@ class ContinueThisThread(MoreComments):
         node = await self.client.p.comment_tree.low.fetch(self.submission_id36, self.comment_id36)
         return MoreCommentsTreeNode(None, node.children[0].children, node.more)
 
+DepthMoreComments = ContinueThisThread
+
 class LoadMoreComments(MoreComments):
     def __init__(self,
         *,
@@ -82,3 +84,5 @@ class LoadMoreComments(MoreComments):
             depth=depth,
             exact=exact,
         )
+
+BreadthMoreComments = LoadMoreComments
