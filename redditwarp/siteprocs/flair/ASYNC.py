@@ -1,12 +1,15 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple
+from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple, Protocol, IO
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.flair import FlairTemplate, FlairTemplateChoices, UserFlairAssociation
+    from ...models.upload_lease import UploadLease
 
 import csv
 from io import StringIO
+from functools import cached_property
+import os.path as op
 
 from ...util.base_conversion import to_base36
 from ...iterators.chunking import chunked
@@ -20,6 +23,8 @@ from ...model_loaders.flair import (
     load_flair_template_choices,
     load_user_flair_association,
 )
+from ...http.util.guess_filename_mimetype import guess_filename_mimetype
+from ...model_loaders.upload_lease import load_upload_lease
 
 class FlairProcedures:
     def __init__(self, client: Client) -> None:
@@ -937,3 +942,171 @@ class FlairProcedures:
     async def hide_my_flair(self, sr: str) -> None:
         """Hide the current user's flair in the subreddit."""
         await self._client.request('GET', f'/r/{sr}/api/setflairenabled', params={'flair_enabled': '0'})
+
+    class PostAppearance:
+        def __init__(self, outer: FlairProcedures) -> None:
+            self._client = outer._client
+
+        async def _obtain_upload_lease_helper(self,
+            *,
+            sr: str,
+            uuid: str,
+            imagetype: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> UploadLease:
+            if mimetype is None:
+                mimetype = guess_filename_mimetype(filepath)
+            result = await self._client.request('POST', f'/api/v1/{sr}/flair_style_asset_upload_s3/{uuid}',
+                    data={'imagetype': imagetype, 'filepath': filepath, 'mimetype': mimetype})
+            return load_upload_lease(result)
+
+        async def obtain_thumbnail_upload_lease(self,
+            *,
+            sr: str,
+            uuid: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> UploadLease:
+            return await self._obtain_upload_lease_helper(
+                sr=sr,
+                uuid=uuid,
+                imagetype='postPlaceholderImage',
+                filepath=filepath,
+                mimetype=mimetype,
+            )
+
+        async def obtain_background_upload_lease(self,
+            *,
+            sr: str,
+            uuid: str,
+            filepath: str,
+            mimetype: Optional[str] = None,
+        ) -> UploadLease:
+            return await self._obtain_upload_lease_helper(
+                sr=sr,
+                uuid=uuid,
+                imagetype='postBackgroundImage',
+                filepath=filepath,
+                mimetype=mimetype,
+            )
+
+        async def deposit_file(self,
+            file: IO[bytes],
+            upload_lease: UploadLease,
+            *,
+            timeout: float = 1000,
+        ) -> None:
+            resp = await self._client.http.request('POST', upload_lease.endpoint,
+                    data=upload_lease.fields, files={'file': file}, timeout=timeout)
+            resp.ensure_successful_status()
+
+        class ObtainUploadLeaseFunction(Protocol):
+            async def __call__(self,
+                *,
+                sr: str,
+                uuid: str,
+                filepath: str,
+                mimetype: Optional[str] = None,
+            ) -> UploadLease: ...
+
+        async def _upload_helper(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            uuid: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+            obtain_upload_lease: ObtainUploadLeaseFunction,
+        ) -> UploadLease:
+            if filepath is None:
+                filepath = op.basename(getattr(file, 'name', ''))
+                if not filepath:
+                    raise ValueError("the `filepath` parameter must be explicitly specified if the file object has no `name` attribute.")
+            upload_lease = await obtain_upload_lease(sr=sr, uuid=uuid, filepath=filepath)
+            await self.deposit_file(file, upload_lease, timeout=timeout)
+            return upload_lease
+
+        async def upload_thumbnail(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            uuid: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> UploadLease:
+            return await self._upload_helper(file=file, sr=sr, uuid=uuid, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_thumbnail_upload_lease)
+
+        async def upload_background(self,
+            file: IO[bytes],
+            *,
+            sr: str,
+            uuid: str,
+            filepath: Optional[str] = None,
+            timeout: float = 1000,
+        ) -> UploadLease:
+            return await self._upload_helper(file=file, sr=sr, uuid=uuid, filepath=filepath, timeout=timeout, obtain_upload_lease=self.obtain_background_upload_lease)
+
+        async def config(self,
+            sr: str,
+            uuid: str,
+            *,
+            title_color: Optional[str] = '',
+            background_color: Optional[str] = '',
+            thumbnail_image_url: Optional[str] = '',
+            background_image_url: Optional[str] = '',
+        ) -> None:
+            """Configure a post flair's post appearance settings.
+
+            All parameters should be specified. If a parameter is not specified or is
+            an invalid value, its default will be used.
+
+            .. .PARAMETERS
+
+            :param `Optional[str]` title_color:
+                A hex color.
+
+                The default value will be used if an empty string or any other invalid value is specified.
+
+                Default: `#222222`.
+            :param `Optional[str]` background_color:
+                A hex color.
+
+                The default value will be used if an empty string or any other invalid value is specified.
+
+                Default: `#FFFFFF`.
+            :param `Optional[str]` thumbnail_image_url:
+                The URL location of a thumbnail image.
+
+                Specify an empty string to remove the image.
+            :param `Optional[str]` background_image_url:
+                The URL location of a background image.
+
+                Specify an empty string to remove the image.
+
+            .. .RETURNS
+
+            :rtype: `None`
+
+            .. .RAISES
+
+            :raises redditwarp.exceptions.RedditError:
+                + `USER_REQUIRED`:
+                    There is no user context.
+            """
+            def g() -> Iterable[tuple[str, str]]:
+                if title_color is not None: yield ('postTitleColor', title_color)
+                if background_color is not None: yield ('postBackgroundColor', background_color)
+                if thumbnail_image_url is not None: yield ('postPlaceholderImage', thumbnail_image_url)
+                if background_image_url is not None: yield ('postBackgroundImage', background_image_url)
+
+            await self._client.request('PUT', f'/api/v1/{sr}/flair_styles/{uuid}', data=dict(g()))
+
+    post_appearance: cached_property[PostAppearance] = cached_property(PostAppearance)
+    ("""
+        When you edit a post flair template (through the new Reddit UI), there is a toggle at
+        the bottom of the menu that says "Edit post appearance". The methods on this object
+        relate to these settings.
+
+        The important method is :meth:`~PostAppearance.config`.
+        """)
