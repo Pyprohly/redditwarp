@@ -1,8 +1,11 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, MutableMapping
+from typing import TYPE_CHECKING, Optional, MutableMapping, Callable, ContextManager
 if TYPE_CHECKING:
-    from ..http.handler_SYNC import Handler
+    from ..http.send_params import SendParams
+    from ..http.exchange import Exchange
+
+from contextvars import ContextVar
 
 from .const import RESOURCE_BASE_URL, TOKEN_OBTAINMENT_URL, TRUSTED_ORIGINS
 from ..http.http_client_SYNC import HTTPClient as BaseHTTPClient
@@ -19,9 +22,9 @@ from .user_agent_SYNC import get_user_agent
 from ..auth.token import Token
 from .recorded_SYNC import Last
 from .authorizer_SYNC import Authorizer
-from ..http.send_params import SendParams
-from ..http.exchange import Exchange
 from .direct_by_origin_SYNC import DirectByOrigin
+from ..http.handler_SYNC import Handler
+from ..util.ctx_var_ctx_mgr import ContextVarContextManager
 
 
 DEFAULT_TIMEOUT: float = 8
@@ -29,6 +32,17 @@ DEFAULT_TIMEOUT: float = 8
 
 class HTTPClient(BaseHTTPClient):
     """An HTTP client specialised for the purposes of this library."""
+
+    class _MyHandler(Handler):
+        def __init__(self, active_handler_var: ContextVar[Handler]) -> None:
+            super().__init__()
+            self._active_handler_var: ContextVar[Handler] = active_handler_var
+
+        def _send(self, p: SendParams) -> Exchange:
+            return self._active_handler_var.get()._send(p)
+
+        def _close(self) -> None:
+            self._active_handler_var.get()._close()
 
     @property
     def last(self) -> Last:
@@ -38,7 +52,8 @@ class HTTPClient(BaseHTTPClient):
         headers: Optional[MutableMapping[str, str]] = None,
     ) -> None:
         recorder = Recorded(handler)
-        super().__init__(recorder)
+        self._active_handler_var: ContextVar[Handler] = ContextVar('active_handler', default=recorder)
+        super().__init__(self._MyHandler(self._active_handler_var))
         self.base_url: str = RESOURCE_BASE_URL
         ("")
         self.timeout: float = DEFAULT_TIMEOUT
@@ -61,6 +76,9 @@ class HTTPClient(BaseHTTPClient):
             self.headers.pop('User-Agent', None)
         else:
             self.headers['User-Agent'] = value
+
+    def having_additional_middleware(self, f: Callable[[Handler], Handler]) -> ContextManager[None]:
+        return ContextVarContextManager(self._active_handler_var, f(self._active_handler_var.get()))
 
 
 class RedditHTTPClient(HTTPClient):
