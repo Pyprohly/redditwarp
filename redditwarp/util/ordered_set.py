@@ -1,19 +1,19 @@
 """An ordered set implementation."""
 
 from __future__ import annotations
-from typing import TypeVar, Iterator, Iterable, MutableSet
+from typing import TypeVar, Iterator, Iterable, MutableSet, Reversible
 
 from itertools import islice
 
 T = TypeVar('T')
 
-class OrderedSet(MutableSet[T]):
+class OrderedSet(Reversible[T], MutableSet[T]):
     """An ordered set.
 
     An ordered set is a set that remembers insertion order.
     """
 
-    def __init__(self, it: Iterable[T]) -> None:
+    def __init__(self, it: Iterable[T] = ()) -> None:
         store: dict[T, None] = {}
         self._store = store
         for i in it:
@@ -30,6 +30,9 @@ class OrderedSet(MutableSet[T]):
 
     def __iter__(self) -> Iterator[T]:
         return iter(self._store)
+
+    def __reversed__(self) -> Iterator[T]:
+        return reversed(self._store)
 
     def add(self, value: T) -> None:
         self._store[value] = None

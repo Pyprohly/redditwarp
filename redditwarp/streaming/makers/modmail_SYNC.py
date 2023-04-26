@@ -4,33 +4,68 @@ from typing import TYPE_CHECKING, Iterable, Optional
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.modmail_SYNC import ConversationInfo, Message
-    from ..stream_SYNC import IStandardStreamEventSubject
+    from ..impls.stream_SYNC import IStandardStreamEventSubject
     from ...pagination.paginator import CursorPaginator
 
-from ..stream_SYNC import Stream
+from ..impls.modmail_stream_SYNC import ModmailStream
 
 
-def conversation_message_new_extractor(x: tuple[ConversationInfo, Message]) -> object:
-    return (x[0].id, x[1].id)
+def make_stream(paginator: CursorPaginator[tuple[ConversationInfo, Message]], past: Optional[Iterable[tuple[ConversationInfo, Message]]] = None) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return ModmailStream(paginator, past=past)
 
-def get_conversation_message_new_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+
+def get_all_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.all().get_paginator()
+def create_all_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_all_stream_paginator(client))
+
+def get_inbox_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.inbox().get_paginator()
+def create_inbox_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_inbox_stream_paginator(client))
+
+def get_new_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
     return client.p.modmail.pull.new().get_paginator()
+def create_new_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_new_stream_paginator(client))
 
-def make_conversation_message_new_stream(paginator: CursorPaginator[tuple[ConversationInfo, Message]], past: Optional[Iterable[tuple[ConversationInfo, Message]]] = None, seen: Optional[Iterable[object]] = None) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
-    return Stream(paginator, conversation_message_new_extractor, past=past, seen=seen)
+def get_in_progress_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.in_progress().get_paginator()
+def create_in_progress_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_in_progress_stream_paginator(client))
 
-def create_conversation_message_new_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
-    return make_conversation_message_new_stream(get_conversation_message_new_stream_paginator(client))
+def get_archived_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.archived().get_paginator()
+def create_archived_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_archived_stream_paginator(client))
 
+def get_filtered_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.filtered().get_paginator()
+def create_filtered_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_filtered_stream_paginator(client))
 
-def conversation_message_join_request_extractor(x: tuple[ConversationInfo, Message]) -> object:
-    return (x[0].id, x[1].id)
+def get_appeals_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.appeals().get_paginator()
+def create_appeals_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_appeals_stream_paginator(client))
 
-def get_conversation_message_join_request_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+def get_join_requests_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
     return client.p.modmail.pull.join_requests().get_paginator()
+def create_join_requests_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_join_requests_stream_paginator(client))
 
-def make_conversation_message_join_request_stream(paginator: CursorPaginator[tuple[ConversationInfo, Message]], past: Optional[Iterable[tuple[ConversationInfo, Message]]] = None, seen: Optional[Iterable[object]] = None) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
-    return Stream(paginator, conversation_message_join_request_extractor, past=past, seen=seen)
 
-def create_conversation_message_join_request_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
-    return make_conversation_message_join_request_stream(get_conversation_message_join_request_stream_paginator(client))
+def get_highlighted_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.highlighted().get_paginator()
+def create_highlighted_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_highlighted_stream_paginator(client))
+
+def get_mod_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.mod().get_paginator()
+def create_mod_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_mod_stream_paginator(client))
+
+def get_notifications_stream_paginator(client: Client) -> CursorPaginator[tuple[ConversationInfo, Message]]:
+    return client.p.modmail.pull.notifications().get_paginator()
+def create_notifications_stream(client: Client) -> IStandardStreamEventSubject[tuple[ConversationInfo, Message]]:
+    return make_stream(get_notifications_stream_paginator(client))

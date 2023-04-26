@@ -13,6 +13,10 @@ class TestOrderedSet:
         ds.add(5)
         assert list(ds) == [0,1,2,5]
 
+    def test_constructor_basics(self) -> None:
+        assert len(OrderedSet([1,2,3,4])) == 4
+        assert len(OrderedSet()) == 0
+
     def test_constructor_consumes_iterator(self) -> None:
         it = iter(range(5))
         OrderedSet(it)
@@ -43,6 +47,10 @@ class TestOrderedSet:
         p = OrderedSet((1,2,4)) & OrderedSet((2,3,4))
         assert p == {2,4}
         assert list(p) == [2,4]
+
+    def test_reversed(self) -> None:
+        a = OrderedSet((1,2,3))
+        assert list(reversed(a)) == [3,2,1]
 
 
 class TestBoundedSet:
