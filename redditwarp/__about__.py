@@ -49,7 +49,7 @@ from __future__ import annotations
 version_major: int = 1
 version_minor: int = 0
 version_micro: int = 1
-version_extra: str = ''
+version_extra: str = '.post.dev'
 
 version_patch: int = version_micro
 version_triad: tuple[int, int, int] = (version_major, version_minor, version_micro)

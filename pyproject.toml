@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = 'redditwarp'
-version = "1.0.1"
+version = "1.0.1.post.dev"
 description = "A library for interacting with the Reddit API."
 authors = ["Pyprohly <pyprohly@gmail.com>"]
 readme = "README.md"
