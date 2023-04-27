@@ -4,6 +4,11 @@ build:
   tools:
     python: '3.11'
   jobs:
+    post_checkout:
+      - |
+        git rm -qr .
+        git checkout @ -- .gitignore docs redditwarp
+        git ls-files docs/ | cut -d/ -f-2 | uniq | xargs -I{} git mv {} .
     pre_build:
       - bash build.sh apidoc
 sphinx:
