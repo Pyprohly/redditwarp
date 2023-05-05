@@ -69,7 +69,7 @@ class DraftProcedures:
         *,
         body: Union[str, Mapping[str, JSON_ro]],
         public: Optional[bool] = None,
-        subreddit_id: Optional[int] = None,
+        subreddit_id: Optional[Union[int, str]] = None,
         title: Optional[str] = None,
         reply_notifications: Optional[bool] = None,
         spoiler: Optional[bool] = None,
@@ -85,7 +85,7 @@ class DraftProcedures:
         :param body:
         :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
         :param `Optional[bool]` public:
-        :param `Optional[int]` subreddit_id:
+        :param `Optional[Union[int, str]]` subreddit_id:
         :param `Optional[str]` title:
         :param `Optional[bool]` reply_notifications:
         :param `Optional[bool]` spoiler:
@@ -114,7 +114,9 @@ class DraftProcedures:
                 yield ('body', json.dumps(body))
 
             if public is not None: yield ('is_public_link', '01'[public])
-            if subreddit_id is not None: yield ('subreddit', 't5_' + to_base36(subreddit_id))
+            if subreddit_id is not None:
+                id36 = x if isinstance((x := subreddit_id), str) else to_base36(x)
+                yield ('subreddit', 't5_' + id36)
             if title is not None: yield ('title', title)
             if reply_notifications is not None: yield ('send_replies', '01'[reply_notifications])
             if spoiler is not None: yield ('spoiler', '01'[spoiler])
@@ -131,7 +133,7 @@ class DraftProcedures:
         *,
         body: Union[str, Mapping[str, JSON_ro]],
         public: Optional[bool] = None,
-        subreddit_id: Optional[int] = None,
+        subreddit_id: Optional[Union[int, str]] = None,
         title: Optional[str] = None,
         reply_notifications: Optional[bool] = None,
         spoiler: Optional[bool] = None,
@@ -155,7 +157,9 @@ class DraftProcedures:
                 yield ('body', json.dumps(body))
 
             if public is not None: yield ('is_public_link', '01'[public])
-            if subreddit_id is not None: yield ('subreddit', 't5_' + to_base36(subreddit_id))
+            if subreddit_id is not None:
+                id36 = x if isinstance((x := subreddit_id), str) else to_base36(x)
+                yield ('subreddit', 't5_' + id36)
             if title is not None: yield ('title', title)
             if reply_notifications is not None: yield ('send_replies', '01'[reply_notifications])
             if spoiler is not None: yield ('spoiler', '01'[spoiler])

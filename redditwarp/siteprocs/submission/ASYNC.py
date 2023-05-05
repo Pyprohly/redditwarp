@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping, Union
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable, IO, Mapping, Union, TypeVar
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.submission_ASYNC import Submission, TextPost
@@ -26,6 +26,9 @@ from ...pagination.paginators.submission_async1 import SubmissionSearchAsyncPagi
 from ...model_loaders.comment_ASYNC import load_comment
 from .fetch_ASYNC import Fetch
 from .get_ASYNC import Get
+from .create.ASYNC import Create
+
+_YIntOrStr = TypeVar('_YIntOrStr', int, str)
 
 
 class SubmissionProcedures:
@@ -37,7 +40,7 @@ class SubmissionProcedures:
 
             .. .PARAMETERS
 
-            :param `int` idn:
+            :param `Union[int, str]` idy:
                 Submission ID.
 
             .. .RETURNS
@@ -55,43 +58,49 @@ class SubmissionProcedures:
 
             .. .PARAMETERS
 
-            :param `int` idn:
+            :param `Union[int, str]` idy:
                 Submission ID.
 
             .. .RETURNS
 
             :rtype: `Optional`\\[:class:`~.models.submission_ASYNC.Submission`]
             """)
+        self.create: Create = Create(client)
+        ("""
+            Create a submission.
+            """)
 
-    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[Submission]:
+    def bulk_fetch(self, ids: Iterable[_YIntOrStr]) -> CallChunkChainingAsyncIterator[Submission]:
         """Bulk fetch submissions.
 
         Any ID not found will be ignored.
 
         .. .PARAMETERS
 
-        :param `Iterable[int]` ids:
+        :param `Iterable[_YIntOrStr]` ids:
             Submission IDs.
 
         .. .RETURNS
 
         :rtype: :class:`~.iterators.call_chunk_chaining_async_iterator.CallChunkChainingAsyncIterator`\\[:class:`~.models.submission_ASYNC.Submission`]
         """
-        async def mass_fetch(ids: Sequence[int]) -> Sequence[Submission]:
-            id36s = map(to_base36, ids)
+        async def mass_fetch(ids: Sequence[_YIntOrStr]) -> Sequence[Submission]:
+            # https://github.com/python/mypy/issues/4134
+            id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             root = await self._client.request('GET', '/api/info', params={'id': ids_str})
-            return [load_submission(i['data'], self._client) for i in root['data']['children']]
+            # https://github.com/python/mypy/issues/13408
+            return [load_submission(i['data'], self._client) for i in root['data']['children']]  # type: ignore[return-value]
 
-        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk[Sequence[_YIntOrStr], Sequence[Submission]](mass_fetch, chunk) for chunk in chunked(ids, 100))
 
-    async def reply(self, idn: int, body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+    async def reply(self, idy: Union[int, str], body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
         """Comment on a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param body:
             Either markdown or richtext.
         :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
@@ -107,7 +116,8 @@ class SubmissionProcedures:
             but for submissions.
         """
         def g() -> Iterable[tuple[str, str]]:
-            yield ('thing_id', 't3_' + to_base36(idn))
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            yield ('thing_id', 't3_' + id36)
             yield ('return_rtjson', '1')
             if isinstance(body, str):
                 yield ('text', body)
@@ -184,98 +194,23 @@ class SubmissionProcedures:
     ) -> int:
         """Create a text post.
 
-        .. .PARAMETERS
-
-        :param `str` sr:
-            Name of the subreddit to submit the post to.
-        :param `str` title:
-            Title of the post.
-        :param body:
-            The body text of the post.
-
-            Specify either markdown text or a richtext document.
-        :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
-        :param `bool` reply_notifications:
-            Receive inbox notifications for replies.
-        :param `bool` spoiler:
-            Mark as spoiler.
-        :param `bool` nsfw:
-            Mark as NSFW.
-        :param `bool` oc:
-            Mark as original content.
-        :param `Optional[str]` collection_uuid:
-            The UUID of a collection to add this post to a collection.
-        :param `Optional[str]` flair_uuid:
-            The UUID of a flair template to use.
-        :param `Optional[str]` flair_text:
-            Custom flair text.
-        :param `Optional[str]` event_start:
-            A datetime ISO 8601 string. E.g. `2018-09-11T12:00:00`.
-        :param `Optional[str]` event_end:
-            A datetime ISO 8601 string.
-        :param `Optional[str]` event_tz:
-            A timezone. E.g., `America/Los_Angeles`.
-
-        .. .RETURNS
-
-        :returns: The ID of the newly created post.
-        :rtype: `int`
-
-        .. .RAISES
-
-        :raises redditwarp.exceptions.RedditError:
-            + `USER_REQUIRED`:
-                There is no user context.
-            + `BAD_SR_NAME`:
-                An empty string was specified for `sr`.
-            + `SUBREDDIT_NOEXIST`:
-               - The specified subreddit does not exist.
-               - The specified subreddit is invalid.
-
-            + `SUBREDDIT_NOTALLOWED`:
-               - The subreddit is restricted and you are not an approved user.
-               - You are banned from the subreddit.
-               - You are trying to submit an image or video post to a NSFW subreddit.
-
-               Note, quarantined subreddits can be posted to even if you haven't
-               yet opt-ed in to viewing its content.
-            + `NO_TEXT`:
-                The `title` parameter was not specified, was blank, or contained only whitespace.
-            + `JSON_PARSE_ERROR`:
-                Richtext was passed and it was not in the correct format.
-            + `TOO_LONG`:
-               - The `title` parameter must be under 300 characters.
-               - The `body` parameter must be under 40000 characters.
-
-            + `NO_SELFS`:
-                The subreddit doesn't accept text posts.
-            + `USER_REQUIRED`:
-                There is no user context.
-        :raises redditwarp.http.exceptions.StatusCodeException:
-            + `404`:
-                The target subreddit is private or banned.
+        Alias of `self.create.text[int]()`.
         """
-        def g() -> Iterable[tuple[str, str]]:
-            yield ('kind', 'self')
-            yield ('sr', sr)
-            yield ('title', title)
-            if isinstance(body, str):
-                yield ('text', body)
-            else:
-                yield ('richtext_json', json.dumps(body))
-            yield ('sendreplies', '01'[reply_notifications])
-            if spoiler: yield ('spoiler', '1')
-            if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        root = await self._client.request('POST', '/api/submit', files=dict(g()))
-        return int(root['json']['data']['id'], 36)
+        return await self.create.text[int](
+            sr=sr,
+            title=title,
+            body=body,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            oc=oc,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+        )
 
     async def create_link_post(self,
         sr: str,
@@ -296,53 +231,24 @@ class SubmissionProcedures:
     ) -> int:
         """Create a link post.
 
-        Behaves similarly to :meth:`.create_text_post`.
-
-        .. .PARAMETERS
-
-        :(parameters): Similar to :meth:`.create_text_post`.
-
-        :param `str` url:
-            A URL.
-        :param `bool` resubmit:
-            When the "Restrict how often the same link can be posted" content control
-            setting is enabled, if a link with the same URL has already been submitted
-            then an `ALREADY_SUB` API error would be returned unless this field is true.
-
-        .. .RETURNS
-
-        :(returns): Similar to :meth:`.create_text_post`.
-
-        .. .RAISES
-
-        :(raises): Similar to :meth:`.create_text_post`.
-
-        :raises redditwarp.exceptions.RedditError:
-            + `NO_URL`:
-                The `link` parameter was not specified, or the URL is invalid.
-            + `ALREADY_SUB`:
-                The given link has already been submitted to the subreddit.
-                See parameter `resubmit`.
+        Alias of `self.create.link[int]()`.
         """
-        def g() -> Iterable[tuple[str, str]]:
-            yield ('kind', 'link')
-            yield ('sr', sr)
-            yield ('title', title)
-            yield ('url', link)
-            if resubmit: yield ('resubmit', '1')
-            yield ('sendreplies', '01'[reply_notifications])
-            if spoiler: yield ('spoiler', '1')
-            if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        root = await self._client.request('POST', '/api/submit', data=dict(g()))
-        return int(root['json']['data']['id'], 36)
+        return await self.create.link[int](
+            sr=sr,
+            title=title,
+            link=link,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            oc=oc,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+            resubmit=resubmit,
+        )
 
     async def create_image_post(self,
         sr: str,
@@ -362,40 +268,23 @@ class SubmissionProcedures:
     ) -> None:
         """Create an image post.
 
-        Behaves similarly to :meth:`.create_text_post`.
-
-        .. .PARAMETERS
-
-        :(parameters): Similar to :meth:`.create_text_post`.
-
-        :param `str` link:
-            A URL to an image.
-
-        .. .RETURNS
-
-        :(returns): Similar to :meth:`.create_text_post`.
-
-        .. .RAISES
-
-        :(raises): Similar to :meth:`.create_text_post`.
+        Alias of `self.create.image()`.
         """
-        def g() -> Iterable[tuple[str, str]]:
-            yield ('kind', 'image')
-            yield ('sr', sr)
-            yield ('title', title)
-            yield ('url', link)
-            yield ('sendreplies', '01'[reply_notifications])
-            if spoiler: yield ('spoiler', '1')
-            if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        await self._client.request('POST', '/api/submit', data=dict(g()))
+        return await self.create.image(
+            sr=sr,
+            title=title,
+            link=link,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            oc=oc,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+        )
 
     async def create_video_post(self,
         sr: str,
@@ -417,51 +306,25 @@ class SubmissionProcedures:
     ) -> None:
         """Create a video post.
 
-        Behaves similarly to :meth:`.create_text_post`.
-
-        .. .PARAMETERS
-
-        :(parameters): Similar to :meth:`.create_text_post`.
-
-        :param `str` link:
-            A URL to a video.
-        :param `str` thumbnail:
-            A URL to an image to be used as a thumbnail for the video.
-        :param `bool` vgif:
-            Pass `True` to create a video GIF.
-
-        .. .RETURNS
-
-        :rtype: `None`
-
-        .. .RAISES
-
-        :(raises): Similar to :meth:`.create_text_post`.
-
-        :raises redditwarp.exceptions.RedditError:
-            + `MISSING_VIDEO_URLS`:
-                The `thumbnail` parameter was empty.
-            + `NO_VIDEOS`:
-                The subreddit does not accept video posts.
+        Alias of `self.create.video()`.
         """
-        def g() -> Iterable[tuple[str, str]]:
-            yield ('kind', 'video' + ('gif' if vgif else ''))
-            yield ('sr', sr)
-            yield ('title', title)
-            yield ('url', link)
-            yield ('video_poster_url', thumbnail)
-            yield ('sendreplies', '01'[reply_notifications])
-            if spoiler: yield ('spoiler', '1')
-            if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        await self._client.request('POST', '/api/submit', data=dict(g()))
+        return await self.create.video(
+            sr=sr,
+            title=title,
+            link=link,
+            thumbnail=thumbnail,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            oc=oc,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+            vgif=vgif,
+        )
 
     async def create_gallery_post(self,
         sr: str,
@@ -481,50 +344,23 @@ class SubmissionProcedures:
     ) -> int:
         """Create a gallery post.
 
-        Behaves similarly to :meth:`.create_text_post`.
-
-        .. .PARAMETERS
-
-        :(parameters): Similar to :meth:`.create_text_post`.
-
-        :param items:
-            A list of gallery items.
-        :type items: `Sequence`\\[:class:`~.dtos.submission.GalleryItem`]
-
-        .. .RETURNS
-
-        :(returns): Similar to :meth:`.create_text_post`.
-
-        .. .RAISES
-
-        :(raises): Similar to :meth:`.create_text_post`.
+        Alias of `self.create.gallery[int]()`.
         """
-        gallery_items: list[dict[str, str]] = [
-            {
-                'media_id': m.media_id,
-                'caption': m.caption,
-                'outbound_url': m.outbound_link,
-            }
-            for m in items
-        ]
-
-        def g() -> Iterable[tuple[str, JSON_ro]]:
-            yield ('sr', sr)
-            yield ('title', title)
-            yield ('items', gallery_items)
-            yield ('sendreplies', reply_notifications)
-            if spoiler: yield ('spoiler', True)
-            if nsfw: yield ('nsfw', True)
-            if oc: yield ('original_content', True)
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        root = await self._client.request('POST', '/api/submit_gallery_post', json=dict(g()))
-        return int(root['json']['data']['id'][3:], 36)
+        return await self.create.gallery[int](
+            sr=sr,
+            title=title,
+            items=items,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            oc=oc,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+        )
 
     async def create_poll_post(self,
         sr: str,
@@ -545,53 +381,29 @@ class SubmissionProcedures:
     ) -> int:
         """Create a poll post.
 
-        Behaves similarly to :meth:`.create_text_post`.
-
-        .. .PARAMETERS
-
-        :(parameters): Similar to :meth:`.create_text_post`.
-
-        :param `str` body:
-        :param `Sequence[str]` options:
-        :param `int` duration:
-            The number of days the poll runs for.
-
-            Valid values are 1 to 7. If a number is specified outside
-            this range it is clamped within range.
-
-            The UI default is 3 days.
-
-        .. .RETURNS
-
-        :(returns): Similar to :meth:`.create_text_post`.
-
-        .. .RAISES
-
-        :(raises): Similar to :meth:`.create_text_post`.
+        Alias of `self.create.poll[int]()`.
         """
-        def g() -> Iterable[tuple[str, JSON_ro]]:
-            yield ('sr', sr)
-            yield ('title', title)
-            yield ('text', body)
-            yield ('options', options)
-            yield ('duration', duration)
-            yield ('sendreplies', reply_notifications)
-            if spoiler: yield ('spoiler', True)
-            if nsfw: yield ('nsfw', True)
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        root = await self._client.request('POST', '/api/submit_poll_post', json=dict(g()))
-        return int(root['json']['data']['id'][3:], 36)
+        return await self.create.poll[int](
+            sr=sr,
+            title=title,
+            body=body,
+            options=options,
+            duration=duration,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+        )
 
     async def create_crosspost(self,
         sr: str,
         title: str,
-        idn: int,
+        target: Union[int, str],
         *,
         reply_notifications: bool = True,
         spoiler: bool = False,
@@ -606,66 +418,12 @@ class SubmissionProcedures:
     ) -> int:
         """Create a crosspost.
 
-        Behaves similarly to :meth:`.create_text_post`.
-
-        .. .PARAMETERS
-
-        :(parameters): Similar to :meth:`.create_text_post`.
-
-        :param `int` idn:
-            The ID of a submission.
-
-        .. .RETURNS
-
-        :(returns): Similar to :meth:`.create_text_post`.
-
-        .. .RAISES
-
-        :(raises): Similar to :meth:`.create_text_post`.
+        Alias of `self.create.cross[int]()`.
         """
-        def g() -> Iterable[tuple[str, str]]:
-            yield ('kind', 'self')
-            yield ('sr', sr)
-            yield ('title', title)
-            yield ('crosspost_parent', 't3_' + to_base36(idn))
-            yield ('sendreplies', '01'[reply_notifications])
-            if spoiler: yield ('spoiler', '1')
-            if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
-
-        root = await self._client.request('POST', '/api/submit', data=dict(g()))
-        return int(root['json']['data']['id'], 36)
-
-    async def create_cross_post(self,
-        sr: str,
-        title: str,
-        idn: int,
-        *,
-        reply_notifications: bool = True,
-        spoiler: bool = False,
-        nsfw: bool = False,
-        oc: bool = False,
-        collection_uuid: Optional[str] = None,
-        flair_uuid: Optional[str] = None,
-        flair_text: Optional[str] = None,
-        event_start: Optional[str] = None,
-        event_end: Optional[str] = None,
-        event_tz: Optional[str] = None,
-    ) -> int:
-        """Alias for :meth:`.create_crosspost`.
-
-        .. versionadded:: 1.1.0
-        """
-        return await self.create_crosspost(
-            sr,
-            title,
-            idn,
+        return await self.create.cross[int](
+            sr=sr,
+            title=title,
+            target=target,
             reply_notifications=reply_notifications,
             spoiler=spoiler,
             nsfw=nsfw,
@@ -678,12 +436,48 @@ class SubmissionProcedures:
             event_tz=event_tz,
         )
 
-    async def edit_text_post_body(self, idn: int, body: Union[str, Mapping[str, JSON_ro]]) -> TextPost:
+    async def create_cross_post(self,
+        sr: str,
+        title: str,
+        target: Union[int, str],
+        *,
+        reply_notifications: bool = True,
+        spoiler: bool = False,
+        nsfw: bool = False,
+        oc: bool = False,
+        collection_uuid: Optional[str] = None,
+        flair_uuid: Optional[str] = None,
+        flair_text: Optional[str] = None,
+        event_start: Optional[str] = None,
+        event_end: Optional[str] = None,
+        event_tz: Optional[str] = None,
+    ) -> int:
+        """Alias of :meth:`.create_crosspost`.
+
+        .. versionadded:: 1.1.0
+        """
+        return await self.create_crosspost(
+            sr,
+            title,
+            target,
+            reply_notifications=reply_notifications,
+            spoiler=spoiler,
+            nsfw=nsfw,
+            oc=oc,
+            collection_uuid=collection_uuid,
+            flair_uuid=flair_uuid,
+            flair_text=flair_text,
+            event_start=event_start,
+            event_end=event_end,
+            event_tz=event_tz,
+        )
+
+    async def edit_text_post_body(self, idy: Union[int, str], body: Union[str, Mapping[str, JSON_ro]]) -> TextPost:
         """Edit the body text of a text post.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param body:
             Either markdown or richtext.
         :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
@@ -699,7 +493,8 @@ class SubmissionProcedures:
             but for submissions.
         """
         def g() -> Iterable[tuple[str, str]]:
-            yield ('thing_id', 't3_' + to_base36(idn))
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            yield ('thing_id', 't3_' + id36)
             yield ('return_rtjson', '1')
             if isinstance(body, str):
                 yield ('text', body)
@@ -709,7 +504,7 @@ class SubmissionProcedures:
         result = await self._client.request('POST', '/api/editusertext', files=dict(g()))
         return load_text_post(result, self._client)
 
-    async def delete(self, idn: int) -> None:
+    async def delete(self, idy: Union[int, str]) -> None:
         """Delete a submission.
 
         If the target doesn't exist or isn't valid, nothing happens.
@@ -721,7 +516,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -733,10 +528,11 @@ class SubmissionProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/del', data=data)
 
-    async def lock(self, idn: int) -> None:
+    async def lock(self, idy: Union[int, str]) -> None:
         """Lock a submission.
 
         Nothing happens if the target is already locked.
@@ -749,7 +545,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -764,17 +560,18 @@ class SubmissionProcedures:
             + `403`:
                 The target doesn't exist or you don't have permission to lock it.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/lock', data=data)
 
-    async def unlock(self, idn: int) -> None:
+    async def unlock(self, idy: Union[int, str]) -> None:
         """Unlock a submission.
 
         Behaves similarly to :meth:`.lock`.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -785,15 +582,16 @@ class SubmissionProcedures:
         :raises:
             Similar to :meth:`.lock`.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/unlock', data=data)
 
-    async def vote(self, idn: int, direction: int) -> None:
+    async def vote(self, idy: Union[int, str], direction: int) -> None:
         """Cast a vote on a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `int` direction:
             Either: `1` (upvote), `0` unvote, `-1` downvote.
 
@@ -810,18 +608,19 @@ class SubmissionProcedures:
             + `404`:
                 The target could not be found.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'dir': str(direction),
         }
         await self._client.request('POST', '/api/vote', data=data)
 
-    async def save(self, idn: int, category: Optional[str] = None) -> None:
+    async def save(self, idy: Union[int, str], category: Optional[str] = None) -> None:
         """Save a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `Optional[str]` category:
             A category/label.
 
@@ -840,19 +639,18 @@ class SubmissionProcedures:
             + `404`:
                 The category name specified was invalid.
         """
-        data = {
-            'id': 't3_' + to_base36(idn),
-        }
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         if category is not None:
             data['category'] = category
         await self._client.request('POST', '/api/save', data=data)
 
-    async def unsave(self, idn: int) -> None:
+    async def unsave(self, idy: Union[int, str]) -> None:
         """Save a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -864,15 +662,16 @@ class SubmissionProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/unsave', data=data)
 
-    async def hide(self, idn: int) -> None:
+    async def hide(self, idy: Union[int, str]) -> None:
         """Hide a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -887,18 +686,20 @@ class SubmissionProcedures:
             + `400`:
                 The target was not found.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/hide', data=data)
 
-    async def unhide(self, idn: int) -> None:
+    async def unhide(self, idy: Union[int, str]) -> None:
         """Unhide a submission.
 
         See :meth:`.hide`.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/unhide', data=data)
 
-    def bulk_hide(self, ids: Iterable[int]) -> CallChunkCallingAsyncIterator[None]:
+    def bulk_hide(self, ids: Iterable[_YIntOrStr]) -> CallChunkCallingAsyncIterator[None]:
         """Bulk hide submissions.
 
         If *any* of the list of submission IDs don't exist then the endpoint will
@@ -908,7 +709,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `Iterable[int]` ids:
+        :param `Iterable[_YIntOrStr]` ids:
 
         .. .RETURNS
 
@@ -923,33 +724,37 @@ class SubmissionProcedures:
             + `400`:
                 If any of the IDs were not found.
         """
-        async def mass_hide(ids: Sequence[int]) -> None:
-            id36s = map(to_base36, ids)
+        # https://github.com/python/mypy/issues/13408
+        async def mass_hide(ids: Sequence[_YIntOrStr]) -> None:  # type: ignore[return]
+            # https://github.com/python/mypy/issues/4134
+            id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             await self._client.request('POST', '/api/hide', data={'id': ids_str})
 
-        return CallChunkCallingAsyncIterator(AsyncCallChunk(mass_hide, chunk) for chunk in chunked(ids, 300))
+        return CallChunkCallingAsyncIterator(AsyncCallChunk[Sequence[_YIntOrStr], None](mass_hide, chunk) for chunk in chunked(ids, 300))
 
-    def bulk_unhide(self, ids: Iterable[int]) -> CallChunkCallingAsyncIterator[None]:
+    def bulk_unhide(self, ids: Iterable[_YIntOrStr]) -> CallChunkCallingAsyncIterator[None]:
         """Bulk hide submissions.
 
         See :meth:`.bulk_hide`.
         """
-        async def mass_unhide(ids: Sequence[int]) -> None:
-            id36s = map(to_base36, ids)
+        # https://github.com/python/mypy/issues/13408
+        async def mass_unhide(ids: Sequence[_YIntOrStr]) -> None:  # type: ignore[return]
+            # https://github.com/python/mypy/issues/4134
+            id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             await self._client.request('POST', '/api/unhide', data={'id': ids_str})
 
-        return CallChunkCallingAsyncIterator(AsyncCallChunk(mass_unhide, chunk) for chunk in chunked(ids, 300))
+        return CallChunkCallingAsyncIterator(AsyncCallChunk[Sequence[_YIntOrStr], None](mass_unhide, chunk) for chunk in chunked(ids, 300))
 
-    async def mark_nsfw(self, idn: int) -> None:
+    async def mark_nsfw(self, idy: Union[int, str]) -> None:
         """Mark a submission as NSFW.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -964,23 +769,25 @@ class SubmissionProcedures:
             + `403`:
                 You do not have permission to mark the target.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/marknsfw', data=data)
 
-    async def unmark_nsfw(self, idn: int) -> None:
+    async def unmark_nsfw(self, idy: Union[int, str]) -> None:
         """Unmark a submission as NSFW.
 
         See :meth:`.mark_nsfw`.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/unmarknsfw', data=data)
 
-    async def mark_spoiler(self, idn: int) -> None:
+    async def mark_spoiler(self, idy: Union[int, str]) -> None:
         """Mark a submission as spoiler.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -995,18 +802,20 @@ class SubmissionProcedures:
             + `403`:
                 You do not have permission to mark the target.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/spoiler', data=data)
 
-    async def unmark_spoiler(self, idn: int) -> None:
+    async def unmark_spoiler(self, idy: Union[int, str]) -> None:
         """Unmark a submission as spoiler.
 
         See :meth:`.mark_spoiler`.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/unspoiler', data=data)
 
-    async def distinguish(self, idn: int) -> Submission:
+    async def distinguish(self, idy: Union[int, str]) -> Submission:
         """Distinguish a submission.
 
         .. hint::
@@ -1016,7 +825,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -1034,19 +843,20 @@ class SubmissionProcedures:
             + `404`:
                 The target could not be found.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'how': 'yes',
         }
         root = await self._client.request('POST', '/api/distinguish', data=data)
         return load_submission(root['json']['data']['things'][0]['data'], self._client)
 
-    async def undistinguish(self, idn: int) -> Submission:
+    async def undistinguish(self, idy: Union[int, str]) -> Submission:
         """Undistinguish a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -1064,14 +874,15 @@ class SubmissionProcedures:
             + `404`:
                 The target could not be found.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'how': 'no',
         }
         root = await self._client.request('POST', '/api/distinguish', data=data)
         return load_submission(root['json']['data']['things'][0]['data'], self._client)
 
-    async def sticky(self, idn: int, slot: Optional[int] = None) -> None:
+    async def sticky(self, idy: Union[int, str], slot: Optional[int] = None) -> None:
         """Set a submission as sticky in its subreddit.
 
         .. hint::
@@ -1092,7 +903,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `Optional[int]` slot:
             Which sticky slot to use.
 
@@ -1115,28 +926,30 @@ class SubmissionProcedures:
             + `409`:
                 The post is already stickied.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'state': '1',
         }
         if slot is not None:
             data['num'] = str(slot)
         await self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
-    async def unsticky(self, idn: int) -> None:
+    async def unsticky(self, idy: Union[int, str]) -> None:
         """Unsticky a submission.
 
         See :meth:`.sticky`.
 
         Unstickying a post that isn't stickied does nothing.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'state': '0',
         }
         await self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
-    async def pin_to_profile(self, idn: int, slot: Optional[int] = None) -> None:
+    async def pin_to_profile(self, idy: Union[int, str], slot: Optional[int] = None) -> None:
         """Pin a post you created to your user profile.
 
         .. hint::
@@ -1169,7 +982,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `Optional[int]` slot:
             Which pin slot to use.
 
@@ -1192,8 +1005,9 @@ class SubmissionProcedures:
             + `409`:
                 The post is already pinned.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'to_profile': '1',
             'state': '1',
         }
@@ -1201,21 +1015,22 @@ class SubmissionProcedures:
             data['num'] = str(slot)
         await self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
-    async def unpin_from_profile(self, idn: int) -> None:
+    async def unpin_from_profile(self, idy: Union[int, str]) -> None:
         """Unpin a submission from your user profile.
 
         See :meth:`.pin_to_profile`.
 
         Unpinning a post that isn't pinned does nothing.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'to_profile': '1',
             'state': '0',
         }
         await self._client.request('POST', '/api/set_subreddit_sticky', data=data)
 
-    async def set_contest_mode(self, idn: int, state: bool) -> None:
+    async def set_contest_mode(self, idy: Union[int, str], state: bool) -> None:
         """Set or unset 'contest mode' for a submission's comments.
 
         .. hint::
@@ -1225,7 +1040,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `bool` state:
 
         .. .RETURNS
@@ -1242,13 +1057,14 @@ class SubmissionProcedures:
                - The specified ID was not found.
                - You do not have permission to modify the target.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'state': '01'[state],
         }
         await self._client.request('POST', '/api/set_contest_mode', data=data)
 
-    async def set_suggested_sort(self, idn: int, sort: str) -> None:
+    async def set_suggested_sort(self, idy: Union[int, str], sort: str) -> None:
         """Set or unset the suggested sort for a submission's comments.
 
         .. hint::
@@ -1258,7 +1074,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `str` sort:
             Either: `confidence`, `top`, `new`, `controversial`,
             `old`, `random`, `qa`, `live`, `blank`.
@@ -1279,18 +1095,19 @@ class SubmissionProcedures:
                - The specified ID was not found.
                - You do not have permission to modify the target.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'sort': sort,
         }
         await self._client.request('POST', '/api/set_suggested_sort', data=data)
 
-    async def enable_reply_notifications(self, idn: int) -> None:
+    async def enable_reply_notifications(self, idy: Union[int, str]) -> None:
         """Enable inbox reply notifications for a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -1302,18 +1119,19 @@ class SubmissionProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'state': '1'
         }
         await self._client.request('POST', '/api/sendreplies', data=data)
 
-    async def disable_reply_notifications(self, idn: int) -> None:
+    async def disable_reply_notifications(self, idy: Union[int, str]) -> None:
         """Disable inbox reply notifications for a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -1325,13 +1143,14 @@ class SubmissionProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'state': '0'
         }
         await self._client.request('POST', '/api/sendreplies', data=data)
 
-    async def set_event_time(self, idn: int,
+    async def set_event_time(self, idy: Union[int, str],
             event_start: Optional[str] = None,
             event_end: Optional[str] = None,
             event_tz: Optional[str] = None) -> None:
@@ -1348,7 +1167,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `Optional[str]` event_start:
             A datetime ISO 8601 string. E.g. `2018-09-11T12:00:00`.
         :param `Optional[str]` event_end:
@@ -1384,14 +1203,15 @@ class SubmissionProcedures:
                 The `event_start` parameter was not specified.
         """
         def g() -> Iterable[tuple[str, str]]:
-            yield ('id', 't3_' + to_base36(idn))
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            yield ('id', 't3_' + id36)
             if event_start: yield ('event_start', event_start)
             if event_end: yield ('event_end', event_end)
             if event_tz: yield ('event_tz', event_tz)
 
         await self._client.request('POST', '/api/event_post_time', data=dict(g()))
 
-    async def follow_event(self, idn: int) -> None:
+    async def follow_event(self, idy: Union[int, str]) -> None:
         """Follow a post event.
 
         .. hint::
@@ -1399,7 +1219,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -1416,29 +1236,31 @@ class SubmissionProcedures:
             + `404`:
                 The target submission does not exist.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'fullname': 't3_' + to_base36(idn),
+            'fullname': 't3_' + id36,
             'follow': '1',
         }
         await self._client.request('POST', '/api/follow_post', data=data)
 
-    async def unfollow_event(self, idn: int) -> None:
+    async def unfollow_event(self, idy: Union[int, str]) -> None:
         """Unfollow a post event.
 
         See :meth:`.follow_event`.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'fullname': 't3_' + to_base36(idn),
+            'fullname': 't3_' + id36,
             'follow': '0',
         }
         await self._client.request('POST', '/api/follow_post', data=data)
 
-    async def approve(self, idn: int) -> None:
+    async def approve(self, idy: Union[int, str]) -> None:
         """Approve a submission.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -1456,17 +1278,18 @@ class SubmissionProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        data = {'id': 't3_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36}
         await self._client.request('POST', '/api/approve', data=data)
 
-    async def remove(self, idn: int) -> None:
+    async def remove(self, idy: Union[int, str]) -> None:
         """Remove a submission.
 
         This is a moderator action.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -1484,24 +1307,26 @@ class SubmissionProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'spam': '0',
         }
         await self._client.request('POST', '/api/remove', data=data)
 
-    async def remove_spam(self, idn: int) -> None:
+    async def remove_spam(self, idy: Union[int, str]) -> None:
         """Remove as spam.
 
         See :meth:`.remove`.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't3_' + to_base36(idn),
+            'id': 't3_' + id36,
             'spam': '1',
         }
         await self._client.request('POST', '/api/remove', data=data)
 
-    async def ignore_reports(self, idn: int) -> None:
+    async def ignore_reports(self, idy: Union[int, str]) -> None:
         """Ignore reports on a submission.
 
         .. hint::
@@ -1512,7 +1337,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Submission ID.
 
         .. .RETURNS
@@ -1529,16 +1354,17 @@ class SubmissionProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        await self._client.request('POST', '/api/ignore_reports', data={'id': 't3_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        await self._client.request('POST', '/api/ignore_reports', data={'id': 't3_' + id36})
 
-    async def unignore_reports(self, idn: int) -> None:
+    async def unignore_reports(self, idy: Union[int, str]) -> None:
         """Unignore reports on a submission.
 
         Nothing happens if the target is already unignored.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Submission ID.
 
         .. .RETURNS
@@ -1555,14 +1381,15 @@ class SubmissionProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        await self._client.request('POST', '/api/unignore_reports', data={'id': 't3_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        await self._client.request('POST', '/api/unignore_reports', data={'id': 't3_' + id36})
 
-    async def snooze_reports(self, idn: int, reason: str) -> None:
+    async def snooze_reports(self, idy: Union[int, str], reason: str) -> None:
         """Ignore a custom report reason in a subreddit for 7 days.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Submission ID.
         :param `str` reason:
             The custom report reason to snooze.
@@ -1581,19 +1408,21 @@ class SubmissionProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        data = {'id': 't3_' + to_base36(idn), 'reason': reason}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36, 'reason': reason}
         await self._client.request('POST', '/api/snooze_reports', data=data)
 
-    async def unsnooze_reports(self, idn: int, reason: str) -> None:
+    async def unsnooze_reports(self, idy: Union[int, str], reason: str) -> None:
         """Unsnooze a custom report.
 
         See :meth:`.snooze_reports`.
         """
-        data = {'id': 't3_' + to_base36(idn), 'reason': reason}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't3_' + id36, 'reason': reason}
         await self._client.request('POST', '/api/unsnooze_reports', data=data)
 
     async def apply_removal_reason(self,
-            idn: int,
+            idy: Union[int, str],
             reason_id: Optional[str] = None,
             note: Optional[str] = None) -> None:
         """Set a removal reason on a removed submission.
@@ -1602,7 +1431,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Submission ID.
         :param `Optional[int]` reason_id:
             A removal reason ID.
@@ -1631,12 +1460,12 @@ class SubmissionProcedures:
             + `403`:
                - The target specified does not belong to a subreddit you moderate.
         """
-        target = 't3_' + to_base36(idn)
-        json_data = {'item_ids': [target], 'reason_id': reason_id, 'mod_note': note}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        json_data = {'item_ids': ['t3_' + id36], 'reason_id': reason_id, 'mod_note': note}
         await self._client.request('POST', '/api/v1/modactions/removal_reasons', json=json_data)
 
     async def send_removal_comment(self,
-            idn: int,
+            idy: Union[int, str],
             title: str,
             message: str,
             *,
@@ -1654,7 +1483,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             ID of a removed submission.
         :param `str` title:
             A title.
@@ -1698,10 +1527,10 @@ class SubmissionProcedures:
             + `403`:
                - The target specified does not belong to a subreddit you moderate.
         """
-        target = 't3_' + to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         json_data = {
             'type': 'public' + ('' if exposed else '_as_subreddit'),
-            'item_id': [target],
+            'item_id': ['t3_' + id36],
             'title': title,
             'message': message,
             'lock_comment': '01'[locked],
@@ -1710,7 +1539,7 @@ class SubmissionProcedures:
         return load_comment(root, self._client)
 
     async def send_removal_message(self,
-            idn: int,
+            idy: Union[int, str],
             title: str,
             message: str,
             *,
@@ -1721,7 +1550,7 @@ class SubmissionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             ID of a removed comment.
         :param `str` title:
             A title.
@@ -1746,10 +1575,10 @@ class SubmissionProcedures:
 
         :(raises): See :meth:`.send_removal_comment`.
         """
-        target = 't3_' + to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         json_data = {
             'type': 'private' + ('_exposed' if exposed else ''),
-            'item_id': [target],
+            'item_id': ['t3_' + id36],
             'title': title,
             'message': message,
         }
@@ -1792,14 +1621,14 @@ class SubmissionProcedures:
                     sort=sort, time=time)
         return ImpartedPaginatorChainingAsyncIterator(p, amount)
 
-    def duplicates(self, target: int, amount: Optional[int] = None, *,
+    def duplicates(self, target: Union[int, str], amount: Optional[int] = None, *,
         sort: str = 'num_comments',
     ) -> ImpartedPaginatorChainingAsyncIterator[SubmissionDuplicatesAsyncPaginator, Submission]:
         """Get crossposts for a submission.
 
         .. .PARAMETERS
 
-        :param `int` target:
+        :param `Union[int, str]` target:
             Submission ID.
         :param `Optional[int]` amount:
             The number of items to retrieve.
@@ -1820,6 +1649,6 @@ class SubmissionProcedures:
             + `404`:
                 The target submission could not be found.
         """
-        subm_id = to_base36(target)
-        p = SubmissionDuplicatesAsyncPaginator(self._client, f'/duplicates/{subm_id}', sort=sort)
+        id36 = x if isinstance((x := target), str) else to_base36(x)
+        p = SubmissionDuplicatesAsyncPaginator(self._client, f'/duplicates/{id36}', sort=sort)
         return ImpartedPaginatorChainingAsyncIterator(p, amount)

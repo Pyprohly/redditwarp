@@ -47,9 +47,13 @@ class User(DatamementoPropertiesMixin):
         ("""
             User ID as a base 36 number.
             """)
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
         ("""
             User ID.
+            """)
+        self.id: int = self.idn
+        ("""
+            Same as :attr:`idn`.
             """)
         self.name: str = d['name']
         ("""

@@ -10,11 +10,9 @@ PRAW
 
 PRAW (**P**\ ython **R**\ eddit **A**\ PI **W**\ rapper)
 is the original Python package providing a simple interface for interacting
-with the Reddit API. For a long time it has been the primary tool among Python
-developers in the development of Reddit bots and other Reddit-related projects.
-Since its initial release way back in 2010, PRAW has been actively developed
-and maintained by multiple contributors, and thus has good support for many of
-the API's features.
+with the Reddit API. Since its initial release way back in 2010, PRAW has been
+actively developed and maintained by multiple contributors, and thus has good
+support for many of the Reddit API's features.
 
 PRAW repository: `<https://github.com/praw-dev/praw>`_.
 
@@ -37,26 +35,6 @@ situations where an attribute does not exist on a model object in some cases.
 The following list highlights the differences between RedditWarp and PRAW at a
 glance.
 
-Integer IDs are preferred
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-On RedditWarp models, the `id` attribute is an integer.
-Integer IDs are also preferred by API methods. A common pattern you may find
-useful is `int(x, 36)` to convert a base 36 number into an integer when using
-`.fetch` or `.get` methods.
-
-::
-
-   >>> subm = client.p.submission.fetch(int('10hlllq', 36))
-   >>> subm.id
-   2206343582
-   >>> subm.id36
-   '10hlllq'
-
-Also, you will never come across or need to use 'fullname' IDs, where an ID36
-value must be prefixed with an object type indicator, such as `t3_` for
-submissions.
-
 The API methods are found on the client instead of on object instances
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -68,7 +46,7 @@ on the client object instead of on model instances.
    # PRAW
    reddit.submission('5e1az9').reply("Super rad!")
    # RedditWarp
-   client.p.submission.reply(int('5e1az9', 36), "Very cool!")
+   client.p.submission.reply('5e1az9', "Very cool!")
 
 One advantage of this is that you don't have to construct object instances if
 you just want to explore the available methods.
@@ -76,10 +54,10 @@ you just want to explore the available methods.
 Some API methods can also be found on models, but these are just shorthands
 for the client's methods and are not preferred over directly invoking them::
 
-   subm = client.p.submission.fetch(int('5e1az9', 36))
+   subm = client.p.submission.fetch('5e1az9')
    subm.reply("Very cool!")
    # Or
-   client.p.submission.reply(int('5e1az9', 36), "Very cool!")
+   client.p.submission.reply('5e1az9', "Very cool!")
 
 Fully type complete
 ~~~~~~~~~~~~~~~~~~~
@@ -166,9 +144,9 @@ PRAW::
 
 RedditWarp::
 
-   from redditwarp.util.extract_id_from_url import extract_submission_id_from_url
+   from redditwarp.util.extract_id_from_url import extract_submission_idn_from_url
 
-   subm_id = extract_submission_id_from_url("https://www.reddit.com/comments/10ihdqx")
+   subm_id = extract_submission_idn_from_url("https://www.reddit.com/comments/10ihdqx")
    subm = client.p.submission.fetch(subm_id)
 
 - Fetching a user by ID.
@@ -183,7 +161,7 @@ PRAW::
 
 RedditWarp::
 
-   user_summary = client.p.user.get_user_summary(int('4x25quk', 36))
+   user_summary = client.p.user.get_user_summary('4x25quk')
    if user_summary is None:
        raise Exception
    user = client.p.user.fetch_by_name(user_summary.name)
@@ -224,7 +202,7 @@ RedditWarp::
 
    submission.lock()
    # Or
-   client.p.submission.lock(submission.id)
+   client.p.submission.lock(submission.idn)
 
 No configuration file format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -244,12 +222,12 @@ Fetching a submission and fetching a submission with comments are different meth
 
 RedditWarp::
 
-   subm1 = client.p.submission.fetch(int('10hoczb', 36))
+   subm1 = client.p.submission.fetch('10hoczb')
 
-   tree_node = client.p.comment_tree.fetch(int('10hoczb', 36))
+   tree_node = client.p.comment_tree.fetch('10hoczb')
    subm2 = tree_node.value
 
-   assert subm1.id == subm2.id
+   assert subm1.idn == subm2.idn
 
 Comment tree traversals must be done manually
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

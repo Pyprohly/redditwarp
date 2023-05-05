@@ -15,9 +15,13 @@ class ModeratorListItem:
         ("""
             User ID of the moderator as a base 36 number.
             """)
-        self.id: int = int(id36, 36)
+        self.idn: int = int(id36, 36)
         ("""
             User ID of the moderator.
+            """)
+        self.id: int = self.idn
+        ("""
+            Same as :attr:`idn`.
             """)
         self.name: str = d['name']
         ("""

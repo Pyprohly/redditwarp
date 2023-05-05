@@ -10,9 +10,13 @@ class UserSummary:
         ("""
             ID of the user account as a base 36 number.
             """)
-        self.id: int = int(id36, 36)
+        self.idn: int = int(id36, 36)
         ("""
             ID of the user account.
+            """)
+        self.id: int = self.idn
+        ("""
+            Same as :attr:`idn`.
             """)
         self.name: str = d['name']
         ("""

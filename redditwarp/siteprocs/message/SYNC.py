@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Sequence, Union
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.message_SYNC import ComposedMessage
@@ -19,14 +19,14 @@ class MessageProcedures:
             Pull messages.
             """)
 
-    def get_thread(self, idn: int) -> Sequence[ComposedMessage]:
+    def get_thread(self, idy: Union[int, str]) -> Sequence[ComposedMessage]:
         """Get a message thread.
 
         Specifying the ID of any message in the same thread gives you the same list.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idn:
             Message ID.
 
         .. .RETURNS
@@ -40,7 +40,7 @@ class MessageProcedures:
                 The target message specified does not exist or
                 you do not have permission to access it.
         """
-        id36 = to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = self._client.request('GET', f'/message/messages/{id36}')
         obj_data = root['data']['children'][0]['data']
         return load_composed_message_thread(obj_data, self._client)
@@ -133,12 +133,12 @@ class MessageProcedures:
         }
         self._client.request('POST', '/api/compose', data=req_data)
 
-    def reply(self, idn: int, body: str) -> ComposedMessage:
+    def reply(self, idy: Union[int, str], body: str) -> ComposedMessage:
         """Reply to a message
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idn:
         :param `str` body:
 
         .. .RETURNS
@@ -157,8 +157,9 @@ class MessageProcedures:
             + `403`:
                 The specified message ID does not exist.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'thing_id': 't4_' + to_base36(idn),
+            'thing_id': 't4_' + id36,
             'text': body,
             'return_rtjson': '1',
         }
@@ -166,7 +167,7 @@ class MessageProcedures:
         root = result['json']['data']['things'][0]['data']
         return load_composed_message(root, self._client)
 
-    def delete(self, idn: int) -> None:
+    def delete(self, idy: Union[int, str]) -> None:
         """Delete a message.
 
         If the message specified by the ID doesn't exist, or is invalid,
@@ -174,7 +175,7 @@ class MessageProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idn:
 
         .. .RETURNS
 
@@ -186,16 +187,17 @@ class MessageProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        self._client.request('POST', '/api/del_msg', data={'id': 't4_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/del_msg', data={'id': 't4_' + id36})
 
-    def mark_read(self, idn: int) -> None:
+    def mark_read(self, idy: Union[int, str]) -> None:
         """Mark a message as read.
 
         Marking an already marked as read item is treated as a success.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idn:
 
         .. .RETURNS
 
@@ -210,14 +212,16 @@ class MessageProcedures:
             + `400`:
                 The message specified by the ID doesn't exist or is invalid.
         """
-        self._client.request('POST', '/api/read_message', data={'id': 't4_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/read_message', data={'id': 't4_' + id36})
 
-    def mark_unread(self, idn: int) -> None:
+    def mark_unread(self, idy: Union[int, str]) -> None:
         """Mark a message as unread.
 
         Behaves similarly to :meth:`.mark_read`.
         """
-        self._client.request('POST', '/api/unread_message', data={'id': 't4_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/unread_message', data={'id': 't4_' + id36})
 
     def mark_all_read(self) -> None:
         """Mark all messages as read.
@@ -234,21 +238,23 @@ class MessageProcedures:
         """
         self._client.request('POST', '/api/read_all_messages')
 
-    def mark_comment_read(self, idn: int) -> None:
+    def mark_comment_read(self, idy: Union[int, str]) -> None:
         """Mark a comment message as read.
 
         Behaves similarly to :meth:`.mark_read`.
         """
-        self._client.request('POST', '/api/read_message', data={'id': 't1_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/read_message', data={'id': 't1_' + id36})
 
-    def mark_comment_unread(self, idn: int) -> None:
+    def mark_comment_unread(self, idy: Union[int, str]) -> None:
         """Mark a comment message as unread.
 
         Behaves similarly to :meth:`.mark_read`.
         """
-        self._client.request('POST', '/api/read_message', data={'id': 't1_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/read_message', data={'id': 't1_' + id36})
 
-    def collapse(self, idn: int) -> None:
+    def collapse(self, idy: Union[int, str]) -> None:
         """Collapse a message.
 
         If the specified message does not exist or is valid,
@@ -256,7 +262,7 @@ class MessageProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idn:
 
         .. .RETURNS
 
@@ -268,30 +274,35 @@ class MessageProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        self._client.request('POST', '/api/collapse_message', data={'id': 't4_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/collapse_message', data={'id': 't4_' + id36})
 
-    def uncollapse(self, idn: int) -> None:
+    def uncollapse(self, idy: Union[int, str]) -> None:
         """Uncollapse a message.
 
         Behaves similarly to :meth:`.mark_read`.
         """
-        self._client.request('POST', '/api/uncollapse_message', data={'id': 't4_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/uncollapse_message', data={'id': 't4_' + id36})
 
     class BlockAuthor:
         def __init__(self, outer: MessageProcedures) -> None:
             self._client = outer._client
 
-        def __call__(self, idn: int) -> None:
-            self.of_message(idn)
+        def __call__(self, idy: Union[int, str]) -> None:
+            self.of_message(idy)
 
-        def of_message(self, idn: int) -> None:
-            self._client.request('POST', '/api/block', data={'id': 't4_' + to_base36(idn)})
+        def of_message(self, idy: Union[int, str]) -> None:
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            self._client.request('POST', '/api/block', data={'id': 't4_' + id36})
 
-        def of_comment(self, idn: int) -> None:
-            self._client.request('POST', '/api/block', data={'id': 't1_' + to_base36(idn)})
+        def of_comment(self, idy: Union[int, str]) -> None:
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            self._client.request('POST', '/api/block', data={'id': 't1_' + id36})
 
-        def of_submission(self, idn: int) -> None:
-            self._client.request('POST', '/api/block', data={'id': 't3_' + to_base36(idn)})
+        def of_submission(self, idy: Union[int, str]) -> None:
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            self._client.request('POST', '/api/block', data={'id': 't3_' + id36})
 
     block_author: cached_property[BlockAuthor] = cached_property(BlockAuthor)
     ("""
@@ -307,7 +318,7 @@ class MessageProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idn:
 
         .. .RETURNS
 

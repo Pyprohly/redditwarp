@@ -96,9 +96,13 @@ class Contributor:
         ("""
             Contributor's user ID as a base 36 number.
             """)
-        self.id: int = int(id36, 36)
+        self.idn: int = int(self.id36, 36)
         ("""
             Contributor's user ID.
+            """)
+        self.id: int = self.idn
+        ("""
+            Same as :attr:`idn`.
             """)
         self.permissions: Sequence[str] = d['permissions']
         ("""

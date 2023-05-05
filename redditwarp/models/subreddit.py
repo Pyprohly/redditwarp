@@ -153,9 +153,13 @@ class Subreddit(DatamementoPropertiesMixin):
         ("""
             The ID of the subreddit as a base 36 number.
             """)
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
         ("""
             The subreddit ID.
+            """)
+        self.id: int = self.idn
+        ("""
+            Same as :attr:`idn`.
             """)
         self.name: str = d['display_name']
         ("""
@@ -262,7 +266,9 @@ class InaccessibleSubreddit(DatamementoPropertiesMixin):
         ("")
         self.id36: str = d['id']
         ("")
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
+        ("")
+        self.id: int = self.idn
         ("")
         self.created_ut: int = int(d['created_utc'])
         ("")

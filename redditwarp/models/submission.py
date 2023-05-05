@@ -105,7 +105,9 @@ class Submission(DatamementoBase):
             ("")
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             ("")
-            self.id: int = int(self.id36, 36)
+            self.idn: int = int(self.id36, 36)
+            ("")
+            self.id: int = self.idn
             ("")
             self.has_premium: bool = d['author_premium']
             ("")
@@ -116,7 +118,9 @@ class Submission(DatamementoBase):
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             ("")
-            self.id: int = int(self.id36, 36)
+            self.idn: int = int(self.id36, 36)
+            ("")
+            self.id: int = self.idn
             ("")
             self.name: str = d['subreddit']
             ("")
@@ -271,7 +275,9 @@ class Submission(DatamementoBase):
         ("""
             The ID of the submission as a base 36 number.
             """)
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
+        ("")
+        self.id: int = self.idn
         ("")
         self.created_ut: int = int(d['created_utc'])
         ("""
@@ -529,9 +535,13 @@ class CrosspostSubmission(Submission):
         ("""
             The ID36 of the original submission.
             """)
-        self.original_id: int = int(self.original_id36, 36)
+        self.original_idn: int = int(self.original_id36, 36)
         ("""
             The ID of the original submission.
+            """)
+        self.original_id: int = self.original_idn
+        ("""
+            Same as :attr:`original_idn`.
             """)
 
         self.__original: Optional[Submission] = None

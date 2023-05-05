@@ -31,9 +31,13 @@ class MyAccount(DatamementoBase):
         ("""
             User ID of the current user account as a base 36 number.
             """)
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
         ("""
             User ID of the current user account.
+            """)
+        self.id: int = self.idn
+        ("""
+            Same as :attr:`idn`.
             """)
         self.name: str = d['name']
         ("""

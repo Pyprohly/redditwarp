@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple, Protocol, IO
+from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Tuple, Protocol, IO, Union
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.flair import FlairTemplate, FlairTemplateChoices, UserFlairAssociation
@@ -93,7 +93,7 @@ class FlairProcedures:
 
     def set_post_flair(self,
         sr: str,
-        subm: int,
+        subm: Union[int, str],
         text: Optional[str],
         css_class: Optional[str] = None,
     ) -> None:
@@ -111,7 +111,7 @@ class FlairProcedures:
 
         :param `str` sr:
             Subreddit name.
-        :param `int` subm:
+        :param `Union[int, str]` subm:
             Submission ID.
         :param `Optional[str]` text:
             Flair text.
@@ -146,10 +146,10 @@ class FlairProcedures:
             + `404`:
                 The specified subreddit does not exist.
         """
-        full_id36 = 't3_' + to_base36(subm)
+        id36 = x if isinstance((x := subm), str) else to_base36(x)
 
         def g() -> Iterable[tuple[str, str]]:
-            yield ('link', full_id36)
+            yield ('link', 't3_' + id36)
             if text is not None: yield ('text', text)
             if css_class is not None: yield ('css_class', css_class)
 
@@ -600,7 +600,7 @@ class FlairProcedures:
 
     def assign_post_flair_template(self,
         sr: str,
-        subm: int,
+        subm: Union[int, str],
         uuid: str,
         *,
         text: Optional[str] = None,
@@ -632,9 +632,9 @@ class FlairProcedures:
                - The specified subreddit does not exist.
                - The specified submission does not exist.
         """
-        full_id36 = 't3_' + to_base36(subm)
+        id36 = x if isinstance((x := subm), str) else to_base36(x)
         d = {
-            'link': full_id36,
+            'link': 't3_' + id36,
             'flair_template_id': uuid,
         }
         if text is not None:
@@ -694,7 +694,7 @@ class FlairProcedures:
 
     def assign_post_flair(self,
         sr: str,
-        subm: int,
+        subm: Union[int, str],
         text: Optional[str],
         css_class: Optional[str] = None,
         *,
@@ -708,7 +708,7 @@ class FlairProcedures:
         .. .PARAMETERS
 
         :param `str` sr:
-        :param `int` subm:
+        :param `Union[int, str]` subm:
         :param `Optional[str]` text:
         :param `Optional[str]` css_class:
         :param `Optional[str]` bg_color:
@@ -732,8 +732,8 @@ class FlairProcedures:
                - The specified subreddit does not exist.
                - The specified submission does not exist.
         """
-        full_id36 = 't3_' + to_base36(subm)
-        d = {'link': full_id36}
+        id36 = x if isinstance((x := subm), str) else to_base36(x)
+        d = {'link': 't3_' + id36}
         for k, v in (
             ('text', text),
             ('css_class', css_class),

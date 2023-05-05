@@ -4,7 +4,7 @@ import urllib.parse
 from pathlib import Path
 from collections import deque
 
-def extract_submission_id_from_url(url: str) -> int:
+def extract_submission_id36_from_url(url: str) -> str:
     urlparts = urllib.parse.urlsplit(url)
     if urlparts.scheme not in {'https', 'http'}:
         raise ValueError
@@ -43,9 +43,17 @@ def extract_submission_id_from_url(url: str) -> int:
         if parts:
             raise ValueError
 
-    return int(val, 36)
+    return val
 
-def extract_comment_id_from_url(url: str) -> int:
+def extract_submission_idn_from_url(url: str) -> int:
+    return int(extract_submission_id36_from_url(url), 36)
+
+def extract_submission_id_from_url(url: str) -> int:
+    """Alias of :func:`extract_submission_idn_from_url`."""
+    return extract_submission_idn_from_url(url)
+
+
+def extract_comment_id36_from_url(url: str) -> str:
     urlparts = urllib.parse.urlsplit(url)
     if urlparts.scheme not in {'https', 'http'}:
         raise ValueError
@@ -77,4 +85,11 @@ def extract_comment_id_from_url(url: str) -> int:
         popq()  # slug
         val = popq()
 
-    return int(val, 36)
+    return val
+
+def extract_comment_idn_from_url(url: str) -> int:
+    return int(extract_comment_id36_from_url(url), 36)
+
+def extract_comment_id_from_url(url: str) -> int:
+    """Alias of :func:`extract_comment_idn_from_url`."""
+    return extract_comment_idn_from_url(url)

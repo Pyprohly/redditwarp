@@ -19,7 +19,9 @@ class CustomFeed:
         _, _, id36 = full_id36.partition('_')
         self.owner_id36: str = id36
         ("")
-        self.owner_id: int = int(id36, 36)
+        self.owner_idn: int = int(id36, 36)
+        ("")
+        self.owner_id: int = self.owner_idn
         ("")
         self.name: str = d['name']
         ("")

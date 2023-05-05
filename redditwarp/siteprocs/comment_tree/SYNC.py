@@ -1,12 +1,14 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Iterable, Optional, TypeVar
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_tree_SYNC import MoreCommentsTreeNode, SubmissionTreeNode
 
 from ...util.base_conversion import to_base36
 from .low_SYNC import Low
+
+_YIntOrStr = TypeVar('_YIntOrStr', int, str)
 
 class CommentTreeProcedures:
     def __init__(self, client: Client) -> None:
@@ -17,8 +19,8 @@ class CommentTreeProcedures:
             """)
 
     def get(self,
-        submission_id: int,
-        comment_id: Optional[int] = None,
+        submission_id: _YIntOrStr,
+        comment_id: Optional[_YIntOrStr] = None,
         *,
         sort: str = 'confidence',
         limit: Optional[int] = None,
@@ -31,8 +33,10 @@ class CommentTreeProcedures:
 
         Returns `None` instead of raises on `StatusCodeException(404)` and `RejectedResultException`.
         """
-        submission_id36 = to_base36(submission_id)
-        comment_id36 = None if comment_id is None else to_base36(comment_id)
+        # https://github.com/python/mypy/issues/4134
+        submission_id36 = x if isinstance((x := submission_id), str) else to_base36(x)  # type: ignore[arg-type]
+        # https://github.com/python/mypy/issues/4134
+        comment_id36 = None if comment_id is None else (x if isinstance((x := comment_id), str) else to_base36(x))  # type: ignore[arg-type]
         return self.low.get(
             submission_id36,
             comment_id36,
@@ -43,8 +47,8 @@ class CommentTreeProcedures:
         )
 
     def fetch(self,
-        submission_id: int,
-        comment_id: Optional[int] = None,
+        submission_id: _YIntOrStr,
+        comment_id: Optional[_YIntOrStr] = None,
         *,
         sort: str = 'confidence',
         limit: Optional[int] = None,
@@ -55,9 +59,9 @@ class CommentTreeProcedures:
 
         .. .PARAMETERS
 
-        :param `int` submission_id:
+        :param `_YIntOrStr` submission_id:
             Submission ID.
-        :param `Optional[int]` comment_id:
+        :param `Optional[_YIntOrStr]` comment_id:
             Optional comment ID to start the tree at that comment.
         :param `str` sort:
             Either: `confidence` ('best'), `top`, `new`, `controversial`, `old`, `random`, `qa`, `live`.
@@ -104,8 +108,10 @@ class CommentTreeProcedures:
                - The specified comment ID does not exist or the comment belongs
                  to a submission other than the one specified.
         """
-        submission_id36 = to_base36(submission_id)
-        comment_id36 = None if comment_id is None else to_base36(comment_id)
+        # https://github.com/python/mypy/issues/4134
+        submission_id36 = x if isinstance((x := submission_id), str) else to_base36(x)  # type: ignore[arg-type]
+        # https://github.com/python/mypy/issues/4134
+        comment_id36 = None if comment_id is None else (x if isinstance((x := comment_id), str) else to_base36(x))  # type: ignore[arg-type]
         return self.low.fetch(
             submission_id36,
             comment_id36,
@@ -116,8 +122,8 @@ class CommentTreeProcedures:
         )
 
     def fetch_lenient(self,
-        submission_id: int,
-        comment_id: Optional[int] = None,
+        submission_id: _YIntOrStr,
+        comment_id: Optional[_YIntOrStr] = None,
         *,
         sort: str = 'confidence',
         limit: Optional[int] = None,
@@ -132,8 +138,10 @@ class CommentTreeProcedures:
         with a `RejectedResultException` when the specified comment ID could
         not be retrieved.
         """
-        submission_id36 = to_base36(submission_id)
-        comment_id36 = None if comment_id is None else to_base36(comment_id)
+        # https://github.com/python/mypy/issues/4134
+        submission_id36 = x if isinstance((x := submission_id), str) else to_base36(x)  # type: ignore[arg-type]
+        # https://github.com/python/mypy/issues/4134
+        comment_id36 = None if comment_id is None else (x if isinstance((x := comment_id), str) else to_base36(x))  # type: ignore[arg-type]
         return self.low.fetch(
             submission_id36,
             comment_id36,
@@ -144,8 +152,8 @@ class CommentTreeProcedures:
         )
 
     def more_children(self,
-        submission_id: int,
-        child_ids: Iterable[int],
+        submission_id: _YIntOrStr,
+        child_ids: Iterable[_YIntOrStr],
         *,
         sort: str = '',
         depth: Optional[int] = None,
@@ -163,8 +171,8 @@ class CommentTreeProcedures:
 
         .. .PARAMETERS
 
-        :param `int` submission_id:
-        :param `Iterable[int]` child_ids:
+        :param `_YIntOrStr` submission_id:
+        :param `Iterable[_YIntOrStr]` child_ids:
             A list of comment IDs.
         :param `str` sort:
             Same as on :meth:`.fetch`.
@@ -187,8 +195,10 @@ class CommentTreeProcedures:
             + `403`:
                 The specified submission does not exist.
         """
-        submission_id36 = to_base36(submission_id)
-        child_id36s = (to_base36(x) for x in child_ids)
+        # https://github.com/python/mypy/issues/4134
+        submission_id36 = x if isinstance((x := submission_id), str) else to_base36(x)  # type: ignore[arg-type]
+        # https://github.com/python/mypy/issues/4134
+        child_id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in child_ids)  # type: ignore[arg-type]
         return self.low.more_children(
             submission_id36,
             child_id36s,

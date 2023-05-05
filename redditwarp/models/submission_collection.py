@@ -19,15 +19,23 @@ class SubmissionCollectionInfo(DatamementoPropertiesMixin):
         _, _, id36 = full_id36.partition('_')
         self.subreddit_id36: str = id36
         ("")
-        self.subreddit_id: int = int(id36, 36)
+        self.subreddit_idn: int = int(id36, 36)
         ("")
+        self.subreddit_id: int = self.subreddit_idn
+        ("""
+            Same as :attr:`subreddit_idn`.
+            """)
 
         full_id36 = d['author_id']
         _, _, id36 = full_id36.partition('_')
         self.author_id36: str = id36
         ("")
-        self.author_id: int = int(id36, 36)
+        self.author_idn: int = int(id36, 36)
         ("")
+        self.author_id: int = self.author_idn
+        ("""
+            Same as :attr:`author_idn`.
+            """)
 
         self.author_display_name: str = d['author_name']
         ("")
@@ -65,9 +73,13 @@ class SubmissionCollectionInfo(DatamementoPropertiesMixin):
         ("""
             List of submission ID36s contained in the collection.
             """)
-        self.submission_ids: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
+        self.submission_idns: Sequence[int] = [int(s, 36) for s in self.submission_id36s]
         ("""
             List of submission IDs contained in the collection.
+            """)
+        self.submission_ids: Sequence[int] = self.submission_idns
+        ("""
+            Same as :attr:`self.submission_idns`.
             """)
 
 class SubmissionCollection(SubmissionCollectionInfo, Sequence[Submission]):

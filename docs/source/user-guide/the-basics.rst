@@ -94,7 +94,7 @@ model.
 
 ::
 
-   >>> subm = client.p.submission.fetch(int('10gudzi', 36))
+   >>> subm = client.p.submission.fetch('10gudzi')
    >>> subm.permalink
    'https://www.reddit.com/r/confusing_perspective/comments/10gudzi/skydiving_fun/'
    >>> subm.d['permalink']
@@ -125,7 +125,7 @@ index methods.
 
    subm.delete()
    # <== Functionally identical ==>
-   client.p.submission.delete(subm.id)
+   client.p.submission.delete(subm.idn)
 
 Models coming from a `SYNC`/`ASYNC` module will often have a non-IO-committed
 version with no methods. If you don't intend to use the model methods you can

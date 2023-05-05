@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Mapping, Any
+from typing import TYPE_CHECKING, Optional, Sequence, Mapping, Any, Union
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.my_account_ASYNC import MyAccount
@@ -254,12 +254,12 @@ class AccountProcedures:
         entries = root['data']['children']
         return [load_user_relationship(d) for d in entries]
 
-    async def block_user_by_id(self, idn: int) -> None:
+    async def block_user_by_id(self, idy: Union[int, str]) -> None:
         """Block a user by ID.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `int | str` idy:
             The ID of the user to block.
 
         .. .RETURNS
@@ -276,7 +276,8 @@ class AccountProcedures:
                - The username or user ID given doesn't exist.
                - You tried to block yourself.
         """
-        await self._client.request('POST', '/api/block_user', data={'account_id': to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        await self._client.request('POST', '/api/block_user', data={'account_id': id36})
 
     async def block_user_by_name(self, name: str) -> None:
         """Block a user by name.
@@ -296,14 +297,14 @@ class AccountProcedures:
         """
         await self._client.request('POST', '/api/block_user', data={'name': name})
 
-    async def unblock_user_by_target_id(self, target_id: int, agent_id: int) -> None:
+    async def unblock_user_by_target_id(self, target_id: Union[int, str], agent_id: Union[int, str]) -> None:
         """Unblock a user by ID.
 
         .. .PARAMETERS
 
-        :param `int` target_id:
+        :param `int | str` target_id:
             The user ID in which to unblock.
-        :param `int` agent_id:
+        :param `int | str` agent_id:
             Your user account's ID.
 
             The endpoint needs this information for some dumb reason.
@@ -321,14 +322,16 @@ class AccountProcedures:
             + `400`:
                 The target username or target user ID doesn't exist.
         """
+        target_id36 = x if isinstance((x := target_id), str) else to_base36(x)
+        agent_id36 = x if isinstance((x := agent_id), str) else to_base36(x)
         data = {
             'type': 'enemy',
-            'container': 't2_' + to_base36(agent_id),
-            'id': 't2_' + to_base36(target_id),
+            'container': 't2_' + agent_id36,
+            'id': 't2_' + target_id36,
         }
         await self._client.request('POST', '/api/unfriend', data=data)
 
-    async def unblock_user_by_target_name(self, target_name: str, agent_id: int) -> None:
+    async def unblock_user_by_target_name(self, target_name: str, agent_id: Union[int, str]) -> None:
         """Unblock a user by name.
 
         Behaves similarly to :meth:`.unblock_user_by_target_id`.
@@ -337,7 +340,7 @@ class AccountProcedures:
 
         :param `str` target_name:
             The username in which to unblock.
-        :param `int` agent_id:
+        :param `int | str` agent_id:
             Your user account's ID.
 
             The endpoint needs this information for some dumb reason.
@@ -351,9 +354,10 @@ class AccountProcedures:
         :(raises):
             See :meth:`.unblock_user_by_target_id`.
         """
+        agent_id36 = x if isinstance((x := agent_id), str) else to_base36(x)
         data = {
             'type': 'enemy',
-            'container': 't2_' + to_base36(agent_id),
+            'container': 't2_' + agent_id36,
             'name': target_name,
         }
         await self._client.request('POST', '/api/unfriend', data=data)

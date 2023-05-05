@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Union, Mapping
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Union, Mapping, TypeVar
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.comment_SYNC import Comment
@@ -16,6 +16,8 @@ from ...iterators.call_chunk import CallChunk
 from .fetch_SYNC import Fetch
 from .get_SYNC import Get
 
+_YIntOrStr = TypeVar('_YIntOrStr', int, str)
+
 class CommentProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
@@ -25,7 +27,7 @@ class CommentProcedures:
 
             .. .PARAMETERS
 
-            :param `int` idn:
+            :param `int | str` idy:
                 Comment ID.
 
             .. .RETURNS
@@ -43,7 +45,7 @@ class CommentProcedures:
 
             .. .PARAMETERS
 
-            :param `int` idn:
+            :param `int | str` idy:
                 Comment ID.
 
             .. .RETURNS
@@ -51,35 +53,36 @@ class CommentProcedures:
             :rtype: `Optional`\\[:class:`~.models.comment_SYNC.Comment`]
             """)
 
-    def bulk_fetch(self, ids: Iterable[int]) -> CallChunkChainingIterator[Comment]:
+    def bulk_fetch(self, ids: Iterable[_YIntOrStr]) -> CallChunkChainingIterator[Comment]:
         """Bulk fetch comments.
 
         Any ID not found will be ignored.
 
         .. .PARAMETERS
 
-        :param `Iterable[int]` ids:
+        :param `Iterable[_YIntOrStr]` ids:
             Comment IDs.
 
         .. .RETURNS
 
         :rtype: :class:`~.iterators.call_chunk_chaining_iterator.CallChunkChainingIterator`\\[:class:`~.models.comment_SYNC.Comment`]
         """
-        def mass_fetch(ids: Sequence[int]) -> Sequence[Comment]:
-            id36s = map(to_base36, ids)
+        def mass_fetch(ids: Sequence[_YIntOrStr]) -> Sequence[Comment]:
+            # https://github.com/python/mypy/issues/4134
+            id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             full_id36s = map('t1_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             root = self._client.request('GET', '/api/info', params={'id': ids_str})
             return [load_comment(i['data'], self._client) for i in root['data']['children']]
 
-        return CallChunkChainingIterator(CallChunk(mass_fetch, idfs) for idfs in chunked(ids, 100))
+        return CallChunkChainingIterator(CallChunk[Sequence[_YIntOrStr], Sequence[Comment]](mass_fetch, idfs) for idfs in chunked(ids, 100))
 
-    def reply(self, idn: int, body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+    def reply(self, idy: Union[int, str], body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
         """Reply to a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param body:
             Either markdown or richtext.
         :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
@@ -124,7 +127,8 @@ class CommentProcedures:
                 current user has not opted in to.
         """
         def g() -> Iterable[tuple[str, str]]:
-            yield ('thing_id', 't1_' + to_base36(idn))
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            yield ('thing_id', 't1_' + id36)
             yield ('return_rtjson', '1')
             if isinstance(body, str):
                 yield ('text', body)
@@ -134,14 +138,14 @@ class CommentProcedures:
         result = self._client.request('POST', '/api/comment', files=dict(g()))
         return load_comment(result, self._client)
 
-    def edit_body(self, idn: int, body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
+    def edit_body(self, idy: Union[int, str], body: Union[str, Mapping[str, JSON_ro]]) -> Comment:
         """Edit the body text of a comment.
 
         The target entity (with the new body text) is returned.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param body:
             Either markdown or richtext.
         :type body: `Union`\\[`str`, `Mapping`\\[`str`, :class:`~.types.JSON_ro`]]
@@ -159,7 +163,8 @@ class CommentProcedures:
                 The target comment does not exist.
         """
         def g() -> Iterable[tuple[str, str]]:
-            yield ('thing_id', 't1_' + to_base36(idn))
+            id36 = x if isinstance((x := idy), str) else to_base36(x)
+            yield ('thing_id', 't1_' + id36)
             yield ('return_rtjson', '1')
             if isinstance(body, str):
                 yield ('text', body)
@@ -169,14 +174,14 @@ class CommentProcedures:
         result = self._client.request('POST', '/api/editusertext', files=dict(g()))
         return load_comment(result, self._client)
 
-    def delete(self, idn: int) -> None:
+    def delete(self, idy: Union[int, str]) -> None:
         """Delete a comment.
 
         If the target doesn't exist or isn't valid, nothing happens.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -188,10 +193,11 @@ class CommentProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        data = {'id': 't1_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36}
         self._client.request('POST', '/api/del', data=data)
 
-    def lock(self, idn: int) -> None:
+    def lock(self, idy: Union[int, str]) -> None:
         """Lock a comment.
 
         Nothing happens if the target is already locked.
@@ -205,7 +211,7 @@ class CommentProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -220,17 +226,18 @@ class CommentProcedures:
             + `403`:
                 The target doesn't exist or you don't have permission to lock it.
         """
-        data = {'id': 't1_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36}
         self._client.request('POST', '/api/lock', data=data)
 
-    def unlock(self, idn: int) -> None:
+    def unlock(self, idy: Union[int, str]) -> None:
         """Unlock a comment.
 
         Behaves similarly to :meth:`.lock`.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -241,15 +248,16 @@ class CommentProcedures:
         :raises:
             Similar to :meth:`.lock`.
         """
-        data = {'id': 't1_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36}
         self._client.request('POST', '/api/unlock', data=data)
 
-    def vote(self, idn: int, direction: int) -> None:
+    def vote(self, idy: Union[int, str], direction: int) -> None:
         """Cast a vote on a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `int` direction:
             Either: `1` (upvote), `0` unvote, `-1` downvote.
 
@@ -266,18 +274,19 @@ class CommentProcedures:
             + `404`:
                 The target could not be found.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'dir': str(direction),
         }
         self._client.request('POST', '/api/vote', data=data)
 
-    def save(self, idn: int, category: Optional[str] = None) -> None:
+    def save(self, idy: Union[int, str], category: Optional[str] = None) -> None:
         """Save a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `Optional[str]` category:
             A category/label.
 
@@ -296,19 +305,18 @@ class CommentProcedures:
             + `404`:
                 The category name specified was invalid.
         """
-        data = {
-            'id': 't1_' + to_base36(idn),
-        }
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36}
         if category is not None:
             data['category'] = category
         self._client.request('POST', '/api/save', data=data)
 
-    def unsave(self, idn: int) -> None:
+    def unsave(self, idy: Union[int, str]) -> None:
         """Save a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -320,10 +328,11 @@ class CommentProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        data = {'id': 't1_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36}
         self._client.request('POST', '/api/unsave', data=data)
 
-    def distinguish(self, idn: int) -> Comment:
+    def distinguish(self, idy: Union[int, str]) -> Comment:
         """Distinguish a comment.
 
         .. hint::
@@ -332,7 +341,7 @@ class CommentProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -350,14 +359,15 @@ class CommentProcedures:
             + `404`:
                 The target could not be found.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'how': 'yes',
         }
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    def distinguish_and_sticky(self, idn: int) -> Comment:
+    def distinguish_and_sticky(self, idy: Union[int, str]) -> Comment:
         """Distinguish and sticky a comment.
 
         Only one comment may be stickied at a time. Attempting to sticky a comment
@@ -366,7 +376,7 @@ class CommentProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -384,20 +394,21 @@ class CommentProcedures:
             + `404`:
                 The target could not be found.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'how': 'yes',
             'sticky': '1',
         }
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    def undistinguish(self, idn: int) -> Comment:
+    def undistinguish(self, idy: Union[int, str]) -> Comment:
         """Undistinguish a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -415,19 +426,20 @@ class CommentProcedures:
             + `404`:
                 The target could not be found.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'how': 'no',
         }
         root = self._client.request('POST', '/api/distinguish', data=data)
         return load_comment(root['json']['data']['things'][0]['data'], self._client)
 
-    def enable_reply_notifications(self, idn: int) -> None:
+    def enable_reply_notifications(self, idy: Union[int, str]) -> None:
         """Enable inbox reply notifications for a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -439,18 +451,19 @@ class CommentProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'state': '1'
         }
         self._client.request('POST', '/api/sendreplies', data=data)
 
-    def disable_reply_notifications(self, idn: int) -> None:
+    def disable_reply_notifications(self, idy: Union[int, str]) -> None:
         """Disable inbox reply notifications for a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -462,18 +475,19 @@ class CommentProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'state': '0'
         }
         self._client.request('POST', '/api/sendreplies', data=data)
 
-    def approve(self, idn: int) -> None:
+    def approve(self, idy: Union[int, str]) -> None:
         """Approve a comment.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -491,17 +505,18 @@ class CommentProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        data = {'id': 't1_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36}
         self._client.request('POST', '/api/approve', data=data)
 
-    def remove(self, idn: int) -> None:
+    def remove(self, idy: Union[int, str]) -> None:
         """Remove a comment.
 
         This is a moderator action.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -519,24 +534,26 @@ class CommentProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'spam': '0',
         }
         self._client.request('POST', '/api/remove', data=data)
 
-    def remove_spam(self, idn: int) -> None:
+    def remove_spam(self, idy: Union[int, str]) -> None:
         """Remove as spam.
 
         See :meth:`.remove`.
         """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {
-            'id': 't1_' + to_base36(idn),
+            'id': 't1_' + id36,
             'spam': '1',
         }
         self._client.request('POST', '/api/remove', data=data)
 
-    def ignore_reports(self, idn: int) -> None:
+    def ignore_reports(self, idy: Union[int, str]) -> None:
         """Ignore reports on a comment.
 
         .. hint::
@@ -547,7 +564,7 @@ class CommentProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Comment ID.
 
         .. .RETURNS
@@ -564,16 +581,17 @@ class CommentProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        self._client.request('POST', '/api/ignore_reports', data={'id': 't1_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/ignore_reports', data={'id': 't1_' + id36})
 
-    def unignore_reports(self, idn: int) -> None:
+    def unignore_reports(self, idy: Union[int, str]) -> None:
         """Unignore reports on a comment.
 
         Nothing happens if the target is already unignored.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Comment ID.
 
         .. .RETURNS
@@ -590,14 +608,15 @@ class CommentProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        self._client.request('POST', '/api/unignore_reports', data={'id': 't1_' + to_base36(idn)})
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        self._client.request('POST', '/api/unignore_reports', data={'id': 't1_' + id36})
 
-    def snooze_reports(self, idn: int, reason: str) -> None:
+    def snooze_reports(self, idy: Union[int, str], reason: str) -> None:
         """Ignore a custom report reason in a subreddit for 7 days.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Comment ID.
         :param `str` reason:
             The custom report reason to snooze.
@@ -616,19 +635,21 @@ class CommentProcedures:
                - The target specified does not exist.
                - The target belongs to a subreddit you do not have permission over.
         """
-        data = {'id': 't1_' + to_base36(idn), 'reason': reason}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36, 'reason': reason}
         self._client.request('POST', '/api/snooze_reports', data=data)
 
-    def unsnooze_reports(self, idn: int, reason: str) -> None:
+    def unsnooze_reports(self, idy: Union[int, str], reason: str) -> None:
         """Unsnooze a custom report.
 
         See :meth:`.snooze_reports`.
         """
-        data = {'id': 't1_' + to_base36(idn), 'reason': reason}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        data = {'id': 't1_' + id36, 'reason': reason}
         self._client.request('POST', '/api/unsnooze_reports', data=data)
 
     def apply_removal_reason(self,
-            idn: int,
+            idy: Union[int, str],
             reason_id: Optional[str] = None,
             note: Optional[str] = None) -> None:
         """Set a removal reason on a removed comment.
@@ -637,7 +658,7 @@ class CommentProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             Comment ID.
         :param `Optional[int]` reason_id:
             A removal reason ID.
@@ -666,12 +687,12 @@ class CommentProcedures:
             + `403`:
                - The target specified does not belong to a subreddit you moderate.
         """
-        target = 't1_' + to_base36(idn)
-        json_data = {'item_ids': [target], 'reason_id': reason_id, 'mod_note': note}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        json_data = {'item_ids': ['t1_' + id36], 'reason_id': reason_id, 'mod_note': note}
         self._client.request('POST', '/api/v1/modactions/removal_reasons', json=json_data)
 
     def send_removal_comment(self,
-            idn: int,
+            idy: Union[int, str],
             title: str,
             message: str,
             *,
@@ -689,7 +710,7 @@ class CommentProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             ID of a removed comment.
         :param `str` title:
             A title.
@@ -733,10 +754,10 @@ class CommentProcedures:
             + `403`:
                - The target specified does not belong to a subreddit you moderate.
         """
-        target = 't1_' + to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         json_data = {
             'type': 'public' + ('' if exposed else '_as_subreddit'),
-            'item_id': [target],
+            'item_id': ['t1_' + id36],
             'title': title,
             'message': message,
             'lock_comment': '01'[locked],
@@ -745,7 +766,7 @@ class CommentProcedures:
         return load_comment(root, self._client)
 
     def send_removal_message(self,
-            idn: int,
+            idy: Union[int, str],
             title: str,
             message: str,
             *,
@@ -756,7 +777,7 @@ class CommentProcedures:
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
             ID of a removed comment.
         :param `str` title:
             A title.
@@ -781,10 +802,10 @@ class CommentProcedures:
 
         :(raises): See :meth:`.send_removal_comment`.
         """
-        target = 't1_' + to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         json_data = {
             'type': 'private' + ('_exposed' if exposed else ''),
-            'item_id': [target],
+            'item_id': ['t1_' + id36],
             'title': title,
             'message': message,
         }

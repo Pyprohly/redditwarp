@@ -1,13 +1,11 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence
+from typing import TYPE_CHECKING, Optional, Sequence, Union, TypeVar, Iterable
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.user_SYNC import User
     from ...models.moderated_subreddit import ModeratedSubreddit
 
-from .get_user_summary_SYNC import GetUserSummary
-from .bulk_fetch_user_summary_SYNC import BulkFetchUserSummary
 from .pull_SYNC import Pull
 from .pull_subreddits_SYNC import PullSubreddits
 from ...model_loaders.user_SYNC import load_user, load_potentially_suspended_user
@@ -16,40 +14,18 @@ from ... import http
 from ...pagination.paginator_chaining_iterator import ImpartedPaginatorChainingIterator
 from ...pagination.paginators.user.sync1 import UserSearchPaginator
 from ...exceptions import RejectedResultException
+from ...models.user_summary import UserSummary
+from ...model_loaders.user_summary import load_user_summary
+from ...util.base_conversion import to_base36
+from ...iterators.chunking import chunked
+from ...iterators.call_chunk_chaining_iterator import CallChunkChainingIterator
+from ...iterators.call_chunk import CallChunk
+
+_YIntOrStr = TypeVar('_YIntOrStr', int, str)
 
 class UserProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
-        self.get_user_summary: GetUserSummary = GetUserSummary(client)
-        ("""
-            Get a partial user object by ID.
-
-            .. .PARAMETERS
-
-            :param `int` idn:
-
-            .. .RETURNS
-
-            :returns:
-                * :class:`~.models.user_summary.UserSummary`
-                * `None` if the user was not found.
-            :rtype: `Optional`\\[:class:`~.models.user_summary.UserSummary`]
-            """)
-        self.bulk_fetch_user_summary: BulkFetchUserSummary = BulkFetchUserSummary(client)
-        ("""
-            Bulk fetch partial user objects, by ID.
-
-            Any ID that can't be resolved will be ignored.
-            Duplicate IDs in a batch will be ignored.
-
-            .. .PARAMETERS
-
-            :param `Iterable[int]` ids:
-
-            .. .RETURNS
-
-            :rtype: :class:`~.iterators.call_chunk_chaining_iterator.CallChunkChainingIterator`\\[:class:`~.models.user_summary.UserSummary`]
-            """)
         self.pull: Pull = Pull(client)
         ("""
             Pull submissions and comments associated with a user.
@@ -158,6 +134,64 @@ class UserProcedures:
         """
         root = self._client.request('GET', f'/user/{name}/about')
         return load_potentially_suspended_user(root['data'], self._client)
+
+    def get_user_summary(self, idy: Union[int, str]) -> Optional[UserSummary]:
+        """
+        Get a partial user object by ID.
+
+        .. .PARAMETERS
+
+        :param `Union[int, str]` idy:
+
+        .. .RETURNS
+
+        :returns:
+            * :class:`~.models.user_summary.UserSummary`
+            * `None` if the user was not found.
+        :rtype: `Optional`\\[:class:`~.models.user_summary.UserSummary`]
+        """
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        full_id36 = 't2_' + id36
+        try:
+            root = self._client.request('GET', '/api/user_data_by_account_ids',
+                    params={'ids': full_id36})
+        except http.exceptions.StatusCodeException as e:
+            if e.status_code == 404:
+                return None
+            raise
+        obj_data = root[full_id36]
+        return load_user_summary(obj_data, id36)
+
+    def bulk_fetch_user_summary(self, ids: Iterable[_YIntOrStr]) -> CallChunkChainingIterator[UserSummary]:
+        """
+        Bulk fetch partial user objects, by ID.
+
+        Any ID that can't be resolved will be ignored.
+        Duplicate IDs in a batch will be ignored.
+
+        .. .PARAMETERS
+
+        :param `Iterable[_YIntOrStr]` ids:
+
+        .. .RETURNS
+
+        :rtype: :class:`~.iterators.call_chunk_chaining_iterator.CallChunkChainingIterator`\\[:class:`~.models.user_summary.UserSummary`]
+        """
+        def mass_fetch_by_id(ids: Sequence[_YIntOrStr]) -> Sequence[UserSummary]:
+            # https://github.com/python/mypy/issues/4134
+            id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
+            full_id36s = map('t2_'.__add__, id36s)
+            ids_str = ','.join(full_id36s)
+
+            try:
+                root = self._client.request('GET', '/api/user_data_by_account_ids', params={'ids': ids_str})
+            except http.exceptions.StatusCodeException as e:
+                if e.status_code == 404:
+                    return []
+                raise
+            return [load_user_summary(v, k) for k, v in root.items()]
+
+        return CallChunkChainingIterator(CallChunk[Sequence[_YIntOrStr], Sequence[UserSummary]](mass_fetch_by_id, idfs) for idfs in chunked(ids, 100))
 
     def moderating(self, name: str) -> Sequence[ModeratedSubreddit]:
         """Get a list of partial subreddit objects the target user is a moderator of.

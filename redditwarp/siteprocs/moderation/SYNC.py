@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Sequence, Optional, Mapping
+from typing import TYPE_CHECKING, Sequence, Optional, Mapping, Union
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.subreddit_user import (
@@ -292,7 +292,7 @@ class ModerationProcedures:
         }
         self._client.request('POST', '/api/unfriend', data=data)
 
-    def leave_moderator(self, sr_id: int) -> None:
+    def leave_moderator(self, sr_id: Union[int, str]) -> None:
         """Abdicate moderator status in a subreddit.
 
         .. warning::
@@ -306,7 +306,7 @@ class ModerationProcedures:
 
         .. .PARAMETERS
 
-        :param `int` sr_id:
+        :param `Union[int, str]` sr_id:
 
         .. .RETURNS
 
@@ -318,7 +318,8 @@ class ModerationProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        self._client.request('POST', '/api/leavemoderator', data={'id': 't5_' + to_base36(sr_id)})
+        id36 = x if isinstance((x := sr_id), str) else to_base36(x)
+        self._client.request('POST', '/api/leavemoderator', data={'id': 't5_' + id36})
 
     def set_moderator_permissions(self, sr: str, user: str, permissions: Sequence[str]) -> None:
         """Set the permissions of a moderator.
@@ -486,7 +487,7 @@ class ModerationProcedures:
         }
         self._client.request('POST', '/api/unfriend', data=data)
 
-    def leave_approved_user(self, sr_id: int) -> None:
+    def leave_approved_user(self, sr_id: Union[int, str]) -> None:
         """Abdicate approved user status in a subreddit.
 
         Nothing happens if the specified subreddit ID is not valid or the
@@ -494,7 +495,7 @@ class ModerationProcedures:
 
         .. .PARAMETERS
 
-        :param `int` sr_id:
+        :param `Union[int, str]` sr_id:
 
         .. .RETURNS
 
@@ -506,7 +507,8 @@ class ModerationProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
         """
-        self._client.request('POST', '/api/leavecontributor', data={'id': 't5_' + to_base36(sr_id)})
+        id36 = x if isinstance((x := sr_id), str) else to_base36(x)
+        self._client.request('POST', '/api/leavecontributor', data={'id': 't5_' + id36})
 
     def ban_user(self, sr: str, user: str, *,
             duration: Optional[int] = None,

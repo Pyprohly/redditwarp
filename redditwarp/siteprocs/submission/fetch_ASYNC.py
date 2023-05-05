@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Mapping, TypeVar, Generic
+from typing import TYPE_CHECKING, Any, Mapping, TypeVar, Generic, Union
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from .ASYNC import SubmissionProcedures
@@ -17,8 +17,8 @@ class Common(Generic[T]):
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def __call__(self, idn: int) -> T:
-        id36 = to_base36(idn)
+    async def __call__(self, idy: Union[int, str]) -> T:
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         return await self.by_id36(id36)
 
     def _load_object(self, m: Mapping[str, Any]) -> T:

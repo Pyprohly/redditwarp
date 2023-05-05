@@ -137,6 +137,7 @@ class CommentMessage(MailboxMessage):
         is_top_level: bool
         has_parent_comment: bool
         parent_comment_id36: str
+        parent_comment_idn: int
         parent_comment_id: int
         score: int
         body: str

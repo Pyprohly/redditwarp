@@ -102,7 +102,9 @@ class Comment(DatamementoBase):
             ("")
             self.id36: str = d['author_fullname'].split('_', 1)[-1]
             ("")
-            self.id: int = int(self.id36, 36)
+            self.idn: int = int(self.id36, 36)
+            ("")
+            self.id: int = self.idn
             ("")
             self.has_premium: bool = d['author_premium']
             ("")
@@ -115,7 +117,9 @@ class Comment(DatamementoBase):
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['link_id'].split('_', 1)[-1]
             ("")
-            self.id: int = int(self.id36, 36)
+            self.idn: int = int(self.id36, 36)
+            ("")
+            self.id: int = self.idn
             ("")
             self.archived: bool = d['archived']
             ("""
@@ -129,7 +133,9 @@ class Comment(DatamementoBase):
         def __init__(self, d: Mapping[str, Any]) -> None:
             self.id36: str = d['subreddit_id'].split('_', 1)[-1]
             ("")
-            self.id: int = int(self.id36, 36)
+            self.idn: int = int(self.id36, 36)
+            ("")
+            self.id: int = self.idn
             ("")
             self.name: str = d['subreddit']
             ("")
@@ -217,7 +223,9 @@ class Comment(DatamementoBase):
         ("""
             ID of the comment as a base 36 number.
             """)
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
+        ("")
+        self.id: int = self.idn
         ("")
         self.created_ut: int = int(d['created_utc'])
         ("""
@@ -313,7 +321,7 @@ class Comment(DatamementoBase):
 
             Empty string if not applicable.
             """)
-        self.parent_comment_id: int = 0
+        self.parent_comment_idn: int = 0
         ("""
             Parent comment ID.
 
@@ -321,7 +329,11 @@ class Comment(DatamementoBase):
             """)
         if self.has_parent_comment:
             self.parent_comment_id36 = parent_id.partition('_')[2]
-            self.parent_comment_id = int(self.parent_comment_id36, 36)
+            self.parent_comment_idn = int(self.parent_comment_id36, 36)
+        self.parent_comment_id: int = self.parent_comment_idn
+        ("""
+            Same as :attr:`parent_comment_idn`.
+            """)
 
         self.me: Comment.Me = self.Me(d)
         ("""

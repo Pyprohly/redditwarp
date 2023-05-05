@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Mapping
+from typing import TYPE_CHECKING, Optional, Sequence, Iterable, Mapping, Union
 if TYPE_CHECKING:
     from ...client_SYNC import Client
     from ...models.live_thread_SYNC import LiveThread, LiveUpdate
@@ -420,7 +420,7 @@ class LiveThreadProcedures:
         """
         self._client.request('POST', f'/api/live/{idt}/accept_contributor_invite')
 
-    def revoke_contributor_invite(self, idt: str, user_id: int) -> None:
+    def revoke_contributor_invite(self, idt: str, user_id: Union[int, str]) -> None:
         """Revoke an outstanding contributor invite.
 
         Requires the `manage` live thread permission.
@@ -431,7 +431,7 @@ class LiveThreadProcedures:
         .. .PARAMETERS
 
         :param `str` idt:
-        :param `int` user_id:
+        :param `Union[int, str]` user_id:
 
         .. .RETURNS
 
@@ -445,7 +445,7 @@ class LiveThreadProcedures:
                - You do not have the `manage` permission.
                - You do not have permission.
         """
-        id36 = to_base36(user_id)
+        id36 = x if isinstance((x := user_id), str) else to_base36(x)
         self._client.request('POST', f'/api/live/{idt}/rm_contributor_invite', data={'id': 't2_' + id36})
 
     def leave_contributor(self, idt: str) -> None:

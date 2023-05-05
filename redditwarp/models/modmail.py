@@ -39,6 +39,7 @@ class ConversationInfo(DatamementoPropertiesMixin):
     @dataclass(repr=False, eq=False)
     class LegacyMessage:
         id: int
+        idn: int
         id36: str
         link: str
 
@@ -47,7 +48,9 @@ class ConversationInfo(DatamementoPropertiesMixin):
         ("")
         self.id36: str = d['id']
         ("")
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
+        ("")
+        self.id: int = self.idn
         ("")
         self.subject: str = d['subject']
         ("")
@@ -89,7 +92,9 @@ class ConversationInfo(DatamementoPropertiesMixin):
         if (x := d['legacyFirstMessageId']) is not None:
             self.legacy_message = self.LegacyMessage(
                 id36=x,
-                id=int(x, 36),
+                idn=(idn := int(x, 36)),
+                # https://github.com/python/mypy/issues
+                id=idn,  # type: ignore[has-type]
                 link="https://www.reddit.com/message/messages/" + x,
             )
 
@@ -123,7 +128,9 @@ class Message(DatamementoPropertiesMixin):
         ("")
         self.id36: str = d['id']
         ("")
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
+        ("")
+        self.id: int = self.idn
         ("")
         author = d['author']
         self.author_name: str = author['name']

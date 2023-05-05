@@ -78,7 +78,7 @@ resource by its ID.
 
 ::
 
-   subm = client.p.submission.fetch(int('cqufij', 36))
+   subm = client.p.submission.fetch('cqufij')
    print(subm.author_display_name)
    print(subm.title)
    print(subm.created_at)

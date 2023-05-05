@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Any, Mapping
+from typing import TYPE_CHECKING, Optional, Iterable, Sequence, Any, Mapping, Union, TypeVar
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.comment_ASYNC import LooseComment
@@ -22,6 +22,8 @@ from ... import http
 from .pull_ASYNC import Pull
 from .pulls_ASYNC import Pulls
 
+_YIntOrStr = TypeVar('_YIntOrStr', int, str)
+
 class SubredditProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
@@ -34,12 +36,12 @@ class SubredditProcedures:
             Pull subreddits.
             """)
 
-    async def get(self, idn: int) -> Optional[Subreddit]:
+    async def get(self, idy: Union[int, str]) -> Optional[Subreddit]:
         """Get information about a potentially inaccessible subreddit.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -48,17 +50,18 @@ class SubredditProcedures:
             * :class:`~.models.subreddit_ASYNC.Subreddit`
         :rtype: `Optional`\\[:class:`~.models.subreddit_ASYNC.Subreddit`]
         """
-        v = await self.get_potentially_inaccessible(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        v = await self.get_potentially_inaccessible(id36)
         if isinstance(v, Subreddit):
             return v
         return None
 
-    async def fetch(self, idn: int) -> Subreddit:
+    async def fetch(self, idy: Union[int, str]) -> Subreddit:
         """Fetch information about a potentially inaccessible subreddit.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -70,7 +73,8 @@ class SubredditProcedures:
            - The target subreddit is was not found.
            - The target subreddit is private or banned.
         """
-        v = await self.fetch_potentially_inaccessible(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        v = await self.fetch_potentially_inaccessible(id36)
         if isinstance(v, Subreddit):
             return v
         if isinstance(v, InaccessibleSubreddit):
@@ -142,12 +146,12 @@ class SubredditProcedures:
             raise exceptions.NoResultException('target not found')
         return load_subreddit(root['data'], self._client)
 
-    async def get_potentially_inaccessible(self, idn: int) -> Optional[object]:
+    async def get_potentially_inaccessible(self, idy: Union[int, str]) -> Optional[object]:
         """Get information about a potentially inaccessible subreddit.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -157,19 +161,19 @@ class SubredditProcedures:
             * :class:`~.models.subreddit_ASYNC.Subreddit`
         :rtype: `Optional`\\[`object`]
         """
-        id36 = to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         full_id36 = 't5_' + id36
         root = await self._client.request('GET', '/api/info', params={'id': full_id36})
         if children := root['data']['children']:
             return load_potentially_inaccessible_subreddit(children[0]['data'], self._client)
         return None
 
-    async def fetch_potentially_inaccessible(self, idn: int) -> object:
+    async def fetch_potentially_inaccessible(self, idy: Union[int, str]) -> object:
         """Fetch information about a potentially inaccessible subreddit.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -184,7 +188,8 @@ class SubredditProcedures:
         :raises redditwarp.exceptions.NoResultException:
             The target subreddit is was not found.
         """
-        v = await self.get_potentially_inaccessible(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        v = await self.get_potentially_inaccessible(id36)
         if v is None:
             raise exceptions.NoResultException('target not found')
         return v
@@ -234,14 +239,14 @@ class SubredditProcedures:
             raise exceptions.NoResultException('target not found')
         return v
 
-    def bulk_fetch_potentially_inaccessible(self, ids: Iterable[int]) -> CallChunkChainingAsyncIterator[object]:
+    def bulk_fetch_potentially_inaccessible(self, ids: Iterable[_YIntOrStr]) -> CallChunkChainingAsyncIterator[object]:
         """Bulk fetch information about a potentially inacessible subreddits, by ID.
 
         Any ID not found will be ignored.
 
         .. .PARAMETERS
 
-        :param `Iterable[int]` ids:
+        :param `Iterable[_YIntOrStr]` ids:
 
         .. .RETURNS
 
@@ -253,14 +258,16 @@ class SubredditProcedures:
             * :class:`~.models.subreddit_ASYNC.Subreddit`
         :rtype: :class:`~.iterators.call_chunk_chaining_async_iterator.CallChunkChainingAsyncIterator`\\[`object`]
         """
-        async def mass_fetch(ids: Sequence[int]) -> Sequence[object]:
-            id36s = map(to_base36, ids)
+        async def mass_fetch(ids: Sequence[_YIntOrStr]) -> Sequence[object]:
+            # https://github.com/python/mypy/issues/4134
+            id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             full_id36s = map('t5_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             root = await self._client.request('GET', '/api/info', params={'id': ids_str})
-            return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]
+            # https://github.com/python/mypy/issues/13408
+            return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]  # type: ignore[return-value]
 
-        return CallChunkChainingAsyncIterator(AsyncCallChunk(mass_fetch, chunk) for chunk in chunked(ids, 100))
+        return CallChunkChainingAsyncIterator(AsyncCallChunk[Sequence[_YIntOrStr], Sequence[object]](mass_fetch, chunk) for chunk in chunked(ids, 100))
 
     def bulk_fetch_potentially_inaccessible_by_name(self, names: Iterable[str]) -> CallChunkChainingAsyncIterator[object]:
         """Bulk fetch information about a potentially inacessible subreddits, by name.
@@ -327,12 +334,12 @@ class SubredditProcedures:
             raise exceptions.NoResultException('target not found')
         return root['data']
 
-    async def update_settings(self, idn: int, settings: Mapping[str, JSON_ro]) -> None:
+    async def update_settings(self, idy: Union[int, str], settings: Mapping[str, JSON_ro]) -> None:
         """Update a subreddit's settings.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param settings:
         :type settings: `Mapping`\\[`str`, :class:`~.types.JSON_ro`]
 
@@ -350,17 +357,17 @@ class SubredditProcedures:
             + `MOD_REQUIRED`:
                 The current user is not a moderator of the subreddit.
         """
-        id36 = to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         full_id36 = 't5_' + id36
         json: Mapping[str, JSON_ro] = {**settings, 'sr': full_id36}
         await self._client.request('PATCH', '/api/v1/subreddit/update_settings', json=json)
 
-    async def subscribe_by_id(self, idn: int) -> None:
+    async def subscribe_by_id(self, idy: Union[int, str]) -> None:
         """Subscribe to a subreddit.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
 
         .. .RETURNS
 
@@ -377,7 +384,7 @@ class SubredditProcedures:
             + `404`:
                 The specified subreddit does not exist.
         """
-        id36 = to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         full_id36 = 't5_' + id36
         await self._client.request('POST', '/api/subscribe', data={'action': 'sub', 'sr': full_id36})
 
@@ -407,12 +414,12 @@ class SubredditProcedures:
         """
         await self._client.request('POST', '/api/subscribe', data={'action': 'sub', 'sr_name': name})
 
-    async def unsubscribe_by_id(self, idn: int) -> None:
+    async def unsubscribe_by_id(self, idy: Union[int, str]) -> None:
         """Unsubscribe from a subreddit.
 
         Behaves similarly to :meth:`.subscribe_by_id`.
         """
-        id36 = to_base36(idn)
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
         full_id36 = 't5_' + id36
         await self._client.request('POST', '/api/subscribe', data={'action': 'unsub', 'sr': full_id36})
 
@@ -527,12 +534,12 @@ class SubredditProcedures:
             raise
         return True
 
-    async def get_similar_subreddits(self, idn: int, n: Optional[int] = None) -> Sequence[Subreddit]:
+    async def get_similar_subreddits(self, idy: Union[int, str], n: Optional[int] = None) -> Sequence[Subreddit]:
         """Get a list of similar subreddits.
 
         .. .PARAMETERS
 
-        :param `int` idn:
+        :param `Union[int, str]` idy:
         :param `Optional[int]` n:
             The maximum number of entries to return.
 
@@ -542,7 +549,8 @@ class SubredditProcedures:
 
         :rtype: `Sequence`\\[:class:`~.models.subreddit_ASYNC.Subreddit`]
         """
-        params = {'sr_fullnames': 't5_' + to_base36(idn)}
+        id36 = x if isinstance((x := idy), str) else to_base36(x)
+        params = {'sr_fullnames': 't5_' + id36}
         if n is not None:
             params['max_recs'] = str(n)
         root = await self._client.request('GET', '/api/similar_subreddits', params=params)

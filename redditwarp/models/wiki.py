@@ -41,7 +41,9 @@ class WikiPageRevisionAuthorUser(DatamementoPropertiesMixin):
         ("")
         self.id36: str = d['id']
         ("")
-        self.id: int = int(self.id36, 36)
+        self.idn: int = int(self.id36, 36)
+        ("")
+        self.id: int = self.idn
         ("")
         self.name: str = d['name']
         ("")

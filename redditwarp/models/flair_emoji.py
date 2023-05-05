@@ -12,6 +12,7 @@ class FlairEmoji:
     d: Mapping[str, Any]
     name: str
     image_url: str
+    creator_idn: int
     creator_id: int
     creator_id36: str
     post_enabled: bool
@@ -35,7 +36,9 @@ class SubredditFlairEmojis(Mapping[str, FlairEmoji]):
         ("")
         self.subreddit_id36: str = subreddit_id36
         ("")
-        self.subreddit_id: int = int(subreddit_id36, 36)
+        self.subreddit_idn: int = int(subreddit_id36, 36)
+        ("")
+        self.subreddit_id: int = self.subreddit_idn
         ("")
 
     def __contains__(self, item: object) -> bool:

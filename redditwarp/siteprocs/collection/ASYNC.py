@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Sequence
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 if TYPE_CHECKING:
     from ...client_ASYNC import Client
     from ...models.submission_collection_ASYNC import SubmissionCollectionInfo, SubmissionCollection
@@ -14,7 +14,7 @@ class CollectionProcedures:
         self._client = client
 
     async def create(self,
-        sr_id: int,
+        sr_id: Union[int, str],
         title: str,
         description: Optional[str] = None,
         display_layout: Optional[str] = None,
@@ -26,7 +26,7 @@ class CollectionProcedures:
 
         .. .PARAMETERS
 
-        :param `int` sr_id:
+        :param `int | str` sr_id:
             Subreddit ID.
         :param `str` title:
             A string no longer than 300 characters.
@@ -59,7 +59,7 @@ class CollectionProcedures:
 
                 The options are case-sensitive.
         """
-        sr_id36 = to_base36(sr_id)
+        sr_id36 = x if isinstance((x := sr_id), str) else to_base36(x)
         params = {'sr_fullname': 't5_' + sr_id36, 'title': title}
         if description is not None:
             params['description'] = description
@@ -68,7 +68,7 @@ class CollectionProcedures:
         data = await self._client.request('POST', '/api/v1/collections/create_collection', params=params)
         return load_submission_collection(data, self._client)
 
-    async def add_post(self, uuid: str, subm_id: int) -> None:
+    async def add_post(self, uuid: str, subm_id: Union[int, str]) -> None:
         """
         Add a submission to a collection.
 
@@ -78,7 +78,7 @@ class CollectionProcedures:
         .. .PARAMETERS
 
         :param `str` uuid:
-        :param `int` subm_id:
+        :param `int | str` subm_id:
 
         .. .RETURNS
 
@@ -111,18 +111,18 @@ class CollectionProcedures:
             + `500`:
                 The value specified by `uuid` is not a valid UUID.
         """
-        id36 = to_base36(subm_id)
+        id36 = x if isinstance((x := subm_id), str) else to_base36(x)
         params = {'collection_id': uuid, 'link_fullname': 't3_' + id36}
         await self._client.request('POST', '/api/v1/collections/add_post_to_collection', params=params)
 
-    async def remove_post(self, uuid: str, subm_id: int) -> None:
+    async def remove_post(self, uuid: str, subm_id: Union[int, str]) -> None:
         """
         Remove a submission from a collection.
 
         .. .PARAMETERS
 
         :param `str` uuid:
-        :param `int` subm_id:
+        :param `int | str` subm_id:
 
         .. .RETURNS
 
@@ -152,7 +152,7 @@ class CollectionProcedures:
             + `500`:
                The value specified by `uuid` is not a valid UUID.
         """
-        id36 = to_base36(subm_id)
+        id36 = x if isinstance((x := subm_id), str) else to_base36(x)
         params = {'collection_id': uuid, 'link_fullname': 't3_' + id36}
         await self._client.request('POST', '/api/v1/collections/remove_post_in_collection', params=params)
 
@@ -210,13 +210,13 @@ class CollectionProcedures:
             return None
         return load_submission_collection_info(root, self._client)
 
-    async def get_subreddit_collections_info(self, sr_id: int) -> Sequence[SubmissionCollectionInfo]:
+    async def get_subreddit_collections_info(self, sr_id: Union[int, str]) -> Sequence[SubmissionCollectionInfo]:
         """
         Get a list of collections' details from the subreddit.
 
         .. .PARAMETERS
 
-        :param `int` id:
+        :param `int | str` id:
             Subreddit ID.
 
         .. .RETURNS
@@ -229,7 +229,7 @@ class CollectionProcedures:
             + `SUBREDDIT_NOEXIST`:
                 The specified subreddit could not be found.
         """
-        id36 = to_base36(sr_id)
+        id36 = x if isinstance((x := sr_id), str) else to_base36(x)
         params = {'sr_fullname': 't5_' + id36}
         root = await self._client.request('GET', '/api/v1/collections/subreddit_collections', params=params)
         return [load_submission_collection_info(d, self._client) for d in root]
@@ -262,7 +262,7 @@ class CollectionProcedures:
         params = {'collection_id': uuid}
         await self._client.request('POST', '/api/v1/collections/delete_collection', params=params)
 
-    async def reorder(self, uuid: str, subm_ids: Sequence[int]) -> None:
+    async def reorder(self, uuid: str, subm_ids: Union[Sequence[int], Sequence[str]]) -> None:
         """
         Reorder posts in a collection.
 
@@ -276,7 +276,7 @@ class CollectionProcedures:
         .. .PARAMETERS
 
         :param `str` uuid:
-        :param `Sequence[int]` subm_ids:
+        :param `Sequence[int] | Sequence[str]` subm_ids:
 
         .. .RETURNS
 
@@ -296,7 +296,7 @@ class CollectionProcedures:
                - The specified `uuid` is invalid.
                - The specified `uuid` does not exist.
         """
-        id36s = [to_base36(i) for i in subm_ids]
+        id36s = [(x if isinstance((x := i), str) else to_base36(x)) for i in subm_ids]
         full_id36s = ['t3_' + s for s in id36s]
         params = {'collection_id': uuid, 'link_ids': ','.join(full_id36s)}
         await self._client.request('POST', '/api/v1/collections/reorder_collection', params=params)
