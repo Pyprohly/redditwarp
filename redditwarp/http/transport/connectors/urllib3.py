@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Optional, Union
+from typing import Optional, Union, Any, cast
 
 import json
 
@@ -49,7 +49,7 @@ class Urllib3Connector(Connector):
         headers = dict(r.headers)
         pld = r.payload
 
-        resp: urllib3.response.HTTPResponse
+        resp: urllib3.response.BaseHTTPResponse
         try:
             if pld is None:
                 resp = self.http.urlopen(
@@ -100,8 +100,8 @@ class Urllib3Connector(Connector):
                     url,
                     headers=headers,
                     fields=fields0,
-                    timeout=tmo,
-                    redirect=follow_redirects,
+                    timeout=cast(Any, tmo),
+                    redirect=cast(Any, follow_redirects),
                     encode_multipart=False,
                 )
 
@@ -111,6 +111,8 @@ class Urllib3Connector(Connector):
                     if isinstance(pt, payload.MultipartFormData.TextField):
                         fields[pt.name] = pt.text
                     elif isinstance(pt, payload.MultipartFormData.FileField):
+                        if pt.content_type == '':
+                            raise ValueError('empty string multipart content type not supported')
                         fields[pt.name] = (pt.filename, pt.file.read(), pt.content_type)
                     else:
                         raise ValueError('unexpected multipart field type: ' + repr(pt))
@@ -119,9 +121,9 @@ class Urllib3Connector(Connector):
                     r.verb,
                     url,
                     headers=headers,
-                    fields=fields,
-                    timeout=tmo,
-                    redirect=follow_redirects,
+                    fields=cast(Any, fields),
+                    timeout=cast(Any, tmo),
+                    redirect=cast(Any, follow_redirects),
                 )
 
             else:
@@ -160,7 +162,7 @@ def new_connector() -> Urllib3Connector:
 
 
 name: str = urllib3.__name__
-version: str = urllib3.__version__
+version: str = getattr(urllib3, '__version__')
 register(
     adaptor_module_name=__name__,
     name=name,

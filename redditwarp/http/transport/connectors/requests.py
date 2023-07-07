@@ -69,6 +69,8 @@ class RequestsConnector(Connector):
                 if isinstance(pt, payload.MultipartFormData.TextField):
                     files[pt.name] = (None, pt.text)
                 elif isinstance(pt, payload.MultipartFormData.FileField):
+                    if pt.content_type == '':
+                        raise ValueError('empty string multipart content type not supported')
                     files[pt.name] = (pt.filename, pt.file, pt.content_type)
                 else:
                     raise ValueError('unexpected multipart field type: ' + repr(pt))

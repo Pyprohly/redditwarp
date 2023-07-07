@@ -36,7 +36,7 @@ class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
         ("")
 
     def _send_frame_impl(self, m: Frame) -> None:
-        frm = websocket.ABNF.create_frame(opcode=m.opcode, data=m.data, fin=int(m.fin))
+        frm = websocket.ABNF.create_frame(opcode=m.opcode, data=m.data.decode(), fin=int(m.fin))
         try:
             self.ws.send_frame(frm)
         except websocket.WebSocketConnectionClosedException as cause:
