@@ -206,7 +206,7 @@ The `client.http` HTTP client can be used to send requests to domains other
 than Reddit: the Reddit credentials will not be accidentally forwarded to
 non-Reddit domains, nor will those requests be rate limited. On the other hand,
 using the `client.http` object to make non-Reddit requests is probably not
-ideal and a separate HTTP client should be used instead.
+ideal and a :doc:`separate HTTP client <http-components>` should be used instead.
 
 The authorizer
 --------------

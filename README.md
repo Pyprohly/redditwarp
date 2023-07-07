@@ -79,7 +79,7 @@ by u/{m.author_display_name} to r/{m.subreddit.name}
 ''')
 
 # Get the first comment of a submission.
-tree_node = client.p.comment_tree.fetch(int('uc8i1g', 36), sort='top', limit=1)
+tree_node = client.p.comment_tree.fetch('uc8i1g', sort='top', limit=1)
 c = tree_node.children[0].value
 print(f'''\
 {c.submission.id36}+{c.id36} ^{c.score}
