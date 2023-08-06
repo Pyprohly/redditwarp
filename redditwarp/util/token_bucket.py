@@ -39,7 +39,7 @@ class TokenBucket:
     def try_consume(self, n: float) -> bool:
         """Consume `n` tokens if `n` tokens are available."""
         if self.can_consume(n):
-            self._value -= n
+            self._value = min(self.capacity, self._value - n)
             return True
         return False
 
@@ -52,7 +52,7 @@ class TokenBucket:
     def hard_consume(self, n: float) -> bool:
         """Consume up to `n` tokens."""
         u = self.get_value()
-        self._value = max(0, u - n)
+        self._value = min(self.capacity, max(0, u - n))
         return n <= u
 
     def consume_all(self) -> None:

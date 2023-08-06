@@ -63,3 +63,10 @@ def test_get_value(
     for m, n in concomitants:
         tb.try_consume(m)
         assert tb.get_value() == pytest.approx(n)
+
+def test_negative_consume_values_dont_cause_the_bucket_to_exceed_capacity() -> None:
+    tb = TokenBucket(capacity=10, rate=1)
+    tb.try_consume(-5)
+    tb.consume(-5)
+    tb.hard_consume(-5)
+    assert tb.get_value() == 10
