@@ -92,11 +92,11 @@ class Cross:
         event_tz: Optional[str] = None,
     ) -> Any:
         def g() -> Iterable[tuple[str, str]]:
-            yield ('kind', 'self')
+            yield ('kind', 'crosspost')
             yield ('sr', sr)
             yield ('title', title)
             id36 = x if isinstance((x := target), str) else to_base36(x)
-            yield ('crosspost_parent', 't3_' + id36)
+            yield ('crosspost_fullname', 't3_' + id36)
             yield ('sendreplies', '01'[reply_notifications])
             if spoiler: yield ('spoiler', '1')
             if nsfw: yield ('nsfw', '1')

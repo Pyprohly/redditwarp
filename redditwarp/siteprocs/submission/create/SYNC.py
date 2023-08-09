@@ -98,11 +98,11 @@ class Create:
         self.link: Link = Link(client)
         ("""Create a link post.
 
-            Behaves similarly to :meth:`.create_text_post`.
+            Behaves similarly to :meth:`.text`.
 
             .. .PARAMETERS
 
-            :(parameters): Similar to :meth:`.create_text_post`.
+            :(parameters): Similar to :meth:`.text`.
 
             :param `str` url:
                 A URL.
@@ -113,11 +113,11 @@ class Create:
 
             .. .RETURNS
 
-            :(returns): Similar to :meth:`.create_text_post`.
+            :(returns): Similar to :meth:`.text`.
 
             .. .RAISES
 
-            :(raises): Similar to :meth:`.create_text_post`.
+            :(raises): Similar to :meth:`.text`.
 
             :raises redditwarp.exceptions.RedditError:
                 + `NO_URL`:
@@ -129,31 +129,31 @@ class Create:
         self.image: Image = Image(client)
         ("""Create an image post.
 
-            Behaves similarly to :meth:`.create_text_post`.
+            Behaves similarly to :meth:`.text`.
 
             .. .PARAMETERS
 
-            :(parameters): Similar to :meth:`.create_text_post`.
+            :(parameters): Similar to :meth:`.text`.
 
             :param `str` link:
                 A URL to an image.
 
             .. .RETURNS
 
-            :(returns): Similar to :meth:`.create_text_post`.
+            :(returns): Similar to :meth:`.text`.
 
             .. .RAISES
 
-            :(raises): Similar to :meth:`.create_text_post`.
+            :(raises): Similar to :meth:`.text`.
             """)
         self.video: Video = Video(client)
         ("""Create a video post.
 
-            Behaves similarly to :meth:`.create_text_post`.
+            Behaves similarly to :meth:`.text`.
 
             .. .PARAMETERS
 
-            :(parameters): Similar to :meth:`.create_text_post`.
+            :(parameters): Similar to :meth:`.text`.
 
             :param `str` link:
                 A URL to a video.
@@ -168,7 +168,7 @@ class Create:
 
             .. .RAISES
 
-            :(raises): Similar to :meth:`.create_text_post`.
+            :(raises): Similar to :meth:`.text`.
 
             :raises redditwarp.exceptions.RedditError:
                 + `MISSING_VIDEO_URLS`:
@@ -179,11 +179,11 @@ class Create:
         self.gallery: Gallery = Gallery(client)
         ("""Create a gallery post.
 
-            Behaves similarly to :meth:`.create_text_post`.
+            Behaves similarly to :meth:`.text`.
 
             .. .PARAMETERS
 
-            :(parameters): Similar to :meth:`.create_text_post`.
+            :(parameters): Similar to :meth:`.text`.
 
             :param items:
                 A list of gallery items.
@@ -191,20 +191,20 @@ class Create:
 
             .. .RETURNS
 
-            :(returns): Similar to :meth:`.create_text_post`.
+            :(returns): Similar to :meth:`.text`.
 
             .. .RAISES
 
-            :(raises): Similar to :meth:`.create_text_post`.
+            :(raises): Similar to :meth:`.text`.
             """)
         self.poll: Poll = Poll(client)
         ("""Create a poll post.
 
-            Behaves similarly to :meth:`.create_text_post`.
+            Behaves similarly to :meth:`.text`.
 
             .. .PARAMETERS
 
-            :(parameters): Similar to :meth:`.create_text_post`.
+            :(parameters): Similar to :meth:`.text`.
 
             :param `str` body:
             :param `Sequence[str]` options:
@@ -218,29 +218,35 @@ class Create:
 
             .. .RETURNS
 
-            :(returns): Similar to :meth:`.create_text_post`.
+            :(returns): Similar to :meth:`.text`.
 
             .. .RAISES
 
-            :(raises): Similar to :meth:`.create_text_post`.
+            :(raises): Similar to :meth:`.text`.
             """)
         self.cross: Cross = Cross(client)
         ("""Create a crosspost.
 
-            Behaves similarly to :meth:`.create_text_post`.
+            Behaves similarly to :meth:`.text`.
 
             .. .PARAMETERS
 
-            :(parameters): Similar to :meth:`.create_text_post`.
+            :(parameters): Similar to :meth:`.text`.
 
             :param `Union[int, str]` target:
                 The ID of a submission.
 
             .. .RETURNS
 
-            :(returns): Similar to :meth:`.create_text_post`.
+            :(returns): Similar to :meth:`.text`.
 
             .. .RAISES
 
-            :(raises): Similar to :meth:`.create_text_post`.
+            :raises redditwarp.exceptions.RedditError:
+                + `USER_REQUIRED`: Same as in :meth:`.text`.
+                + `BAD_SR_NAME`: "..."
+                + `SUBREDDIT_NOEXIST`: "..."
+                + `SUBREDDIT_NOTALLOWED`: "..."
+                + `INVALID_CROSSPOST_THING`:
+                    The target subreddit is the same as the source.
             """)
