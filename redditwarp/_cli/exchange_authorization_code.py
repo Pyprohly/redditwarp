@@ -77,7 +77,7 @@ connector = new_connector()
 user_agent = get_user_agent(module_member=connector) + " redditwarp.cli.exchange_authorization_code"
 headers = {'User-Agent': user_agent}
 token_client = RedditTokenObtainmentClient(
-    HTTPClient(ApplyDefaultHeaders(connector)),
+    HTTPClient(ApplyDefaultHeaders(connector, headers)),
     redditwarp.core.const.TOKEN_OBTAINMENT_URL,
     (client_id, client_secret),
     grant,

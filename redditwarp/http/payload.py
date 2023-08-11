@@ -87,7 +87,7 @@ def make_multipart(xfiles: ExtendedRequestFiles) -> MultipartFormData:
     return make_multipart_payload_from_extended_request_files(xfiles)
 
 
-def make_multipart_payload_from_request_files(files: RequestFiles) -> MultipartFormData:
+def make_multipart_parts_from_request_files(files: RequestFiles) -> Sequence[MultipartFormData.Field]:
     parts: list[MultipartFormData.Field] = []
     for key, value in files.items():
         field: MultipartFormData.Field
@@ -96,7 +96,10 @@ def make_multipart_payload_from_request_files(files: RequestFiles) -> MultipartF
         else:
             field = MultipartFormData.FileField(key, value)
         parts.append(field)
-    return MultipartFormData(parts)
+    return parts
+
+def make_multipart_payload_from_request_files(files: RequestFiles) -> MultipartFormData:
+    return MultipartFormData(make_multipart_parts_from_request_files(files))
 
 def make_payload(
     data: Optional[Union[Mapping[str, str], bytes]] = None,
@@ -110,7 +113,7 @@ def make_payload(
             if isinstance(data, bytes):
                 raise TypeError("`data` cannot be bytes when `files` is used")
             files = {**data, **files}
-        return make_multipart_payload_from_request_files(files)
+        return MultipartFormData(make_multipart_parts_from_request_files(files))
 
     if data is not None:
         if json is not None:
