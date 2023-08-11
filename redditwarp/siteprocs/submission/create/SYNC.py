@@ -20,6 +20,11 @@ class Create:
         ("""
             Create a text post.
 
+            Use the following code to get the ID36 of the newly created post::
+
+                client.p.submission.create.text(...)
+                id36 = client.last_value['json']['data']['id']
+
             .. .PARAMETERS
 
             :param `str` sr:
@@ -99,6 +104,15 @@ class Create:
         ("""Create a link post.
 
             Behaves similarly to :meth:`.text`.
+
+            When linking to non-upload-lease resource locations, it is possible
+            to get the ID36 of the newly created post using the following code::
+
+                client.p.submission.create.text(...)
+                id36 = client.last_value['json']['data']['id']
+
+            If the given link is an upload-lease resource location, a `KeyError` will
+            occur upon the lookup of `'id'`.
 
             .. .PARAMETERS
 
@@ -181,6 +195,11 @@ class Create:
 
             Behaves similarly to :meth:`.text`.
 
+            Use the following code to get the ID36 of the newly created post::
+
+                client.p.submission.create.text(...)
+                id36 = client.last_value['json']['data']['id'][3:]
+
             .. .PARAMETERS
 
             :(parameters): Similar to :meth:`.text`.
@@ -201,6 +220,11 @@ class Create:
         ("""Create a poll post.
 
             Behaves similarly to :meth:`.text`.
+
+            Use the following code to get the ID36 of the newly created post::
+
+                client.p.submission.create.text(...)
+                id36 = client.last_value['json']['data']['id'][3:]
 
             .. .PARAMETERS
 
@@ -228,6 +252,11 @@ class Create:
         ("""Create a crosspost.
 
             Behaves similarly to :meth:`.text`.
+
+            Use the following code to get the ID36 of the newly created post::
+
+                client.p.submission.create.text(...)
+                id36 = client.last_value['json']['data']['id']
 
             .. .PARAMETERS
 

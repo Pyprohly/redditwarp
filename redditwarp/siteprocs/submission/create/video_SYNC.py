@@ -1,32 +1,10 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, TypeVar, Protocol, Union, Mapping, Iterable
+from typing import TYPE_CHECKING, Optional, Iterable
 if TYPE_CHECKING:
     from ....client_SYNC import Client
-    from ....types import JSON_ro
-
-_YIntOrStr = TypeVar('_YIntOrStr', int, str)
-_YIntOrStr_co = TypeVar('_YIntOrStr_co', int, str, covariant=True)
 
 class Video:
-    class GenericOverload(Protocol[_YIntOrStr_co]):
-        def __call__(self,
-            sr: str,
-            title: str,
-            body: Union[str, Mapping[str, JSON_ro]],
-            *,
-            reply_notifications: bool = True,
-            spoiler: bool = False,
-            nsfw: bool = False,
-            oc: bool = False,
-            collection_uuid: Optional[str] = None,
-            flair_uuid: Optional[str] = None,
-            flair_text: Optional[str] = None,
-            event_start: Optional[str] = None,
-            event_end: Optional[str] = None,
-            event_tz: Optional[str] = None,
-        ) -> _YIntOrStr_co: ...
-
     def __init__(self, client: Client) -> None:
         self._client: Client = client
 

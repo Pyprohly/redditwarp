@@ -5,13 +5,12 @@ if TYPE_CHECKING:
     from ..handler_ASYNC import Handler
     from ..send_params import SendParams
     from ..exchange import Exchange
-    from ..payload import URLEncodedFormData, MultipartFormData
     from ..types import RequestFiles
 
 from collections.abc import MutableMapping, MutableSequence
 
 from ..delegating_handler_ASYNC import DelegatingHandler
-from ..payload import make_multipart_parts_from_request_files
+from ..payload import URLEncodedFormData, MultipartFormData, make_multipart_parts_from_request_files
 
 
 @final
