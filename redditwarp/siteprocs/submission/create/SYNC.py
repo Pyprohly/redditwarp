@@ -120,10 +120,6 @@ class Create:
 
             :param `str` url:
                 A URL.
-            :param `bool` resubmit:
-                When the "Restrict how often the same link can be posted" content control
-                setting is enabled, if a link with the same URL has already been submitted
-                then an `ALREADY_SUB` API error would be returned unless this field is true.
 
             .. .RETURNS
 
@@ -136,9 +132,6 @@ class Create:
             :raises redditwarp.exceptions.RedditError:
                 + `NO_URL`:
                     The `link` parameter was not specified, or the URL is invalid.
-                + `ALREADY_SUB`:
-                    The given link has already been submitted to the subreddit.
-                    See parameter `resubmit`.
             """)
         self.image: Image = Image(client)
         ("""Create an image post.

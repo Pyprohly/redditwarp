@@ -24,7 +24,6 @@ class Link:
         event_start: Optional[str] = None,
         event_end: Optional[str] = None,
         event_tz: Optional[str] = None,
-        resubmit: Optional[bool] = True,
     ) -> None:
         def g() -> Iterable[tuple[str, str]]:
             yield ('kind', 'link')
@@ -32,7 +31,6 @@ class Link:
             yield ('title', title)
             yield ('url', link)
             if body is not None: yield ('text', body)
-            if resubmit is not None: yield ('resubmit', '01'[resubmit])
             if reply_notifications is not None: yield ('sendreplies', '01'[reply_notifications])
             if spoiler is not None: yield ('spoiler', '01'[spoiler])
             if nsfw is not None: yield ('nsfw', '01'[nsfw])
