@@ -12,13 +12,13 @@ class Poll:
     def __call__(self,
         sr: str,
         title: str,
-        body: str,
         options: Sequence[str],
         duration: int,
         *,
-        reply_notifications: bool = True,
-        spoiler: bool = False,
-        nsfw: bool = False,
+        body: Optional[str] = None,
+        reply_notifications: Optional[bool] = True,
+        spoiler: Optional[bool] = False,
+        nsfw: Optional[bool] = False,
         collection_uuid: Optional[str] = None,
         flair_uuid: Optional[str] = None,
         flair_text: Optional[str] = None,
@@ -29,17 +29,17 @@ class Poll:
         def g() -> Iterable[tuple[str, JSON_ro]]:
             yield ('sr', sr)
             yield ('title', title)
-            yield ('text', body)
-            yield ('options', options)
+            yield ('options', list(options))
             yield ('duration', duration)
-            yield ('sendreplies', reply_notifications)
-            if spoiler: yield ('spoiler', True)
-            if nsfw: yield ('nsfw', True)
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
+            if body is not None: yield ('text', body)
+            if reply_notifications is not None: yield ('sendreplies', reply_notifications)
+            if spoiler is not None: yield ('spoiler', spoiler)
+            if nsfw is not None: yield ('nsfw', nsfw)
+            if collection_uuid is not None: yield ('collection_id', collection_uuid)
+            if flair_uuid is not None: yield ('flair_id', flair_uuid)
+            if flair_text is not None: yield ('flair_text', flair_text)
+            if event_start is not None: yield ('event_start', event_start)
+            if event_end is not None: yield ('event_end', event_end)
+            if event_tz is not None: yield ('event_tz', event_tz)
 
         return self._client.request('POST', '/api/submit_poll_post', json=dict(g()))

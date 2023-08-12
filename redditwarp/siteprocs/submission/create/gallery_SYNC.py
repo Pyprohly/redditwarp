@@ -15,10 +15,11 @@ class Gallery:
         title: str,
         items: Sequence[GalleryItem],
         *,
-        reply_notifications: bool = True,
-        spoiler: bool = False,
-        nsfw: bool = False,
-        oc: bool = False,
+        body: Optional[str] = None,
+        reply_notifications: Optional[bool] = True,
+        spoiler: Optional[bool] = False,
+        nsfw: Optional[bool] = False,
+        oc: Optional[bool] = False,
         collection_uuid: Optional[str] = None,
         flair_uuid: Optional[str] = None,
         flair_text: Optional[str] = None,
@@ -39,15 +40,16 @@ class Gallery:
             yield ('sr', sr)
             yield ('title', title)
             yield ('items', gallery_items)
-            yield ('sendreplies', reply_notifications)
-            if spoiler: yield ('spoiler', True)
-            if nsfw: yield ('nsfw', True)
-            if oc: yield ('original_content', True)
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
+            if body is not None: yield ('text', body)
+            if reply_notifications is not None: yield ('sendreplies', reply_notifications)
+            if spoiler is not None: yield ('spoiler', spoiler)
+            if nsfw is not None: yield ('nsfw', nsfw)
+            if oc is not None: yield ('original_content', oc)
+            if collection_uuid is not None: yield ('collection_id', collection_uuid)
+            if flair_uuid is not None: yield ('flair_id', flair_uuid)
+            if flair_text is not None: yield ('flair_text', flair_text)
+            if event_start is not None: yield ('event_start', event_start)
+            if event_end is not None: yield ('event_end', event_end)
+            if event_tz is not None: yield ('event_tz', event_tz)
 
         return self._client.request('POST', '/api/submit_gallery_post', json=dict(g()))

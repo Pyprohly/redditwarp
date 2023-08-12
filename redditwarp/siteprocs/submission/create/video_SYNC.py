@@ -14,10 +14,11 @@ class Video:
         link: str,
         thumbnail: str,
         *,
-        reply_notifications: bool = True,
-        spoiler: bool = False,
-        nsfw: bool = False,
-        oc: bool = False,
+        body: Optional[str] = None,
+        reply_notifications: Optional[bool] = True,
+        spoiler: Optional[bool] = False,
+        nsfw: Optional[bool] = False,
+        oc: Optional[bool] = False,
         collection_uuid: Optional[str] = None,
         flair_uuid: Optional[str] = None,
         flair_text: Optional[str] = None,
@@ -32,15 +33,16 @@ class Video:
             yield ('title', title)
             yield ('url', link)
             yield ('video_poster_url', thumbnail)
-            yield ('sendreplies', '01'[reply_notifications])
-            if spoiler: yield ('spoiler', '1')
-            if nsfw: yield ('nsfw', '1')
-            if oc: yield ('original_content', '1')
-            if collection_uuid: yield ('collection_id', collection_uuid)
-            if flair_uuid: yield ('flair_id', flair_uuid)
-            if flair_text: yield ('flair_text', flair_text)
-            if event_start: yield ('event_start', event_start)
-            if event_end: yield ('event_end', event_end)
-            if event_tz: yield ('event_tz', event_tz)
+            if body is not None: yield ('text', body)
+            if reply_notifications is not None: yield ('sendreplies', '01'[reply_notifications])
+            if spoiler is not None: yield ('spoiler', '01'[spoiler])
+            if nsfw is not None: yield ('nsfw', '01'[nsfw])
+            if oc is not None: yield ('original_content', '01'[oc])
+            if collection_uuid is not None: yield ('collection_id', collection_uuid)
+            if flair_uuid is not None: yield ('flair_id', flair_uuid)
+            if flair_text is not None: yield ('flair_text', flair_text)
+            if event_start is not None: yield ('event_start', event_start)
+            if event_end is not None: yield ('event_end', event_end)
+            if event_tz is not None: yield ('event_tz', event_tz)
 
         self._client.request('POST', '/api/submit', data=dict(g()))
