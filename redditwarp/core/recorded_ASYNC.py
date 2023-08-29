@@ -24,6 +24,10 @@ class Recorded(DelegatingHandler):
         ("")
         self.last_transfer: Optional[tuple[Requisition, Exchange]] = None
         ("")
+        self.last_request: Optional[Request] = None
+        ("")
+        self.last_response: Optional[Response] = None
+        ("")
         self.last_requisition_queue: MutableSequence[Requisition] = deque(maxlen=16)
         ("")
         self.last_exchange_queue: MutableSequence[Exchange] = deque(maxlen=16)
@@ -32,14 +36,22 @@ class Recorded(DelegatingHandler):
         ("")
         self.last_transfer_queue: MutableSequence[tuple[Requisition, Exchange]] = deque(maxlen=16)
         ("")
+        self.last_request_queue: MutableSequence[Request] = deque(maxlen=16)
+        ("")
+        self.last_response_queue: MutableSequence[Response] = deque(maxlen=16)
+        ("")
 
     def clear(self) -> None:
         self.last_requisition = None
         self.last_exchange = None
+        self.last_request = None
+        self.last_response = None
         self.last_transmit = None
         self.last_transfer = None
         self.last_requisition_queue.clear()
         self.last_exchange_queue.clear()
+        self.last_request_queue.clear()
+        self.last_response_queue.clear()
         self.last_transmit_queue.clear()
         self.last_transfer_queue.clear()
 
@@ -54,11 +66,17 @@ class Recorded(DelegatingHandler):
             self.last_transmit_queue.append(self.last_transmit)
             if exchange is None:
                 self.last_exchange = None
+                self.last_request = None
+                self.last_response = None
                 self.last_transfer = None
             else:
                 self.last_exchange = exchange
+                self.last_request = exchange.request
+                self.last_response = exchange.response
                 self.last_transfer = (p.requisition, exchange)
                 self.last_exchange_queue.append(self.last_exchange)
+                self.last_request_queue.append(self.last_request)
+                self.last_response_queue.append(self.last_response)
                 self.last_transfer_queue.append(self.last_transfer)
         if exchange is None:
             raise Exception
@@ -75,16 +93,10 @@ class Last:
         return self.recorder.last_exchange
     @property
     def request(self) -> Optional[Request]:
-        xchg = self.recorder.last_exchange
-        if xchg is None:
-            return None
-        return xchg.request
+        return self.recorder.last_request
     @property
     def response(self) -> Optional[Response]:
-        xchg = self.recorder.last_exchange
-        if xchg is None:
-            return None
-        return xchg.response
+        return self.recorder.last_response
     @property
     def transmit(self) -> Optional[tuple[Requisition, Optional[Exchange]]]:
         return self.recorder.last_transmit
@@ -97,6 +109,12 @@ class Last:
     @property
     def exchange_queue(self) -> MutableSequence[Exchange]:
         return self.recorder.last_exchange_queue
+    @property
+    def request_queue(self) -> MutableSequence[Request]:
+        return self.recorder.last_request_queue
+    @property
+    def response_queue(self) -> MutableSequence[Response]:
+        return self.recorder.last_response_queue
     @property
     def transmit_queue(self) -> MutableSequence[tuple[Requisition, Optional[Exchange]]]:
         return self.recorder.last_transmit_queue
