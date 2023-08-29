@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
     from ...http.handler_ASYNC import Handler
+    from ...http.transport.connector_ASYNC import Connector
 
 from ...core.http_client_ASYNC import HTTPClient
 from ...core.rate_limited_ASYNC import RateLimited
@@ -39,8 +40,12 @@ class RedditHTTPClient(HTTPClient):
         self._authorizer = value
 
 
-def build_reddit_http_client() -> RedditHTTPClient:
-    connector = new_connector()
+def build_reddit_http_client(
+    *,
+    connector: Optional[Connector] = None,
+) -> RedditHTTPClient:
+    if connector is None:
+        connector = new_connector()
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     http = BaseHTTPClient(ApplyDefaultHeaders(connector, headers))

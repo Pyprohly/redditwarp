@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Optional, MutableMapping, Callable, ContextMan
 if TYPE_CHECKING:
     from ..http.send_params import SendParams
     from ..http.exchange import Exchange
+    from ..http.transport.connector_SYNC import Connector
 
 from contextvars import ContextVar
 
@@ -113,8 +114,11 @@ def build_reddit_http_client(
     client_id: str,
     client_secret: str,
     grant: AuthorizationGrant,
+    *,
+    connector: Optional[Connector] = None,
 ) -> RedditHTTPClient:
-    connector = new_connector()
+    if connector is None:
+        connector = new_connector()
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     token_client = RedditTokenObtainmentClient(
@@ -134,8 +138,11 @@ def build_reddit_http_client(
 
 def build_reddit_http_client_from_access_token(
     access_token: str,
+    *,
+    connector: Optional[Connector] = None,
 ) -> RedditHTTPClient:
-    connector = new_connector()
+    if connector is None:
+        connector = new_connector()
     ua = get_user_agent(module_member=connector)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     authorizer = Authorizer(token=Token(access_token))
