@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 
 from .datamemento import DatamementoPropertiesMixin
+from ..util.base_conversion import to_base36
 
 
 class ConversationProgress(IntEnum):
@@ -38,10 +39,26 @@ class ModmailSubreddit(DatamementoPropertiesMixin):
 class ConversationInfo(DatamementoPropertiesMixin):
     @dataclass(repr=False, eq=False)
     class LegacyMessage:
-        id: int
         idn: int
         id36: str
         link: str
+
+    @dataclass(repr=False, eq=False)
+    class Participant:
+        d: Mapping[str, Any]
+        idn: int
+        id36: str
+        name: str
+        is_admin: bool
+        is_op: bool
+        is_approved: bool
+
+    @dataclass(repr=False, eq=False)
+    class ParticipantSubreddit:
+        d: Mapping[str, Any]
+        idn: int
+        id36: str
+        name: str
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         self.d: Mapping[str, Any] = d
@@ -92,9 +109,7 @@ class ConversationInfo(DatamementoPropertiesMixin):
         if (x := d['legacyFirstMessageId']) is not None:
             self.legacy_message = self.LegacyMessage(
                 id36=x,
-                idn=(idn := int(x, 36)),
-                # https://github.com/python/mypy/issues
-                id=idn,  # type: ignore[has-type]
+                idn=int(x, 36),
                 link="https://www.reddit.com/message/messages/" + x,
             )
 
@@ -121,6 +136,39 @@ class ConversationInfo(DatamementoPropertiesMixin):
         ("""
             ID of the subreddit associated with this conversation.
             """)
+
+        self.participant: Optional[ConversationInfo.Participant] = None
+        ("""
+            The target user of this conversation.
+
+            Value `None` if this conversation is a moderator discussion (i.e., :attr:`internal` is true),
+            or if it is a to-subreddit conversation from the perspective of a user.
+            """)
+        if (d0 := d['participant']):
+            self.participant = self.Participant(
+                d=d0,
+                idn=(idn := d0['id']),
+                id36=to_base36(idn),
+                name=d0['name'],
+                is_admin=d0['isAdmin'],
+                is_op=d0['isOp'],
+                is_approved=d0['isApproved'],
+            )
+
+        self.participant_subreddit: Optional[ConversationInfo.ParticipantSubreddit] = None
+        ("""
+            Information about the relevant subreddit, if applicable.
+
+            Value `None` if this conversation is a moderator discussion (i.e., :attr:`internal` is true),
+            or if the modmail conversation was initiated directly from a user.
+            """)
+        if (d0 := d['participantSubreddit']):
+            self.participant_subreddit = self.ParticipantSubreddit(
+                d=d0,
+                idn=(idn := d0['id']),
+                id36=to_base36(idn),
+                name=d0['name'],
+            )
 
 class Message(DatamementoPropertiesMixin):
     def __init__(self, d: Mapping[str, Any]) -> None:
@@ -378,30 +426,20 @@ class ConversationAggregate:
     ("""
         Information about the conversation.
         """)
-    messages: Sequence[Message]
-    ("""
-        Conversation messages.
-        """)
-    mod_actions: Sequence[ModAction]
-    ("""
-        Conversation mod actions.
-        """)
     history: Sequence[object]
     ("""
         Conversation entries.
 
         Objects are either :attr:`.Message` or :attr:`.ModAction` instances.
         """)
-
-@dataclass(repr=False, eq=False, frozen=True)
-class UserDossierConversationAggregate(ConversationAggregate):
-    user_dossier: UserDossier
+    messages: Sequence[Message]
     ("""
-        Information about the target user.
+        Conversation messages.
         """)
-
-@dataclass(repr=False, eq=False, frozen=True)
-class OptionalUserDossierConversationAggregate(ConversationAggregate):
+    actions: Sequence[ModAction]
+    ("""
+        Conversation mod actions.
+        """)
     user_dossier: Optional[UserDossier]
     ("""
         Information about the target user.

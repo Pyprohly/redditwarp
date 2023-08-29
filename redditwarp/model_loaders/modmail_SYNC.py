@@ -10,8 +10,6 @@ from ..models.modmail_SYNC import (
     ModAction,
     UserDossier,
     ConversationAggregate,
-    UserDossierConversationAggregate,
-    OptionalUserDossierConversationAggregate,
 )
 
 def load_conversation_info(d: Mapping[str, Any], client: Client) -> ConversationInfo:
@@ -28,90 +26,22 @@ def load_user_dossier(d: Mapping[str, Any]) -> UserDossier:
 
 
 def load_conversation_aggregate(
-    conversation_data: Mapping[str, Any],
-    messages_mapping_data: Mapping[str, Any],
-    mod_actions_mapping_data: Mapping[str, Any],
+    data: Mapping[str, Any],
     *,
     client: Client,
 ) -> ConversationAggregate:
-    conversation = load_conversation_info(conversation_data, client)
+    conversation_data: Mapping[str, Any] = data['conversation']
+    messages_mapping_data: Mapping[str, Any] = data['messages']
+    actions_mapping_data: Mapping[str, Any] = data['modActions']
+    optional_user_dossier_data: Optional[Mapping[str, Any]] = data['user'] or None
 
-    messages: MutableSequence[Message] = []
-    mod_actions: MutableSequence[ModAction] = []
-    history: MutableSequence[object] = []
-
-    convo_references = conversation_data['objIds']
-    for convo_ref in convo_references:
-        key = convo_ref['key']
-        id36 = convo_ref['id']
-
-        convo_obj: object = None
-        if key == 'messages':
-            message_data = messages_mapping_data[id36]
-            convo_obj = load_message(message_data, client)
-            messages.append(convo_obj)
-        elif key == 'modActions':
-            mod_action_data = mod_actions_mapping_data[id36]
-            convo_obj = load_mod_action(mod_action_data)
-            mod_actions.append(convo_obj)
-
-        if convo_obj is None:
-            raise Exception('unknown modmail object type encountered')
-        history.append(convo_obj)
-
-    return ConversationAggregate(conversation, messages, mod_actions, history)
-
-def load_user_dossier_conversation_aggregate(
-    conversation_data: Mapping[str, Any],
-    messages_mapping_data: Mapping[str, Any],
-    mod_actions_mapping_data: Mapping[str, Any],
-    user_dossier_data: Mapping[str, Any],
-    *,
-    client: Client,
-) -> UserDossierConversationAggregate:
-    conversation = load_conversation_info(conversation_data, client)
-    user_dossier = load_user_dossier(user_dossier_data)
-
-    messages: MutableSequence[Message] = []
-    mod_actions: MutableSequence[ModAction] = []
-    history: MutableSequence[object] = []
-
-    convo_references = conversation_data['objIds']
-    for convo_ref in convo_references:
-        key = convo_ref['key']
-        id36 = convo_ref['id']
-
-        convo_obj: object = None
-        if key == 'messages':
-            message_data = messages_mapping_data[id36]
-            convo_obj = load_message(message_data, client)
-            messages.append(convo_obj)
-        elif key == 'modActions':
-            mod_action_data = mod_actions_mapping_data[id36]
-            convo_obj = load_mod_action(mod_action_data)
-            mod_actions.append(convo_obj)
-
-        if convo_obj is None:
-            raise Exception('unknown modmail object type encountered')
-        history.append(convo_obj)
-
-    return UserDossierConversationAggregate(conversation, messages, mod_actions, history, user_dossier)
-
-def load_optional_user_dossier_conversation_aggregate(
-    conversation_data: Mapping[str, Any],
-    messages_mapping_data: Mapping[str, Any],
-    mod_actions_mapping_data: Mapping[str, Any],
-    optional_user_dossier_data: Optional[Mapping[str, Any]],
-    *,
-    client: Client,
-) -> OptionalUserDossierConversationAggregate:
     conversation = load_conversation_info(conversation_data, client)
     user_dossier = None
-    if optional_user_dossier_data is not None:
+    if optional_user_dossier_data:
         user_dossier = load_user_dossier(optional_user_dossier_data)
 
     messages: MutableSequence[Message] = []
-    mod_actions: MutableSequence[ModAction] = []
+    actions: MutableSequence[ModAction] = []
     history: MutableSequence[object] = []
 
     convo_references = conversation_data['objIds']
@@ -125,12 +55,18 @@ def load_optional_user_dossier_conversation_aggregate(
             convo_obj = load_message(message_data, client)
             messages.append(convo_obj)
         elif key == 'modActions':
-            mod_action_data = mod_actions_mapping_data[id36]
+            mod_action_data = actions_mapping_data[id36]
             convo_obj = load_mod_action(mod_action_data)
-            mod_actions.append(convo_obj)
+            actions.append(convo_obj)
 
         if convo_obj is None:
             raise Exception('unknown modmail object type encountered')
         history.append(convo_obj)
 
-    return OptionalUserDossierConversationAggregate(conversation, messages, mod_actions, history, user_dossier)
+    return ConversationAggregate(
+        info=conversation,
+        history=history,
+        messages=messages,
+        actions=actions,
+        user_dossier=user_dossier,
+    )

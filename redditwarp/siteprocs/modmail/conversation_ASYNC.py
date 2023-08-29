@@ -11,20 +11,8 @@ from ...iterators.chunking import chunked
 from ...iterators.call_chunk_calling_async_iterator import CallChunkCallingAsyncIterator
 from ...iterators.call_chunk_chaining_async_iterator import CallChunkChainingAsyncIterator
 from ...iterators.async_call_chunk import AsyncCallChunk
-from ...models.modmail_ASYNC import (
-    ConversationInfo,
-    Message,
-    ConversationAggregate,
-    UserDossierConversationAggregate,
-    OptionalUserDossierConversationAggregate,
-)
-from ...model_loaders.modmail_ASYNC import (
-    load_conversation_info,
-    load_message,
-    load_conversation_aggregate,
-    load_user_dossier_conversation_aggregate,
-    load_optional_user_dossier_conversation_aggregate,
-)
+from ...models.modmail_ASYNC import ConversationAggregate
+from ...model_loaders.modmail_ASYNC import load_conversation_aggregate
 
 _YIntOrStr = TypeVar('_YIntOrStr', int, str)
 
@@ -32,7 +20,7 @@ class ConversationProcedures:
     def __init__(self, client: Client) -> None:
         self._client = client
 
-    async def fetch(self, idy: Union[int, str], *, mark_read: bool = False) -> OptionalUserDossierConversationAggregate:
+    async def fetch(self, idy: Union[int, str], *, mark_read: bool = False) -> ConversationAggregate:
         """Get a conversation.
 
         .. .PARAMETERS
@@ -46,7 +34,7 @@ class ConversationProcedures:
 
         .. .RETURNS
 
-        :rtype: :class:`~.models.modmail_ASYNC.OptionalUserDossierConversationAggregate`
+        :rtype: :class:`~.models.modmail_ASYNC.ConversationAggregate`
 
         .. .RAISES
 
@@ -60,16 +48,10 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('GET', f'/api/mod/conversations/{id36}')
-        return load_optional_user_dossier_conversation_aggregate(
-            root['conversation'],
-            root['messages'],
-            root['modActions'],
-            root['user'] or None,
-            client=self._client,
-        )
+        return load_conversation_aggregate(root['conversation'], client=self._client)
 
-    async def create(self, sr: str, to: str, subject: str, body: str, *, hidden: bool = False) -> tuple[ConversationInfo, Message]:
-        """Get a conversation.
+    async def create_to_user(self, sr: str, to: str, subject: str, body: str, *, hidden: bool = False) -> ConversationAggregate:
+        """Create a to-user conversation.
 
         .. .PARAMETERS
 
@@ -77,8 +59,6 @@ class ConversationProcedures:
             The name of the subreddit in which to create the conversation for.
         :param `str` to:
             The modmail recipient name.
-
-            To create a moderator conversation, specify an empty string value.
 
             If the specified user is a moderator of the subreddit, this parameter
             is ignored and an internal moderator conversation is created instead.
@@ -93,7 +73,7 @@ class ConversationProcedures:
 
         .. .RETURNS
 
-        :rtype: `tuple`\\[:class:`~.models.modmail_ASYNC.ConversationInfo`, :class:`~.models.modmail_ASYNC.Message`]
+        :rtype: :class:`~.models.modmail_ASYNC.ConversationAggregate`
 
         .. .RAISES
 
@@ -101,9 +81,9 @@ class ConversationProcedures:
             + `USER_REQUIRED`:
                 There is no user context.
             + `BAD_SR_NAME`:
-                The specified subreddit was empty.
+                The specified source subreddit was empty.
             + `SUBREDDIT_NOEXIST`:
-                The specified subreddit does not exist.
+                The specified source subreddit does not exist.
             + `NO_TEXT`:
                - The `subject` was empty.
                - The `body` was empty.
@@ -116,11 +96,49 @@ class ConversationProcedures:
         """
         data = {'srName': sr, 'to': to, 'subject': subject, 'body': body, 'isAuthorHidden': '01'[hidden]}
         root = await self._client.request('POST', '/api/mod/conversations', data=data)
-        conversation_data = root['conversation']
-        conversation = load_conversation_info(conversation_data, self._client)
-        message_id36 = conversation_data['objIds'][0]['id']
-        message = load_message(root['messages'][message_id36], self._client)
-        return (conversation, message)
+        return load_conversation_aggregate(root, client=self._client)
+
+    async def create_to_subreddit(self, sr: str, to: str, subject: str, body: str) -> ConversationAggregate:
+        """Create a to-subreddit conversation.
+
+        .. .PARAMETERS
+
+        :param `str` sr:
+            The name of the subreddit in which to create the conversation for.
+        :param `str` to:
+            The target subreddit name.
+
+            Specify an empty string to create an internal moderator conversation.
+        :param `str` subject:
+            A subject line for the conversation.
+        :param `str` body:
+            Markdown text.
+
+        .. .RETURNS
+
+        :rtype: :class:`~.models.modmail_ASYNC.ConversationAggregate`
+
+        .. .RAISES
+
+        :raises redditwarp.exceptions.RedditError:
+            + `USER_REQUIRED`:
+                There is no user context.
+            + `BAD_SR_NAME`:
+                The specified source subreddit was empty.
+            + `SUBREDDIT_NOEXIST`:
+                The specified source or target subreddit does not exist.
+            + `NO_TEXT`:
+               - The `subject` was empty.
+               - The `body` was empty.
+
+            + `TOO_LONG`:
+               - The value specified for `subject` must be 100 characters or fewer
+                 (despite error message saying under 100).
+               - The value specified for `body` must be 10000 characters or fewer
+                 (despite error message saying under 10000).
+        """
+        to = to and ('r/' + to)
+        return await self.create_to_user(sr, to, subject, body)
 
     async def reply(self, idy: Union[int, str], body: str, *, hidden: bool = False, internal: bool = False) -> ConversationAggregate:
         """Create a new message on an existing conversation.
@@ -162,15 +180,7 @@ class ConversationProcedures:
         data = {'body': body, 'isAuthorHidden': '01'[hidden], 'isInternal': '01'[internal]}
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}', data=data)
-        conversation_data = root['conversation']
-        messages_mapping_data = root['messages']
-        mod_actions_mapping_data = conversation_data['modActions']
-        return load_conversation_aggregate(
-            conversation_data,
-            messages_mapping_data,
-            mod_actions_mapping_data,
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
     async def mark_read(self, idy: Union[int, str]) -> None:
         """Mark a conversation as read.
@@ -188,6 +198,8 @@ class ConversationProcedures:
         :raises redditwarp.exceptions.RedditError:
             + `USER_REQUIRED`:
                 There is no user context.
+            + `UNKNOWN_ERROR`:
+                The string ID contained invalid characters.
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         data = {'conversationIds': id36}
@@ -216,6 +228,9 @@ class ConversationProcedures:
                 There is no user context.
             + `INVALID_CONVERSATION_ID`:
                 You do not have permission to mark as read one of the specified conversations.
+                The operation is aborted and none of the items will be processed.
+            + `UNKNOWN_ERROR`:
+                The string ID contained invalid characters.
                 The operation is aborted and none of the items will be processed.
         """
         # https://github.com/python/mypy/issues/13408
@@ -277,7 +292,12 @@ class ConversationProcedures:
             subrs_str = ','.join(subrs)
             data = {'state': mailbox, 'entity': subrs_str}
             root = await self._client.request('POST', '/api/mod/conversations/bulk/read', data=data)
-            return root['conversation_ids']
+            conversation_ids = root['conversation_ids']
+            lst = []
+            for i in conversation_ids:
+                lhs, sep, rhs = i.partition('_')
+                lst.append(rhs if sep else lhs)
+            return lst
 
         def y_int(self, mailbox: str, subrs: Iterable[str]) -> CallChunkChainingAsyncIterator[int]:
             async def mass_mark_all_read(subrs: Sequence[str]) -> Sequence[int]:
@@ -354,12 +374,7 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/highlight')
-        return load_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
     async def unhighlight(self, idy: Union[int, str]) -> ConversationAggregate:
         """Unmark a conversation as highlighted.
@@ -368,12 +383,7 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('DELETE', f'/api/mod/conversations/{id36}/highlight')
-        return load_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
     async def archive(self, idy: Union[int, str]) -> ConversationAggregate:
         """Archive a conversation.
@@ -401,12 +411,7 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/archive')
-        return load_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
     async def unarchive(self, idy: Union[int, str]) -> ConversationAggregate:
         """Unmark a conversation as highlighted.
@@ -415,14 +420,9 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/unarchive')
-        return load_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def approve_user(self, idy: Union[int, str]) -> UserDossierConversationAggregate:
+    async def approve_user(self, idy: Union[int, str]) -> ConversationAggregate:
         """Approve the user associated with a conversation.
 
         .. .PARAMETERS
@@ -431,7 +431,7 @@ class ConversationProcedures:
 
         .. .RETURNS
 
-        :rtype: :class:`~.models.modmail_ASYNC.UserDossierConversationAggregate`
+        :rtype: :class:`~.models.modmail_ASYNC.ConversationAggregate`
 
         .. .RAISES
 
@@ -447,30 +447,18 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/approve')
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def unapprove_user(self, idy: Union[int, str]) -> UserDossierConversationAggregate:
+    async def unapprove_user(self, idy: Union[int, str]) -> ConversationAggregate:
         """Unapprove the user associated with a conversation.
 
         Behaves similarly to :meth:`.approve_user`.
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/disapprove')
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def mute_user_3d(self, idy: Union[int, str]) -> UserDossierConversationAggregate:
+    async def mute_user_3d(self, idy: Union[int, str]) -> ConversationAggregate:
         """Mute the user associated with a conversation for 3 days.
 
         .. .PARAMETERS
@@ -479,7 +467,7 @@ class ConversationProcedures:
 
         .. .RETURNS
 
-        :rtype: :class:`~.models.modmail_ASYNC.UserDossierConversationAggregate`
+        :rtype: :class:`~.models.modmail_ASYNC.ConversationAggregate`
 
         .. .RAISES
 
@@ -495,60 +483,36 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/mute', data={'num_hours': '72'})
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def mute_user_7d(self, idy: Union[int, str]) -> UserDossierConversationAggregate:
+    async def mute_user_7d(self, idy: Union[int, str]) -> ConversationAggregate:
         """Mute the user associated with a conversation for 7 days.
 
         Behaves similarly to :meth:`.mute_user_3d`.
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/mute', data={'num_hours': '168'})
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def mute_user_28d(self, idy: Union[int, str]) -> UserDossierConversationAggregate:
+    async def mute_user_28d(self, idy: Union[int, str]) -> ConversationAggregate:
         """Mute the user associated with a conversation for 28 days.
 
         Behaves similarly to :meth:`.mute_user_3d`.
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/mute', data={'num_hours': '672'})
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def unmute_user(self, idy: Union[int, str]) -> UserDossierConversationAggregate:
+    async def unmute_user(self, idy: Union[int, str]) -> ConversationAggregate:
         """Unmute the user associated with a conversation.
 
         Behaves similarly to :meth:`.mute_user_3d`.
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/unmute')
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def shorten_user_ban(self, idy: Union[int, str], duration: int) -> UserDossierConversationAggregate:
+    async def shorten_user_ban(self, idy: Union[int, str], duration: int) -> ConversationAggregate:
         """Switch a permanent ban to a temporary one of the user associated with a conversation.
 
         If the user is not permanently banned, an API error will be raised.
@@ -565,7 +529,7 @@ class ConversationProcedures:
 
         .. .RETURNS
 
-        :rtype: :class:`~.models.modmail_ASYNC.UserDossierConversationAggregate`
+        :rtype: :class:`~.models.modmail_ASYNC.ConversationAggregate`
 
         .. .RAISES
 
@@ -588,15 +552,9 @@ class ConversationProcedures:
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/temp_ban',
                 data={'duration': str(duration)})
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)
 
-    async def unban_user(self, idy: Union[int, str]) -> UserDossierConversationAggregate:
+    async def unban_user(self, idy: Union[int, str]) -> ConversationAggregate:
         """Unban the user associated with a conversation from the subreddit.
 
         .. .PARAMETERS
@@ -605,7 +563,7 @@ class ConversationProcedures:
 
         .. .RETURNS
 
-        :rtype: :class:`~.models.modmail_ASYNC.UserDossierConversationAggregate`
+        :rtype: :class:`~.models.modmail_ASYNC.ConversationAggregate`
 
         .. .RAISES
 
@@ -621,10 +579,4 @@ class ConversationProcedures:
         """
         id36 = x if isinstance((x := idy), str) else to_base36(x)
         root = await self._client.request('POST', f'/api/mod/conversations/{id36}/unban')
-        return load_user_dossier_conversation_aggregate(
-            root['conversations'],
-            root['messages'],
-            root['modActions'],
-            root['user'],
-            client=self._client,
-        )
+        return load_conversation_aggregate(root, client=self._client)

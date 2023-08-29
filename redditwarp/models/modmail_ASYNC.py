@@ -12,8 +12,6 @@ from .modmail import (
     ModAction as BaseModAction,
     UserDossier as BaseUserDossier,
     ConversationAggregate as BaseConversationAggregate,
-    UserDossierConversationAggregate as BaseUserDossierConversationAggregate,
-    OptionalUserDossierConversationAggregate as BaseOptionalUserDossierConversationAggregate,
 )
 
 class ConversationInfo(BaseConversationInfo):
@@ -48,14 +46,7 @@ class UserDossier(BaseUserDossier):
 @dataclass(repr=False, eq=False, frozen=True)
 class ConversationAggregate(BaseConversationAggregate):
     info: ConversationInfo
-    messages: Sequence[Message]
-    mod_actions: Sequence[ModAction]
     history: Sequence[object]
-
-@dataclass(repr=False, eq=False, frozen=True)
-class UserDossierConversationAggregate(ConversationAggregate, BaseUserDossierConversationAggregate):
-    user_dossier: UserDossier
-
-@dataclass(repr=False, eq=False, frozen=True)
-class OptionalUserDossierConversationAggregate(ConversationAggregate, BaseOptionalUserDossierConversationAggregate):
+    messages: Sequence[Message]
+    actions: Sequence[ModAction]
     user_dossier: Optional[UserDossier]
