@@ -2,7 +2,41 @@
 
 # Changelog
 
-## 1.1.0
+## 1.2.0 - 2023-08-29
+
+### Added
+
+- `ApplyFormData` and friends in new module `redditwarp.http.misc.apply_form_data_(A)SYNC`.
+- Parameter `body` to all post creation methods.
+- `client.http.last.response_queue`.
+- Fields `participant` and `participant_subreddit` to modmail `ConversationInfo` model.
+- `connector` parameter to `build_reddit_http_client` functions.
+
+### Changed
+
+- The rate limiting algorithm has been improved to be simpler and cleaner, and is now consistent
+  between both sync and async worlds.
+- Updated modmail section due to API changes.
+- The `mod_actions` attribute on `ConversationAggregate` has been renamed to `actions`.
+- The model loader function `load_conversation_aggregate` now takes a single data dictionary.
+
+### Removed
+
+- Legacy submission creation procedures `client.p.submission.create_*_post()`.
+  Use the `client.p.submission.create.*()` methods instead.
+- Return value from submission creation procedures.
+- The `resubmit` parameter from the link post creation procedure.
+- `client.p.modmail.conversation.create()`.
+  Use `.create_to_user()` or `.create_to_subreddit()` instead.
+- Modmail classes `*UserDossierConversationAggregate`.
+
+### Fixed
+
+- `TokenBucket` exceeding capacity when a negative consume value was used.
+- Cross post creation procedure `client.p.submission.create.cross()`.
+- Modmail procedures that broke due to changes in API.
+
+## 1.1.0 - 2023-05-15
 
 ### Added
 
@@ -28,13 +62,6 @@
   Many of the specialised upload lease classes are no longer needed and are aliased to the general
   upload lease class now.
 
-### Fixed
-
-- There was a bug in the docs for the BFS-2 tree traversal algorithm recipe causing output to be
-  reversed. The lines that use `pop()` should instead be `popleft()`.
-- Fix modmail streaming logic.
-- Add zero-arg constructor and `__reversed__` to `redditwarp.util.OrderedSet`.
-
 ### Changed
 
 - Many API procedures with single arguments `idn` have been renamed to `idy` to reflect the fact
@@ -51,6 +78,13 @@
 - ID extractor functions from stream maker modules. ID extraction is a stream-specific
   implementation detail.
 - Module `redditwarp.streaming.stream_(A)SYNC`.
+
+### Fixed
+
+- There was a bug in the docs for the BFS-2 tree traversal algorithm recipe causing output to be
+  reversed. The lines that use `pop()` should instead be `popleft()`.
+- Fix modmail streaming logic.
+- Add zero-arg constructor and `__reversed__` to `redditwarp.util.OrderedSet`.
 
 ## 1.0.1 - 2023-04-27
 
