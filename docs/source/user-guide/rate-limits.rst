@@ -9,21 +9,10 @@ Rate limits of the Reddit API
 The global rate limit
 ~~~~~~~~~~~~~~~~~~~~~
 
-The Reddit API employs a global rate limit that is typically applied on a
-per user basis. But for application-only grant types, it's per HTTP session.
+The Reddit API employs a global rate limit on a per client ID basis.
 
-The global rate limit is 600 requests per a 600 second window (600/600s), which
-equates to one request per second. It's 300/600s (1 request every 2 seconds)
-for application-only grant types.
-
-.. note::
-   Side note, the token server's rate limit is 300 requests over 600 seconds
-   (30 times per minute) according to the `x-ratelimit-*` headers.
-
-Interestingly, the global rate limits are not actively enforced by the servers
-and you will not receive an immediate error message if you go over the limit.
-Theoretically though, exceeding the global rate limit should result in 429 HTTP
-errors.
+The global rate limit is 996 requests per 600 second window (996/600s),
+or for application-only grant types it's 600/600s.
 
 The API rate limit headers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -76,34 +65,25 @@ Here is an example of dealing with a `RATELIMIT` API error::
 When can a 429 HTTP error occur?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is generally rare to receive a 429 HTTP error, and there are only a few
-specific situations where this error may occur.
-
-One such case is when using the `POST /api/morechildren` endpoint for comment
-tree traversals, and more than one concurrent call is made to this endpoint.
-Reddit disallows multiple simultaneous requests to this endpoint.
+Other than exceeding the global ratelimit, a 429 can occur when using the
+`POST /api/morechildren` endpoint for comment tree traversals and more than
+one concurrent call is made to this endpoint. Reddit disallows simultaneous
+requests to this endpoint.
 
 Another scenario where a 429 error might arise is if your user agent string
 contains the substring `curl` anywhere. Fortunately, there are few English
 words that contain this substring.
 
-How rate limiting is handled by the library
--------------------------------------------
+How rate limiting is handled by RedditWarp
+------------------------------------------
 
-You don't need to include sleep calls in your program to stay within the Reddit
-API's rate limits, as the library automatically handles rate limiting.
+The library automatically handles rate limiting and you shouldn't need to
+include sleep calls in your program to stay within Reddit's API limits.
 
-For the sync client, the wait time for each request is calculated by
-`x-ratelimit-reset` / `x-ratelimit-remaining`. However, there is additional
-logic in place that allows the first few requests to be sent immediately, which
-is particularly useful for interactive use.
-
-The async client uses a token bucket rate limiting algorithm with a capacity of
-10 and a refresh rate of 1 token per second. Of course, the global rate limit
-headers are still monitored though.
-
-You shouldn't have to wait more than 2 seconds for an API call under normal
-use.
+Both the sync and async clients use the same rate limiting logic, which is a
+token bucket algorithm. It allows the first few requests to be sent
+immediately, which is particularly useful for interactive use.
 
 Running multiple scripts under the same account is not advisable as it can
-confuse the rate limiting logic.
+confuse the rate limiting logic. Instead, try to automate a single account
+using asynchronous patterns within a single program.

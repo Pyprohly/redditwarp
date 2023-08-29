@@ -59,6 +59,11 @@ comments containing the string "`Hello World`".
 
 .. literalinclude:: _assets/basic_bot_script.py
 
+Before using this library to access the Reddit API, please see the
+`Reddit Data API Wiki`_ for rules, terms, and conditions.
+
+.. _Reddit Data API Wiki: https://support.reddithelp.com/hc/en-us/articles/16160319875092-Reddit-Data-API-Wiki
+
 If you intend to use this library to create a Reddit bot, please read the
 bottiquette_ before wreaking havoc all over the internet.
 
