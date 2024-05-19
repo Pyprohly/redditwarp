@@ -499,8 +499,10 @@ class GalleryPost(Submission):
 
     def __init__(self, d: Mapping[str, Any]) -> None:
         super().__init__(d)
-        self.gallery_link: str = d['url_overridden_by_dest']
-        ("")
+        self.gallery_link: str = d['url']
+        ("""
+            The URL of the gallery.
+            """)
 
         gallery_data_items: Sequence[Any] = ()
         if gallery_data := d.get('gallery_data'):
