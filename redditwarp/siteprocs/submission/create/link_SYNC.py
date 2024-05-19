@@ -42,4 +42,4 @@ class Link:
             if event_end is not None: yield ('event_end', event_end)
             if event_tz is not None: yield ('event_tz', event_tz)
 
-        return self._client.request('POST', '/api/submit', data=dict(g()))
+        self._client.request('POST', '/api/submit', data=dict(g()))
