@@ -25,7 +25,7 @@ class LoginProcedures:
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
-    async def do_legacy_web_login(self, username: str, password: str, otp: Optional[str] = None) -> tuple[str, str]:
+    async def do_legacy_web_login(self, username: str, password: str, otp: Optional[str] = None) -> None:
         def g() -> Iterable[tuple[str, str]]:
             yield ('user', username)
             yield ('passwd', password)
@@ -45,8 +45,6 @@ class LoginProcedures:
             raise OperationException('TWO_FA_REQUIRED')
 
         resp.ensure_successful_status()
-
-        return (d['cookie'], d['modhash'])
 
     async def do_modern_web_login(self, username: str, password: str, otp: Optional[str] = None) -> None:
         resp = await self._http.request('GET', 'https://www.reddit.com/login/')
@@ -75,7 +73,7 @@ class LoginProcedures:
 
         resp.ensure_successful_status()
 
-    async def do_android_mobile_login(self, username: str, password: str, otp: Optional[str] = None) -> tuple[int, str]:
+    async def do_android_mobile_login(self, username: str, password: str, otp: Optional[str] = None) -> None:
         epoch = int(time.time())
         ua = self._http.get_user_agent()
         vendor = get_device_id()
@@ -109,6 +107,3 @@ class LoginProcedures:
         raise_for_reddit_error(json_data.get('error'))
 
         resp.ensure_successful_status()
-
-        _, _, user_id36 = json_data['userId'].partition('_')
-        return (int(user_id36, 36), json_data['modhash'])
