@@ -264,8 +264,7 @@ class SubredditProcedures:
             full_id36s = map('t5_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             root = await self._client.request('GET', '/api/info', params={'id': ids_str})
-            # https://github.com/python/mypy/issues/13408
-            return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]  # type: ignore[return-value]
+            return [load_potentially_inaccessible_subreddit(i['data'], self._client) for i in root['data']['children']]
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk[Sequence[_YIntOrStr], Sequence[object]](mass_fetch, chunk) for chunk in chunked(ids, 100))
 

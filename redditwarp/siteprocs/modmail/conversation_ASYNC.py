@@ -233,8 +233,7 @@ class ConversationProcedures:
                 The string ID contained invalid characters.
                 The operation is aborted and none of the items will be processed.
         """
-        # https://github.com/python/mypy/issues/13408
-        async def mass_mark_read(ids: Sequence[_YIntOrStr]) -> None:  # type: ignore[return]
+        async def mass_mark_read(ids: Sequence[_YIntOrStr]) -> None:
             # https://github.com/python/mypy/issues/4134
             id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             ids_str = ','.join(id36s)
@@ -256,8 +255,7 @@ class ConversationProcedures:
 
         Behaves similarly to :meth:`.bulk_mark_read`.
         """
-        # https://github.com/python/mypy/issues/13408
-        async def mass_mark_unread(ids: Sequence[_YIntOrStr]) -> None:  # type: ignore[return]
+        async def mass_mark_unread(ids: Sequence[_YIntOrStr]) -> None:
             # https://github.com/python/mypy/issues/4134
             id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             ids_str = ','.join(id36s)

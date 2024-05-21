@@ -9,7 +9,6 @@ import asyncio
 # https://pypi.org/project/websockets/
 import websockets  # type: ignore[import]
 import websockets.legacy.client  # type: ignore[import]
-import websockets.typing  # type: ignore[import]
 import websockets.exceptions  # type: ignore[import]
 
 from ..reg_ASYNC import register
@@ -107,7 +106,7 @@ async def connect(
     elif timeout < 0:
         raise ValueError(f'invalid timeout value: {timeout}')
 
-    subp = cast(Optional[Sequence[websockets.typing.Subprotocol]], subprotocols if subprotocols else None)
+    subp = cast(Optional[Sequence[websockets.Subprotocol]], subprotocols if subprotocols else None)
     coro = websockets.legacy.client.connect(
         url,
         extra_headers=headers,

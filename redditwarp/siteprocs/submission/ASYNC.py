@@ -89,8 +89,7 @@ class SubmissionProcedures:
             full_id36s = map('t3_'.__add__, id36s)
             ids_str = ','.join(full_id36s)
             root = await self._client.request('GET', '/api/info', params={'id': ids_str})
-            # https://github.com/python/mypy/issues/13408
-            return [load_submission(i['data'], self._client) for i in root['data']['children']]  # type: ignore[return-value]
+            return [load_submission(i['data'], self._client) for i in root['data']['children']]
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk[Sequence[_YIntOrStr], Sequence[Submission]](mass_fetch, chunk) for chunk in chunked(ids, 100))
 
@@ -427,8 +426,7 @@ class SubmissionProcedures:
             + `400`:
                 If any of the IDs were not found.
         """
-        # https://github.com/python/mypy/issues/13408
-        async def mass_hide(ids: Sequence[_YIntOrStr]) -> None:  # type: ignore[return]
+        async def mass_hide(ids: Sequence[_YIntOrStr]) -> None:
             # https://github.com/python/mypy/issues/4134
             id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             full_id36s = map('t3_'.__add__, id36s)
@@ -442,8 +440,7 @@ class SubmissionProcedures:
 
         See :meth:`.bulk_hide`.
         """
-        # https://github.com/python/mypy/issues/13408
-        async def mass_unhide(ids: Sequence[_YIntOrStr]) -> None:  # type: ignore[return]
+        async def mass_unhide(ids: Sequence[_YIntOrStr]) -> None:
             # https://github.com/python/mypy/issues/4134
             id36s = ((x if isinstance((x := i), str) else to_base36(x)) for i in ids)  # type: ignore[arg-type]
             full_id36s = map('t3_'.__add__, id36s)

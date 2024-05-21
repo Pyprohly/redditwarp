@@ -186,11 +186,9 @@ class UserProcedures:
                 root = await self._client.request('GET', '/api/user_data_by_account_ids', params={'ids': ids_str})
             except http.exceptions.StatusCodeException as e:
                 if e.status_code == 404:
-                    # https://github.com/python/mypy/issues/13408
-                    return []  # type: ignore[return-value]
+                    return []
                 raise
-            # https://github.com/python/mypy/issues/13408
-            return [load_user_summary(v, k) for k, v in root.items()]  # type: ignore[return-value]
+            return [load_user_summary(v, k) for k, v in root.items()]
 
         return CallChunkChainingAsyncIterator(AsyncCallChunk[Sequence[_YIntOrStr], Sequence[UserSummary]](mass_fetch_by_id, idfs) for idfs in chunked(ids, 100))
 

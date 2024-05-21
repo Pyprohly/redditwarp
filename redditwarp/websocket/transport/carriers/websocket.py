@@ -93,7 +93,7 @@ class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
     def close(self, code: Optional[int] = 1000, reason: str = '', *, waitfor: float = -2) -> None:
         super().close(code, reason, waitfor=waitfor)
         try:
-            self.ws.shutdown()
+            self.ws.shutdown()  # type: ignore[no-untyped-call]
         except Exception as cause:
             raise exceptions.TransportError from cause
 
