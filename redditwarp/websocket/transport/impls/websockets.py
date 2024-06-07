@@ -11,16 +11,13 @@ import websockets  # type: ignore[import]
 import websockets.legacy.client  # type: ignore[import]
 import websockets.exceptions  # type: ignore[import]
 
-from ..reg_ASYNC import register
 from ...websocket_ASYNC import PartiallyImplementedWebSocket, DEFAULT_WAITTIME
 from ... import exceptions
 from ... import events
 from ...events import Frame, TextMessage, BytesMessage
-from ...const import Side, ConnectionState
+from ...const import ConnectionState
 
-class WebSocketClient(PartiallyImplementedWebSocket):
-    SIDE: int = Side.CLIENT
-
+class WebSocket(PartiallyImplementedWebSocket):
     def __init__(self, ws: websockets.legacy.client.WebSocketClientProtocol) -> None:
         super().__init__()
         self.ws: websockets.legacy.client.WebSocketClientProtocol = ws
@@ -97,7 +94,7 @@ async def connect(
     subprotocols: Sequence[str] = (),
     headers: Optional[Mapping[str, str]] = None,
     timeout: float = -2,
-) -> WebSocketClient:
+) -> WebSocket:
     t: Optional[float] = timeout
     if timeout == -2:
         t = DEFAULT_WAITTIME
@@ -119,16 +116,10 @@ async def connect(
     except Exception as cause:
         raise exceptions.TransportError from cause
 
-    wsc = WebSocketClient(ws)
+    wsc = WebSocket(ws)
     wsc.subprotocol = ws.subprotocol or ''
     return wsc
 
 
 name: str = websockets.__name__
 version: str = websockets.__version__  # type: ignore[attr-defined]
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    connect=connect,
-)

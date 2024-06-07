@@ -52,13 +52,11 @@ Select an HTTP library
 ----------------------
 
 If you have multiple HTTP libraries installed and want to force your RedditWarp
-program to use a particular one, add a line like the following to your
-program's `__main__` module.
+program to use a specific one, such as the Requests package, add the following
+code to your program's `__main__` module::
 
-::
+   import redditwarp.http.transport.SYNC, redditwarp.http.transport.impls.requests
+   redditwarp.http.transport.SYNC.set_transport_adapter_module(redditwarp.http.transport.impls.requests)
 
-   import redditwarp.http.transport.connectors.requests  # noqa: F401
-
-This line forces RedditWarp to use the Requests library as the HTTP transport.
-If Requests is not installed, a `ModuleNotFoundError` exception will be thrown
-on this line.
+If the Requests package is not installed, a `ModuleNotFoundError` exception
+will be raised upon importing `redditwarp.http.transport.impls.requests`.

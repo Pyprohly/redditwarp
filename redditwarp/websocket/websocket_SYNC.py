@@ -3,7 +3,7 @@ from typing import Union, Iterator, Optional, MutableSequence
 
 import time
 
-from .const import Opcode, ConnectionState, Side
+from .const import Opcode, ConnectionState
 from . import exceptions
 from . import events
 from .events import Frame, Message, BytesMessage, TextMessage
@@ -14,8 +14,6 @@ DEFAULT_WAITTIME: float = 10.
 
 
 class WebSocket:
-    SIDE: int = Side.NONE
-
     def __init__(self) -> None:
         self.default_waittime: float = DEFAULT_WAITTIME
         ("")

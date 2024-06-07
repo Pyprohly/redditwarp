@@ -41,7 +41,7 @@ import signal
 from functools import partial
 
 import redditwarp
-from redditwarp.http.transport.reg_SYNC import load_transport
+from redditwarp.http.transport.reg_SYNC import get_transport_adapter_module
 
 def get_client_cred_input(v: Optional[str], prompt: str, env: str) -> str:
     if v is None:
@@ -57,7 +57,8 @@ if not sys.flags.interactive:
         print('KeyboardInterrupt', file=sys.stderr)
         sys.exit(130)
 
-load_transport()
+# Raise here if no HTTP transport module is installed.
+get_transport_adapter_module()
 
 client_id = get_client_cred_input(
         (args.client_id_opt or args.client_id),

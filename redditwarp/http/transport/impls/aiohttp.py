@@ -1,8 +1,10 @@
 
 from __future__ import annotations
-from typing import Any, Optional
+from typing import Optional
 
-import httpx  # type: ignore[import]
+import asyncio
+
+import aiohttp  # type: ignore[import]
 
 from ... import exceptions
 from ... import payload
@@ -10,8 +12,7 @@ from ...send_params import SendParams
 from ...exchange import Exchange
 from ...request import Request
 from ...response import UResponse
-from ..reg_SYNC import register
-from ..connector_SYNC import Connector
+from ...connector_ASYNC import Connector as BaseConnector
 
 
 def _get_effective_timeout(v: float) -> float:
@@ -25,29 +26,38 @@ def _get_effective_follow_redirects(v: Optional[bool]) -> bool:
     return v
 
 
-class HttpxConnector(Connector):
+class AiohttpConnector(BaseConnector):
     def __init__(self,
-        client: httpx.Client,
+        session: aiohttp.ClientSession,
     ) -> None:
         super().__init__()
-        self.client: httpx.Client = client
+        self.session: aiohttp.ClientSession = session
         ("")
 
-    def _send(self, p: SendParams) -> Exchange:
+    async def _send(self, p: SendParams) -> Exchange:
         r = p.requisition
 
         etv = _get_effective_timeout(p.timeout)
-        timeout_obj = httpx.Timeout(etv, pool=20)
+
+        client_timeout = aiohttp.ClientTimeout(
+            total=etv,
+            connect=etv,
+            sock_connect=etv,
+            sock_read=etv,
+        )
         if etv == -1:
-            timeout_obj = httpx.Timeout(None, pool=20)
+            client_timeout = aiohttp.ClientTimeout(
+                total=None,
+                connect=None,
+                sock_connect=None,
+                sock_read=None,
+            )
 
         follow_redirects = _get_effective_follow_redirects(p.follow_redirects)
 
         headers: dict[str, str] = dict(r.headers)
-        data: Any = None
-        content: Optional[bytes] = None
-        json: Any = None
-        files: Any = None
+        data: object = None
+        json: object = None
 
         pld = r.payload
         if pld is None:
@@ -55,7 +65,7 @@ class HttpxConnector(Connector):
 
         elif isinstance(pld, payload.Bytes):
             headers['Content-Type'] = pld.get_media_type()
-            content = pld.data
+            data = pld.data
 
         elif isinstance(pld, payload.Text):
             headers['Content-Type'] = pld.get_media_type()
@@ -68,12 +78,12 @@ class HttpxConnector(Connector):
             data = dict(pld.data)
 
         elif isinstance(pld, payload.MultipartFormData):
-            files = {}
+            data = aiohttp.FormData()
             for pt in pld.parts:
                 if isinstance(pt, payload.MultipartFormData.TextField):
-                    files[pt.name] = (None, pt.text.encode(), None)
+                    data.add_field(pt.name, pt.text)
                 elif isinstance(pt, payload.MultipartFormData.FileField):
-                    files[pt.name] = (pt.filename, pt.file, pt.content_type)
+                    data.add_field(pt.name, pt.file, filename=pt.filename, content_type=pt.content_type)
                 else:
                     raise ValueError('unexpected multipart field type: ' + repr(pt))
 
@@ -81,45 +91,43 @@ class HttpxConnector(Connector):
             raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")
 
         try:
-            resp = self.client.request(
+            async with self.session.request(
                 method=r.verb,
                 url=r.url,
                 params=r.params,
                 headers=headers,
-                timeout=timeout_obj,
-                follow_redirects=follow_redirects,
+                timeout=client_timeout,
+                allow_redirects=follow_redirects,
                 data=data,
-                content=content,
                 json=json,
-                files=files,
-            )
-        except httpx.TimeoutException as cause:
+            ) as resp:
+                requ = resp.request_info
+                x_requ = Request(
+                    verb=requ.method,
+                    url=str(requ.real_url),
+                    headers=requ.headers,
+                    data=b'',
+                )
+                x_resp = UResponse(
+                    status=resp.status,
+                    headers=resp.headers,
+                    data=(await resp.content.read()),
+                    underlying_object=resp,
+                )
+                history = [
+                    UResponse(
+                        status=resp1.status,
+                        headers=resp1.headers,
+                        data=(await resp1.content.read()),
+                        underlying_object=resp1,
+                    )
+                    for resp1 in resp.history
+                ]
+        except asyncio.TimeoutError as cause:
             raise exceptions.TimeoutException from cause
         except Exception as cause:
             raise exceptions.TransportError from cause
 
-        requ = resp.request
-        x_requ = Request(
-            verb=requ.method,
-            url=str(requ.url),
-            headers=requ.headers,
-            data=requ.read(),
-        )
-        x_resp = UResponse(
-            status=resp.status_code,
-            headers=resp.headers,
-            data=resp.content,
-            underlying_object=resp,
-        )
-        history = [
-            UResponse(
-                status=resp1.status_code,
-                headers=resp1.headers,
-                data=resp1.content,
-                underlying_object=resp1,
-            )
-            for resp1 in resp.history
-        ]
         return Exchange(
             requisition=r,
             request=x_requ,
@@ -127,19 +135,15 @@ class HttpxConnector(Connector):
             history=history,
         )
 
-    def _close(self) -> None:
-        self.client.close()
+    async def _close(self) -> None:
+        await self.session.close()
+
+Connector = AiohttpConnector
 
 
-def new_connector() -> HttpxConnector:
-    return HttpxConnector(httpx.Client())
+def new_connector() -> AiohttpConnector:
+    return AiohttpConnector(aiohttp.ClientSession())
 
 
-name: str = httpx.__name__
-version: str = httpx.__version__
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    new_connector=new_connector,
-)
+name: str = aiohttp.__name__
+version: str = aiohttp.__version__

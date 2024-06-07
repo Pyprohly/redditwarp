@@ -1,9 +1,8 @@
 
 from __future__ import annotations
-from typing import Optional, Any
+from typing import Any, Optional
 
-import requests  # type: ignore[import]
-import requests.adapters  # type: ignore[import]
+import httpx  # type: ignore[import]
 
 from ... import exceptions
 from ... import payload
@@ -11,8 +10,7 @@ from ...send_params import SendParams
 from ...exchange import Exchange
 from ...request import Request
 from ...response import UResponse
-from ..reg_SYNC import register
-from ..connector_SYNC import Connector
+from ...connector_SYNC import Connector as BaseConnector
 
 
 def _get_effective_timeout(v: float) -> float:
@@ -26,23 +24,28 @@ def _get_effective_follow_redirects(v: Optional[bool]) -> bool:
     return v
 
 
-class RequestsConnector(Connector):
+class HttpxConnector(BaseConnector):
     def __init__(self,
-        session: requests.Session,
+        client: httpx.Client,
     ) -> None:
         super().__init__()
-        self.session: requests.Session = session
+        self.client: httpx.Client = client
         ("")
 
     def _send(self, p: SendParams) -> Exchange:
         r = p.requisition
 
-        timeout = _get_effective_timeout(p.timeout)
+        etv = _get_effective_timeout(p.timeout)
+        timeout_obj = httpx.Timeout(etv, pool=20)
+        if etv == -1:
+            timeout_obj = httpx.Timeout(None, pool=20)
+
         follow_redirects = _get_effective_follow_redirects(p.follow_redirects)
 
         headers: dict[str, str] = dict(r.headers)
-        data: object = None
-        json: object = None
+        data: Any = None
+        content: Optional[bytes] = None
+        json: Any = None
         files: Any = None
 
         pld = r.payload
@@ -51,7 +54,7 @@ class RequestsConnector(Connector):
 
         elif isinstance(pld, payload.Bytes):
             headers['Content-Type'] = pld.get_media_type()
-            data = pld.data
+            content = pld.data
 
         elif isinstance(pld, payload.Text):
             headers['Content-Type'] = pld.get_media_type()
@@ -61,16 +64,14 @@ class RequestsConnector(Connector):
             json = pld.json
 
         elif isinstance(pld, payload.URLEncodedFormData):
-            data = pld.data
+            data = dict(pld.data)
 
         elif isinstance(pld, payload.MultipartFormData):
             files = {}
             for pt in pld.parts:
                 if isinstance(pt, payload.MultipartFormData.TextField):
-                    files[pt.name] = (None, pt.text)
+                    files[pt.name] = (None, pt.text.encode(), None)
                 elif isinstance(pt, payload.MultipartFormData.FileField):
-                    if pt.content_type == '':
-                        raise ValueError('empty string multipart content type not supported')
                     files[pt.name] = (pt.filename, pt.file, pt.content_type)
                 else:
                     raise ValueError('unexpected multipart field type: ' + repr(pt))
@@ -79,35 +80,29 @@ class RequestsConnector(Connector):
             raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")
 
         try:
-            resp = self.session.request(
+            resp = self.client.request(
                 method=r.verb,
                 url=r.url,
                 params=r.params,
                 headers=headers,
-                timeout=timeout,
-                allow_redirects=follow_redirects,
+                timeout=timeout_obj,
+                follow_redirects=follow_redirects,
                 data=data,
+                content=content,
                 json=json,
                 files=files,
             )
-        except requests.exceptions.ReadTimeout as cause:
+        except httpx.TimeoutException as cause:
             raise exceptions.TimeoutException from cause
         except Exception as cause:
             raise exceptions.TransportError from cause
 
         requ = resp.request
-
-        x_requ_data = requ.body
-        if isinstance(x_requ_data, str):
-            x_requ_data = x_requ_data.encode()
-        elif x_requ_data is None:
-            x_requ_data = b''
-
         x_requ = Request(
-            verb=requ.method or '',
-            url=requ.url or '',
+            verb=requ.method,
+            url=str(requ.url),
             headers=requ.headers,
-            data=x_requ_data,
+            data=requ.read(),
         )
         x_resp = UResponse(
             status=resp.status_code,
@@ -132,18 +127,14 @@ class RequestsConnector(Connector):
         )
 
     def _close(self) -> None:
-        self.session.close()
+        self.client.close()
+
+Connector = HttpxConnector
 
 
-def new_connector() -> RequestsConnector:
-    return RequestsConnector(requests.Session())
+def new_connector() -> HttpxConnector:
+    return HttpxConnector(httpx.Client())
 
 
-name: str = requests.__name__
-version: str = requests.__version__
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    new_connector=new_connector,
-)
+name: str = httpx.__name__
+version: str = httpx.__version__

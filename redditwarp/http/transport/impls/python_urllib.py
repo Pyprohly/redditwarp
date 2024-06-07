@@ -15,8 +15,7 @@ from ...send_params import SendParams
 from ...exchange import Exchange
 from ...request import Request
 from ...response import UResponse
-from ..reg_SYNC import register
-from ..connector_SYNC import Connector
+from ...connector_SYNC import Connector as BaseConnector
 from ...util.merge_query_params import merge_query_params
 
 
@@ -31,7 +30,7 @@ def _get_effective_follow_redirects(v: Optional[bool]) -> bool:
     return v
 
 
-class PythonUrllibConnector(Connector):
+class PythonUrllibConnector(BaseConnector):
     def _send(self, p: SendParams) -> Exchange:
         r = p.requisition
 
@@ -112,6 +111,8 @@ class PythonUrllibConnector(Connector):
     def _close(self) -> None:
         pass
 
+Connector = PythonUrllibConnector
+
 
 def new_connector() -> PythonUrllibConnector:
     return PythonUrllibConnector()
@@ -119,9 +120,3 @@ def new_connector() -> PythonUrllibConnector:
 
 name: str = 'python-urllib'
 version: str = '%d.%d' % sys.version_info[:2]
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    new_connector=new_connector,
-)

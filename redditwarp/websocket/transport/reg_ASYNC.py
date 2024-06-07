@@ -1,76 +1,46 @@
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, MutableMapping, Sequence, Protocol, MutableSequence, Optional, Mapping
+from typing import TYPE_CHECKING, Optional, Sequence, Union
 if TYPE_CHECKING:
-    from importlib.machinery import ModuleSpec
+    from types import ModuleType
 
-from dataclasses import dataclass
+import sys
 
 from ...util.imports import load_spec, import_module_from_spec
-from ..websocket_ASYNC import WebSocket
 
 
-class ConnectFunctionProtocol(Protocol):
-    async def __call__(self,
-        url: str,
-        *,
-        subprotocols: Sequence[str] = (),
-        headers: Optional[Mapping[str, str]] = None,
-        timeout: float = -2,
-    ) -> WebSocket: ...
-
-@dataclass
-class TransportInfo:
-    adaptor_module_name: str
-    name: str
-    version: str
-    connect: ConnectFunctionProtocol
+_transport_adapter_module_name_list: Sequence[str] = (
+    'websockets',
+    'aiohttp',
+)
+_current_transport_adapter_module: Optional[ModuleType] = None
 
 
-def load_transport() -> TransportInfo:
-    if not transport_info_registry:
-        for module_spec in transport_module_spec_list:
-            try:
-                import_module_from_spec(module_spec)
-            except ImportError:
-                continue
-            break
-        else:
-            raise ModuleNotFoundError('A websocket transport library needs to be installed.')
+def _init_transport_adapter_module() -> ModuleType:
+    for module_name in _transport_adapter_module_name_list:
+        module_spec = load_spec('.impls.' + module_name, __package__)
+        try:
+            return import_module_from_spec(module_spec)
+        except ImportError:
+            pass
+    raise ModuleNotFoundError("A websocket transport library needs to be installed.")
 
-    return next(iter(transport_info_registry.values()))
+def get_transport_adapter_module() -> ModuleType:
+    global _current_transport_adapter_module
+    if _current_transport_adapter_module is None:
+        _current_transport_adapter_module = _init_transport_adapter_module()
+    return _current_transport_adapter_module
 
-async def connect(
-    url: str,
-    *,
-    subprotocols: Sequence[str] = (),
-    headers: Optional[Mapping[str, str]] = None,
-    timeout: float = -2,
-) -> WebSocket:
-    connect = load_transport().connect
-    return await connect(
-        url,
-        subprotocols=subprotocols,
-        headers=headers,
-        timeout=timeout,
-    )
+def set_transport_adapter_module(module: ModuleType) -> None:
+    global _current_transport_adapter_module
+    _current_transport_adapter_module = module
 
-def register(
-    adaptor_module_name: str,
-    name: str,
-    version: str,
-    connect: ConnectFunctionProtocol,
-) -> None:
-    info = TransportInfo(
-        adaptor_module_name=adaptor_module_name,
-        name=name,
-        version=version,
-        connect=connect,
-    )
-    transport_info_registry[adaptor_module_name] = info
 
-transport_module_spec_list: MutableSequence[ModuleSpec] = [
-    load_spec('.carriers.websockets', __package__),
-    load_spec('.carriers.aiohttp', __package__),
-]
-transport_info_registry: MutableMapping[str, TransportInfo] = {}
+def get_transport_adapter_module_name_and_version(module: Union[str, ModuleType]) -> tuple[str, str]:
+    m = module
+    if isinstance(m, str):
+        m = sys.modules[m]
+    try:
+        return (m.name, m.version)
+    except AttributeError as e:
+        raise RuntimeError from e

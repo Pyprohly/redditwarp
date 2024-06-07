@@ -76,7 +76,7 @@ Handers:
 An `HTTPClient` object must be constructed to make requests.
 Pass a `Connector` object to `HTTPClient` to construct it::
 
-   from redditwarp.http.transport.reg_SYNC import new_connector
+   from redditwarp.http.transport.auto_SYNC import new_connector
    from redditwarp.http.http_client_SYNC import HTTPClient
 
    http = HTTPClient(new_connector())

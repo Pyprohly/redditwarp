@@ -3,11 +3,6 @@ from __future__ import annotations
 
 from enum import IntEnum
 
-class Side(IntEnum):
-    NONE = 0
-    CLIENT = 1
-    SERVER = 2
-
 class ConnectionState(IntEnum):
     CONNECTING = 0
     OPEN = 1

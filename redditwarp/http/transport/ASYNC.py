@@ -1,5 +1,6 @@
 
 from .reg_ASYNC import (  # noqa: F401
-    load_transport as load_transport,
-    new_connector as new_connector,
+	get_transport_adapter_module as get_transport_adapter_module,
+	set_transport_adapter_module as set_transport_adapter_module,
 )
+from .auto_ASYNC import new_connector as new_connector # noqa: F401

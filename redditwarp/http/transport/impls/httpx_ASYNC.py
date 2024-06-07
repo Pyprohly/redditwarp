@@ -1,10 +1,8 @@
 
 from __future__ import annotations
-from typing import Optional
+from typing import Any, Optional
 
-import asyncio
-
-import aiohttp  # type: ignore[import]
+import httpx  # type: ignore[import]
 
 from ... import exceptions
 from ... import payload
@@ -12,8 +10,7 @@ from ...send_params import SendParams
 from ...exchange import Exchange
 from ...request import Request
 from ...response import UResponse
-from ..reg_ASYNC import register
-from ..connector_ASYNC import Connector
+from ...connector_ASYNC import Connector as BaseConnector
 
 
 def _get_effective_timeout(v: float) -> float:
@@ -27,38 +24,29 @@ def _get_effective_follow_redirects(v: Optional[bool]) -> bool:
     return v
 
 
-class AiohttpConnector(Connector):
+class HttpxConnector(BaseConnector):
     def __init__(self,
-        session: aiohttp.ClientSession,
+        client: httpx.AsyncClient,
     ) -> None:
         super().__init__()
-        self.session: aiohttp.ClientSession = session
+        self.client: httpx.AsyncClient = client
         ("")
 
     async def _send(self, p: SendParams) -> Exchange:
         r = p.requisition
 
         etv = _get_effective_timeout(p.timeout)
-
-        client_timeout = aiohttp.ClientTimeout(
-            total=etv,
-            connect=etv,
-            sock_connect=etv,
-            sock_read=etv,
-        )
+        timeout_obj = httpx.Timeout(etv, pool=20)
         if etv == -1:
-            client_timeout = aiohttp.ClientTimeout(
-                total=None,
-                connect=None,
-                sock_connect=None,
-                sock_read=None,
-            )
+            timeout_obj = httpx.Timeout(None, pool=20)
 
         follow_redirects = _get_effective_follow_redirects(p.follow_redirects)
 
         headers: dict[str, str] = dict(r.headers)
-        data: object = None
-        json: object = None
+        data: Any = None
+        content: Optional[bytes] = None
+        json: Any = None
+        files: Any = None
 
         pld = r.payload
         if pld is None:
@@ -66,7 +54,7 @@ class AiohttpConnector(Connector):
 
         elif isinstance(pld, payload.Bytes):
             headers['Content-Type'] = pld.get_media_type()
-            data = pld.data
+            content = pld.data
 
         elif isinstance(pld, payload.Text):
             headers['Content-Type'] = pld.get_media_type()
@@ -79,12 +67,12 @@ class AiohttpConnector(Connector):
             data = dict(pld.data)
 
         elif isinstance(pld, payload.MultipartFormData):
-            data = aiohttp.FormData()
+            files = {}
             for pt in pld.parts:
                 if isinstance(pt, payload.MultipartFormData.TextField):
-                    data.add_field(pt.name, pt.text)
+                    files[pt.name] = (None, pt.text.encode(), None)
                 elif isinstance(pt, payload.MultipartFormData.FileField):
-                    data.add_field(pt.name, pt.file, filename=pt.filename, content_type=pt.content_type)
+                    files[pt.name] = (pt.filename, pt.file, pt.content_type)
                 else:
                     raise ValueError('unexpected multipart field type: ' + repr(pt))
 
@@ -92,43 +80,45 @@ class AiohttpConnector(Connector):
             raise Exception(f"unsupported payload type: {pld.__class__.__name__!r}")
 
         try:
-            async with self.session.request(
+            resp = await self.client.request(
                 method=r.verb,
                 url=r.url,
                 params=r.params,
                 headers=headers,
-                timeout=client_timeout,
-                allow_redirects=follow_redirects,
+                timeout=timeout_obj,
+                follow_redirects=follow_redirects,
                 data=data,
+                content=content,
                 json=json,
-            ) as resp:
-                requ = resp.request_info
-                x_requ = Request(
-                    verb=requ.method,
-                    url=str(requ.real_url),
-                    headers=requ.headers,
-                    data=b'',
-                )
-                x_resp = UResponse(
-                    status=resp.status,
-                    headers=resp.headers,
-                    data=(await resp.content.read()),
-                    underlying_object=resp,
-                )
-                history = [
-                    UResponse(
-                        status=resp1.status,
-                        headers=resp1.headers,
-                        data=(await resp1.content.read()),
-                        underlying_object=resp1,
-                    )
-                    for resp1 in resp.history
-                ]
-        except asyncio.TimeoutError as cause:
+                files=files,
+            )
+        except httpx.TimeoutException as cause:
             raise exceptions.TimeoutException from cause
         except Exception as cause:
             raise exceptions.TransportError from cause
 
+        requ = resp.request
+        x_requ = Request(
+            verb=requ.method,
+            url=str(requ.url),
+            headers=requ.headers,
+            data=await requ.aread(),
+        )
+        x_resp = UResponse(
+            status=resp.status_code,
+            headers=resp.headers,
+            data=resp.content,
+            underlying_object=resp,
+        )
+        history = [
+            UResponse(
+                status=resp1.status_code,
+                headers=resp1.headers,
+                data=resp1.content,
+                underlying_object=resp1,
+            )
+            for resp1 in resp.history
+        ]
         return Exchange(
             requisition=r,
             request=x_requ,
@@ -137,18 +127,14 @@ class AiohttpConnector(Connector):
         )
 
     async def _close(self) -> None:
-        await self.session.close()
+        await self.client.aclose()
+
+Connector = HttpxConnector
 
 
-def new_connector() -> AiohttpConnector:
-    return AiohttpConnector(aiohttp.ClientSession())
+def new_connector() -> HttpxConnector:
+    return HttpxConnector(httpx.AsyncClient())
 
 
-name: str = aiohttp.__name__
-version: str = aiohttp.__version__
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    new_connector=new_connector,
-)
+name: str = httpx.__name__
+version: str = httpx.__version__

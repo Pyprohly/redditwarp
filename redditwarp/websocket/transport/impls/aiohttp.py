@@ -9,15 +9,12 @@ import asyncio
 
 import aiohttp  # type: ignore[import]
 
-from ..reg_ASYNC import register
 from ...websocket_ASYNC import PartiallyImplementedWebSocket, DEFAULT_WAITTIME
 from ... import exceptions
 from ... import events
-from ...const import Side, ConnectionState
+from ...const import ConnectionState
 
-class WebSocketClient(PartiallyImplementedWebSocket):
-    SIDE: int = Side.CLIENT
-
+class WebSocket(PartiallyImplementedWebSocket):
     def __init__(self, ws: aiohttp.ClientWebSocketResponse, session: aiohttp.ClientSession) -> None:
         super().__init__()
         self.ws: aiohttp.ClientWebSocketResponse = ws
@@ -125,7 +122,7 @@ async def connect(
     subprotocols: Sequence[str] = (),
     headers: Optional[Mapping[str, str]] = None,
     timeout: float = -2,
-) -> WebSocketClient:
+) -> WebSocket:
     t: Optional[float] = timeout
     if timeout == -2:
         t = DEFAULT_WAITTIME
@@ -146,16 +143,10 @@ async def connect(
         await session.close()
         raise exceptions.TimeoutException
 
-    wsc = WebSocketClient(ws, session)
+    wsc = WebSocket(ws, session)
     wsc.subprotocol = ws.protocol or ''
     return wsc
 
 
 name: str = aiohttp.__name__
 version: str = aiohttp.__version__
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    connect=connect,
-)

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Optional, MutableMapping, Callable, ContextMan
 if TYPE_CHECKING:
     from ..http.send_params import SendParams
     from ..http.exchange import Exchange
-    from ..http.transport.connector_ASYNC import Connector
+    from ..http.connector_ASYNC import Connector
 
 from contextvars import ContextVar
 
@@ -16,10 +16,10 @@ from .rate_limited_ASYNC import RateLimited
 from .recorded_ASYNC import Recorded
 from .reddit_please_send_json_ASYNC import RedditPleaseSendJSON
 from .reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
-from ..http.transport.reg_ASYNC import new_connector
+from ..http.transport.auto_ASYNC import new_connector
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..http.misc.apply_params_and_headers_ASYNC import ApplyDefaultHeaders
-from .user_agent_ASYNC import get_user_agent
+from .ua_ASYNC import get_suitable_user_agent
 from ..auth.token import Token
 from .recorded_ASYNC import Last
 from .authorizer_ASYNC import Authorizer
@@ -119,7 +119,7 @@ def build_reddit_http_client(
 ) -> RedditHTTPClient:
     if connector is None:
         connector = new_connector()
-    ua = get_user_agent(module_member=connector)
+    ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     token_client = RedditTokenObtainmentClient(
         HTTPClient(ApplyDefaultHeaders(connector, headers)),
@@ -143,7 +143,7 @@ def build_reddit_http_client_from_access_token(
 ) -> RedditHTTPClient:
     if connector is None:
         connector = new_connector()
-    ua = get_user_agent(module_member=connector)
+    ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     authorizer = Authorizer(token=Token(access_token))
     handler: Handler

@@ -13,8 +13,7 @@ from ...send_params import SendParams
 from ...exchange import Exchange
 from ...request import Request
 from ...response import UResponse
-from ..reg_SYNC import register
-from ..connector_SYNC import Connector
+from ...connector_SYNC import Connector as BaseConnector
 from ...util.merge_query_params import merge_query_params
 
 
@@ -29,7 +28,7 @@ def _get_effective_follow_redirects(v: Optional[bool]) -> bool:
     return v
 
 
-class Urllib3Connector(Connector):
+class Urllib3Connector(BaseConnector):
     def __init__(self,
         http: urllib3.poolmanager.PoolManager,
     ) -> None:
@@ -156,6 +155,8 @@ class Urllib3Connector(Connector):
     def _close(self) -> None:
         self.http.clear()
 
+Connector = Urllib3Connector
+
 
 def new_connector() -> Urllib3Connector:
     return Urllib3Connector(urllib3.PoolManager())
@@ -163,9 +164,3 @@ def new_connector() -> Urllib3Connector:
 
 name: str = urllib3.__name__
 version: str = getattr(urllib3, '__version__')
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    new_connector=new_connector,
-)

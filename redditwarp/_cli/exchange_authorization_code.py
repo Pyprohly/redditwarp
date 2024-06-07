@@ -31,11 +31,12 @@ from functools import partial
 from pprint import pp
 
 import redditwarp
-from redditwarp.http.transport.reg_SYNC import load_transport, new_connector
+from redditwarp.http.transport.reg_SYNC import get_transport_adapter_module
+from redditwarp.http.transport.auto_SYNC import new_connector
 from redditwarp.http.http_client_SYNC import HTTPClient
 from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
-from redditwarp.core.user_agent_SYNC import get_user_agent
+from redditwarp.core.ua_SYNC import get_suitable_user_agent
 
 def get_client_cred_input(prompt: str, env: str, v: Optional[str]) -> str:
     if v is None:
@@ -59,7 +60,8 @@ if not sys.flags.interactive:
         print('KeyboardInterrupt', file=sys.stderr)
         sys.exit(130)
 
-load_transport()
+# Raise here if no HTTP transport module is installed.
+get_transport_adapter_module()
 
 client_id = get_client_id(args)
 client_secret = get_client_secret(args)
@@ -74,8 +76,8 @@ pp(dict(grant))
 print()
 
 connector = new_connector()
-user_agent = get_user_agent(module_member=connector) + " redditwarp.cli.exchange_authorization_code"
-headers = {'User-Agent': user_agent}
+ua = get_suitable_user_agent(connector.__module__) + " redditwarp.cli.exchange_authorization_code"
+headers = {'User-Agent': ua}
 token_client = RedditTokenObtainmentClient(
     HTTPClient(ApplyDefaultHeaders(connector, headers)),
     redditwarp.core.const.TOKEN_OBTAINMENT_URL,

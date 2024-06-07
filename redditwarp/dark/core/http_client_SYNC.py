@@ -3,17 +3,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
     from ...http.handler_SYNC import Handler
-    from ...http.transport.connector_SYNC import Connector
+    from ...http.connector_SYNC import Connector
 
 from ...core.http_client_SYNC import HTTPClient
 from ...core.rate_limited_SYNC import RateLimited
 from ...core.reddit_please_send_json_SYNC import RedditPleaseSendJSON
 from ...http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
-from ...http.transport.reg_SYNC import new_connector
+from ...http.transport.auto_SYNC import new_connector
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..auth.token_obtainment_client_SYNC import new_token_obtainment_client
 from .authorizer_SYNC import Authorizer, Authorized
-from ...core.user_agent_SYNC import get_user_agent
+from ...core.ua_SYNC import get_suitable_user_agent
 from ...http.http_client_SYNC import HTTPClient as BaseHTTPClient
 from ...core.direct_by_origin_SYNC import DirectByOrigin
 from .const import TRUSTED_ORIGINS
@@ -46,7 +46,7 @@ def build_reddit_http_client(
 ) -> RedditHTTPClient:
     if connector is None:
         connector = new_connector()
-    ua = get_user_agent(module_member=connector)
+    ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     http = BaseHTTPClient(ApplyDefaultHeaders(connector, headers))
     token_client = new_token_obtainment_client(http)

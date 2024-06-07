@@ -7,12 +7,11 @@ if TYPE_CHECKING:
 # https://pypi.org/project/websocket-client/
 import websocket  # type: ignore[import]
 
-from ..reg_SYNC import register
 from ...websocket_SYNC import PulsePartiallyImplementedWebSocketConnection, DEFAULT_WAITTIME
 from ... import exceptions
 from ... import events
 from ...events import Frame
-from ...const import Opcode, Side, ConnectionState
+from ...const import Opcode, ConnectionState
 from ...utils import parse_close
 
 
@@ -27,9 +26,7 @@ def _get_necessary_timeout(timeout: float = -2) -> Optional[float]:
     return t
 
 
-class WebSocketClient(PulsePartiallyImplementedWebSocketConnection):
-    SIDE: int = Side.CLIENT
-
+class WebSocket(PulsePartiallyImplementedWebSocketConnection):
     def __init__(self, ws: websocket.WebSocket) -> None:
         super().__init__()
         self.ws: websocket.WebSocket = ws
@@ -104,7 +101,7 @@ def connect(
     subprotocols: Sequence[str] = (),
     headers: Optional[Mapping[str, str]] = None,
     timeout: float = -2,
-) -> WebSocketClient:
+) -> WebSocket:
     t = _get_necessary_timeout(timeout)
     try:
         ws = websocket.create_connection(
@@ -119,16 +116,10 @@ def connect(
         raise exceptions.TimeoutException from cause
     except Exception as cause:
         raise exceptions.TransportError from cause
-    wsc = WebSocketClient(ws)
+    wsc = WebSocket(ws)
     wsc.subprotocol = ws.subprotocol or ''
     return wsc
 
 
 name: str = 'websocket-client'
 version: str = websocket.__version__
-register(
-    adaptor_module_name=__name__,
-    name=name,
-    version=version,
-    connect=connect,
-)
