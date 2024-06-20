@@ -114,11 +114,8 @@ def build_reddit_http_client(
     client_id: str,
     client_secret: str,
     grant: AuthorizationGrant,
-    *,
-    connector: Optional[Connector] = None,
 ) -> RedditHTTPClient:
-    if connector is None:
-        connector = new_connector()
+    connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     token_client = RedditTokenObtainmentClient(
@@ -136,13 +133,8 @@ def build_reddit_http_client(
     http.user_agent_base = ua
     return http
 
-def build_reddit_http_client_from_access_token(
-    access_token: str,
-    *,
-    connector: Optional[Connector] = None,
-) -> RedditHTTPClient:
-    if connector is None:
-        connector = new_connector()
+def build_reddit_http_client_from_access_token(access_token: str) -> RedditHTTPClient:
+    connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     authorizer = Authorizer(token=Token(access_token))

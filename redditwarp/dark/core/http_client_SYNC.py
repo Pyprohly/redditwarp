@@ -40,12 +40,8 @@ class RedditHTTPClient(HTTPClient):
         self._authorizer = value
 
 
-def build_reddit_http_client(
-    *,
-    connector: Optional[Connector] = None,
-) -> RedditHTTPClient:
-    if connector is None:
-        connector = new_connector()
+def build_reddit_http_client() -> RedditHTTPClient:
+    connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
     http = BaseHTTPClient(ApplyDefaultHeaders(connector, headers))
