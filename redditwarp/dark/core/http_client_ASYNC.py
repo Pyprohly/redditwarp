@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from ...core.http_client_ASYNC import HTTPClient
 from ...core.rate_limited_ASYNC import RateLimited
 from ...core.reddit_please_send_json_ASYNC import RedditPleaseSendJSON
-from ...http.misc.apply_params_and_headers_ASYNC import ApplyDefaultHeaders
+from ...http.misc_handlers.apply_params_and_headers_ASYNC import ApplyDefaultHeaders
 from ...http.transport.auto_ASYNC import new_connector
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..auth.token_obtainment_client_ASYNC import new_token_obtainment_client

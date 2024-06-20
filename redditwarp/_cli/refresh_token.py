@@ -55,7 +55,7 @@ import redditwarp
 from redditwarp.http.transport.reg_SYNC import get_transport_adapter_module
 from redditwarp.http.transport.auto_SYNC import new_connector
 from redditwarp.http.http_client_SYNC import HTTPClient
-from redditwarp.http.misc.apply_params_and_headers_SYNC import ApplyDefaultHeaders
+from redditwarp.http.misc_handlers.apply_params_and_headers_SYNC import ApplyDefaultHeaders
 from redditwarp.core.SYNC import RedditTokenObtainmentClient
 from redditwarp.core.ua_SYNC import get_suitable_user_agent
 

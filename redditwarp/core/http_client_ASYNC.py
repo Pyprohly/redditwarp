@@ -18,7 +18,7 @@ from .reddit_please_send_json_ASYNC import RedditPleaseSendJSON
 from .reddit_token_obtainment_client_ASYNC import RedditTokenObtainmentClient
 from ..http.transport.auto_ASYNC import new_connector
 from ..http.util.case_insensitive_dict import CaseInsensitiveDict
-from ..http.misc.apply_params_and_headers_ASYNC import ApplyDefaultHeaders
+from ..http.misc_handlers.apply_params_and_headers_ASYNC import ApplyDefaultHeaders
 from .ua_ASYNC import get_suitable_user_agent
 from ..auth.token import Token
 from .recorded_ASYNC import Last
