@@ -6,13 +6,13 @@ if TYPE_CHECKING:
     from ...http.connector_SYNC import Connector
 
 from ...core.http_client_SYNC import HTTPClient
-from ...core.rate_limited_SYNC import RateLimited
 from ...core.reddit_please_send_json_SYNC import RedditPleaseSendJSON
 from ...http.misc_handlers.apply_params_and_headers_SYNC import ApplyDefaultHeaders
 from ...http.transport.auto_SYNC import new_connector
 from ...http.util.case_insensitive_dict import CaseInsensitiveDict
 from ..auth.token_obtainment_client_SYNC import new_token_obtainment_client
 from .authorizer_SYNC import Authorizer, Authorized
+from .rate_limited_SYNC import RateLimited
 from ...core.ua_SYNC import get_suitable_user_agent
 from ...http.http_client_SYNC import HTTPClient as BaseHTTPClient
 from ...core.direct_by_origin_SYNC import DirectByOrigin
