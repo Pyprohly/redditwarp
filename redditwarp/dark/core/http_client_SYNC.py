@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, MutableMapping
 if TYPE_CHECKING:
     from ...http.handler_SYNC import Handler
-    from ...http.connector_SYNC import Connector
 
 from ...core.http_client_SYNC import HTTPClient
 from ...core.reddit_please_send_json_SYNC import RedditPleaseSendJSON
@@ -44,12 +43,11 @@ def build_reddit_http_client() -> RedditHTTPClient:
     connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
+
     http = BaseHTTPClient(ApplyDefaultHeaders(connector, headers))
-    token_client = new_token_obtainment_client(http)
-    authorizer = Authorizer(token_client)
-    handler: Handler
-    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
-    directions = {x: handler for x in TRUSTED_ORIGINS}
-    handler = DirectByOrigin(connector, directions)
-    http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
+    authorizer = Authorizer(new_token_obtainment_client(http))
+    hdlr = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    hdlr1 = DirectByOrigin(connector, {x: hdlr for x in TRUSTED_ORIGINS})
+
+    http = RedditHTTPClient(hdlr1, headers=headers, authorizer=authorizer)
     return http

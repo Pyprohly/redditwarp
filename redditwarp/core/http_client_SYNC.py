@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Optional, MutableMapping, Callable, ContextMan
 if TYPE_CHECKING:
     from ..http.send_params import SendParams
     from ..http.exchange import Exchange
-    from ..http.connector_SYNC import Connector
 
 from contextvars import ContextVar
 
@@ -26,6 +25,8 @@ from .authorizer_SYNC import Authorizer
 from .direct_by_origin_SYNC import DirectByOrigin
 from ..http.handler_SYNC import Handler
 from ..util.ctx_var_ctx_mgr import ContextVarContextManager
+from .follow_redirects_value_none_means_SYNC import FollowRedirectsValueNoneMeansTrue
+from ..http.transport.impls.python_urllib import PythonUrllibConnector
 
 
 DEFAULT_TIMEOUT: float = 8
@@ -118,30 +119,48 @@ def build_reddit_http_client(
     connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
-    token_client = RedditTokenObtainmentClient(
-        HTTPClient(ApplyDefaultHeaders(connector, headers)),
-        TOKEN_OBTAINMENT_URL,
-        (client_id, client_secret),
-        grant,
+
+    foundation: Handler = connector
+    connector_is_pyurllib = isinstance(connector, PythonUrllibConnector)
+    if connector_is_pyurllib:
+        foundation = FollowRedirectsValueNoneMeansTrue(connector)
+
+    http = HTTPClient(ApplyDefaultHeaders(foundation, headers))
+    if connector_is_pyurllib:
+        http.follow_redirects = None
+    authorizer = Authorizer(
+        RedditTokenObtainmentClient(
+            http,
+            TOKEN_OBTAINMENT_URL,
+            (client_id, client_secret),
+            grant,
+        )
     )
-    authorizer = Authorizer(token_client)
-    handler: Handler
-    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
-    directions = {x: handler for x in TRUSTED_ORIGINS}
-    handler = DirectByOrigin(connector, directions)
-    http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
+    hdlr = RedditPleaseSendJSON(RateLimited(Authorized(foundation, authorizer)))
+    hdlr1 = DirectByOrigin(foundation, {x: hdlr for x in TRUSTED_ORIGINS})
+
+    http = RedditHTTPClient(hdlr1, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
+    if connector_is_pyurllib:
+        http.follow_redirects = None
     return http
 
 def build_reddit_http_client_from_access_token(access_token: str) -> RedditHTTPClient:
     connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
+
+    foundation: Handler = connector
+    connector_is_pyurllib = isinstance(connector, PythonUrllibConnector)
+    if connector_is_pyurllib:
+        foundation = FollowRedirectsValueNoneMeansTrue(connector)
+
     authorizer = Authorizer(token=Token(access_token))
-    handler: Handler
-    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
-    directions = {x: handler for x in TRUSTED_ORIGINS}
-    handler = DirectByOrigin(connector, directions)
-    http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
+    hdlr = RedditPleaseSendJSON(RateLimited(Authorized(foundation, authorizer)))
+    hdlr1 = DirectByOrigin(foundation, {x: hdlr for x in TRUSTED_ORIGINS})
+
+    http = RedditHTTPClient(hdlr1, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
+    if connector_is_pyurllib:
+        http.follow_redirects = None
     return http

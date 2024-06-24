@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Optional, MutableMapping, Callable, ContextMan
 if TYPE_CHECKING:
     from ..http.send_params import SendParams
     from ..http.exchange import Exchange
-    from ..http.connector_ASYNC import Connector
 
 from contextvars import ContextVar
 
@@ -118,18 +117,20 @@ def build_reddit_http_client(
     connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
-    token_client = RedditTokenObtainmentClient(
-        HTTPClient(ApplyDefaultHeaders(connector, headers)),
-        TOKEN_OBTAINMENT_URL,
-        (client_id, client_secret),
-        grant,
+
+    http = HTTPClient(ApplyDefaultHeaders(connector, headers))
+    authorizer = Authorizer(
+        RedditTokenObtainmentClient(
+            http,
+            TOKEN_OBTAINMENT_URL,
+            (client_id, client_secret),
+            grant,
+        )
     )
-    authorizer = Authorizer(token_client)
-    handler: Handler
-    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
-    directions = {x: handler for x in TRUSTED_ORIGINS}
-    handler = DirectByOrigin(connector, directions)
-    http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
+    hdlr = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    hdlr1 = DirectByOrigin(connector, {x: hdlr for x in TRUSTED_ORIGINS})
+
+    http = RedditHTTPClient(hdlr1, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
     return http
 
@@ -137,11 +138,11 @@ def build_reddit_http_client_from_access_token(access_token: str) -> RedditHTTPC
     connector = new_connector()
     ua = get_suitable_user_agent(connector.__module__)
     headers = CaseInsensitiveDict({'User-Agent': ua})
+
     authorizer = Authorizer(token=Token(access_token))
-    handler: Handler
-    handler = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
-    directions = {x: handler for x in TRUSTED_ORIGINS}
-    handler = DirectByOrigin(connector, directions)
-    http = RedditHTTPClient(handler, headers=headers, authorizer=authorizer)
+    hdlr = RedditPleaseSendJSON(RateLimited(Authorized(connector, authorizer)))
+    hdlr1 = DirectByOrigin(connector, {x: hdlr for x in TRUSTED_ORIGINS})
+
+    http = RedditHTTPClient(hdlr1, headers=headers, authorizer=authorizer)
     http.user_agent_base = ua
     return http

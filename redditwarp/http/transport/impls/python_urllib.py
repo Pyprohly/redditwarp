@@ -17,6 +17,7 @@ from ...request import Request
 from ...response import UResponse
 from ...connector_SYNC import Connector as BaseConnector
 from ...util.merge_query_params import merge_query_params
+from ...util.case_insensitive_dict import CaseInsensitiveDict
 
 
 def _get_effective_timeout(v: float) -> float:
@@ -97,7 +98,7 @@ class PythonUrllibConnector(BaseConnector):
         )
         x_resp = UResponse(
             status=resp.status,
-            headers=resp.headers,
+            headers=CaseInsensitiveDict(dict(resp.headers)),
             data=content,
             underlying_object=resp,
         )
