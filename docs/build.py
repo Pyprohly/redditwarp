@@ -27,7 +27,7 @@ def do_build_apidoc() -> None:
         pkg = '../redditwarp'
 
     subprocess.run(shlex.split('''\
-sphinx-apidoc -ef
+sphinx-apidoc -elf
         -H "API Reference"
         --tocfile=index
         -t source/_templates/apidoc

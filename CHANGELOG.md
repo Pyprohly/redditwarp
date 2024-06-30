@@ -2,6 +2,32 @@
 
 # Changelog
 
+## 1.3.0 - Unreleased
+
+### Changed
+
+- Renamed module `reddit.http.misc` to `misc_handlers`.
+- The HTTP transport module registration system has been reworked:
+
+  - The way you select an HTTP transport module has changed.
+    You now use a function: `set_transport_adapter_module()`.
+  - The `load_transport()` function has been replaced by `get_transport_adapter_module()`.
+  - Moved `redditwarp.http.transport.reg_(A)SYNC.new_connector()` to
+    `redditwarp.http.transport.auto_(A)SYNC`.
+  - Moved `redditwarp.http.transport.connector_(A)SYNC` to `redditwarp.http`.
+
+### Removed
+
+- The pushshift module.
+- The `connector` parameter from the `build_reddit_http_client()` functions.
+
+### Fixed
+
+- Python Urllib transport not working. (Thanks 'rodz' @old_guilhermerodz from Discord.)
+- Submission model creation breaking when the backing field for the `gallery_link` attribute was
+  missing in some rare cases. (Thanks @cossack_ua from Discord.)
+- Dark client rate limiter wasn't actually being used.
+
 ## 1.2.0 - 2023-08-29
 
 ### Added

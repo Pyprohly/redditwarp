@@ -10,7 +10,7 @@ from redditwarp.streaming.makers.message_SYNC import create_inbox_message_stream
 from redditwarp.streaming.SYNC import flow
 
 def main() -> None:
-    client = redditwarp.SYNC.Client()
+    client = redditwarp.SYNC.Client.from_praw_config('SuvaBot')
     with client:
         inbox_message_stream = create_inbox_message_stream(client)
 

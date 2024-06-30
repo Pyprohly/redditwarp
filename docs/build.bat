@@ -16,7 +16,7 @@ setlocal
 	set pkg=./redditwarp
 	if not exist "%pkg%\*" set pkg=../redditwarp
 
-	sphinx-apidoc -ef ^
+	sphinx-apidoc -elf ^
 			-H "API Reference" ^
 			--tocfile=index ^
 			-t source/_templates/apidoc ^

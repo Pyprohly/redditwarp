@@ -37,7 +37,7 @@ is a submission operation, the procedure will be found somewhere under
 
 While actively coding, IDEs will greatly help in navigating the procedure
 index. If you're not using an IDE, we could write `client.p.submission.<TAB>`
-in an interactive Python REPL terminal session to see all the
+in an interactive Python REPL terminal session to view all the
 submission-related procedures.
 
 ::
@@ -95,7 +95,7 @@ it fails to retrieve a resource, whereas `get()` will return `None`.
 The exception type thrown by `fetch()` is not sugar-coated and may vary based
 on the behaviour of the underlying endpoint. In some cases, the API does not
 produce an error when a retrieval fails and instead returns no information.
-RedditWarp will force an exception to occur in these cases by raising a
+RedditWarp will force an exception to occur in these instances by raising a
 synthetic :exc:`redditwarp.exceptions.NoResultException` exception.
 
 ::
@@ -139,7 +139,7 @@ be exhaustive; for example, if Reddit servers are down, many API requests
 could result in a 500 HTTP status code exception.
 
 The :exc:`redditwarp.http.exceptions.StatusCodeException` exception is a
-typical exception type that occurs from API procedures.
+common exception type that occurs from API procedures.
 Instances of this exception have a `status_code` attribute.
 
 ::

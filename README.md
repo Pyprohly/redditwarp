@@ -141,17 +141,16 @@ u/{c.author_display_name} says:
 ''')
 
 # Submit a link post to r/test.
-subm_id = client1.p.submission.create_link_post('test',
+client1.p.submission.create.link('test',
         "Check out this cool website", "https://www.reddit.com")
 
 # Reply to a submission.
-from redditwarp.util.extract_id_from_url import extract_submission_id_from_url
-idn = extract_submission_id_from_url("https://www.reddit.com/comments/5e1az9")
-comm1 = client1.p.submission.reply(idn, "Pretty cool stuff!")
+from redditwarp.util.extract_id_from_url import extract_submission_id36_from_url
+id36 = extract_submission_id36_from_url("https://www.reddit.com/comments/5e1az9")
+comm1 = client1.p.submission.reply(id36, "Pretty cool stuff!")
 
-# Delete the post and the comment reply.
-client1.p.submission.delete(subm_id)
-client1.p.comment.delete(comm1.id)
+# Delete the comment reply.
+client1.p.comment.delete(comm1.idn)
 ```
 
 </details>

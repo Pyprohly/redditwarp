@@ -12,7 +12,7 @@ fairly consistent.
 
 Uploading is done in two steps: obtaining an upload lease and then depositing
 the image to an Amazon S3 bucket using the lease. Methods named
-`obtain_upload_lease()` and `deposit_file()` are commonly found in the
+'`obtain_upload_lease()`' and '`deposit_file()`' are commonly found in the
 procedure index.
 
 In the following example, we are uploading a flair emoji image.
@@ -27,14 +27,14 @@ In the following example, we are uploading a flair emoji image.
    client.p.flair_emoji.create.add(SR, 'chomp', lease.s3_object_key)
 
 .. note::
-   The endpoint for obtaining an upload lease wants you to declare a file path,
-   but you should just give it a filename. Even the Reddit site only provides a
-   filename.
+   Supposedly, the endpoint for obtaining an upload lease wants you to declare
+   a file path via a parameter named 'filepath', but you should just give it a
+   filename. Even the Reddit website only gives a filename during the upload.
 
-There will often also be an `upload()` method as a short hand for the
-`obtain_upload_lease()` and `deposit_file()` steps.
+There is also an `upload()` method as a shorthand for
+`obtain_upload_lease()` and `deposit_file()`.
 
-This is equivalent to the previous snippet::
+The following is equivalent to the previous snippet::
 
    with open("/Users/danpro/Desktop/Ph03nyx-Super-Mario-Chain-Chomp.png", 'rb') as fh:
        lease = client.p.flair_emoji.create.upload(fh, sr=SR)
@@ -45,11 +45,10 @@ This is equivalent to the previous snippet::
    If you pass a file object that does not come from the Python `open()`
    function then you must explicitly specify the `filepath` parameter to
    `upload()` or you will receive a `ValueError` error. This is because regular
-   file objects don't have a `.name` attribute.
+   file objects don't have a `.name` attribute containing the file name.
 
-In the specific case of flair emojis, the `client.p.flair_emoji.create` object
-works as a method to further simplify the process described above as a single
-step.
+Specificly for flair emojis, the `client.p.flair_emoji.create` function works
+as a way to further simplify the process described above as a single step.
 
 ::
 
@@ -62,7 +61,7 @@ Inline media for submissions
 Although the markdown submission format does not support inline media directly,
 markdown can be written with image directives and then converted to rich text
 JSON for use in the
-:meth:`client.p.submission.create_text_post() <redditwarp.siteprocs.submission.SYNC.SubmissionProcedures.create_text_post>`
+:meth:`client.p.submission.create.text() <redditwarp.siteprocs.submission.create.SYNC.Create.text>`
 method.
 
 ::
@@ -70,37 +69,33 @@ method.
    with open("/Users/danpro/Desktop/wildflowers.jpg", 'rb') as fh:
        lease = client.p.submission.media_uploading.upload(fh)
 
-   text = f'''\
+   txt = f'''\
    Look at these nice flowers.
 
    ![img]({lease.media_id} "Wildflowers")
    '''
-   rtj = client.p.misc.convert_markdown_to_richtext(text)
-   client.p.submission.create_text_post(SR, 'Nice flowers', rtj)
+   rtj = client.p.misc.convert_markdown_to_richtext(txt)
+   client.p.submission.create.text(SR, 'Nice flowers', rtj)
 
 Uploading videos for video posts
 --------------------------------
 
-The endpoint for creating video submissions requires a video and an image as a thumbnail.
+The endpoint for creating video submissions requires a video and an image file.
+The image is used as thumbnail.
 
-Note that the web UI doesn't require you to upload a thumbnail image separately.
-Don't ask how the web UI extracts an image from your video; I haven't figured this out yet.
+Note that the web UI doesn't require the image file. Unfortunately though, the
+process they use for extracting the thumbnail image is unknown, so you'll have
+to prepare a thumbnail by yourself separately.
 
 ::
 
    with open("/Users/danpro/Desktop/video.mp4", 'rb') as fh:
        video_lease = client.p.submission.media_uploading.upload(fh)
-
    with open("/Users/danpro/Desktop/image.jpg", 'rb') as fh:
        image_lease = client.p.submission.media_uploading.upload(fh)
 
-   video_location = video_lease.location
-   image_location = image_lease.location
-   print(video_location)
-   print(image_location)
-
-   client.p.submission.create_video_post(
+   client.p.submission.create.video(
            'Pyprohly_test3',
            'My great video',
-           video_location,
-           image_location)
+           video_lease.location,
+           image_lease.location)

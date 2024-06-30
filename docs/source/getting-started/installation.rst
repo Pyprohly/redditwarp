@@ -13,11 +13,11 @@ Install/update::
 
 Check that the import works in a Python REPL.
 
-::
+.. parsed-literal::
 
    >>> import redditwarp
    >>> redditwarp.__version__
-   '1.0.0'
+   '|release|'
 
 Install an HTTP library
 -----------------------
@@ -28,19 +28,20 @@ isn't available. For async code, if no HTTP transport library is installed then
 a `ModuleNotFoundError` exception will be raised when attempting to construct a
 client instance.
 
-The supported HTTP libraries are as follows, in order of precedence:
+The supported HTTP libraries are as follows, in order of precedence in which
+RedditWarp will look for them:
 
-Sync:
+* Sync:
 
-* HTTPX -- `<https://www.python-httpx.org/>`_
-* Requests -- `<https://requests.readthedocs.io/>`_
-* urllib3 -- `<https://urllib3.readthedocs.io/>`_
-* Python urllib.request -- `<https://docs.python.org/3/library/urllib.request.html>`_
+  * HTTPX -- `<https://www.python-httpx.org/>`_
+  * Requests -- `<https://requests.readthedocs.io/>`_
+  * urllib3 -- `<https://urllib3.readthedocs.io/>`_
+  * Python urllib.request -- `<https://docs.python.org/3/library/urllib.request.html>`_
 
-Async:
+* Async:
 
-* HTTPX -- `<https://www.python-httpx.org/>`_
-* AIOHTTP -- `<https://docs.aiohttp.org/en/stable/>`_
+  * HTTPX -- `<https://www.python-httpx.org/>`_
+  * AIOHTTP -- `<https://docs.aiohttp.org/en/stable/>`_
 
 The recommended HTTP transport library is HTTPX.
 
@@ -48,15 +49,16 @@ The recommended HTTP transport library is HTTPX.
 
    $ pip install -U httpx
 
-Select an HTTP library
-----------------------
+Selecting an HTTP library
+-------------------------
 
-If you have multiple HTTP libraries installed and want to force your RedditWarp
+If you have multiple HTTP libraries installed and want to force your
 program to use a specific one, such as the Requests package, add the following
 code to your program's `__main__` module::
 
    import redditwarp.http.transport.SYNC, redditwarp.http.transport.impls.requests
    redditwarp.http.transport.SYNC.set_transport_adapter_module(redditwarp.http.transport.impls.requests)
 
-If the Requests package is not installed, a `ModuleNotFoundError` exception
-will be raised upon importing `redditwarp.http.transport.impls.requests`.
+If the HTTP library isn't installed, a `ModuleNotFoundError` exception will be
+raised upon importing the transport adaptor module, in this case,
+`redditwarp.http.transport.impls.requests`.

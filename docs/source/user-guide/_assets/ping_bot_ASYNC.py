@@ -12,7 +12,7 @@ from redditwarp.streaming.makers.message_ASYNC import create_inbox_message_strea
 from redditwarp.streaming.ASYNC import flow
 
 async def main() -> None:
-    client = redditwarp.ASYNC.Client()
+    client = redditwarp.ASYNC.Client.from_praw_config('SuvaBot')
     async with client:
         inbox_message_stream = create_inbox_message_stream(client)
 

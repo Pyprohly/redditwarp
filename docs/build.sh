@@ -11,7 +11,7 @@ do_build_apidoc() {
 	pkg=./redditwarp
 	[[ -d $pkg ]] || pkg=../redditwarp
 
-	sphinx-apidoc -ef \
+	sphinx-apidoc -elf \
 			-H "API Reference" \
 			--tocfile=index \
 			-t source/_templates/apidoc \
