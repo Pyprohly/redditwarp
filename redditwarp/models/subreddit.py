@@ -212,7 +212,7 @@ class Subreddit(DatamementoPropertiesMixin):
 
         self.subscriber_count: int = d['subscribers']
         ("")
-        self.viewing_count: int = -1 if (x := d['active_user_count']) is None else x
+        self.viewing_count: int = -1 if (x := d.get('active_user_count')) is None else x
         ("""
             The number of online users who are subscribed to the subreddit.
 
